@@ -6,108 +6,106 @@ import (
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
-//	"strings"
-	"time"
+	//	"strings"
 	"fmt"
+	"time"
 )
 
 type Site struct {
-	SiteScope	string	"ss"
-	Scope		string 	"sc"
-	Date 		int	"dt"
-	Namespace	string	"ns"	
-	Profile		string	"p"
-	Production	string	"pr"
-	Monitored	string 	"m"
-	Ngi		string 	"n"
-	Site 		string 	"s"
-	Infastructure 	string 	"i"
-	CertStatus	string 	"cs"
-	Availability 	float64 "a"
-	Reliability 	float64 "r"
+	SiteScope     string  "ss"
+	Scope         string  "sc"
+	Date          int     "dt"
+	Namespace     string  "ns"
+	Profile       string  "p"
+	Production    string  "pr"
+	Monitored     string  "m"
+	Ngi           string  "n"
+	Site          string  "s"
+	Infastructure string  "i"
+	CertStatus    string  "cs"
+	Availability  float64 "a"
+	Reliability   float64 "r"
 }
 
-
 func createSiteXMLResponse(results []Site) ([]byte, error) {
-		
+
 	type Availability struct {
 		XMLName      xml.Name `xml:"Availability"`
 		Timestamp    string   `xml:"timestamp,attr"`
 		Availability string   `xml:"availability,attr"`
 		Reliability  string   `xml:"reliability,attr"`
-		}
-	
+	}
+
 	type Site struct {
-		Site		string `xml:"site,attr"`
-		Ngi		string `xml:"NGI,attr"`
-		Infastructure	string `xml:"infastructure,attr"`
-		Scope		string `xml:"scope,attr"`
-		SiteScope	string `xml:"site_scope,attr"`
-		Production	string `xml:"production,attr"`
-		Monitored	string `xml:"monitored,attr"`
-		CertStatus	string `xml:"certification_status"`
-		Availability   []Availability
+		Site          string `xml:"site,attr"`
+		Ngi           string `xml:"NGI,attr"`
+		Infastructure string `xml:"infastructure,attr"`
+		Scope         string `xml:"scope,attr"`
+		SiteScope     string `xml:"site_scope,attr"`
+		Production    string `xml:"production,attr"`
+		Monitored     string `xml:"monitored,attr"`
+		CertStatus    string `xml:"certification_status"`
+		Availability  []Availability
 	}
-	
+
 	type Profile struct {
-		XMLName   xml.Name 	`xml:"Profile"`
-		Name      string 	`xml:"name,attr"`
-		Namespace string	`xml:"namespace,attr"`
-		Sites   []Site
+		XMLName   xml.Name `xml:"Profile"`
+		Name      string   `xml:"name,attr"`
+		Namespace string   `xml:"namespace,attr"`
+		Sites     []Site
 	}
-	
-		type Root struct {
+
+	type Root struct {
 		XMLName xml.Name `xml:"root"`
 		Profile []Profile
 	}
-	
-	
+
 	v := &Root{}
-	
+
 	//v.Profile = make([]Profile,len(results))
-	v.Profile = make([]Profile,0)
-	site := Site{}	
+	v.Profile = make([]Profile, 0)
+	site := Site{}
 
 	//total := len(results)
-	
+
 	prevProfile := ""
 	prevSite := ""
 	for cur, result := range results {
 		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(result.Date))
-		
+
 		if prevProfile != result.Profile {
-			 
+
 			prevProfile = result.Profile
 			v.Profile = append(v.Profile,
-					Profile {
-						Name: result.Profile,
-						Namespace: result.Namespace })
+				Profile{
+					Name:      result.Profile,
+					Namespace: result.Namespace})
 		}
-			
+
 		if prevSite != result.Site {
 			prevSite = result.Site
-			if cur>0 {
-			v.Profile[len(v.Profile)-1].Sites = append(
-				v.Profile[len(v.Profile)-1].Sites, site)
+			if cur > 0 {
+				v.Profile[len(v.Profile)-1].Sites = append(
+					v.Profile[len(v.Profile)-1].Sites, site)
 			}
 			site = Site{
-				Site: 		result.Site,
-				Ngi: 		result.Ngi,
-				Infastructure: 	result.Infastructure,
-				Scope: 		result.Scope,
-				SiteScope: 	result.SiteScope,
-				Production: 	result.Production,
-				Monitored: 	result.Monitored,
-				CertStatus: 	result.CertStatus }
+				Site:          result.Site,
+				Ngi:           result.Ngi,
+				Infastructure: result.Infastructure,
+				Scope:         result.Scope,
+				SiteScope:     result.SiteScope,
+				Production:    result.Production,
+				Monitored:     result.Monitored,
+				CertStatus:    result.CertStatus}
 		}
 		site.Availability = append(site.Availability,
-					Availability{
-						Timestamp: 	timestamp.Format(zuluForm),
-						Availability: 	fmt.Sprintf("%g",result.Availability),
-						Reliability: 	fmt.Sprintf("%g",result.Reliability) })
+			Availability{
+				Timestamp:    timestamp.Format(zuluForm),
+				Availability: fmt.Sprintf("%g", result.Availability),
+				Reliability:  fmt.Sprintf("%g", result.Reliability)})
 	}
-	if (len(v.Profile)>0){
-	v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, site)
+	if len(v.Profile) > 0 {
+		v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, site)
 	}
 	//v.Profile = v.Profile[1:len(v.Profile)-1]
 
@@ -131,9 +129,9 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		group_type          []string // may appear more than once. (eg: CMS_Site)
 		availability_period string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
 		// optional values
-		output           string   // default XML; possible values are: XML, JSON
-		namespace        []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-		group_name       []string // site name; may appear more than once
+		output     string   // default XML; possible values are: XML, JSON
+		namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
+		group_name []string // site name; may appear more than once
 	}
 
 	urlValues := r.URL.Query()
@@ -164,7 +162,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	c := session.DB("AR").C("sites")
 	results := []Site{}
 	q := bson.M{
-		"dt":  bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"p":  bson.M{"$in": input.profile_name},
 	}
 
@@ -175,7 +173,6 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if len(input.group_name) > 0 {
 		// TODO: We do not have the site name in the timeline
 	}
-
 
 	err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
 	fmt.Println(q)

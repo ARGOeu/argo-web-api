@@ -50,13 +50,13 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 	}
 
 	v := &Root{}
-	v.Profile = make([]Profile,0) 
-	
-	service := Service{} 
-	
+	v.Profile = make([]Profile, 0)
+
+	service := Service{}
+
 	prevProfile := ""
 	prevService := ""
-	
+
 	for cur, result := range results {
 		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(result.Date))
 		timeline := strings.Split(strings.Trim(result.Timeline, "[\n]"), ", ")
@@ -64,20 +64,20 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 			prevProfile = result.Profile
 			v.Profile = append(v.Profile,
 				Profile{
-				Name:      result.Profile,
+					Name:      result.Profile,
 					Namespace: result.Namespace,
 					VO:        result.VO})
 		}
 		if prevService != result.Host+result.ServiceFlavor {
-			prevService = result.Host+ result.ServiceFlavor
+			prevService = result.Host + result.ServiceFlavor
 			if cur > 0 {
-			v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
+				v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
 			}
 			service = Service{
 				Hostname:       result.Host,
 				Service_Type:   result.ServiceFlavor,
 				Service_Flavor: result.ServiceFlavor}
-			
+
 		}
 
 		for _, timeslot := range timeline {
