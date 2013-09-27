@@ -50,34 +50,34 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 	}
 
 	v := &Root{}
-	v.Profile = append(v.Profile, Profile{Name: results[0].Profile,
-		Namespace: results[0].Namespace,
-		VO:        results[0].VO})
-	service := Service{Hostname: results[0].Host,
-		Service_Type:   results[0].ServiceFlavor,
-		Service_Flavor: results[0].ServiceFlavor}
-	total := len(results)
-
+	v.Profile = make([]Profile,0) 
+	
+	service := Service{} 
+	
+	prevProfile := ""
+	prevService := ""
+	
 	for cur, result := range results {
 		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(result.Date))
 		timeline := strings.Split(strings.Trim(result.Timeline, "[\n]"), ", ")
-		next := cur + 1
-		prev := cur - 1
-
-		if cur > 0 {
-			if results[prev].Profile != result.Profile {
-				v.Profile = append(v.Profile,
-					Profile{
-						Name:      result.Profile,
-						Namespace: result.Namespace,
-						VO:        result.VO})
+		if prevProfile != result.Profile {
+			prevProfile = result.Profile
+			v.Profile = append(v.Profile,
+				Profile{
+				Name:      result.Profile,
+					Namespace: result.Namespace,
+					VO:        result.VO})
+		}
+		if prevService != result.Host+result.ServiceFlavor {
+			prevService = result.Host+ result.ServiceFlavor
+			if cur > 0 {
+			v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
 			}
-			if results[prev].Host+results[prev].ServiceFlavor != result.Host+result.ServiceFlavor {
-				service = Service{
-					Hostname:       result.Host,
-					Service_Type:   result.ServiceFlavor,
-					Service_Flavor: result.ServiceFlavor}
-			}
+			service = Service{
+				Hostname:       result.Host,
+				Service_Type:   result.ServiceFlavor,
+				Service_Flavor: result.ServiceFlavor}
+			
 		}
 
 		for _, timeslot := range timeline {
@@ -95,14 +95,10 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 			timestamp = timestamp.Add(time.Duration(60*60) * time.Second)
 		}
 
-		if (next) <= (total - 1) {
-			if result.Host != results[next].Host || result.ServiceFlavor != results[next].ServiceFlavor {
-				v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
-			}
-		} else {
-			v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
-		}
 	}
+
+	v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
+
 	output, err := xml.MarshalIndent(v, " ", "  ")
 
 	return output, err
