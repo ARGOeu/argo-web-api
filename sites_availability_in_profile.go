@@ -2,19 +2,19 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
-	//	"strings"
-	"fmt"
+	"strings"
 	"time"
 )
 
-type Site struct {
+type MongoSite struct {
 	SiteScope     string  "ss"
 	Scope         string  "sc"
-	Date          int     "dt"
+	Date          string  "dt"
 	Namespace     string  "ns"
 	Profile       string  "p"
 	Production    string  "pr"
@@ -27,7 +27,9 @@ type Site struct {
 	Reliability   float64 "r"
 }
 
-func createSiteXMLResponse(results []Site) ([]byte, error) {
+type list []interface{}
+
+func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, error) {
 
 	type Availability struct {
 		XMLName      xml.Name `xml:"Availability"`
@@ -44,7 +46,7 @@ func createSiteXMLResponse(results []Site) ([]byte, error) {
 		SiteScope     string `xml:"site_scope,attr"`
 		Production    string `xml:"production,attr"`
 		Monitored     string `xml:"monitored,attr"`
-		CertStatus    string `xml:"certification_status"`
+		CertStatus    string `xml:"certification_status,attr"`
 		Availability  []Availability
 	}
 
@@ -71,7 +73,7 @@ func createSiteXMLResponse(results []Site) ([]byte, error) {
 	prevProfile := ""
 	prevSite := ""
 	for cur, result := range results {
-		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(result.Date))
+		timestamp, _ := time.Parse(customForm[0], result.Date)
 
 		if prevProfile != result.Profile {
 
@@ -100,7 +102,7 @@ func createSiteXMLResponse(results []Site) ([]byte, error) {
 		}
 		site.Availability = append(site.Availability,
 			Availability{
-				Timestamp:    timestamp.Format(zuluForm),
+				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", result.Availability),
 				Reliability:  fmt.Sprintf("%g", result.Reliability)})
 	}
@@ -121,13 +123,13 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	// This is the input we will receive from the API
 
-	type ApiServiceAvailabilityInProfileInput struct {
+	type ApiSiteAvailabilityInProfileInput struct {
 		// mandatory values
-		start_time          string   // UTC time in W3C format
-		end_time            string   // UTC time in W3C format
-		profile_name        []string // may appear more than once. (eg: CMS_CRITICAL)
-		group_type          []string // may appear more than once. (eg: CMS_Site)
-		availability_period string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+		start_time         string   // UTC time in W3C format
+		end_time           string   // UTC time in W3C format
+		profile_name       []string // may appear more than once. (eg: CMS_CRITICAL)
+		group_type         []string // may appear more than once. (eg: CMS_Site)
+		availabilityperiod string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
 		// optional values
 		output     string   // default XML; possible values are: XML, JSON
 		namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
@@ -136,7 +138,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	urlValues := r.URL.Query()
 
-	input := ApiServiceAvailabilityInProfileInput{
+	input := ApiSiteAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues["profile_name"],
@@ -146,6 +148,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
+	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}
 
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
@@ -160,7 +163,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB("AR").C("sites")
-	results := []Site{}
+	results := []MongoSite{}
 	q := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"p":  bson.M{"$in": input.profile_name},
@@ -174,14 +177,31 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		// TODO: We do not have the site name in the timeline
 	}
 
-	err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
-	fmt.Println(q)
-	fmt.Println(len(results))
+	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02T15:04:05Z"
+		err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$toLower": "$dt"}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
+		//err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
+		//fmt.Println(q)
+		fmt.Println(len(results))
+
+	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgdown"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
+
+		pipe := c.Pipe(query)
+		err = pipe.All(&results)
+		fmt.Println(query)
+	}
+
 	if err != nil {
 		return ("<root><error>" + err.Error() + "</error></root>")
 	}
 
-	output, err := createSiteXMLResponse(results)
+	fmt.Println(results)
+	output, err := createSiteXMLResponse(results, customForm)
 
 	return string(output)
+
 }
