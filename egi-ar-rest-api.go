@@ -13,5 +13,8 @@ func main() {
 	handlers["/sites_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", SitesAvailabilityInProfile)(w, r)
 	}
+	handlers["/ngi_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
+		api.Respond("text/xml", "utf-8", NgiAvailabilityInProfile)(w, r)
+	}
 	api.NewServer(8080, api.DefaultServerReadTimeout, handlers)
 }
