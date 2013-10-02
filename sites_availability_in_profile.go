@@ -148,7 +148,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
-	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}
+	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}//{"Format that is returned by the database" , "Format that will be used in the generated report"}
 
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
@@ -179,16 +179,14 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
 		customForm[0] = "20060102"
-		customForm[1] = "2006-01-02T15:04:05Z"
-		err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$toLower": "$dt"}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
-		//err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
-		//fmt.Println(q)
-		fmt.Println(len(results))
+		customForm[1] = "2006-01-02"
+		err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
+		//fmt.Println(len(results))
 
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgdown"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
+		query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgdown"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
 
 		pipe := c.Pipe(query)
 		err = pipe.All(&results)
@@ -199,7 +197,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		return ("<root><error>" + err.Error() + "</error></root>")
 	}
 
-	fmt.Println(results)
+//	fmt.Println(results)
 	output, err := createSiteXMLResponse(results, customForm)
 
 	return string(output)

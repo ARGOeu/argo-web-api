@@ -185,7 +185,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		return ("<root><error>" + err.Error() + "</error></root>")
 	}
 
-	fmt.Println(results)
+	//fmt.Println(results)
 	output, err := createNgiXMLResponse(results, customForm)
 
 	return string(output)
