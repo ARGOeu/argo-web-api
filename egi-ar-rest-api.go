@@ -1,9 +1,9 @@
 package main
 
 import (
-	"runtime"
 	"github.com/makis192/go-api"
 	"net/http"
+	"runtime"
 )
 
 func main() {

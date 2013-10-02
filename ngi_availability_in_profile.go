@@ -12,12 +12,12 @@ import (
 )
 
 type MongoNgi struct {
-	Date          string  "dt"
-	Namespace     string  "ns"
-	Profile       string  "p"
-	Ngi           string  "n"
-	Availability  float64 "a"
-	Reliability   float64 "r"
+	Date         string  "dt"
+	Namespace    string  "ns"
+	Profile      string  "p"
+	Ngi          string  "n"
+	Availability float64 "a"
+	Reliability  float64 "r"
 }
 
 //type list []interface{}
@@ -32,8 +32,8 @@ func createNgiXMLResponse(results []MongoNgi, customForm []string) ([]byte, erro
 	}
 
 	type Site struct {
-		Ngi           string `xml:"NGI,attr"`
-		Availability  []Availability
+		Ngi          string `xml:"NGI,attr"`
+		Availability []Availability
 	}
 
 	type Profile struct {
@@ -77,7 +77,7 @@ func createNgiXMLResponse(results []MongoNgi, customForm []string) ([]byte, erro
 					v.Profile[len(v.Profile)-1].Sites, ngi)
 			}
 			ngi = Site{
-				Ngi:           result.Ngi,
+				Ngi: result.Ngi,
 			}
 		}
 		ngi.Availability = append(ngi.Availability,
@@ -128,7 +128,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
-	customForm := []string{"20060102","2006-01-02"}//{"Format that is returned by the database" , "Format that will be used in the generated report"}
+	customForm := []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
 
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
@@ -156,13 +156,13 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if len(input.group_name) > 0 {
 		// TODO: We do not have the ngi name in the timeline
 	}
-	
+
 	fmt.Println(input)
 
 	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := []bson.M{{"$match": q},{"$group" : bson.M{"_id" : bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"},"a" : bson.M{"$sum" : bson.M{"$multiply" : list{"$a","$hs"}}},"r" : bson.M{"$sum" : bson.M{"$multiply" : list{"$r","$hs"}}}, "hs" : bson.M{"$sum" : "$hs"}}},{"$match" : bson.M{"hs" : bson.M{"$gt" : 0}}},{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide" : list{"$a","$hs"}}, "r": bson.M{"$divide" : list{"$r","$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 		err = c.Pipe(query).All(&results)
 		//err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
 		//fmt.Println(q)
@@ -171,11 +171,11 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		q["a"] = bson.M{"$gte" : 0}
-		q["r"] = bson.M{"$gte" : 0}
-		
-		query := []bson.M{{"$match": q },{"$group" : bson.M{"_id" : bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"},"a" : bson.M{"$sum" : bson.M{"$multiply" : list{"$a","$hs"}}},"r" : bson.M{"$sum" : bson.M{"$multiply" : list{"$r","$hs"}}}, "hs" : bson.M{"$sum" : "$hs"}}},{"$match" : bson.M{"hs" : bson.M{"$gt" : 0}}},{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide" : list{"$a","$hs"}}, "r": bson.M{"$divide" : list{"$r","$hs"}}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": 1, "r": 1}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"dt", 1}}}}
-		
+		q["a"] = bson.M{"$gte": 0}
+		q["r"] = bson.M{"$gte": 0}
+
+		query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": 1, "r": 1}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"dt", 1}}}}
+
 		pipe := c.Pipe(query)
 		err = pipe.All(&results)
 		fmt.Println(query)

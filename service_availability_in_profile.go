@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 //	"fmt"
 )
 
@@ -97,8 +98,8 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 		}
 
 	}
-	if (len(v.Profile)>0) {
-	v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
+	if len(v.Profile) > 0 {
+		v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
 	}
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
@@ -180,15 +181,15 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 	if len(input.service_hostname) > 0 {
 		q["h"] = bson.M{"$in": input.service_hostname}
 	}
-	query := []bson.M{{"$match" : q}, {"$sort" : bson.D{{"p" ,1},{"h",1},{"sf",1}}}}
+	query := []bson.M{{"$match": q}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}}}}
 	err = c.Pipe(query).All(&results)
-	
+
 	//err = c.Find(q).Sort("p", "h", "sf").All(&results)
 	if err != nil {
 		return ("<root><error>" + err.Error() + "</error></root>")
 	}
-	
-//	fmt.Println(results)
+
+	//	fmt.Println(results)
 	output, err := createXMLResponse(results)
 
 	return string(output)

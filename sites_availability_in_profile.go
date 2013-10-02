@@ -148,7 +148,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
-	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}//{"Format that is returned by the database" , "Format that will be used in the generated report"}
+	customForm := []string{"20060102", "2006-01-02T15:04:05Z"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
 
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
@@ -197,7 +197,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		return ("<root><error>" + err.Error() + "</error></root>")
 	}
 
-//	fmt.Println(results)
+	//	fmt.Println(results)
 	output, err := createSiteXMLResponse(results, customForm)
 
 	return string(output)
