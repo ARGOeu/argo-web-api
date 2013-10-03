@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-//	"fmt"
+	//	"cache"
+	"fmt"
 )
 
 type Timeline struct {
@@ -20,6 +20,12 @@ type Timeline struct {
 	VO            string "vo"
 	Date          int    "d"
 	Namespace     string "ns"
+}
+
+type mystring string
+
+func (s mystring) Size() int {
+	return len(string(s))
 }
 
 func createXMLResponse(results []Timeline) ([]byte, error) {
@@ -151,46 +157,52 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	session, err := mgo.Dial("127.0.0.1")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB("AR").C("timelines")
-	results := []Timeline{}
-	q := bson.M{
-		"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"vo": bson.M{"$in": input.vo_name},
-		"p":  bson.M{"$in": input.profile_name},
-	}
+	out, found := httpcache.Get(fmt.Sprint(input))
+	if !found {
+		session, err := mgo.Dial("127.0.0.1")
+		if err != nil {
+			panic(err)
+		}
+		defer session.Close()
+		// Optional. Switch the session to a monotonic behavior.
+		session.SetMode(mgo.Monotonic, true)
+		c := session.DB("AR").C("timelines")
+		results := []Timeline{}
+		q := bson.M{
+			"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
+			"vo": bson.M{"$in": input.vo_name},
+			"p":  bson.M{"$in": input.profile_name},
+		}
 
-	if len(input.namespace) > 0 {
-		q["ns"] = bson.M{"$in": input.namespace}
+		if len(input.namespace) > 0 {
+			q["ns"] = bson.M{"$in": input.namespace}
+		}
+
+		if len(input.group_name) > 0 {
+			// TODO: We do not have the site name in the timeline
+		}
+
+		if len(input.service_flavour) > 0 {
+			q["ns"] = bson.M{"$in": input.service_flavour}
+		}
+
+		if len(input.service_hostname) > 0 {
+			q["h"] = bson.M{"$in": input.service_hostname}
+		}
+		query := []bson.M{{"$match": q}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}, {"dt", 1}}}}
+		err = c.Pipe(query).All(&results)
+
+		//err = c.Find(q).Sort("p", "h", "sf").All(&results)
+		if err != nil {
+			return ("<root><error>" + err.Error() + "</error></root>")
+		}
+
+		//	fmt.Println(results)
+		output, err := createXMLResponse(results)
+		httpcache.Set(fmt.Sprint(input), mystring(output))
+		return string(output)
+
+	} else {
+		return fmt.Sprint(out)
 	}
-
-	if len(input.group_name) > 0 {
-		// TODO: We do not have the site name in the timeline
-	}
-
-	if len(input.service_flavour) > 0 {
-		q["ns"] = bson.M{"$in": input.service_flavour}
-	}
-
-	if len(input.service_hostname) > 0 {
-		q["h"] = bson.M{"$in": input.service_hostname}
-	}
-	query := []bson.M{{"$match": q}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}}}}
-	err = c.Pipe(query).All(&results)
-
-	//err = c.Find(q).Sort("p", "h", "sf").All(&results)
-	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
-	}
-
-	//	fmt.Println(results)
-	output, err := createXMLResponse(results)
-
-	return string(output)
 }

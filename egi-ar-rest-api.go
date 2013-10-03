@@ -1,12 +1,16 @@
 package main
 
 import (
-	"github.com/makis192/go-api"
+	"cache"
+	"github.com/makistsan/go-api"
 	"net/http"
 	"runtime"
 )
 
+var httpcache *cache.LRUCache
+
 func main() {
+	httpcache = cache.NewLRUCache(uint64(300000000))
 	runtime.GOMAXPROCS(4)
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 	handlers["/api/v1/service_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
