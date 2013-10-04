@@ -154,6 +154,9 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+	
+	out, found := httpcache.Get("sites " + fmt.Sprint(input))
+        if !found {
 
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
@@ -199,7 +202,10 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	//	fmt.Println(results)
 	output, err := createSiteXMLResponse(results, customForm)
-
+	httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
 	return string(output)
+	} else {
+	return fmt.Sprint(out)
+	}
 
 }

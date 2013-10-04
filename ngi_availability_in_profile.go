@@ -135,6 +135,9 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
+	out, found := httpcache.Get("ngi " + fmt.Sprint(input))
+        if !found {
+
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		panic(err)
@@ -187,7 +190,9 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	//fmt.Println(results)
 	output, err := createNgiXMLResponse(results, customForm)
-
+	httpcache.Set("ngi "+fmt.Sprint(input), mystring(output))
 	return string(output)
-
+	} else {
+	return fmt.Sprint(out)
+	}
 }

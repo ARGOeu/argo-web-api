@@ -22,12 +22,6 @@ type Timeline struct {
 	Namespace     string "ns"
 }
 
-type mystring string
-
-func (s mystring) Size() int {
-	return len(string(s))
-}
-
 func createXMLResponse(results []Timeline) ([]byte, error) {
 	type Availability struct {
 		XMLName      xml.Name `xml:"Availability"`
@@ -157,7 +151,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	out, found := httpcache.Get(fmt.Sprint(input))
+	out, found := httpcache.Get("service_endpoint " + fmt.Sprint(input))
 	if !found {
 		session, err := mgo.Dial("127.0.0.1")
 		if err != nil {
@@ -199,7 +193,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 
 		//	fmt.Println(results)
 		output, err := createXMLResponse(results)
-		httpcache.Set(fmt.Sprint(input), mystring(output))
+		httpcache.Set("service_endpoint "+fmt.Sprint(input), mystring(output))
 		return string(output)
 
 	} else {
