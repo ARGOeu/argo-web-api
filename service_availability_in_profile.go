@@ -35,7 +35,7 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 		Hostname       string `xml:"hostname,attr"`
 		Service_Type   string `xml:"type,attr"`
 		Service_Flavor string `xml:"flavor,attr"`
-		Availability   []Availability
+		Availability   []*Availability
 	}
 
 	type Profile struct {
@@ -43,43 +43,41 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
 		VO        string   `xml:"defined_by_vo_name,attr"`
-		Service   []Service
+		Service  []*Service
 	}
 
 	type Root struct {
 		XMLName xml.Name `xml:"root"`
-		Profile []Profile
+		Profile []*Profile
 	}
 
 	v := &Root{}
-	v.Profile = make([]Profile, 0)
-
-	service := Service{}
 
 	prevProfile := ""
 	prevService := ""
+	service := &Service{}
+	profile := &Profile{}
+	for _, row := range results {
+		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(row.Date))
+		timeline := strings.Split(strings.Trim(row.Timeline, "[\n]"), ", ")
 
-	for cur, result := range results {
-		timestamp, _ := time.Parse(ymdForm, strconv.Itoa(result.Date))
-		timeline := strings.Split(strings.Trim(result.Timeline, "[\n]"), ", ")
-		if prevProfile != result.Profile {
-			prevProfile = result.Profile
-			v.Profile = append(v.Profile,
-				Profile{
-					Name:      result.Profile,
-					Namespace: result.Namespace,
-					VO:        result.VO})
+		if prevProfile != row.Profile {
+			prevProfile = row.Profile
+			profile = &Profile{
+				Name:      row.Profile,
+				Namespace: row.Namespace,
+				VO:        row.VO}
+			v.Profile = append(v.Profile, profile)
+			prevService = ""
 		}
-		if prevService != result.Host+result.ServiceFlavor {
-			prevService = result.Host + result.ServiceFlavor
-			if cur > 0 {
-				v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
-			}
-			service = Service{
-				Hostname:       result.Host,
-				Service_Type:   result.ServiceFlavor,
-				Service_Flavor: result.ServiceFlavor}
 
+		if prevService != row.Host+row.ServiceFlavor {
+			prevService = row.Host + row.ServiceFlavor
+			service = &Service{
+				Hostname:       row.Host,
+				Service_Type:   row.ServiceFlavor,
+				Service_Flavor: row.ServiceFlavor}
+			profile.Services = append(profile.Services, service)
 		}
 
 		for _, timeslot := range timeline {
@@ -89,7 +87,7 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 			}
 
 			service.Availability = append(service.Availability,
-				Availability{
+				&Availability{
 					Timestamp:    timestamp.Format(zuluForm),
 					Availability: ar[0],
 					Reliability:  ar[1],
@@ -97,9 +95,6 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 			timestamp = timestamp.Add(time.Duration(60*60) * time.Second)
 		}
 
-	}
-	if len(v.Profile) > 0 {
-		v.Profile[len(v.Profile)-1].Service = append(v.Profile[len(v.Profile)-1].Service, service)
 	}
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
