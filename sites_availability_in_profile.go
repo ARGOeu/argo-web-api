@@ -66,46 +66,45 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 
 	//v.Profile = make([]Profile,len(results))
 	v.Profile = make([]Profile, 0)
-	site := Site{}
-
 	//total := len(results)
 
 	prevProfile := ""
-	prevSite := ""
-	for cur, result := range results {
-		timestamp, _ := time.Parse(customForm[0], result.Date)
-
-		if prevProfile != result.Profile {
-
-			prevProfile = result.Profile
-			v.Profile = append(v.Profile,
-				Profile{
-					Name:      result.Profile,
-					Namespace: result.Namespace})
-		}
-
-		if prevSite != result.Site {
-			prevSite = result.Site
-			if cur > 0 {
-				v.Profile[len(v.Profile)-1].Sites = append(
-					v.Profile[len(v.Profile)-1].Sites, site)
-			}
-			site = Site{
-				Site:          result.Site,
-				Ngi:           result.Ngi,
-				Infastructure: result.Infastructure,
-				Scope:         result.Scope,
-				SiteScope:     result.SiteScope,
-				Production:    result.Production,
-				Monitored:     result.Monitored,
-				CertStatus:    result.CertStatus}
-		}
-		site.Availability = append(site.Availability,
-			Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
-				Availability: fmt.Sprintf("%g", result.Availability),
-				Reliability:  fmt.Sprintf("%g", result.Reliability)})
-	}
+	prevSite    := ""
+	site        := &Site{}
+	profile     := &Profile{}
+    for _, row := range results {
+    	timestamp, _ := time.Parse(customForm[0], row.Date)
+        
+		if prevProfile != row.Profile {
+    		prevProfile = row.Profile
+    		profile = Profile {
+				        Name:      row.Profile,
+				        Namespace: row.Namespace
+				    }
+    		v.Profile = append(v.Profile, profile)
+    		prevSite = ""
+    	}
+    	
+    	if prevSite != row.Site {
+    		prevSite = row.Site
+    		site = Site {
+        			Site:          row.Site,
+        			Ngi:           row.Ngi,
+        			Infastructure: row.Infastructure,
+        			Scope:         row.Scope,
+        			SiteScope:     row.SiteScope,
+    			    Production:    row.Production,
+    			    Monitored:     row.Monitored,
+    			    CertStatus:    row.CertStatus
+    			}
+    		profile.Sites = append(profile.Sites, site)
+    	}
+    	site.Availability = append(site.Availability,
+    		Availability{
+    			Timestamp:    timestamp.Format(customForm[1]),
+    			Availability: fmt.Sprintf("%g", row.Availability),
+    			Reliability:  fmt.Sprintf("%g", row.Reliability)})
+    }
 	if len(v.Profile) > 0 {
 		v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, site)
 	}
