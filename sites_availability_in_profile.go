@@ -154,58 +154,58 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-	
+
 	out, found := httpcache.Get("sites " + fmt.Sprint(input))
-        if !found {
+	if !found {
 
-	session, err := mgo.Dial("127.0.0.1")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB("AR").C("sites")
-	results := []MongoSite{}
-	q := bson.M{
-		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"p":  bson.M{"$in": input.profile_name},
-	}
+		session, err := mgo.Dial("127.0.0.1")
+		if err != nil {
+			panic(err)
+		}
+		defer session.Close()
+		// Optional. Switch the session to a monotonic behavior.
+		session.SetMode(mgo.Monotonic, true)
+		c := session.DB("AR").C("sites")
+		results := []MongoSite{}
+		q := bson.M{
+			"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
+			"p":  bson.M{"$in": input.profile_name},
+		}
 
-	if len(input.namespace) > 0 {
-		q["ns"] = bson.M{"$in": input.namespace}
-	}
+		if len(input.namespace) > 0 {
+			q["ns"] = bson.M{"$in": input.namespace}
+		}
 
-	if len(input.group_name) > 0 {
-		// TODO: We do not have the site name in the timeline
-	}
+		if len(input.group_name) > 0 {
+			// TODO: We do not have the site name in the timeline
+		}
 
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
-		customForm[0] = "20060102"
-		customForm[1] = "2006-01-02"
-		err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
-		//fmt.Println(len(results))
+		if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+			customForm[0] = "20060102"
+			customForm[1] = "2006-01-02"
+			err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
+			//fmt.Println(len(results))
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
-		customForm[0] = "200601"
-		customForm[1] = "2006-01"
-		query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgdown"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
+		} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+			customForm[0] = "200601"
+			customForm[1] = "2006-01"
+			query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
 
-		pipe := c.Pipe(query)
-		err = pipe.All(&results)
-		fmt.Println(query)
-	}
+			pipe := c.Pipe(query)
+			err = pipe.All(&results)
+			fmt.Println(query)
+		}
 
-	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
-	}
+		if err != nil {
+			return ("<root><error>" + err.Error() + "</error></root>")
+		}
 
-	//	fmt.Println(results)
-	output, err := createSiteXMLResponse(results, customForm)
-	httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
-	return string(output)
+		//	fmt.Println(results)
+		output, err := createSiteXMLResponse(results, customForm)
+		httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
+		return string(output)
 	} else {
-	return fmt.Sprint(out)
+		return fmt.Sprint(out)
 	}
 
 }
