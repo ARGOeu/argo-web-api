@@ -47,33 +47,33 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 		Production    string `xml:"production,attr"`
 		Monitored     string `xml:"monitored,attr"`
 		CertStatus    string `xml:"certification_status,attr"`
-		Availability  []Availability
+		Availability  []*Availability
 	}
 
 	type Profile struct {
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
-		Sites     []Site
+		Sites     []*Site
 	}
 
 	type Root struct {
 		XMLName xml.Name `xml:"root"`
-		Profile []Profile
+		Profile []*Profile
 	}
 
 	v := &Root{}
 
 	prevProfile := ""
 	prevSite := ""
-	site := Site{}
-	profile := Profile{}
+	site := &Site{}
+	profile := &Profile{}
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], row.Date)
 
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
-			profile = Profile{
+			profile = &Profile{
 				Name:      row.Profile,
 				Namespace: row.Namespace}
 			v.Profile = append(v.Profile, profile)
@@ -82,7 +82,7 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 
 		if prevSite != row.Site {
 			prevSite = row.Site
-			site = Site{
+			site = &Site{
 				Site:          row.Site,
 				Ngi:           row.Ngi,
 				Infastructure: row.Infastructure,
@@ -94,10 +94,11 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 			profile.Sites = append(profile.Sites, site)
 		}
 		site.Availability = append(site.Availability,
-			Availability{
+			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
+		fmt.Println(v)
 	}
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
