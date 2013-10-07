@@ -31,65 +31,54 @@ func createNgiXMLResponse(results []MongoNgi, customForm []string) ([]byte, erro
 		Reliability  string   `xml:"reliability,attr"`
 	}
 
-	type Site struct {
+	type Ngi struct {
 		Ngi          string `xml:"NGI,attr"`
-		Availability []Availability
+		Availability []*Availability
 	}
 
 	type Profile struct {
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
-		Sites     []Site
+		Ngi      []*Ngi
 	}
 
 	type Root struct {
 		XMLName xml.Name `xml:"root"`
-		Profile []Profile
+		Profile []*Profile
 	}
 
 	v := &Root{}
 
-	//v.Profile = make([]Profile,len(results))
-	v.Profile = make([]Profile, 0)
-	ngi := Site{}
-
-	//total := len(results)
-
 	prevProfile := ""
 	prevNgi := ""
-	for cur, result := range results {
-		timestamp, _ := time.Parse(customForm[0], result.Date)
+	ngi := &Ngi{}
+	profile := &Profile{}
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], row.Date)
 
-		if prevProfile != result.Profile {
-
-			prevProfile = result.Profile
-			v.Profile = append(v.Profile,
-				Profile{
-					Name:      result.Profile,
-					Namespace: result.Namespace})
+		if prevProfile != row.Profile {
+			prevProfile = row.Profile
+			profile = &Profile{
+				Name:      row.Profile,
+				Namespace: row.Namespace}
+			v.Profile = append(v.Profile, profile)
+			prevNgi = ""
 		}
 
-		if prevNgi != result.Ngi {
-			prevNgi = result.Ngi
-			if cur > 0 {
-				v.Profile[len(v.Profile)-1].Sites = append(
-					v.Profile[len(v.Profile)-1].Sites, ngi)
+		if prevNgi != row.Ngi {
+			prevNgi = row.Ngi
+			ngi = &Ngi{
+				Ngi: row.Ngi,
 			}
-			ngi = Site{
-				Ngi: result.Ngi,
-			}
+			profile.Ngi = append(profile.Ngi, ngi)
 		}
 		ngi.Availability = append(ngi.Availability,
-			Availability{
+			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
-				Availability: fmt.Sprintf("%g", result.Availability),
-				Reliability:  fmt.Sprintf("%g", result.Reliability)})
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}
-	if len(v.Profile) > 0 {
-		v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, ngi)
-	}
-	//v.Profile = v.Profile[1:len(v.Profile)-1]
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
 
