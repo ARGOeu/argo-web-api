@@ -54,7 +54,7 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
-		Sites     []*Site
+		Site     []*Site
 	}
 
 	type Root struct {
@@ -91,7 +91,7 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 				Production:    row.Production,
 				Monitored:     row.Monitored,
 				CertStatus:    row.CertStatus}
-			profile.Sites = append(profile.Sites, site)
+			profile.Site = append(profile.Site, site)
 		}
 		site.Availability = append(site.Availability,
 			&Availability{
