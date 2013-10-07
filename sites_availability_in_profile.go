@@ -70,17 +70,16 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 
 	prevProfile := ""
 	prevSite    := ""
-	site        := &Site{}
-	profile     := &Profile{}
+	site        := Site{}
+	profile     := Profile{}
     for _, row := range results {
     	timestamp, _ := time.Parse(customForm[0], row.Date)
         
 		if prevProfile != row.Profile {
     		prevProfile = row.Profile
     		profile = Profile {
-				        Name:      row.Profile,
-				        Namespace: row.Namespace
-				    }
+                Name:      row.Profile,
+                Namespace: row.Namespace}
     		v.Profile = append(v.Profile, profile)
     		prevSite = ""
     	}
@@ -95,8 +94,7 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
         			SiteScope:     row.SiteScope,
     			    Production:    row.Production,
     			    Monitored:     row.Monitored,
-    			    CertStatus:    row.CertStatus
-    			}
+    			    CertStatus:    row.CertStatus}
     		profile.Sites = append(profile.Sites, site)
     	}
     	site.Availability = append(site.Availability,
@@ -105,9 +103,9 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
     			Availability: fmt.Sprintf("%g", row.Availability),
     			Reliability:  fmt.Sprintf("%g", row.Reliability)})
     }
-	if len(v.Profile) > 0 {
-		v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, site)
-	}
+    // if len(v.Profile) > 0 {
+    //  v.Profile[len(v.Profile)-1].Sites = append(v.Profile[len(v.Profile)-1].Sites, site)
+    // }
 	//v.Profile = v.Profile[1:len(v.Profile)-1]
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
@@ -199,7 +197,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 			return ("<root><error>" + err.Error() + "</error></root>")
 		}
 
-		//	fmt.Println(results)
+		fmt.Println(len(results))
 		output, err := createSiteXMLResponse(results, customForm)
 		httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
 		return string(output)
