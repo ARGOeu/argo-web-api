@@ -54,7 +54,7 @@ func createSiteXMLResponse(results []MongoSite, customForm []string) ([]byte, er
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
-		Site     []*Site
+		Site      []*Site
 	}
 
 	type Root struct {

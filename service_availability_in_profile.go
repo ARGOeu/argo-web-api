@@ -43,7 +43,7 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
 		VO        string   `xml:"defined_by_vo_name,attr"`
-		Service  []*Service
+		Service   []*Service
 	}
 
 	type Root struct {
@@ -77,7 +77,7 @@ func createXMLResponse(results []Timeline) ([]byte, error) {
 				Hostname:       row.Host,
 				Service_Type:   row.ServiceFlavor,
 				Service_Flavor: row.ServiceFlavor}
-			profile.Services = append(profile.Services, service)
+			profile.Service = append(profile.Service, service)
 		}
 
 		for _, timeslot := range timeline {

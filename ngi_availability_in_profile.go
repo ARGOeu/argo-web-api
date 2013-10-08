@@ -40,7 +40,7 @@ func createNgiXMLResponse(results []MongoNgi, customForm []string) ([]byte, erro
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
-		Ngi      []*Ngi
+		Ngi       []*Ngi
 	}
 
 	type Root struct {
