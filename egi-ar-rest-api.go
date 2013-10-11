@@ -28,7 +28,7 @@ func main() {
 	handlers["/api/v1/ngi_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", NgiAvailabilityInProfile)(w, r)
 	}
-	handlers["/profiles"] = func(w http.ResponseWriter, r *http.Request) {
+	handlers["/api/v1/profiles"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", GetProfileNames)(w, r)
 	}
 
