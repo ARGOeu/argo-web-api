@@ -54,3 +54,16 @@ type Root struct {
 	XMLName xml.Name `xml:"root"`
 	Profile []*Profile
 }
+
+func TestServiceAvailabilityInProfileQueryWithOneServiceHostname(t *testing.T) {
+	httpcache = cache.NewLRUCache(uint64(700000000))
+	xmlStruct := Root{}
+	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-01T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr", nil)
+	response := httptest.NewRecorder()
+	err := xml.Unmarshal([]byte(ServiceAvailabilityInProfile(response, request)), &xmlStruct)
+	if err != nil {
+		t.Error("Error parsing XML file: %v", err)
+	} else if len(xmlStruct.Profile[0].Service) != 1 {
+		t.Error("Expected to find 1 services, but instead found", len(xmlStruct.Profile[0].Service))
+	}
+}
