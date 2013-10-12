@@ -3,6 +3,7 @@ package main
 import (
 	"code.google.com/p/gcfg"
 	"flag"
+	"os"
 )
 
 var flConfig = flag.String("conf", "", "specify configuration file")
@@ -44,6 +45,14 @@ func LoadConfiguration() Config {
 		_ = gcfg.ReadFileInto(&cfg, *flConfig)
 	} else {
 		_ = gcfg.ReadStringInto(&cfg, defaultConfig)
+	}
+
+	var env = os.Getenv("EGI_AR_REST_API_ENV")
+	switch env {
+	default:
+		os.Setenv("EGI_AR_REST_API_ENV", "development")
+	case "test":
+	case "production":
 	}
 
 	if *flServerPort != 0 {
