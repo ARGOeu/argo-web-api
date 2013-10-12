@@ -106,3 +106,16 @@ func TestServiceAvailabilityInProfileQueryWithOneServiceHostnameForThreeDays(t *
 		t.Error("Expected to find 72 availabilities, but instead found", len(xmlStruct.Profile[0].Service[0].Availability))
 	}
 }
+
+func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnameForThreeDays(t *testing.T) {
+	httpcache = cache.NewLRUCache(uint64(700000000))
+	xmlStruct := Root{}
+	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-03T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr&service_hostname=mon.kallisto.hellasgrid.gr", nil)
+	response := httptest.NewRecorder()
+	err := xml.Unmarshal([]byte(ServiceAvailabilityInProfile(response, request)), &xmlStruct)
+	if err != nil {
+		t.Error("Error parsing XML file: %v", err)
+	} else if len(xmlStruct.Profile[0].Service[0].Availability)+len(xmlStruct.Profile[0].Service[1].Availability) != 144 {
+		t.Error("Expected to find 144 availabilities, but instead found", len(xmlStruct.Profile[0].Service[0].Availability)+len(xmlStruct.Profile[0].Service[1].Availability))
+	}
+}
