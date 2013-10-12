@@ -16,6 +16,9 @@
 4. Build the service:
 
         go build
+
+5. Test the service:
+        go test
         
 5. Run the service:
 
