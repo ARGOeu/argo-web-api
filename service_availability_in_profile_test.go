@@ -119,3 +119,17 @@ func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnameForThreeDays(t *
 		t.Error("Expected to find 144 availabilities, but instead found", len(xmlStruct.Profile[0].Service[0].Availability)+len(xmlStruct.Profile[0].Service[1].Availability))
 	}
 }
+
+func TestServiceAvailabilityInProfileQueryWithTwoProfiles(t *testing.T) {
+	t.Skip("Skipping test as we have data only for the ROC CRITICAL profile")
+	httpcache = cache.NewLRUCache(uint64(700000000))
+	xmlStruct := Root{}
+	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-03T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&profile_name=ROC", nil)
+	response := httptest.NewRecorder()
+	err := xml.Unmarshal([]byte(ServiceAvailabilityInProfile(response, request)), &xmlStruct)
+	if err != nil {
+		t.Error("Error parsing XML file: %v", err)
+	} else if len(xmlStruct.Profile) != 2 {
+		t.Error("Expected to find 2 Profile, but instead found", len(xmlStruct.Profile[0].Service[0].Availability))
+	}
+}
