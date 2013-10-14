@@ -126,8 +126,8 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	out, found := httpcache.Get("ngi " + fmt.Sprint(input))
 	if !found {
-
-		session, err := mgo.Dial(cfg.MongoDB.Host)
+		
+		session, err := mgo.Dial(cfg.MongoDB.Host+":"+fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
 			panic(err)
 		}
