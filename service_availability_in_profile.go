@@ -148,14 +148,14 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 
 	out, found := httpcache.Get("service_endpoint " + fmt.Sprint(input))
 	if !found {
-		session, err := mgo.Dial("127.0.0.1")
+		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
 			panic(err)
 		}
 		defer session.Close()
 		// Optional. Switch the session to a monotonic behavior.
 		session.SetMode(mgo.Monotonic, true)
-		c := session.DB("AR").C("timelines")
+		c := session.DB(cfg.MongoDB.Db).C("timelines")
 		results := []Timeline{}
 		q := bson.M{
 			"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},

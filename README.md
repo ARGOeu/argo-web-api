@@ -12,6 +12,7 @@
         go get github.com/dpapathanasiou/go-api
         go get labix.org/v2/mgo
         go get labix.org/v2/mgo/bson
+        go get code.google.com/p/gcfg
         
 4. Build the service:
 
