@@ -4,3 +4,4 @@ go-api
 mygoapi.conf
 src/labix.org*
 pkg/
+src/code*
