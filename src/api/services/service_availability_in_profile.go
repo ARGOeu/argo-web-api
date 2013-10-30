@@ -16,8 +16,6 @@ type Timeline struct {
 	Date          int    "d"
 	Namespace     string "ns"
 }
-
-func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) {
 	type Availability struct {
 		XMLName      xml.Name `xml:"Availability"`
 		Timestamp    string   `xml:"timestamp,attr"`
@@ -46,6 +44,8 @@ func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) 
 		Profile []*Profile
 	}
 
+
+func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) {
 	v := &Root{}
 
 	prevProfile := ""

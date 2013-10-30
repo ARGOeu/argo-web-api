@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"runtime"
 	"strconv"
-	"code.google.com/p/gcfg"
 )
 
 var httpcache *cache.LRUCache
