@@ -5,6 +5,8 @@ import (
 	"github.com/makistsan/go-lru-cache"
 	"net/http"
 	"runtime"
+	"strconv"
+	"code.google.com/p/gcfg"
 )
 
 var httpcache *cache.LRUCache
@@ -15,9 +17,11 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
+var cfg = LoadConfiguration()
+
 func main() {
-	httpcache = cache.NewLRUCache(uint64(700000000))
-	runtime.GOMAXPROCS(4)
+	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
+	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 	handlers["/api/v1/service_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ServiceAvailabilityInProfile)(w, r)
@@ -35,7 +39,7 @@ func main() {
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ResetCache)(w, r)
 	}
-	api.NewServer(":8080", api.DefaultServerReadTimeout, handlers)
+	api.NewServer(":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
 }
 
 func ResetCache(w http.ResponseWriter, r *http.Request) string {

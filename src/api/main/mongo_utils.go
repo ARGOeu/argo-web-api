@@ -41,14 +41,14 @@ func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
 
 func GetProfileNames(w http.ResponseWriter, r *http.Request) string {
 	var results []MongoProfile
-	session, err := mgo.Dial("127.0.0.1")
+	session, err := mgo.Dial(cfg.MongoDB.Host)
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
-	c := session.DB("AR").C("sites")
+	c := session.DB(cfg.MongoDB.Db).C("sites")
 	err = c.Pipe([]bson.M{{"$group": bson.M{"_id": bson.M{"ns": "$ns", "p": "$p"}}}, {"$project": bson.M{"ns": "$_id.ns", "p": "$_id.p"}}}).All(&results)
 	if err != nil {
 		return ("<root><error>" + err.Error() + "</error></root>")
