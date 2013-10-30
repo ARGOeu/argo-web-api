@@ -5,3 +5,4 @@ mygoapi.conf
 src/labix.org*
 pkg/
 src/code*
+src/github*
