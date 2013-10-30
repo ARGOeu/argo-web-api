@@ -1,0 +1,6 @@
+go-api
+.gitignore
+*.prof
+mygoapi.conf
+src/labix.org*
+pkg/
