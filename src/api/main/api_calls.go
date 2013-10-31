@@ -13,30 +13,6 @@ import (
 	"time"
 )
 
-type MongoSite struct {
-	SiteScope     string  "ss"
-	Scope         string  "sc"
-	Date          string  "dt"
-	Namespace     string  "ns"
-	Profile       string  "p"
-	Production    string  "pr"
-	Monitored     string  "m"
-	Ngi           string  "n"
-	Site          string  "s"
-	Infastructure string  "i"
-	CertStatus    string  "cs"
-	Availability  float64 "a"
-	Reliability   float64 "r"
-}
-
-type MongoNgi struct {
-	Date         string  "dt"
-	Namespace    string  "ns"
-	Profile      string  "p"
-	Ngi          string  "n"
-	Availability float64 "a"
-	Reliability  float64 "r"
-}
 
 type list []interface{}
 
