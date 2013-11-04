@@ -15,31 +15,31 @@ type MongoNgi struct {
 	Reliability  float64 "r"
 }
 
+type Availability struct {
+	XMLName      xml.Name `xml:"Availability"`
+	Timestamp    string   `xml:"timestamp,attr"`
+	Availability string   `xml:"availability,attr"`
+	Reliability  string   `xml:"reliability,attr"`
+}
+
+type Ngi struct {
+	Ngi          string `xml:"NGI,attr"`
+	Availability []*Availability
+}
+
+type Profile struct {
+	XMLName   xml.Name `xml:"Profile"`
+	Name      string   `xml:"name,attr"`
+	Namespace string   `xml:"namespace,attr"`
+	Ngi       []*Ngi
+}
+
+type Root struct {
+	XMLName xml.Name `xml:"root"`
+	Profile []*Profile
+}
+
 func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) {
-
-	type Availability struct {
-		XMLName      xml.Name `xml:"Availability"`
-		Timestamp    string   `xml:"timestamp,attr"`
-		Availability string   `xml:"availability,attr"`
-		Reliability  string   `xml:"reliability,attr"`
-	}
-
-	type Ngi struct {
-		Ngi          string `xml:"NGI,attr"`
-		Availability []*Availability
-	}
-
-	type Profile struct {
-		XMLName   xml.Name `xml:"Profile"`
-		Name      string   `xml:"name,attr"`
-		Namespace string   `xml:"namespace,attr"`
-		Ngi       []*Ngi
-	}
-
-	type Root struct {
-		XMLName xml.Name `xml:"root"`
-		Profile []*Profile
-	}
 
 	v := &Root{}
 

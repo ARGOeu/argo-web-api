@@ -16,34 +16,33 @@ type Timeline struct {
 	Date          int    "d"
 	Namespace     string "ns"
 }
-	type Availability struct {
-		XMLName      xml.Name `xml:"Availability"`
-		Timestamp    string   `xml:"timestamp,attr"`
-		Availability string   `xml:"availability,attr"`
-		Reliability  string   `xml:"reliability,attr"`
-		Maintenance  string   `xml:"maintenance,attr"`
-	}
+type Availability struct {
+	XMLName      xml.Name `xml:"Availability"`
+	Timestamp    string   `xml:"timestamp,attr"`
+	Availability string   `xml:"availability,attr"`
+	Reliability  string   `xml:"reliability,attr"`
+	Maintenance  string   `xml:"maintenance,attr"`
+}
 
-	type Service struct {
-		Hostname       string `xml:"hostname,attr"`
-		Service_Type   string `xml:"type,attr"`
-		Service_Flavor string `xml:"flavor,attr"`
-		Availability   []*Availability
-	}
+type Service struct {
+	Hostname       string `xml:"hostname,attr"`
+	Service_Type   string `xml:"type,attr"`
+	Service_Flavor string `xml:"flavor,attr"`
+	Availability   []*Availability
+}
 
-	type Profile struct {
-		XMLName   xml.Name `xml:"Profile"`
-		Name      string   `xml:"name,attr"`
-		Namespace string   `xml:"namespace,attr"`
-		VO        string   `xml:"defined_by_vo_name,attr"`
-		Service   []*Service
-	}
+type Profile struct {
+	XMLName   xml.Name `xml:"Profile"`
+	Name      string   `xml:"name,attr"`
+	Namespace string   `xml:"namespace,attr"`
+	VO        string   `xml:"defined_by_vo_name,attr"`
+	Service   []*Service
+}
 
-	type Root struct {
-		XMLName xml.Name `xml:"root"`
-		Profile []*Profile
-	}
-
+type Root struct {
+	XMLName xml.Name `xml:"root"`
+	Profile []*Profile
+}
 
 func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) {
 	v := &Root{}

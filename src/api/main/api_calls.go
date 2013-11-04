@@ -1,18 +1,17 @@
 package main
 
 import (
+	"api/ngis"
+	"api/services"
+	"api/sites"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
-	"api/ngis"
-	"api/services"
-	"api/sites"
 	"strconv"
 	"strings"
 	"time"
 )
-
 
 type list []interface{}
 
