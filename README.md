@@ -26,6 +26,7 @@
         go build
 
 5. Test the service:
+
 	    cd src/
         go test api/*
         
