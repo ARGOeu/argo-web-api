@@ -9,19 +9,27 @@
         
 3. Install dependencies:
 
-        go get github.com/dpapathanasiou/go-api
         go get labix.org/v2/mgo
         go get labix.org/v2/mgo/bson
         go get code.google.com/p/gcfg
+	    go get github.com/makistsan/go-lru-cache
+	    go get github.com/makistsan/go-api
+
+	or
+
+	    cd src/api/main
+        go get
         
 4. Build the service:
-
+	
+	    cd src/api/main
         go build
 
 5. Test the service:
 
-        go test
+	    cd src/
+        go test api/*
         
 6. Run the service:
 
-        ./egi-ari-rest-api
+        ~/go-workspace/src/api/main/egi-ari-rest-api
