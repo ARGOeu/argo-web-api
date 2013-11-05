@@ -22,6 +22,8 @@ func main() {
 	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
+
+	//Basic api calls
 	handlers["/api/v1/service_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ServiceAvailabilityInProfile)(w, r)
 	}
@@ -35,6 +37,13 @@ func main() {
 		api.Respond("text/xml", "utf-8", GetProfileNames)(w, r)
 	}
 
+	//CRUD functions for profiles
+	handlers["/api/v1/profiles/create"] = func(w http.ResponseWriter, r *http.Request) {
+                api.Respond("text/xml", "utf-8", AddProfile)(w, r)
+        }
+
+
+	//Miscallenious calls
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ResetCache)(w, r)
 	}

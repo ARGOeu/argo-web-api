@@ -8,11 +8,6 @@ import (
 	"net/http"
 )
 
-type MongoProfile struct {
-	Name      string "p"
-	Namespace string "ns"
-}
-
 func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
 	type Profile struct {
 		XMLName   xml.Name `xml:"Profile"`
