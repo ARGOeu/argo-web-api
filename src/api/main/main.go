@@ -39,14 +39,14 @@ func main() {
 
 	//CRUD functions for profiles
 	handlers["/api/v1/profiles/create"] = func(w http.ResponseWriter, r *http.Request) {
-                api.Respond("text/xml", "utf-8", AddProfile)(w, r)
-        }
+		api.Respond("text/xml", "utf-8", AddProfile)(w, r)
+	}
 	handlers["/api/v1/profiles/remove"] = func(w http.ResponseWriter, r *http.Request) {
-                api.Respond("text/xml", "utf-8", RemoveProfile)(w, r)
-        }
+		api.Respond("text/xml", "utf-8", RemoveProfile)(w, r)
+	}
 	handlers["/api/v1/profiles/getone"] = func(w http.ResponseWriter, r *http.Request) {
-                api.Respond("text/xml", "utf-8", GetProfile)(w, r)
-        }
+		api.Respond("text/xml", "utf-8", GetProfile)(w, r)
+	}
 
 	//Miscallenious calls
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
