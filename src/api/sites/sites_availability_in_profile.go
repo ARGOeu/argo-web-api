@@ -90,7 +90,6 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
-		fmt.Println(v)
 	}
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
