@@ -13,6 +13,8 @@ func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
 		XMLName   xml.Name `xml:"Profile"`
 		Name      string   `xml:"name,attr"`
 		Namespace string   `xml:"namespace,attr"`
+		Group 	  string   `xml:"group,attr"`
+		Service_flavor string `xml:"service_flavor,attr"`
 	}
 
 	type Root struct {
@@ -26,7 +28,10 @@ func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
 		v.Profile = append(v.Profile,
 			Profile{
 				Name:      result.Name,
-				Namespace: result.Namespace})
+				Namespace: result.Namespace,
+				Group: 	    result.Group,
+				Service_flavor: result.Service_flavor,
+				})
 	}
 
 	output, err := xml.MarshalIndent(v, " ", "  ")
