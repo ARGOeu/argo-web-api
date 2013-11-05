@@ -7,3 +7,5 @@ pkg/
 src/code*
 src/github*
 bin/
+src/api/main/main
+*.swp

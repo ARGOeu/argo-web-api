@@ -12,11 +12,13 @@ var flServerMaxProcs = flag.Int("maxprocs", 0, "specify the GOMAXPROCS")
 var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the MongoDB instance")
 var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the MongoDB instance listens on")
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
+var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 
 type Config struct {
 	Server struct {
 		Port     int
 		Maxprocs int
+		Cache    bool
 		Lrucache int
 	}
 	MongoDB struct {
@@ -30,6 +32,7 @@ const defaultConfig = `
     [server]
     port = 8080
     maxprocs = 4
+    cache = false
     lrucache = 700000000
 
     [mongodb]
@@ -69,6 +72,9 @@ func LoadConfiguration() Config {
 	}
 	if *flMongoDatabase != "" {
 		cfg.MongoDB.Db = *flMongoDatabase
+	}
+	if *flCache == "yes" {
+		cfg.Server.Cache = true
 	}
 
 	return cfg

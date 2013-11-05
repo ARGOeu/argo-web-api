@@ -10,7 +10,7 @@ import (
 )
 
 func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnames(t *testing.T) {
-	httpcache = cache.NewLRUCache(uint64(700000000))
+	cfg.Server.Cache = false
 	xmlStruct := services.Root{}
 	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-01T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr&service_hostname=mon.kallisto.hellasgrid.gr", nil)
 	response := httptest.NewRecorder()
@@ -23,7 +23,7 @@ func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnames(t *testing.T) 
 }
 
 func TestServiceAvailabilityInProfileQueryWithOneServiceHostnameForOneDay(t *testing.T) {
-	httpcache = cache.NewLRUCache(uint64(700000000))
+	cfg.Server.Cache = false
 	xmlStruct := services.Root{}
 	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-01T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr", nil)
 	response := httptest.NewRecorder()
@@ -36,7 +36,7 @@ func TestServiceAvailabilityInProfileQueryWithOneServiceHostnameForOneDay(t *tes
 }
 
 func TestServiceAvailabilityInProfileQueryWithOneServiceHostnameForThreeDays(t *testing.T) {
-	httpcache = cache.NewLRUCache(uint64(700000000))
+	cfg.Server.Cache = false
 	xmlStruct := services.Root{}
 	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-03T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr", nil)
 	response := httptest.NewRecorder()
@@ -49,7 +49,7 @@ func TestServiceAvailabilityInProfileQueryWithOneServiceHostnameForThreeDays(t *
 }
 
 func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnameForThreeDays(t *testing.T) {
-	httpcache = cache.NewLRUCache(uint64(700000000))
+	cfg.Server.Cache = false
 	xmlStruct := services.Root{}
 	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-03T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&service_hostname=sbdii.afroditi.hellasgrid.gr&service_hostname=mon.kallisto.hellasgrid.gr", nil)
 	response := httptest.NewRecorder()
@@ -63,7 +63,7 @@ func TestServiceAvailabilityInProfileQueryWithTwoServiceHostnameForThreeDays(t *
 
 func TestServiceAvailabilityInProfileQueryWithTwoProfiles(t *testing.T) {
 	t.Skip("Skipping test as we have data only for the ROC CRITICAL profile")
-	httpcache = cache.NewLRUCache(uint64(700000000))
+	cfg.Server.Cache = false
 	xmlStruct := services.Root{}
 	request, _ := http.NewRequest("GET", "/api/v1/service_availability_in_profile?vo_name=ops&group_type=Site&start_time=2013-08-01T23:00:00Z&end_time=2013-08-03T23:59:00Z&type=HOURLY&output=XML&profile_name=ROC_CRITICAL&profile_name=ROC", nil)
 	response := httptest.NewRecorder()
