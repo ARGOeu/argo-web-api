@@ -91,7 +91,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 	}
 
 	if len(input.service_flavour) > 0 {
-		q["ns"] = bson.M{"$in": input.service_flavour}
+		q["sf"] = bson.M{"$in": input.service_flavour}
 	}
 
 	if len(input.service_hostname) > 0 {

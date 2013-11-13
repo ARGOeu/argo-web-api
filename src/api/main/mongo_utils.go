@@ -8,7 +8,18 @@ import (
 	"net/http"
 )
 
-func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
+func ErrorXML(s string) string {
+	return "<root><error>" + s + "</error></root>"
+}
+
+type PoemProfile struct {
+	Name           string "p"
+	Namespace      string "ns"
+	Group          string "g"
+	Service_flavor string "sf"
+}
+
+func CreatePoemProfileNameXmlResponse(results []PoemProfile) ([]byte, error) {
 	type Profile struct {
 		XMLName        xml.Name `xml:"Profile"`
 		Name           string   `xml:"name,attr"`
@@ -40,7 +51,7 @@ func CreateProfileNameXmlResponse(results []MongoProfile) ([]byte, error) {
 }
 
 func GetProfileNames(w http.ResponseWriter, r *http.Request) string {
-	var results []MongoProfile
+	var results []PoemProfile
 	session, err := mgo.Dial(cfg.MongoDB.Host)
 	if err != nil {
 		panic(err)
@@ -55,7 +66,7 @@ func GetProfileNames(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	fmt.Println(results)
-	output, err := CreateProfileNameXmlResponse(results)
+	output, err := CreatePoemProfileNameXmlResponse(results)
 	return string(output)
 
 }

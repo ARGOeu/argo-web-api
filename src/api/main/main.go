@@ -52,7 +52,7 @@ func main() {
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ResetCache)(w, r)
 	}
-	api.NewServer(":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
+	api.NewServer(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
 }
 
 func ResetCache(w http.ResponseWriter, r *http.Request) string {

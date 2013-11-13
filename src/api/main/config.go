@@ -7,6 +7,7 @@ import (
 )
 
 var flConfig = flag.String("conf", "", "specify configuration file")
+var flServerIp = flag.String("ip", "", "ip address the server will bind to")
 var flServerPort = flag.Int("port", 0, "specify the port to listen on")
 var flServerMaxProcs = flag.Int("maxprocs", 0, "specify the GOMAXPROCS")
 var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the MongoDB instance")
@@ -16,6 +17,7 @@ var flCache = flag.String("cache", "no", "specify weather to use cache or not [y
 
 type Config struct {
 	Server struct {
+		Bindip   string
 		Port     int
 		Maxprocs int
 		Cache    bool
@@ -30,6 +32,7 @@ type Config struct {
 
 const defaultConfig = `
     [server]
+    bindip = ""
     port = 8080
     maxprocs = 4
     cache = false
@@ -58,6 +61,9 @@ func LoadConfiguration() Config {
 	case "production":
 	}
 
+	if *flServerIp != "" {
+		cfg.Server.Bindip = *flServerIp
+	}
 	if *flServerPort != 0 {
 		cfg.Server.Port = *flServerPort
 	}
