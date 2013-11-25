@@ -15,6 +15,8 @@ var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the Mongo
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 
+var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 type Config struct {
 	Server struct {
 		Bindip   string
@@ -82,6 +84,7 @@ func LoadConfiguration() Config {
 	if *flCache == "yes" {
 		cfg.Server.Cache = true
 	}
-
+	
+	
 	return cfg
 }

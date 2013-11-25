@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"runtime"
 	"strconv"
+	"fmt"
+	"runtime/pprof"
+	"os"
+	"log"
+	"os/signal"
 )
 
 var httpcache *cache.LRUCache
@@ -21,8 +26,29 @@ var cfg = LoadConfiguration()
 func main() {
 	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
+	
+	 if *flProfile != "" {
+                f, err := os.Create(*flProfile)
+                if err != nil {
+                        log.Fatal(err)
+                }
+                pprof.StartCPUProfile(f)
+                defer pprof.StopCPUProfile()
+        }
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func(){
+    	for sig := range c {
+    	    // sig is a ^C, handle it
+		pprof.StopCPUProfile()
+		log.Printf("captured %v, stopping profiler and exiting..", sig)
+		fmt.Println("FInished")
+		os.Exit(1)
+    	}
+	}()
+	defer fmt.Println("FInished") 
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
-
+	
 	//Basic api calls
 	handlers["/api/v1/service_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
 		api.Respond("text/xml", "utf-8", ServiceAvailabilityInProfile)(w, r)
