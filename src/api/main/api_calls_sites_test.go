@@ -3,7 +3,6 @@ package main
 import (
 	"api/sites"
 	"encoding/xml"
-	"github.com/makistsan/go-lru-cache"
 	"net/http"
 	"net/http/httptest"
 	"testing"

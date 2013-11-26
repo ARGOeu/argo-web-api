@@ -290,7 +290,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		err = c.Pipe(query).All(&results)
 		//err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
 		//fmt.Println(q)
-		fmt.Println(query)
+	//	fmt.Println(query)
 
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
@@ -302,7 +302,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 		pipe := c.Pipe(query)
 		err = pipe.All(&results)
-		fmt.Println(query)
+		//fmt.Println(query)
 	}
 
 	if err != nil {
