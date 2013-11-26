@@ -156,7 +156,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 			return fmt.Sprint(out)
 		}
 	}
-	session, err := mgo.Dial("127.0.0.1")
+	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		panic(err)
 	}
@@ -177,6 +177,11 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if len(input.group_name) > 0 {
 		// TODO: We do not have the site name in the timeline
 	}
+		
+	q["i"] = "Production"
+	q["cs"] = "Certified"
+	q["pr"] = "Y"
+	q["m"] = "Y"
 
 	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
 		customForm[0] = "20060102"
@@ -187,7 +192,10 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := []bson.M{{"$match": bson.M{"a": bson.M{"$gte": 0}, "r": bson.M{"$gte": 0}, "i": "Production", "cs": "Certified", "pr": "Y", "m": "Y", "dt": bson.M{"$gte": tsYMD, "$lte": teYMD}, "p": bson.M{"$in": input.profile_name}}}, {"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
+		q["a"] = bson.M{"$gte": 0}
+		q["r"] = bson.M{"$gte": 0}
+
+		query := []bson.M{{"$match" : q },{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
 
 		pipe := c.Pipe(query)
 		err = pipe.All(&results)
@@ -250,8 +258,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 			return fmt.Sprint(out)
 		}
 	}
-
-	session, err := mgo.Dial("127.0.0.1")
+	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		panic(err)
 	}
