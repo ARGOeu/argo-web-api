@@ -107,7 +107,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 
 	//rootfmt.Println(results)
 	output, err := services.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache == true && len(results)>0{
 		httpcache.Set("service_endpoint "+fmt.Sprint(input), mystring(output))
 	}
 
@@ -208,7 +208,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	fmt.Println(len(results))
 	output, err := sites.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache == true && len(results)>0{
 		httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
 	}
 
@@ -311,7 +311,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 
 	//fmt.Println(results)
 	output, err := ngis.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache == true && len(results)>0{
 		httpcache.Set("ngis "+fmt.Sprint(input), mystring(output))
 	}
 
