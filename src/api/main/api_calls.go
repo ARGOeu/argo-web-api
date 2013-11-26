@@ -270,6 +270,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	if len(input.group_name) > 0 {
+		q["n"] = bson.M{"$in" : input.group_name}
 		// TODO: We do not have the ngi name in the timeline
 	}
 

@@ -40,9 +40,10 @@ func main() {
 	go func(){
     	for sig := range c {
     	    // sig is a ^C, handle it
+		if *flProfile != "" {
 		pprof.StopCPUProfile()
+		}
 		log.Printf("captured %v, stopping profiler and exiting..", sig)
-		fmt.Println("FInished")
 		os.Exit(1)
     	}
 	}()
