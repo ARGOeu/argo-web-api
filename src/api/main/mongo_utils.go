@@ -46,7 +46,7 @@ func CheckAndCompress(w http.ResponseWriter, r *http.Request, output *[]byte) []
 			if val == "gzip" {
 				fmt.Println("gzipping")
 				//w.Header().Set("Accept-Encoding", "gzip")
-				writer := gzip.NewWriter(&b)
+				writer, _ := gzip.NewWriterLevel(&b, gzip.BestSpeed)
 				writer.Write(*output)
 				writer.Close()
 				w.Header().Set("Content-Encoding", "gzip") //http.DetectContentType(b.Bytes()))
@@ -54,7 +54,7 @@ func CheckAndCompress(w http.ResponseWriter, r *http.Request, output *[]byte) []
 			} else if val == "deflate" {
 				fmt.Println("zlib")
 				//w.Header().Set("Accept-Encoding", "deflate")
-				writer := zlib.NewWriter(&b)
+				writer, _ := zlib.NewWriterLevel(&b, zlib.BestSpeed)
 				writer.Write(*output)
 				writer.Close()
 				w.Header().Set("Content-Encoding", "deflate") //http.DetectContentType(b.Bytes()))

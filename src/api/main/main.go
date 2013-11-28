@@ -40,13 +40,13 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 					writer.Write(output)
 					writer.Close()
 					w.Header().Set("Content-Encoding", "gzip")
-					break 
+					break
 				} else if val == "deflate" {
 					writer := zlib.NewWriter(&b)
 					writer.Write(output)
 					writer.Close()
 					w.Header().Set("Content-Encoding", "deflate")
-					break	
+					break
 				}
 			}
 			data = b.Bytes()
@@ -112,12 +112,12 @@ func main() {
 
 	//Miscallenious calls
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
-		api.Respond("text/xml", "utf-8", ResetCache)(w, r)
+		Respond("text/xml", "utf-8", ResetCache)(w, r)
 	}
 	api.NewServer(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
 }
 
-func ResetCache(w http.ResponseWriter, r *http.Request) string {
+func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
 	httpcache.Clear()
-	return "Cache Emptied"
+	return []byte("Cache Emptied")
 }
