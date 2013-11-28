@@ -14,6 +14,7 @@ var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the M
 var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the MongoDB instance listens on")
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
+var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
 
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 
@@ -24,6 +25,7 @@ type Config struct {
 		Maxprocs int
 		Cache    bool
 		Lrucache int
+		Gzip     bool
 	}
 	MongoDB struct {
 		Host string
@@ -39,6 +41,7 @@ const defaultConfig = `
     maxprocs = 4
     cache = false
     lrucache = 700000000
+    gzip = true
 
     [mongodb]
     host = "127.0.0.1"
@@ -84,7 +87,9 @@ func LoadConfiguration() Config {
 	if *flCache == "yes" {
 		cfg.Server.Cache = true
 	}
-	
-	
+	if *flGzip == "no" {
+		cfg.Server.Gzip = false
+	}
+
 	return cfg
 }

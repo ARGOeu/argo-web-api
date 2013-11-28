@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
+	"compress/zlib"
 	"encoding/xml"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
+	"strings"
 )
 
-func ErrorXML(s string) string {
-	return "<root><error>" + s + "</error></root>"
+func ErrorXML(s string) []byte {
+	return []byte("<root><error>" + s + "</error></root>")
 }
 
 type PoemProfile struct {
@@ -17,6 +21,49 @@ type PoemProfile struct {
 	Namespace      string "ns"
 	Group          string "g"
 	Service_flavor string "sf"
+}
+
+func parseCSV(data string) []string {
+	splitted := strings.SplitN(data, ",", -1)
+
+	data_tmp := make([]string, len(splitted))
+
+	for i, val := range splitted {
+		data_tmp[i] = strings.TrimSpace(val)
+	}
+
+	return data_tmp
+}
+
+func CheckAndCompress(w http.ResponseWriter, r *http.Request, output *[]byte) []byte {
+
+	if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
+		encodings := parseCSV(r.Header.Get("Accept-Encoding"))
+
+		var b bytes.Buffer
+		fmt.Println(encodings)
+		for _, val := range encodings {
+			if val == "gzip" {
+				fmt.Println("gzipping")
+				//w.Header().Set("Accept-Encoding", "gzip")
+				writer := gzip.NewWriter(&b)
+				writer.Write(*output)
+				writer.Close()
+				w.Header().Set("Content-Encoding", "gzip") //http.DetectContentType(b.Bytes()))
+				return b.Bytes()
+			} else if val == "deflate" {
+				fmt.Println("zlib")
+				//w.Header().Set("Accept-Encoding", "deflate")
+				writer := zlib.NewWriter(&b)
+				writer.Write(*output)
+				writer.Close()
+				w.Header().Set("Content-Encoding", "deflate") //http.DetectContentType(b.Bytes()))
+				return b.Bytes()
+			}
+		}
+	}
+	fmt.Println("No compression")
+	return *output
 }
 
 func CreatePoemProfileNameXmlResponse(results []PoemProfile) ([]byte, error) {
@@ -50,7 +97,7 @@ func CreatePoemProfileNameXmlResponse(results []PoemProfile) ([]byte, error) {
 
 }
 
-func GetProfileNames(w http.ResponseWriter, r *http.Request) string {
+func GetProfileNames(w http.ResponseWriter, r *http.Request) []byte {
 	var results []PoemProfile
 	session, err := mgo.Dial(cfg.MongoDB.Host)
 	if err != nil {
@@ -62,11 +109,11 @@ func GetProfileNames(w http.ResponseWriter, r *http.Request) string {
 	c := session.DB(cfg.MongoDB.Db).C("sites")
 	err = c.Pipe([]bson.M{{"$group": bson.M{"_id": bson.M{"ns": "$ns", "p": "$p"}}}, {"$project": bson.M{"ns": "$_id.ns", "p": "$_id.p"}}}).All(&results)
 	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
+		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
 
 	fmt.Println(results)
 	output, err := CreatePoemProfileNameXmlResponse(results)
-	return string(output)
+	return output
 
 }

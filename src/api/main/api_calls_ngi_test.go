@@ -18,7 +18,7 @@ func TestNgiAvailabilityInProfileQueryWithTwoNgisForTwoDay(t *testing.T) {
 		t.Error("Error parsing XML file: %v", err)
 	} else if len(xmlStruct.Profile[0].Ngi) != 2 {
 		t.Error("Expected to find 2 Ngis, but instead found", len(xmlStruct.Profile[0].Ngi))
-	} else if len(xmlStruct.Profile[0].Ngi[0].Availability) != 2{
+	} else if len(xmlStruct.Profile[0].Ngi[0].Availability) != 2 {
 		t.Error("Expected to find 2 Availabilities, but instead found", len(xmlStruct.Profile[0].Ngi[0].Availability))
 	}
 }

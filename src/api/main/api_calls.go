@@ -18,7 +18,7 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
+func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 
 	// This is the input we will receive from the API
 
@@ -64,7 +64,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 	if cfg.Server.Cache == true {
 		out, found := httpcache.Get("service_endpoint " + fmt.Sprint(input))
 		if found {
-			return fmt.Sprint(out)
+			return []byte(fmt.Sprint(out))
 		}
 	}
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
@@ -102,19 +102,18 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string
 
 	//err = c.Find(q).Sort("p", "h", "sf").All(&results)
 	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
+		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
 
 	//rootfmt.Println(results)
 	output, err := services.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true && len(results)>0{
+	if cfg.Server.Cache == true && len(results) > 0 {
 		httpcache.Set("service_endpoint "+fmt.Sprint(input), mystring(output))
 	}
-
-	return string(output)
+	return output
 }
 
-func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
+func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 
 	// This is the input we will receive from the API
 
@@ -153,7 +152,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if cfg.Server.Cache == true {
 		out, found := httpcache.Get("sites " + fmt.Sprint(input))
 		if found {
-			return fmt.Sprint(out)
+			return []byte(fmt.Sprint(out))
 		}
 	}
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
@@ -177,7 +176,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if len(input.group_name) > 0 {
 		// TODO: We do not have the site name in the timeline
 	}
-		
+
 	q["i"] = "Production"
 	q["cs"] = "Certified"
 	q["pr"] = "Y"
@@ -195,7 +194,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		q["a"] = bson.M{"$gte": 0}
 		q["r"] = bson.M{"$gte": 0}
 
-		query := []bson.M{{"$match" : q },{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
+		query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "sc": "$sc", "ss": "$ss", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}}, {"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "sc": "$_id.sc", "ss": "$_id.ss", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1, "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}}, "r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}}, {"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"c", 1}, {"dt", 1}}}}
 
 		pipe := c.Pipe(query)
 		err = pipe.All(&results)
@@ -203,20 +202,20 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
+		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
 
 	fmt.Println(len(results))
 	output, err := sites.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true && len(results)>0{
+	if cfg.Server.Cache == true && len(results) > 0 {
 		httpcache.Set("sites "+fmt.Sprint(input), mystring(output))
 	}
 
-	return string(output)
+	return output
 
 }
 
-func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
+func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 
 	// This is the input we will receive from the API
 
@@ -255,7 +254,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	if cfg.Server.Cache == true {
 		out, found := httpcache.Get("ngi " + fmt.Sprint(input))
 		if found {
-			return fmt.Sprint(out)
+			return []byte(fmt.Sprint(out))
 		}
 	}
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
@@ -277,7 +276,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	if len(input.group_name) > 0 {
-		q["n"] = bson.M{"$in" : input.group_name}
+		q["n"] = bson.M{"$in": input.group_name}
 		// TODO: We do not have the ngi name in the timeline
 	}
 
@@ -290,7 +289,7 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 		err = c.Pipe(query).All(&results)
 		//err = c.Find(q).Sort("p", "n", "s", "dt").All(&results)
 		//fmt.Println(q)
-	//	fmt.Println(query)
+		//	fmt.Println(query)
 
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
@@ -306,14 +305,14 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) string {
 	}
 
 	if err != nil {
-		return ("<root><error>" + err.Error() + "</error></root>")
+		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
 
 	//fmt.Println(results)
 	output, err := ngis.CreateXMLResponse(results, customForm)
-	if cfg.Server.Cache == true && len(results)>0{
+	if cfg.Server.Cache == true && len(results) > 0 {
 		httpcache.Set("ngis "+fmt.Sprint(input), mystring(output))
 	}
 
-	return string(output)
+	return output
 }

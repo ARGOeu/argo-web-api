@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strings"
-	"encoding/xml"
-	"encoding/json"
 )
 
 type MongoProfile struct {
@@ -15,7 +15,7 @@ type MongoProfile struct {
 	Group [][]string "g"
 }
 
-func AddProfile(w http.ResponseWriter, r *http.Request) string {
+func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		return ErrorXML("Error while connecting to mongodb")
@@ -55,7 +55,7 @@ func AddProfile(w http.ResponseWriter, r *http.Request) string {
 		}
 		doc["g"] = groups
 		err3 := c.Insert(doc)
-		return fmt.Sprint(err3)
+		return []byte(fmt.Sprint(err3))
 
 	} else if len(input.Json) > 0 {
 		return ErrorXML("Not implemented yet")
@@ -65,7 +65,7 @@ func AddProfile(w http.ResponseWriter, r *http.Request) string {
 
 }
 
-func RemoveProfile(w http.ResponseWriter, r *http.Request) string {
+func RemoveProfile(w http.ResponseWriter, r *http.Request) []byte {
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		return ErrorXML("Error while connecting to mongodb")
@@ -93,10 +93,10 @@ func RemoveProfile(w http.ResponseWriter, r *http.Request) string {
 		"p": input.Name,
 	}
 	err3 := c.Remove(doc)
-	return fmt.Sprint(err3)
+	return []byte(fmt.Sprint(err3))
 }
 
-func GetProfile(w http.ResponseWriter, r *http.Request) string {
+func GetProfile(w http.ResponseWriter, r *http.Request) []byte {
 	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		return ErrorXML("Error while connecting to mongodb")
@@ -107,7 +107,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) string {
 	result := MongoProfile{}
 	type ProfileInput struct {
 		// mandatory values
-		Name string
+		Name   string
 		Output string
 	}
 	urlValues := r.URL.Query()
@@ -120,22 +120,22 @@ func GetProfile(w http.ResponseWriter, r *http.Request) string {
 	}
 	err2 := c.Find(q).One(&result)
 	if err2 != nil {
-		return fmt.Sprint(err2)
+		return []byte(fmt.Sprint(err2))
 	}
 	results := []MongoProfile{result}
-	
+
 	err3 := error(nil)
 	output := []byte(nil)
-	
+
 	if strings.ToLower(input.Output) == "json" {
 		output, err3 = CreateProfileJsonResponse(results)
 	} else {
 		output, err3 = CreateProfileXmlResponse(results)
 	}
 	if err3 != nil {
-		return fmt.Sprint(err3)
+		return []byte(fmt.Sprint(err3))
 	}
-	return string(output)
+	return output
 
 }
 
@@ -168,7 +168,7 @@ func CreateProfileJsonResponse(results []MongoProfile) ([]byte, error) {
 		}
 	}
 
-	output, err := json.MarshalIndent(v," ", "  ")
+	output, err := json.MarshalIndent(v, " ", "  ")
 	return output, err
 
 }
@@ -176,18 +176,18 @@ func CreateProfileJsonResponse(results []MongoProfile) ([]byte, error) {
 func CreateProfileXmlResponse(results []MongoProfile) ([]byte, error) {
 
 	type Groups struct {
-		XMLName xml.Name `xml:"Group"`
-		Service_flavors []string `xml:"service_flavor"`   
+		XMLName         xml.Name `xml:"Group"`
+		Service_flavors []string `xml:"service_flavor"`
 	}
 
 	type Profile struct {
-		XMLName        xml.Name `xml:"Profile"`
-		Name           string   `xml:"name,attr"`
-		Groups         []Groups
+		XMLName xml.Name `xml:"Profile"`
+		Name    string   `xml:"name,attr"`
+		Groups  []Groups
 	}
 
 	type Root struct {
-		XMLName xml.Name `xml:"root"`
+		XMLName  xml.Name `xml:"root"`
 		Profiles []Profile
 	}
 
@@ -205,7 +205,7 @@ func CreateProfileXmlResponse(results []MongoProfile) ([]byte, error) {
 				})
 		}
 	}
-	
+
 	output, err := xml.MarshalIndent(v, " ", "  ")
 	return output, err
 }
