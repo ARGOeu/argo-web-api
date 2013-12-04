@@ -138,7 +138,7 @@ func main() {
 		Respond("text/xml", "utf-8", GetProfile)(w, r)
 	}
 
-	//Miscallenious calls
+	//Miscellaneous calls
 	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
 		Respond("text/xml", "utf-8", ResetCache)(w, r)
 	}
