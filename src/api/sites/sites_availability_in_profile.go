@@ -27,11 +27,15 @@
 
 package sites
 
+//we import the appropriate libraries
+
 import (
 	"encoding/xml"
 	"fmt"
 	"time"
 )
+
+//struct contains all information required to form an appropriate xml respnose 
 
 type MongoSite struct {
 	SiteScope     string  "ss"
@@ -48,6 +52,10 @@ type MongoSite struct {
 	Availability  float64 "a"
 	Reliability   float64 "r"
 }
+
+// a series of auxiliary structs that will 
+// help us form the xml response
+
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability"`
 	Timestamp    string   `xml:"timestamp,attr"`
@@ -87,9 +95,14 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 	prevSite := ""
 	site := &Site{}
 	profile := &Profile{}
+	
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
-
+		//if new profile value does not match the previous profile value
+		//we create a new profile in the xml
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
@@ -98,7 +111,8 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 			v.Profile = append(v.Profile, profile)
 			prevSite = ""
 		}
-
+		//if new site does not match the previous service value
+		//we create a new site entry in the xml
 		if prevSite != row.Site {
 			prevSite = row.Site
 			site = &Site{
@@ -112,14 +126,16 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 				CertStatus:    row.CertStatus}
 			profile.Site = append(profile.Site, site)
 		}
+		//we append the new availability values
 		site.Availability = append(site.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}
-
+	//we create the xml response and record the output and any possible errors
+	//in the appropriate variables
 	output, err := xml.MarshalIndent(v, " ", "  ")
-
+    //we return the output 
 	return output, err
 }

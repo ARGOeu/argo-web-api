@@ -45,8 +45,8 @@ type MongoNgi struct {
 	Reliability  float64 "r"
 }
 
- // a series of auxiliary structs that will 
- // help us form the xml response
+// a series of auxiliary structs that will 
+// help us form the xml response
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability"`
 	Timestamp    string   `xml:"timestamp,attr"`
@@ -80,8 +80,8 @@ func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) 
 	prevNgi := ""
 	ngi := &Ngi{}
 	profile := &Profile{}
-	// * we iterate through the results struct array
-	// * keeping only the value of each row
+	// we iterate through the results struct array
+	// keeping only the value of each row
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], row.Date)
 		//if new profile value does not match the previous profile value
@@ -103,7 +103,7 @@ func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) 
 			}
 			profile.Ngi = append(profile.Ngi, ngi)
 		}
-		//TODO
+		//we append the new availability values
 		ngi.Availability = append(ngi.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
