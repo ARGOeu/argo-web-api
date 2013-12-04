@@ -33,6 +33,8 @@ import (
 	"os"
 )
 
+
+//All the flags that can be added when starting the PI
 var flConfig = flag.String("conf", "", "specify configuration file")
 var flServerIp = flag.String("ip", "", "ip address the server will bind to")
 var flServerPort = flag.Int("port", 0, "specify the port to listen on")
@@ -42,7 +44,6 @@ var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the Mongo
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
-
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 type Config struct {
@@ -76,6 +77,7 @@ const defaultConfig = `
     db = "AR"
 `
 
+//Loads the configurations passed either by flags or by the configuration file
 func LoadConfiguration() Config {
 	flag.Parse()
 	var cfg Config
