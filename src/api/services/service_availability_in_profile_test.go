@@ -25,6 +25,13 @@
 */
 
 
+/*
+ * Test file for service availability calls.
+ * Using the testing support provided by golang
+ * we define the expected response and compare it 
+ * to the actual repsonse.
+*/
+
 package services
 
 import (

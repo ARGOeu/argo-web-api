@@ -24,6 +24,14 @@
  * Framework Programme (contract # INFSO-RI-261323)
 */
 
+/*
+ * Test file for site availability calls.
+ * Using the testing support provided by golang
+ * we define the expected response and compare it 
+ * to the actual repsonse.
+*/
+
+
 
 package sites
 
