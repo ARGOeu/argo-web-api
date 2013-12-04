@@ -18,6 +18,8 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
+
+//Reply to requests about service_availability_in_profile
 func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 
 	// This is the input we will receive from the API

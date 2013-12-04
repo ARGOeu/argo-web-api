@@ -24,8 +24,11 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
+// Load the configurations that we have set through flags and through the configuration file
 var cfg = LoadConfiguration()
 
+
+// The respond function that will be called to answer to http requests to the PI
 func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request) []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
@@ -60,9 +63,14 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 }
 
 func main() {
+	
+	//Initialize the cache
 	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
+	
+	//Set GOMAXPROCS
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
 
+	//Start the profiler if the flag flProfile is set to a filename, where profile data will be writter
 	if *flProfile != "" {
 		f, err := os.Create(*flProfile)
 		if err != nil {
@@ -71,6 +79,8 @@ func main() {
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
+
+	//Catch an terminate signal and write all profiling data before exiting
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -83,6 +93,9 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+
+
+	//Create a map of calls -> functions
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 
 	//Basic api calls
@@ -117,7 +130,12 @@ func main() {
 	api.NewServer(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
 }
 
+
+//Reset the cache if it is set
 func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
+	if cfg.Server.Cache == true {
 	httpcache.Clear()
 	return []byte("Cache Emptied")
+	}
+	return []byte("No Caching is active")
 }
