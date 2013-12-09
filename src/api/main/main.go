@@ -33,7 +33,6 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
-	"github.com/makistsan/go-api"
 	"github.com/makistsan/go-lru-cache"
 	"log"
 	"net/http"
@@ -42,6 +41,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strconv"
+	"github.com/gorilla/mux"
 )
 
 var httpcache *cache.LRUCache
@@ -90,14 +90,24 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 	}
 }
 
+
+
 func main() {
+
+	//Create a recover function to log the case of a failure
+	defer func() {
+        if err := recover(); err != nil {
+            log.Println("work failed:", err)
+        }
+    }()
+
 	
 	//Initialize the cache
 	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
 	
 	//Set GOMAXPROCS
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
-
+ 
 	//Start the profiler if the flag flProfile is set to a filename, where profile data will be writter
 	if *flProfile != "" {
 		f, err := os.Create(*flProfile)
@@ -123,39 +133,28 @@ func main() {
 	}()
 
 
-	//Create a map of calls -> functions
-	handlers := map[string]func(http.ResponseWriter, *http.Request){}
+	//Create the server router
+	r := mux.NewRouter()
 
+	
 	//Basic api calls
-	handlers["/api/v1/service_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", ServiceAvailabilityInProfile)(w, r)
-	}
-	handlers["/api/v1/sites_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", SitesAvailabilityInProfile)(w, r)
-	}
-	handlers["/api/v1/ngi_availability_in_profile"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", NgiAvailabilityInProfile)(w, r)
-	}
-	handlers["/api/v1/profiles"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", GetProfileNames)(w, r)
-	}
-
+	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))	
+	r.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))	
+	r.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))		
 	//CRUD functions for profiles
-	handlers["/api/v1/profiles/create"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", AddProfile)(w, r)
-	}
-	handlers["/api/v1/profiles/remove"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", RemoveProfile)(w, r)
-	}
-	handlers["/api/v1/profiles/getone"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", GetProfile)(w, r)
-	}
-
+	
+	r.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))	
+	r.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))	
+	r.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))	
+	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))	
 	//Miscallenious calls
-	handlers["/reset_cache"] = func(w http.ResponseWriter, r *http.Request) {
-		Respond("text/xml", "utf-8", ResetCache)(w, r)
-	}
-	api.NewServer(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), api.DefaultServerReadTimeout, handlers)
+	r.HandleFunc("/reset_cache", Respond("text/xml", "utf-8", ResetCache))	
+
+	http.Handle("/", r)
+	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
+    	if err != nil {
+        	log.Fatal("ListenAndServe:", err)
+    	}
 }
 
 
