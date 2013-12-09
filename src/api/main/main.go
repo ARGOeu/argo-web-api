@@ -136,7 +136,6 @@ func main() {
 	//Create the server router
 	r := mux.NewRouter()
 
-	
 	//Basic api calls
 	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))	
 	r.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))	
