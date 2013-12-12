@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,15 +22,14 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
-
+ */
 
 /*
  * Test file for service availability calls.
  * Using the testing support provided by golang
- * we define the expected response and compare it 
+ * we define the expected response and compare it
  * to the actual repsonse.
-*/
+ */
 
 package services
 

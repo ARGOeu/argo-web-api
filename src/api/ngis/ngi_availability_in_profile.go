@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
+ */
 
 package ngis
 
@@ -34,7 +34,7 @@ import (
 	"time"
 )
 
-//struct contains all information required to form an appropriate xml respnose 
+//struct contains all information required to form an appropriate xml respnose
 
 type MongoNgi struct {
 	Date         string  "dt"
@@ -45,7 +45,7 @@ type MongoNgi struct {
 	Reliability  float64 "r"
 }
 
-// a series of auxiliary structs that will 
+// a series of auxiliary structs that will
 // help us form the xml response
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability"`
@@ -70,7 +70,6 @@ type Root struct {
 	XMLName xml.Name `xml:"root"`
 	Profile []*Profile
 }
-
 
 func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) {
 
@@ -113,6 +112,6 @@ func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) 
 	//we create the xml response and record the output and any possible errors
 	//in the appropriate variables
 	output, err := xml.MarshalIndent(v, " ", "  ")
-    //we return the output 
+	//we return the output
 	return output, err
 }

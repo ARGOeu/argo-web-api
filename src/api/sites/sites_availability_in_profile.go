@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,7 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
-
+ */
 
 package sites
 
@@ -35,7 +34,7 @@ import (
 	"time"
 )
 
-//struct contains all information required to form an appropriate xml respnose 
+//struct contains all information required to form an appropriate xml respnose
 
 type MongoSite struct {
 	SiteScope     string  "ss"
@@ -53,7 +52,7 @@ type MongoSite struct {
 	Reliability   float64 "r"
 }
 
-// a series of auxiliary structs that will 
+// a series of auxiliary structs that will
 // help us form the xml response
 
 type Availability struct {
@@ -95,10 +94,10 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 	prevSite := ""
 	site := &Site{}
 	profile := &Profile{}
-	
+
 	// we iterate through the results struct array
 	// keeping only the value of each row
-	
+
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
 		//if new profile value does not match the previous profile value
@@ -136,6 +135,6 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 	//we create the xml response and record the output and any possible errors
 	//in the appropriate variables
 	output, err := xml.MarshalIndent(v, " ", "  ")
-    //we return the output 
+	//we return the output
 	return output, err
 }

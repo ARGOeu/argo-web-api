@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
+ */
 
 package main
 
@@ -43,7 +43,6 @@ type list []interface{}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
-
 
 //Reply to requests about service_availability_in_profile
 func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
@@ -81,14 +80,13 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte
 		urlValues["service_flavour"],
 		urlValues["service_hostname"],
 	}
-	
+
 	// Parse the date range of the query
 	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-
 
 	// If caching is enabled search the cache for matches
 	if cfg.Server.Cache == true {
@@ -108,7 +106,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB(cfg.MongoDB.Db).C("timelines")
 	results := []services.Timeline{}
-	
+
 	// Construct the query to mongodb based on the input
 	q := bson.M{
 		"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
@@ -166,7 +164,6 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 		group_name []string // site name; may appear more than once
 	}
 
-
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	input := ApiSiteAvailabilityInProfileInput{
@@ -187,7 +184,6 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	
 	// If caching is enabled search the cache for matches
 	if cfg.Server.Cache == true {
 		out, found := httpcache.Get("sites " + fmt.Sprint(input))
@@ -204,8 +200,8 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB("AR").C("sites")
 	results := []sites.MongoSite{}
-	
-        // Construct the query to mongodb based on the input
+
+	// Construct the query to mongodb based on the input
 	q := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"p":  bson.M{"$in": input.profile_name},
@@ -223,7 +219,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 	q["cs"] = "Certified"
 	q["pr"] = "Y"
 	q["m"] = "Y"
-	
+
 	// Select the granularity of the search daily/monthly
 	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
 		customForm[0] = "20060102"
@@ -231,7 +227,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 		// Mongo aggregation pipeline
 		// Select all the records that match q
 		// Project to select just the first 8 digits of the date YYYYMMDD
-		// Sort by profile->ngi->site->datetime		
+		// Sort by profile->ngi->site->datetime
 		err = c.Pipe([]bson.M{{"$match": q}, {"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}).All(&results)
 		//fmt.Println(len(results))
 
@@ -240,12 +236,12 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 		customForm[1] = "2006-01"
 		q["a"] = bson.M{"$gte": 0}
 		q["r"] = bson.M{"$gte": 0}
-		
+
 		// Mongo aggregation pipeline
 		// Select all the records that match q
 		// Group them by the first six digits of their date (YYYYMM), their ngi, their site, their profile, etc...
 		// from that group find the average of the uptime, u, downtime
-		// Project the result to a better format and do this computation 
+		// Project the result to a better format and do this computation
 		// availability = (avgup/(1.00000001 - avgu))*100
 		// reliability = (avgup/((1.00000001 - avgu)-avgd))*100
 		// Sort the results by namespace->profile->ngi->site->datetime
@@ -359,18 +355,18 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 		customForm[1] = "2006-01"
 		q["a"] = bson.M{"$gte": 0}
 		q["r"] = bson.M{"$gte": 0}
-		
+
 		// Mongo aggregation pipeline
-                // Select all the records that match q
-                // Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
-                // Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
-                // a = sum(a*hs)
-                // r = sum(r*hs)
-                // hs = sum(hs)
-                // Project to a better format and do these computations
-                // a = a/hs
-                // r = r/hs
-                // Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
+		// Select all the records that match q
+		// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
+		// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
+		// a = sum(a*hs)
+		// r = sum(r*hs)
+		// hs = sum(hs)
+		// Project to a better format and do these computations
+		// a = a/hs
+		// r = r/hs
+		// Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
 		// a = average(a)
 		// r = average(r)
 		// Project the results to a better format

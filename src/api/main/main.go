@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +22,7 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
-
-
+ */
 
 package main
 
@@ -33,6 +31,7 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/makistsan/go-lru-cache"
 	"log"
 	"net/http"
@@ -41,7 +40,6 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strconv"
-	"github.com/gorilla/mux"
 )
 
 var httpcache *cache.LRUCache
@@ -54,7 +52,6 @@ func (s mystring) Size() int {
 
 // Load the configurations that we have set through flags and through the configuration file
 var cfg = LoadConfiguration()
-
 
 // The respond function that will be called to answer to http requests to the PI
 func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request) []byte) http.HandlerFunc {
@@ -90,24 +87,21 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 	}
 }
 
-
-
 func main() {
 
 	//Create a recover function to log the case of a failure
 	defer func() {
-        if err := recover(); err != nil {
-            log.Println("work failed:", err)
-        }
-    }()
+		if err := recover(); err != nil {
+			log.Println("work failed:", err)
+		}
+	}()
 
-	
 	//Initialize the cache
 	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
-	
+
 	//Set GOMAXPROCS
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
- 
+
 	//Start the profiler if the flag flProfile is set to a filename, where profile data will be writter
 	if *flProfile != "" {
 		f, err := os.Create(*flProfile)
@@ -132,36 +126,34 @@ func main() {
 		}
 	}()
 
-
 	//Create the server router
 	r := mux.NewRouter()
 
 	//Basic api calls
-	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))	
-	r.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))	
-	r.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))		
+	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
+	r.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))
+	r.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))
 	//CRUD functions for profiles
-	
-	r.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))	
-	r.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))	
-	r.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))	
-	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))	
+
+	r.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
+	r.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
+	r.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
+	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
 	//Miscallenious calls
-	r.HandleFunc("/reset_cache", Respond("text/xml", "utf-8", ResetCache))	
+	r.HandleFunc("/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 
 	http.Handle("/", r)
 	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
-    	if err != nil {
-        	log.Fatal("ListenAndServe:", err)
-    	}
+	if err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
 }
-
 
 //Reset the cache if it is set
 func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
 	if cfg.Server.Cache == true {
-	httpcache.Clear()
-	return []byte("Cache Emptied")
+		httpcache.Clear()
+		return []byte("Cache Emptied")
 	}
 	return []byte("No Caching is active")
 }

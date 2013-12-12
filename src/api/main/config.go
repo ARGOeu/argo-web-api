@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,7 @@
  * The work represented by this source file is partially funded by
  * the EGI-InSPIRE project through the European Commission's 7th
  * Framework Programme (contract # INFSO-RI-261323)
-*/
-
+ */
 
 package main
 
@@ -32,7 +31,6 @@ import (
 	"flag"
 	"os"
 )
-
 
 //All the flags that can be added when starting the PI
 var flConfig = flag.String("conf", "", "specify configuration file")
