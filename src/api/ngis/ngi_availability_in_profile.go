@@ -73,7 +73,7 @@ type Root struct {
 
 func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) {
 
-	v := &Root{}
+	docRoot := &Root{}
 
 	prevProfile := ""
 	prevNgi := ""
@@ -90,7 +90,7 @@ func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) 
 			profile = &Profile{
 				Name:      row.Profile,
 				Namespace: row.Namespace}
-			v.Profile = append(v.Profile, profile)
+			docRoot.Profile = append(docRoot.Profile, profile)
 			prevNgi = ""
 		}
 		//if new ngi does not match the previous ngi value
@@ -111,7 +111,7 @@ func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) 
 	}
 	//we create the xml response and record the output and any possible errors
 	//in the appropriate variables
-	output, err := xml.MarshalIndent(v, " ", "  ")
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	//we return the output
 	return output, err
 }

@@ -79,7 +79,7 @@ type Root struct {
 }
 
 func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) {
-	v := &Root{}
+	docRoot := &Root{}
 
 	prevProfile := ""
 	prevService := ""
@@ -98,7 +98,7 @@ func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) 
 				Name:      row.Profile,
 				Namespace: row.Namespace,
 				VO:        row.VO}
-			v.Profile = append(v.Profile, profile)
+			docRoot.Profile = append(docRoot.Profile, profile)
 			prevService = ""
 		}
 		//if new service does not match the previous service value
@@ -130,7 +130,7 @@ func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) 
 	}
 	//we create the xml response and record the output and any possible errors
 	//in the appropriate variables
-	output, err := xml.MarshalIndent(v, " ", "  ")
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	//we return the output
 	return output, err
 }
