@@ -27,10 +27,6 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
-	"compress/zlib"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/makistsan/go-lru-cache"
 	"log"
@@ -53,42 +49,8 @@ func (s mystring) Size() int {
 // Load the configurations that we have set through flags and through the configuration file
 var cfg = LoadConfiguration()
 
-// The respond function that will be called to answer to http requests to the PI
-func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request) []byte) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
-		output := fn(w, r)
-		var b bytes.Buffer
-		var data []byte
-		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
-			encodings := parseCSV(r.Header.Get("Accept-Encoding"))
-			for _, val := range encodings {
-				if val == "gzip" {
-					writer := gzip.NewWriter(&b)
-					writer.Write(output)
-					writer.Close()
-					w.Header().Set("Content-Encoding", "gzip")
-					break
-				} else if val == "deflate" {
-					writer := zlib.NewWriter(&b)
-					writer.Write(output)
-					writer.Close()
-					w.Header().Set("Content-Encoding", "deflate")
-					break
-				}
-			}
-			data = b.Bytes()
-		} else {
-			data = output
-		}
-		fmt.Println(len(data))
-		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
-		w.Write(data)
-	}
-}
-
-func main() {
-
+func init(){
+	
 	//Create a recover function to log the case of a failure
 	defer func() {
 		if err := recover(); err != nil {
@@ -125,6 +87,9 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+}
+
+func main() {
 
 	//Create the server router
 	r := mux.NewRouter()
@@ -147,13 +112,4 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
-}
-
-//Reset the cache if it is set
-func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
-	if cfg.Server.Cache == true {
-		httpcache.Clear()
-		return []byte("Cache Emptied")
-	}
-	return []byte("No Caching is active")
 }
