@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS
+ * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * The views and conclusions contained in the software and
+ * documentation are those of the authors and should not be
+ * interpreted as representing official policies, either expressed
+ * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
+ * Centre
+ *
+ * The work represented by this source file is partially funded by
+ * the EGI-InSPIRE project through the European Commission's 7th
+ * Framework Programme (contract # INFSO-RI-261323)
+ */
+
 package main
 
 import (
@@ -6,6 +32,7 @@ import (
 	"os"
 )
 
+//All the flags that can be added when starting the PI
 var flConfig = flag.String("conf", "", "specify configuration file")
 var flServerIp = flag.String("ip", "", "ip address the server will bind to")
 var flServerPort = flag.Int("port", 0, "specify the port to listen on")
@@ -14,6 +41,8 @@ var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the M
 var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the MongoDB instance listens on")
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
+var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
+var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 type Config struct {
 	Server struct {
@@ -22,6 +51,7 @@ type Config struct {
 		Maxprocs int
 		Cache    bool
 		Lrucache int
+		Gzip     bool
 	}
 	MongoDB struct {
 		Host string
@@ -37,6 +67,7 @@ const defaultConfig = `
     maxprocs = 4
     cache = false
     lrucache = 700000000
+    gzip = true
 
     [mongodb]
     host = "127.0.0.1"
@@ -44,6 +75,7 @@ const defaultConfig = `
     db = "AR"
 `
 
+//Loads the configurations passed either by flags or by the configuration file
 func LoadConfiguration() Config {
 	flag.Parse()
 	var cfg Config
@@ -81,6 +113,9 @@ func LoadConfiguration() Config {
 	}
 	if *flCache == "yes" {
 		cfg.Server.Cache = true
+	}
+	if *flGzip == "no" {
+		cfg.Server.Gzip = false
 	}
 
 	return cfg
