@@ -103,9 +103,10 @@ func main() {
 	r.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
 	r.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
 	r.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
-	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
+	r.HandleFunc("/api/v1/profiles/getone", RRespond("text/xml", "utf-8", GetProfile))
 	//Miscallenious calls
-	r.HandleFunc("/reset_cache", Respond("text/xml", "utf-8", ResetCache))
+	r.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
+	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate))
 
 	http.Handle("/", r)
 	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)

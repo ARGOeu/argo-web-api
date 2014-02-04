@@ -32,6 +32,10 @@ import (
 	"compress/zlib"
 	"fmt"
 	"net/http"
+	"encoding/json"
+	"io/ioutil"
+	"strconv"
+	"time"
 )
 
 type list []interface{}
@@ -81,3 +85,43 @@ func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
 	}
 	return []byte("No Caching is active")
 }
+//Scedule a recalculation
+func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
+	urlValues := r.URL.Query()
+
+	type ApiRecalculationInput struct {
+		Start_time          string   
+		End_time            string   
+		Reason 				string
+		Vo_name 			string
+		Ngi_name 			string
+		Exclude_site		[]string
+		Exclude_sf			[]string
+		Exclude_end_point   []string		
+	}
+	input:=ApiRecalculationInput{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		urlValues.Get("reason"),
+		urlValues.Get("vo_name"),
+		urlValues.Get("ngi_name"),
+		urlValues["exclude_site"],
+		urlValues["exclude_sf"],
+		urlValues["exclude_end_point"],		
+	}
+	output, err:=json.MarshalIndent(input,""," ")
+	
+	if err!=nil{
+		panic(err)
+	}
+	answer:="Done."
+	now:=time.Now()
+	file := "Recalculate" + strconv.FormatInt(now.Unix(),10)
+	err=ioutil.WriteFile("/ansible/"+file,output,0644)
+	
+	if err!=nil{
+		panic(err)
+	}	
+	return []byte(answer)
+}
+
