@@ -106,7 +106,8 @@ func main() {
 	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
 	//Miscallenious calls
 	r.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate))
+	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate)).
+	  Methods("POST")
 	
 
 	http.Handle("/", r)
