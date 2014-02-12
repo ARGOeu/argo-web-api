@@ -32,10 +32,11 @@ import (
 	"compress/zlib"
 	"fmt"
 	"net/http"
-	"encoding/json"
-	"io/ioutil"
-	"strconv"
+	//"encoding/json"
 	"time"
+	"labix.org/v2/mgo"	
+	"labix.org/v2/mgo/bson"	
+	
 )
 
 type list []interface{}
@@ -87,8 +88,6 @@ func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
 }
 //Scedule a recalculation
 func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
-	urlValues := r.URL.Query()
-
 	type ApiRecalculationInput struct {
 		Start_time          string   
 		End_time            string   
@@ -96,9 +95,20 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		Vo_name 			string
 		Ngi_name 			string
 		Exclude_site		[]string
-		Exclude_sf			[]string
-		Exclude_end_point   []string		
+		Status				string
+		Timestamp			int64			
+		//Exclude_sf			[]string
+		//Exclude_end_point   []string		
 	}
+	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+	if err != nil {
+		return ErrorXML("Error while connecting to MongoDB")
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
+	c := session.DB(cfg.MongoDB.Db).C("Recalculations")
+	urlValues := r.URL.Query()
+	now:=time.Now()
 	input:=ApiRecalculationInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
@@ -106,22 +116,25 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		urlValues.Get("vo_name"),
 		urlValues.Get("ngi_name"),
 		urlValues["exclude_site"],
-		urlValues["exclude_sf"],
-		urlValues["exclude_end_point"],		
+		"pending",
+		now.Unix(),
+		//urlValues["exclude_sf"],
+		//urlValues["exclude_end_point"],		
 	}
-	output, err:=json.MarshalIndent(input,""," ")
-	
-	if err!=nil{
-		panic(err)
+	toMongo:=bson.M{
+		"start_time" : input.Start_time,
+		"end_time" : input.End_time,
+		"reason" : input.Reason,
+		"vo" : input.Vo_name,
+		"ngi" : input.Ngi_name,
+		"status" : input.Status,
+		"timestamp": input.Timestamp,
 	}
-	answer:="Done."
-	now:=time.Now()
-	file := "Recalculate" + strconv.FormatInt(now.Unix(),10)
-	err=ioutil.WriteFile("/ansible/"+file,output,0644)
 	
+	answer:="An appropriate output to the WebUI"//Provide the webUI with an appropriate xml/json response 
+	err=c.Insert(toMongo)
 	if err!=nil{
-		panic(err)
-	}	
+		return ErrorXML("MongoDB write error")
+	}
 	return []byte(answer)
 }
-
