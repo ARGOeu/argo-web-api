@@ -108,11 +108,15 @@ func main() {
 	r.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate)).
 	  Methods("POST")
-	
-
+	//Web service binds to server.   
 	http.Handle("/", r)
 	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
-	if err != nil {
-		log.Fatal("ListenAndServe:", err)
-	}
+		if err != nil {
+			log.Fatal("ListenAndServe:", err)
+		}
+    //HTTPS support for the API server to be added. We probably will have to issue a valid certificate for our production server
+	// err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), /path/to/cert_file.pem", "/path/to/key_file.pem", nil)
+// 	if err != nil {
+// 		log.Fatal("ListenAndServe:", err)
+// 	}
 }
