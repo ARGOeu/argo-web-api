@@ -32,7 +32,6 @@ import (
 	"compress/zlib"
 	"fmt"
 	"net/http"
-	//"encoding/json"
 	"time"
 	"labix.org/v2/mgo"	
 	"labix.org/v2/mgo/bson"	
@@ -96,7 +95,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		Ngi_name 			string
 		Exclude_site		[]string
 		Status				string
-		Timestamp			int64			
+		Timestamp			time.Time			
 		//Exclude_sf			[]string
 		//Exclude_end_point   []string		
 	}
@@ -107,7 +106,8 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 	session.SetMode(mgo.Monotonic, true)
 	defer session.Close()
 	c := session.DB(cfg.MongoDB.Db).C("Recalculations")
-	urlValues := r.URL.Query()
+	err=r.ParseForm()
+	urlValues := r.Form
 	now:=time.Now()
 	input:=ApiRecalculationInput{
 		urlValues.Get("start_time"),
@@ -117,7 +117,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		urlValues.Get("ngi_name"),
 		urlValues["exclude_site"],
 		"pending",
-		now.Unix(),
+		now,
 		//urlValues["exclude_sf"],
 		//urlValues["exclude_end_point"],		
 	}
@@ -129,8 +129,8 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		"ngi" : input.Ngi_name,
 		"status" : input.Status,
 		"timestamp": input.Timestamp,
+		"exclude_site": input.Exclude_site,
 	}
-	
 	answer:="An appropriate output to the WebUI"//Provide the webUI with an appropriate xml/json response 
 	err=c.Insert(toMongo)
 	if err!=nil{
