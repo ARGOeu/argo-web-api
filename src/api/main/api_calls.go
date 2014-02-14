@@ -35,7 +35,8 @@ import (
 	"time"
 	"labix.org/v2/mgo"	
 	"labix.org/v2/mgo/bson"	
-	
+//	"encoding/json"
+//  "encoding/xml"
 )
 
 type list []interface{}
@@ -107,6 +108,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 	defer session.Close()
 	c := session.DB(cfg.MongoDB.Db).C("Recalculations")
 	err=r.ParseForm()
+	//header:=r.Header
 	urlValues := r.Form
 	now:=time.Now()
 	input:=ApiRecalculationInput{
@@ -131,7 +133,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		"timestamp": input.Timestamp,
 		"exclude_site": input.Exclude_site,
 	}
-	answer:="An appropriate output to the WebUI"//Provide the webUI with an appropriate xml/json response 
+	answer := "A recalculation request has been filed"//Provide the webUI with an appropriate xml/json response 
 	err=c.Insert(toMongo)
 	if err!=nil{
 		return ErrorXML("MongoDB write error")
