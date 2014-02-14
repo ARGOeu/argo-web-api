@@ -93,6 +93,7 @@ func main() {
 
 	//Create the server router
 	r := mux.NewRouter()
+	api_key:="my_api_key"//generate a key and share it with the webUI. future work: include a separate list of hosts/passwords that can be easily modified 
 
 	//Basic api calls
 	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
@@ -107,16 +108,18 @@ func main() {
 	//Miscallenious calls
 	r.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate)).
-	  Methods("POST")
-	//Web service binds to server.   
+	  Methods("POST").
+	  Headers("x-api-key",api_key) 
 	http.Handle("/", r)
-	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
-		if err != nil {
-			log.Fatal("ListenAndServe:", err)
-		}
-    //HTTPS support for the API server to be added. We probably will have to issue a valid certificate for our production server
-	// err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), /path/to/cert_file.pem", "/path/to/key_file.pem", nil)
-// 	if err != nil {
-// 		log.Fatal("ListenAndServe:", err)
-// 	}
+	//Web service binds to server.  
+	//plain http bidning to be removed
+	// err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
+// 		if err != nil {
+// 			log.Fatal("ListenAndServe:", err)
+// 		}
+    //HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "path/to/cert/cert.pem", "/path/to/cert/key.pem", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
 }
