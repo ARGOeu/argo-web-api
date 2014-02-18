@@ -92,25 +92,26 @@ func init(){
 func main() {
 
 	//Create the server router
-	r := mux.NewRouter()
-	api_key:="my_api_key"//generate a key and share it with the webUI. future work: include a separate list of hosts/passwords that can be easily modified 
-
+	main_router := mux.NewRouter()
+	first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
+	get_subrouter := first_subrouter.Methods("GET").Subrouter()//routes only GET requests
+	post_subrouter := first_subrouter.Methods("POST").Subrouter()//routes only POST requests
+	
 	//Basic api calls
-	r.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
-	r.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))
-	r.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))
+	//get_subrouter.HandleFunc("/api/v1/service_flavor_availability_in_profile", Respond("text/xml", "utf-8", ServiceFlavorAvailabilityInProfile))
 	//CRUD functions for profiles
 
-	r.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
-	r.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
-	r.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
-	r.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
+	get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
+	get_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
+	get_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
+	get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
 	//Miscallenious calls
-	r.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-	r.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate)).
-	  Methods("POST").
-	  Headers("x-api-key",api_key) 
-	http.Handle("/", r)
+	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
+	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate))
+	http.Handle("/", main_router)
 	//Web service binds to server.  
 	//plain http bidning to be removed
 	// err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
