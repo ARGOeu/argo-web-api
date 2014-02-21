@@ -120,7 +120,7 @@ func main() {
 // 			log.Fatal("ListenAndServe:", err)
 // 		}
     //HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "path/to/cert/cert.pem", "/path/to/cert/key.pem", nil)
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
