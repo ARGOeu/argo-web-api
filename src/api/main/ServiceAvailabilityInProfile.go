@@ -36,7 +36,6 @@ import (
 	"time"
 )
 
-
 //Reply to requests about service_availability_in_profile
 func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 

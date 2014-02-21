@@ -28,28 +28,28 @@ package main
 
 import (
 	"bufio"
+	"net/http"
 	"os"
 	"strings"
-	"net/http"
 )
 
-var m=make(map[string]string,128)
+var m = make(map[string]string, 128)
 
-func Authenticate(h http.Header) bool{
-	user:=h.Get("x-api-requestor")//Suggested username: host FQDN passed with the http request headers
-	key:=h.Get("x-api-key")//Api key shared with webUI
-	file,err:=os.Open("/root/api_password_file")//Username-passwords stored into file. Future work: store password values hashed into mongoDB
-	if err!=nil{
+func Authenticate(h http.Header) bool {
+	user := h.Get("x-api-requestor")                //Suggested username: host FQDN passed with the http request headers
+	key := h.Get("x-api-key")                       //Api key shared with webUI
+	file, err := os.Open("/root/api_password_file") //Username-passwords stored into file. Future work: store password values hashed into mongoDB
+	if err != nil {
 		panic(err)
 	}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-			line:=strings.Split(scanner.Text() ,":")//all values stored inside a map structure
-			m[line[0]]=line[1]
-		}	
-	if m[user]==key{
+		line := strings.Split(scanner.Text(), ":") //all values stored inside a map structure
+		m[line[0]] = line[1]
+	}
+	if m[user] == key {
 		return true
-	}else{
+	} else {
 		return false
 	}
 }

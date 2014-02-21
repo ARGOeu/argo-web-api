@@ -31,12 +31,12 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"net/http"
 	"time"
-	"labix.org/v2/mgo"	
-	"labix.org/v2/mgo/bson"	
-//	"encoding/json"
-//  "encoding/xml"
+	//	"encoding/json"
+	//  "encoding/xml"
 )
 
 type list []interface{}
@@ -80,32 +80,32 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 
 //Reset the cache if it is set
 func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
-	answer:=""
-		if cfg.Server.Cache == true {
-			httpcache.Clear()
-			answer="Cache Emptied"
-		}
-		answer="No Caching is active"
+	answer := ""
+	if cfg.Server.Cache == true {
+		httpcache.Clear()
+		answer = "Cache Emptied"
+	}
+	answer = "No Caching is active"
 	return []byte(answer)
 }
 
 //Scedule a recalculation
-func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
+func Recalculate(w http.ResponseWriter, r *http.Request) []byte {
 	type ApiRecalculationInput struct {
-		Start_time          string   
-		End_time            string   
-		Reason 				string
-		Vo_name 			string
-		Ngi_name 			string
-		Exclude_site		[]string
-		Status				string
-		Timestamp			time.Time			
+		Start_time   string
+		End_time     string
+		Reason       string
+		Vo_name      string
+		Ngi_name     string
+		Exclude_site []string
+		Status       string
+		Timestamp    time.Time
 		//Exclude_sf		[]string
-		//Exclude_end_point []string		
+		//Exclude_end_point []string
 	}
-	answer:=""
+	answer := ""
 	//only authenticated requests triger the handling code
-	if Authenticate(r.Header){
+	if Authenticate(r.Header) {
 		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
 			return ErrorXML("Error while connecting to MongoDB")
@@ -113,10 +113,10 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 		session.SetMode(mgo.Monotonic, true)
 		defer session.Close()
 		c := session.DB(cfg.MongoDB.Db).C("Recalculations")
-		err=r.ParseForm()
+		err = r.ParseForm()
 		urlValues := r.Form
-		now:=time.Now()
-		input:=ApiRecalculationInput{
+		now := time.Now()
+		input := ApiRecalculationInput{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
 			urlValues.Get("reason"),
@@ -126,24 +126,24 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte{
 			"pending",
 			now,
 			//urlValues["exclude_sf"],
-			//urlValues["exclude_end_point"],		
+			//urlValues["exclude_end_point"],
 		}
-		toMongo:=bson.M{
-			"start_time" : input.Start_time,
-			"end_time" : input.End_time,
-			"reason" : input.Reason,
-			"vo" : input.Vo_name,
-			"ngi" : input.Ngi_name,
-			"status" : input.Status,
-			"timestamp": input.Timestamp,
+		toMongo := bson.M{
+			"start_time":   input.Start_time,
+			"end_time":     input.End_time,
+			"reason":       input.Reason,
+			"vo":           input.Vo_name,
+			"ngi":          input.Ngi_name,
+			"status":       input.Status,
+			"timestamp":    input.Timestamp,
 			"exclude_site": input.Exclude_site,
 		}
-		answer = "A recalculation request has been filed"//Provide the webUI with an appropriate xml/json response 
-		err=c.Insert(toMongo)
-		if err!=nil{
+		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
+		err = c.Insert(toMongo)
+		if err != nil {
 			return ErrorXML("MongoDB write error")
 		}
-	}else{
+	} else {
 		answer = http.StatusText(403)
 	}
 	return []byte(answer)
