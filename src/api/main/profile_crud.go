@@ -42,84 +42,93 @@ type MongoProfile struct {
 }
 
 func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
-	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-	if err != nil {
-		return ErrorXML("Error while connecting to mongodb")
-	}
-	session.SetMode(mgo.Monotonic, true)
-	defer session.Close()
-	c := session.DB(cfg.MongoDB.Db).C("Profiles")
-	result := MongoProfile{}
-	type ProfileInput struct {
-		// mandatory values
-		Name  string
-		Group []string
-		Json  string
-	}
-	urlValues := r.URL.Query()
-	input := ProfileInput{
-		urlValues.Get("name"),
-		urlValues["group"],
-		urlValues.Get("json"),
-	}
-	q := bson.M{
-		"p": input.Name,
-	}
-	err2 := c.Find(q).One(&result)
-	if fmt.Sprint(err2) != "not found" {
-		return ErrorXML("Already exists")
-	}
-	if len(input.Group) > 0 {
-
-		doc := bson.M{
+	if Authenticate(r.Header){
+		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+		if err != nil {
+			return ErrorXML("Error while connecting to mongodb")
+		}
+		session.SetMode(mgo.Monotonic, true)
+		defer session.Close()
+		c := session.DB(cfg.MongoDB.Db).C("Profiles")
+		result := MongoProfile{}
+		type ProfileInput struct {
+			// mandatory values
+			Name  string
+			Group []string
+			Json  string
+		}
+		err=r.ParseForm()
+		urlValues := r.Form
+		input := ProfileInput{
+			urlValues.Get("name"),
+			urlValues["group"],
+			urlValues.Get("json"),
+		}
+		q := bson.M{
 			"p": input.Name,
 		}
-		groups := make(list, 0)
-		for _, value := range input.Group {
-			//doc["g"] = append(doc["g"], value)
-			groups = append(groups, strings.Split(value, ","))
+		err2 := c.Find(q).One(&result)
+		if fmt.Sprint(err2) != "not found" {
+			return ErrorXML("Already exists")
 		}
-		doc["g"] = groups
-		err3 := c.Insert(doc)
-		return []byte(fmt.Sprint(err3))
+		if len(input.Group) > 0 {
+			
+			doc := bson.M{
+				"p": input.Name,
+			}
+			groups := make(list, 0)
+			for _, value := range input.Group {
+				//doc["g"] = append(doc["g"], value)
+				groups = append(groups, strings.Split(value, ","))
+			}
+			doc["g"] = groups
+			err3 := c.Insert(doc)
+			return []byte(fmt.Sprint(err3))
+			
+		} else if len(input.Json) > 0 {
+			return ErrorXML("Not implemented yet")
+		} else {
+			return ErrorXML("Could not find data to save")
+		}
 
-	} else if len(input.Json) > 0 {
-		return ErrorXML("Not implemented yet")
 	} else {
-		return ErrorXML("Could not find data to save")
+		answer = http.StatusText(403)
 	}
-
-}
+}	
 
 func RemoveProfile(w http.ResponseWriter, r *http.Request) []byte {
-	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-	if err != nil {
-		return ErrorXML("Error while connecting to mongodb")
-	}
-	session.SetMode(mgo.Monotonic, true)
-	defer session.Close()
-	c := session.DB(cfg.MongoDB.Db).C("Profiles")
-	result := MongoProfile{}
-	type ProfileInput struct {
-		// mandatory values
-		Name string
-	}
-	urlValues := r.URL.Query()
-	input := ProfileInput{
-		urlValues.Get("name"),
-	}
-	q := bson.M{
-		"p": input.Name,
-	}
-	err2 := c.Find(q).One(&result)
-	if fmt.Sprint(err2) == "not found" {
-		return ErrorXML("Doesn't exists")
-	}
-	doc := bson.M{
-		"p": input.Name,
-	}
-	err3 := c.Remove(doc)
-	return []byte(fmt.Sprint(err3))
+	if Authenticate(r.Header){
+			session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+			if err != nil {
+				return ErrorXML("Error while connecting to mongodb")
+			}
+			session.SetMode(mgo.Monotonic, true)
+			defer session.Close()
+			c := session.DB(cfg.MongoDB.Db).C("Profiles")
+			result := MongoProfile{}
+			type ProfileInput struct {
+				// mandatory values
+				Name string
+			}
+			urlValues := r.URL.Query()//CONVERT TO POST
+			input := ProfileInput{
+				urlValues.Get("name"),
+			}
+			q := bson.M{
+				"p": input.Name,
+			}
+			err2 := c.Find(q).One(&result)
+			if fmt.Sprint(err2) == "not found" {
+				return ErrorXML("Doesn't exists")
+			}
+			doc := bson.M{
+				"p": input.Name,
+			}
+			err3 := c.Remove(doc)
+			return []byte(fmt.Sprint(err3))
+		} else {
+			answer = http.StatusText(403)
+		} 
 }
 
 func GetProfile(w http.ResponseWriter, r *http.Request) []byte {
