@@ -125,8 +125,6 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		q["a"] = bson.M{"$gte": 0}
-		q["r"] = bson.M{"$gte": 0}
 
 		// Mongo aggregation pipeline
 		// Select all the records that match q
