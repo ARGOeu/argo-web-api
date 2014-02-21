@@ -42,7 +42,7 @@ type MongoProfile struct {
 }
 
 func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
-	if Authenticate(r.Header){
+	if Authenticate(r.Header) {
 		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
 			return ErrorXML("Error while connecting to mongodb")
@@ -57,7 +57,7 @@ func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 			Group []string
 			Json  string
 		}
-		err=r.ParseForm()
+		err = r.ParseForm()
 		urlValues := r.Form
 		input := ProfileInput{
 			urlValues.Get("name"),
@@ -72,7 +72,7 @@ func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 			return ErrorXML("Already exists")
 		}
 		if len(input.Group) > 0 {
-			
+
 			doc := bson.M{
 				"p": input.Name,
 			}
@@ -84,7 +84,7 @@ func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 			doc["g"] = groups
 			err3 := c.Insert(doc)
 			return []byte(fmt.Sprint(err3))
-			
+
 		} else if len(input.Json) > 0 {
 			return ErrorXML("Not implemented yet")
 		} else {
@@ -94,41 +94,41 @@ func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 	} else {
 		answer = http.StatusText(403)
 	}
-}	
+}
 
 func RemoveProfile(w http.ResponseWriter, r *http.Request) []byte {
-	if Authenticate(r.Header){
-			session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-			if err != nil {
-				return ErrorXML("Error while connecting to mongodb")
-			}
-			session.SetMode(mgo.Monotonic, true)
-			defer session.Close()
-			c := session.DB(cfg.MongoDB.Db).C("Profiles")
-			result := MongoProfile{}
-			type ProfileInput struct {
-				// mandatory values
-				Name string
-			}
-			urlValues := r.URL.Query()//CONVERT TO POST
-			input := ProfileInput{
-				urlValues.Get("name"),
-			}
-			q := bson.M{
-				"p": input.Name,
-			}
-			err2 := c.Find(q).One(&result)
-			if fmt.Sprint(err2) == "not found" {
-				return ErrorXML("Doesn't exists")
-			}
-			doc := bson.M{
-				"p": input.Name,
-			}
-			err3 := c.Remove(doc)
-			return []byte(fmt.Sprint(err3))
-		} else {
-			answer = http.StatusText(403)
-		} 
+	if Authenticate(r.Header) {
+		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+		if err != nil {
+			return ErrorXML("Error while connecting to mongodb")
+		}
+		session.SetMode(mgo.Monotonic, true)
+		defer session.Close()
+		c := session.DB(cfg.MongoDB.Db).C("Profiles")
+		result := MongoProfile{}
+		type ProfileInput struct {
+			// mandatory values
+			Name string
+		}
+		urlValues := r.URL.Query() //CONVERT TO POST
+		input := ProfileInput{
+			urlValues.Get("name"),
+		}
+		q := bson.M{
+			"p": input.Name,
+		}
+		err2 := c.Find(q).One(&result)
+		if fmt.Sprint(err2) == "not found" {
+			return ErrorXML("Doesn't exists")
+		}
+		doc := bson.M{
+			"p": input.Name,
+		}
+		err3 := c.Remove(doc)
+		return []byte(fmt.Sprint(err3))
+	} else {
+		answer = http.StatusText(403)
+	}
 }
 
 func GetProfile(w http.ResponseWriter, r *http.Request) []byte {

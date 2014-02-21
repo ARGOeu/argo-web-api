@@ -49,8 +49,8 @@ func (s mystring) Size() int {
 // Load the configurations that we have set through flags and through the configuration file
 var cfg = LoadConfiguration()
 
-func init(){
-	
+func init() {
+
 	//Create a recover function to log the case of a failure
 	defer func() {
 		if err := recover(); err != nil {
@@ -94,10 +94,10 @@ func main() {
 	//Create the server router
 	main_router := mux.NewRouter()
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
-	get_subrouter := main_router.Methods("GET").Subrouter()//routes only GET requests
-	post_subrouter := main_router.Methods("POST").Subrouter()//routes only POST requests
-	auth_subrouter := post_subrouter.Headers("x-api-key","","x-api-requestor","")//calls requested with POST must provide authentication credentials otherwise will not be routed
-	
+	get_subrouter := main_router.Methods("GET").Subrouter()                          //routes only GET requests
+	post_subrouter := main_router.Methods("POST").Subrouter()                        //routes only POST requests
+	auth_subrouter := post_subrouter.Headers("x-api-key", "", "x-api-requestor", "") //calls requested with POST must provide authentication credentials otherwise will not be routed
+
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", SitesAvailabilityInProfile))
@@ -111,15 +111,15 @@ func main() {
 	post_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
 	//Miscallenious calls
 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml","utf-8",Recalculate))
+	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", Recalculate))
 	http.Handle("/", main_router)
-	//Web service binds to server.  
+	//Web service binds to server.
 	//plain http bidning to be removed
 	// err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
-// 		if err != nil {
-// 			log.Fatal("ListenAndServe:", err)
-// 		}
-    //HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
+	// 		if err != nil {
+	// 			log.Fatal("ListenAndServe:", err)
+	// 		}
+	//HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
 	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)

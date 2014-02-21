@@ -24,7 +24,6 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
 package main
 
 import (
