@@ -38,7 +38,7 @@ var m=make(map[string]string,128)
 func Authenticate(h http.Header) bool{
 	user:=h.Get("x-api-requestor")//Suggested username: host FQDN passed with the http request headers
 	key:=h.Get("x-api-key")//Api key shared with webUI
-	file,err:=os.Open("path/to/password_file")//Username-passwords stored into file. Future work: store password values hashed into mongoDB
+	file,err:=os.Open("/root/api_password_file")//Username-passwords stored into file. Future work: store password values hashed into mongoDB
 	if err!=nil{
 		panic(err)
 	}
