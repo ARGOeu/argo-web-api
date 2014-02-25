@@ -35,7 +35,7 @@ import (
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"time"
-	//	"encoding/json"
+	"encoding/json"
 	//  "encoding/xml"
 )
 
@@ -72,7 +72,6 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 		} else {
 			data = output
 		}
-		fmt.Println(len(data))
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
 		w.Write(data)
 	}
@@ -147,4 +146,30 @@ func Recalculate(w http.ResponseWriter, r *http.Request) []byte {
 		answer = http.StatusText(403)
 	}
 	return []byte(answer)
+}
+
+func GetRecalculationRequests(w http.ResponseWriter, r *http.Request) []byte {
+	type ApiRecalculationInput struct {
+			Start_time   string
+			End_time     string
+			Reason       string
+			Vo_name      string
+			Ngi_name     string
+			Exclude_site []string
+			Status       string
+			Timestamp    time.Time
+			//Exclude_sf		[]string
+			//Exclude_end_point []string
+		}
+		var get []ApiRecalculationInput
+		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+		if err != nil {
+			return ErrorXML("Error while connecting to MongoDB")
+		}
+		session.SetMode(mgo.Monotonic, true)
+		defer session.Close()
+		c := session.DB(cfg.MongoDB.Db).C("Recalculations")
+		err = c.Find(nil).All(&get)
+		answer,err:=json.MarshalIndent(get,""," ")
+		return []byte(answer)
 }

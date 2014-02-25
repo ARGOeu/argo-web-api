@@ -96,7 +96,7 @@ func main() {
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
 	get_subrouter := main_router.Methods("GET").Subrouter()                          //routes only GET requests
 	post_subrouter := main_router.Methods("POST").Subrouter()                        //routes only POST requests
-	auth_subrouter := post_subrouter.Headers("x-api-key", "", "x-api-requestor", "") //calls requested with POST must provide authentication credentials otherwise will not be routed
+	auth_subrouter := post_subrouter.Headers("x-api-key", "").Subrouter() //calls requested with POST must provide authentication credentials otherwise will not be routed
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", ServiceAvailabilityInProfile))
@@ -104,14 +104,15 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", NgiAvailabilityInProfile))
 	//get_subrouter.HandleFunc("/api/v1/service_flavor_availability_in_profile", Respond("text/xml", "utf-8", ServiceFlavorAvailabilityInProfile))
 	//CRUD functions for profiles
-	post_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
+	auth_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
 	get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
 	get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
 	//SOME UPDATE METHOD MISSING
-	post_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
+	auth_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
 	//Miscallenious calls
 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", Recalculate))
+	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", Recalculate))
+	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", GetRecalculationRequests))
 	http.Handle("/", main_router)
 	//Web service binds to server.
 	//plain http bidning to be removed
