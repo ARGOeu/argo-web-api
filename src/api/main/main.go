@@ -27,9 +27,10 @@
 package main
 
 import (
-	"api/services"
-	"api/sites"
-	"api/ngis"
+	"api/apiCalls/services"
+	"api/apiCalls/sites"
+	"api/apiCalls/ngis"
+	"api/apiCalls/recalculations"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -42,8 +43,8 @@ func main() {
 	main_router := mux.NewRouter()
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
 	get_subrouter := main_router.Methods("GET").Subrouter()                          //routes only GET requests
-	//post_subrouter := main_router.Methods("POST").Subrouter()                        //routes only POST requests
-	//auth_subrouter := post_subrouter.Headers("x-api-key", "").Subrouter() //calls requested with POST must provide authentication credentials otherwise will not be routed
+	post_subrouter := main_router.Methods("POST").Subrouter()                        //routes only POST requests
+	auth_subrouter := post_subrouter.Headers("x-api-key", "").Subrouter() //calls requested with POST must provide authentication credentials otherwise will not be routed
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
@@ -58,8 +59,8 @@ func main() {
 // 	auth_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
 // 	//Miscallenious calls
 // 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-// 	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", Recalculate))
-// 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", GetRecalculationRequests))
+	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
+	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
 	//Web service binds to server.
 	//plain http bidning to be removed
@@ -68,7 +69,7 @@ func main() {
 	// 			log.Fatal("ListenAndServe:", err)
 	// 		}
 	//HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/ansible/egi-ar-rest-api/cert/cert.pem", "/ansible/egi-ar-rest-api/cert/cert.pem", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}

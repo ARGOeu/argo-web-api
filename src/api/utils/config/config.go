@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package utils
+package config
 
 import (
 	"code.google.com/p/gcfg"

@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
-	"api/utils"
+	"api/utils/config"
 )
 
 var httpcache *cache.LRUCache
@@ -19,7 +19,7 @@ func (s mystring) Size() int {
 }
 
 // Load the configurations that we have set through flags and through the configuration file
-var cfg = utils.LoadConfiguration()
+var cfg = config.LoadConfiguration()
 
 func init() {
 
