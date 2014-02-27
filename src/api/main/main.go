@@ -62,14 +62,8 @@ func main() {
 	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
-	//Web service binds to server.
-	//plain http bidning to be removed
-	// err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
-	// 		if err != nil {
-	// 			log.Fatal("ListenAndServe:", err)
-	// 		}
-	//HTTPS support for the API server. We have to issue a valid certificate for our production server and replace the parameters with the actual path where the certificate will be placed
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/ansible/egi-ar-rest-api/cert/cert.pem", "/ansible/egi-ar-rest-api/cert/cert.pem", nil)
+	//Web service binds to server. Requests served over HTTPS.
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/ansible/egi-ar-rest-api/cert/cert.pem", "/ansible/egi-ar-rest-api/cert/key.pem", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
