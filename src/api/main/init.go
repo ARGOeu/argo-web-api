@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
+	"api/utils"
 )
 
 var httpcache *cache.LRUCache
@@ -18,7 +19,7 @@ func (s mystring) Size() int {
 }
 
 // Load the configurations that we have set through flags and through the configuration file
-var cfg = LoadConfiguration()
+var cfg = utils.LoadConfiguration()
 
 func init() {
 
@@ -36,8 +37,8 @@ func init() {
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
 
 	//Start the profiler if the flag flProfile is set to a filename, where profile data will be writter
-	if *flProfile != "" {
-		f, err := os.Create(*flProfile)
+	if cfg.Profile != "" {
+		f, err := os.Create(cfg.Profile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -51,7 +52,7 @@ func init() {
 	go func() {
 		for sig := range c {
 			// sig is a ^C, handle it
-			if *flProfile != "" {
+			if cfg.Profile != "" {
 				pprof.StopCPUProfile()
 			}
 			log.Printf("captured %v, stopping profiler and exiting..", sig)

@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package main
+package utils
 
 import (
 	"code.google.com/p/gcfg"
@@ -58,6 +58,7 @@ type Config struct {
 		Port int
 		Db   string
 	}
+	Profile string
 }
 
 const defaultConfig = `
@@ -116,6 +117,9 @@ func LoadConfiguration() Config {
 	}
 	if *flGzip == "no" {
 		cfg.Server.Gzip = false
+	}
+	if *flProfile !=""{
+		cfg.Profile = *flProfile
 	}
 
 	return cfg

@@ -36,6 +36,7 @@ import (
 	"net/http"
 	"time"
 	"encoding/json"
+	"api/utils"
 	//  "encoding/xml"
 )
 
@@ -45,10 +46,10 @@ const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
 // The respond function that will be called to answer to http requests to the PI
-func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request) []byte) http.HandlerFunc {
+func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request, cfg utils.Config) []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
-		output := fn(w, r)
+		output := fn(w, r,cfg)
 		var b bytes.Buffer
 		var data []byte
 		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
