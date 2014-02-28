@@ -31,6 +31,7 @@ import (
 	"api/apiCalls/sites"
 	"api/apiCalls/ngis"
 	"api/apiCalls/recalculations"
+	"api/apiCalls/profileCRUD"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -52,11 +53,11 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
 	//get_subrouter.HandleFunc("/api/v1/service_flavor_availability_in_profile", Respond("text/xml", "utf-8", ServiceFlavorAvailabilityInProfile))
 	//CRUD functions for profiles
-	// auth_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", AddProfile))
-// 	get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", GetProfileNames))
-// 	get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", GetProfile))
+	auth_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
+    //get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
+	get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", profileCRUD.ReadOneProfile))
 // 	//SOME UPDATE METHOD MISSING
-// 	auth_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", RemoveProfile))
+	auth_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", profileCRUD.DeleteProfile))
 // 	//Miscallenious calls
 // 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
