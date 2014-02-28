@@ -37,7 +37,7 @@ import (
 )
 
 
-func GetProfileNames(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func ReadAllProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	var results []XMLresponses.PoemProfile
 	session, err := mgo.Dial(cfg.MongoDB.Host)
 	if err != nil {
