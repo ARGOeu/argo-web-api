@@ -42,6 +42,7 @@ type MongoProfile struct {
 }
 
 func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
+	answer:=""
 	if Authenticate(r.Header) {
 		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
@@ -94,9 +95,11 @@ func AddProfile(w http.ResponseWriter, r *http.Request) []byte {
 	} else {
 		answer = http.StatusText(403)
 	}
+	return []byte(answer)
 }
 
 func RemoveProfile(w http.ResponseWriter, r *http.Request) []byte {
+	answer :=""
 	if Authenticate(r.Header) {
 		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
@@ -129,6 +132,7 @@ func RemoveProfile(w http.ResponseWriter, r *http.Request) []byte {
 	} else {
 		answer = http.StatusText(403)
 	}
+	return []byte(answer)
 }
 
 func GetProfile(w http.ResponseWriter, r *http.Request) []byte {
