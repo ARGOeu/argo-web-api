@@ -24,45 +24,47 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package XMLresponses
+package JSONresponses
 
 import (
-	"encoding/xml"
+	"encoding/json"
 )
 
-type PoemProfile struct {
-	Name           string "p"
-	Namespace      string "ns"
-	Group          string "g"
-	Service_flavor string "sf"
+type MongoProfile struct {
+	Name  string     "p"
+	Group [][]string "g"
 }
 
-func ReadAllXmlResponse(results []PoemProfile) ([]byte, error) {
+func ReadOneJsonResponse(results []MongoProfile) ([]byte, error) {
+
+	type Groups struct {
+		Service_flavors []string
+	}
+
 	type Profile struct {
-		XMLName        xml.Name `xml:"Profile"`
-		Name           string   `xml:"name,attr"`
-		Namespace      string   `xml:"namespace,attr"`
-		Group          string   `xml:"group,attr"`
-		Service_flavor string   `xml:"service_flavor,attr"`
+		Name   string
+		Groups []Groups
 	}
 
 	type Root struct {
-		XMLName xml.Name `xml:"root"`
-		Profile []Profile
+		Profiles []Profile
 	}
-
 	v := &Root{}
 
-	for _, result := range results {
-		v.Profile = append(v.Profile,
+	for key, result := range results {
+		v.Profiles = append(v.Profiles,
 			Profile{
-				Name:           result.Name,
-				Namespace:      result.Namespace,
-				Group:          result.Group,
-				Service_flavor: result.Service_flavor,
+				Name: result.Name,
 			})
+		for _, result2 := range result.Group {
+			v.Profiles[key].Groups = append(v.Profiles[key].Groups,
+				Groups{
+					Service_flavors: result2,
+				})
+		}
 	}
-	output, err := xml.MarshalIndent(v, " ", "  ")
+
+	output, err := json.MarshalIndent(v, " ", "  ")
 	return output, err
 
 }
