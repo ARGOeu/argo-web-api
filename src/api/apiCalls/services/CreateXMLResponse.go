@@ -26,26 +26,12 @@
 
 package services
 
-//we import the appropriate libraries
-
 import (
 	"encoding/xml"
 	"strconv"
 	"strings"
 	"time"
 )
-
-//struct contains all information required to form an appropriate xml respnose
-
-type Timeline struct {
-	Profile       string "p"
-	ServiceFlavor string "sf"
-	Host          string "h"
-	Timeline      string "tm"
-	VO            string "vo"
-	Date          int    "d"
-	Namespace     string "ns"
-}
 
 // a series of auxiliary structs that will
 // help us form the xml response
@@ -78,7 +64,7 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results []Timeline, customForm []string) ([]byte, error) {
+func CreateXMLResponse(results [] ApiServiceAvailabilityInProfileOutput) ([]byte, error) {
 	docRoot := &Root{}
 
 	prevProfile := ""
