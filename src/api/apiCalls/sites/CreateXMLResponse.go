@@ -26,31 +26,11 @@
 
 package sites
 
-//we import the appropriate libraries
-
 import (
 	"encoding/xml"
 	"fmt"
 	"time"
 )
-
-//struct contains all information required to form an appropriate xml respnose
-
-type MongoSite struct {
-	SiteScope     string  "ss"
-	Scope         string  "sc"
-	Date          string  "dt"
-	Namespace     string  "ns"
-	Profile       string  "p"
-	Production    string  "pr"
-	Monitored     string  "m"
-	Ngi           string  "n"
-	Site          string  "s"
-	Infastructure string  "i"
-	CertStatus    string  "cs"
-	Availability  float64 "a"
-	Reliability   float64 "r"
-}
 
 // a series of auxiliary structs that will
 // help us form the xml response
@@ -86,7 +66,7 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error) {
+func CreateXMLResponse(results []ApiSiteAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
