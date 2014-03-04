@@ -24,27 +24,32 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package mongo
+package ngis
 
-import (
-	"labix.org/v2/mgo"
-	"api/utils/config"
-	"fmt"
-)
+var customForm []string
 
-func OpenSession(cfg config.Config) *mgo.Session{
-	s, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-	if err != nil {
-		s.Close()
-		panic(err)
-	}
-	// Optional. Switch the session to a monotonic behavior.
-	s.SetMode(mgo.Monotonic, true)
-	return s
+type ApiNgiAvailabilityInProfileInput struct {
+	// mandatory values
+	start_time         string   // UTC time in W3C format
+	end_time           string   // UTC time in W3C format
+	profile_name       []string // may appear more than once. (eg: CMS_CRITICAL)
+	group_type         []string // may appear more than once. (eg: CMS_Site)
+	availabilityperiod string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	// optional values
+	output     string   // default XML; possible values are: XML, JSON
+	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
+	group_name []string // ngi name; may appear more than once
 }
 
-func CloseSession(session *mgo.Session) bool{
-	session.Close()
-	return true 
+type ApiNgiAvailabilityInProfileOutput struct {
+	Date         string  "dt"
+	Namespace    string  "ns"
+	Profile      string  "p"
+	Ngi          string  "n"
+	Availability float64 "a"
+	Reliability  float64 "r"
 }
 
+func init() {
+	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+}

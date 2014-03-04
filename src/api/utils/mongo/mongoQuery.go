@@ -28,23 +28,22 @@ package mongo
 
 import (
 	"labix.org/v2/mgo"
-	"api/utils/config"
-	"fmt"
+	"labix.org/v2/mgo/bson"
 )
 
-func OpenSession(cfg config.Config) *mgo.Session{
-	s, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-	if err != nil {
-		s.Close()
-		panic(err)
-	}
-	// Optional. Switch the session to a monotonic behavior.
-	s.SetMode(mgo.Monotonic, true)
-	return s
+func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection{
+	
+	c := session.DB(dbName).C(collectionName)
+	
+	return c
 }
 
-func CloseSession(session *mgo.Session) bool{
-	session.Close()
-	return true 
+func Query(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error{
+	
+	c := openCollection(session,dbName,collectionName)
+	
+	err := c.Pipe(query).All(results)
+	
+	return err
+	
 }
-

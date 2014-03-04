@@ -26,24 +26,11 @@
 
 package ngis
 
-//we import the appropriate libraries
-
 import (
 	"encoding/xml"
 	"fmt"
 	"time"
 )
-
-//struct contains all information required to form an appropriate xml respnose
-
-type MongoNgi struct {
-	Date         string  "dt"
-	Namespace    string  "ns"
-	Profile      string  "p"
-	Ngi          string  "n"
-	Availability float64 "a"
-	Reliability  float64 "r"
-}
 
 // a series of auxiliary structs that will
 // help us form the xml response
@@ -71,7 +58,8 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results []MongoNgi, customForm []string) ([]byte, error) {
+
+func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
