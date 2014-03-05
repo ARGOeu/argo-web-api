@@ -27,44 +27,24 @@
 package recalculations
 
 import (
-	"fmt"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"time"
+	"labix.org/v2/mgo/bson"
 	"api/utils/config"
 	"api/utils/authentication"
+	"api/utils/mongo"
 	//  "encoding/xml"
 )
 
 //Scedule a recalculation
 func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	type ApiRecalculationInput struct {
-		Start_time   string
-		End_time     string
-		Reason       string
-		Vo_name      string
-		Ngi_name     string
-		Exclude_site []string
-		Status       string
-		Timestamp    time.Time
-		//Exclude_sf		[]string
-		//Exclude_end_point []string
-	}
 	answer := ""
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header,cfg) {
-		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-		if err != nil {
-			return []byte("ERROR")//TODO
-		}
-		session.SetMode(mgo.Monotonic, true)
-		defer session.Close()
-		c := session.DB(cfg.MongoDB.Db).C("Recalculations")
-		err = r.ParseForm()
+		err := r.ParseForm()
 		urlValues := r.Form
 		now := time.Now()
-		input := ApiRecalculationInput{
+		input := ApiRecalculationIO{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
 			urlValues.Get("reason"),
@@ -76,7 +56,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
-		toMongo := bson.M{
+		query := bson.M{
 			"start_time":   input.Start_time,
 			"end_time":     input.End_time,
 			"reason":       input.Reason,
@@ -86,11 +66,13 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			"timestamp":    input.Timestamp,
 			"exclude_site": input.Exclude_site,
 		}
-		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
-		err = c.Insert(toMongo)
+		session := mongo.OpenSession(cfg)
+		err = mongo.Insert(session,"AR","Recalculations",query)
 		if err != nil {
 			return []byte("ERROR")//TODO
 		}
+		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
+		mongo.CloseSession(session)
 	} else {
 		answer = http.StatusText(403)
 	}

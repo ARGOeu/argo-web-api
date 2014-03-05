@@ -24,46 +24,21 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package mongo
+package recalculations
 
-import (
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
-)
+import "time"
 
-func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection{
-	
-	c := session.DB(dbName).C(collectionName)
-	
-	return c
+type ApiRecalculationIO struct {
+		Start_time   string
+		End_time     string
+		Reason       string
+		Vo_name      string
+		Ngi_name     string
+		Exclude_site []string
+		Status       string
+		Timestamp    time.Time
+		//Exclude_sf		[]string
+		//Exclude_end_point []string
 }
 
-func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
-	err := c.Pipe(query).All(results)
-	
-	return err
-	
-}
-
-func Find(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
-	err := c.Find(query).All(results)
-	
-	return err
-	
-}
-
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
-	err := c.Insert(query)
-	
-	return err
-	
-}
+func init(){}

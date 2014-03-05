@@ -27,37 +27,28 @@
 package recalculations
 
 import (
-	"fmt"
-	"labix.org/v2/mgo"
 	"net/http"
-	"time"
 	"encoding/json"
 	"api/utils/config"
+	"api/utils/mongo"
 	//  "encoding/xml"
 )
 
 func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	type ApiRecalculationInput struct {
-			Start_time   string
-			End_time     string
-			Reason       string
-			Vo_name      string
-			Ngi_name     string
-			Exclude_site []string
-			Status       string
-			Timestamp    time.Time
-			//Exclude_sf		[]string
-			//Exclude_end_point []string
-		}
-		var get []ApiRecalculationInput
-		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-		if err != nil {
-			return []byte("ERROR")//TODO
-		}
-		session.SetMode(mgo.Monotonic, true)
-		defer session.Close()
-		c := session.DB(cfg.MongoDB.Db).C("Recalculations")
-		err = c.Find(nil).All(&get)
-		answer,err:=json.MarshalIndent(get,""," ")
-		return []byte(answer)
+	
+	results := ApiRecalculationIO{}
+		
+	session := mongo.OpenSession(cfg)
+	
+	err := mongo.Find(session,"AR","Recalculations",nil,&results)
+	
+	answer,err:=json.MarshalIndent(results,""," ")
+	
+	if err!=nil{
+		panic(err)
+	}
+	
+	mongo.CloseSession(session)
+			
+	return []byte(answer)
 }
