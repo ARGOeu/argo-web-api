@@ -24,41 +24,21 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package main
+package services
 
 import (
-	"api/services"
-	"fmt"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"api/utils/config"
+	"api/utils/mongo"
+	"api/utils/caches"
 	"net/http"
-	"strconv"
-	"time"
 )
 
 //Reply to requests about service_availability_in_profile
-func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte {
-
-	// This is the input we will receive from the API
-
-	type ApiServiceAvailabilityInProfileInput struct {
-		// mandatory values
-		start_time          string   // UTC time in W3C format
-		end_time            string   // UTC time in W3C format
-		vo_name             []string // may appear more than once. (eg: ops)
-		profile_name        []string // may appear more than once. (eg: CMS_CRITICAL)
-		group_type          []string // may appear more than once. (eg: CMS_Site)
-		availability_period string   // availability period; possible values: 'HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'
-		// optional values
-		output           string   // default XML; possible values are: XML, JSON
-		namespace        []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-		group_name       []string // site name; may appear more than once
-		service_flavour  []string // service flavour name; may appear more than once. (eg: SRMv2)
-		service_hostname []string // service hostname; may appear more than once. (eg: ce202.cern.ch)
-	}
+func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
+
 	input := ApiServiceAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
@@ -73,56 +53,20 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte
 		urlValues["service_hostname"],
 	}
 
-	// Parse the date range of the query
-	customForm := []string{"20060102", "2006-01-02T15:04:05Z"}
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-
-	// If caching is enabled search the cache for matches
-	if cfg.Server.Cache == true {
-		out, found := httpcache.Get("service_endpoint " + fmt.Sprint(input))
-		if found {
-			return []byte(fmt.Sprint(out))
-		}
+	found, output := caches.HitCache("service_endpoint ", input, cfg)
+	if found {
+		return output
 	}
-
+	
+	err := error(nil)
 	// Create a mongodb session
-	session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(cfg.MongoDB.Db).C("timelines")
-	results := []services.Timeline{}
+	session := mongo.OpenSession(cfg)
 
-	// Construct the query to mongodb based on the input
-	q := bson.M{
-		"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"vo": bson.M{"$in": input.vo_name},
-		"p":  bson.M{"$in": input.profile_name},
-	}
+	results := []ApiServiceAvailabilityInProfileOutput{}
 
-	if len(input.namespace) > 0 {
-		q["ns"] = bson.M{"$in": input.namespace}
-	}
+	query := Timeline(input)
 
-	if len(input.group_name) > 0 {
-		// TODO: We do not have the site name in the timeline
-	}
-
-	if len(input.service_flavour) > 0 {
-		q["sf"] = bson.M{"$in": input.service_flavour}
-	}
-
-	if len(input.service_hostname) > 0 {
-		q["h"] = bson.M{"$in": input.service_hostname}
-	}
-	query := []bson.M{{"$match": q}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}, {"d", 1}}}}
-	err = c.Pipe(query).All(&results)
+	err = mongo.Pipe(session, "AR", "sites", query, &results)
 
 	//err = c.Find(q).Sort("p", "h", "sf").All(&results)
 	if err != nil {
@@ -130,11 +74,13 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request) []byte
 	}
 
 	//rootfmt.Println(results)
-	output, err := services.CreateXMLResponse(results, customForm)
+	output, err = CreateXMLResponse(results)
 
-	//if caching is enabled save the result to the cache
-	if cfg.Server.Cache == true && len(results) > 0 {
-		httpcache.Set("service_endpoint "+fmt.Sprint(input), mystring(output))
+	if len(results) > 0 {
+		caches.WriteCache("service_endpoint ", input, output, cfg)
 	}
+
+	mongo.CloseSession(session)
+
 	return output
 }
