@@ -27,11 +27,11 @@
 package main
 
 import (
+	"api/apiCalls/ngis"
+	"api/apiCalls/profileCRUD"
+	"api/apiCalls/recalculations"
 	"api/apiCalls/services"
 	"api/apiCalls/sites"
-	"api/apiCalls/ngis"
-	"api/apiCalls/recalculations"
-	"api/apiCalls/profileCRUD"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -43,8 +43,8 @@ func main() {
 	//Create the server router
 	main_router := mux.NewRouter()
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
-	get_subrouter := main_router.Methods("GET").Subrouter()                          //routes only GET requests
-	post_subrouter := main_router.Methods("POST").Subrouter()                        //routes only POST requests
+	get_subrouter := main_router.Methods("GET").Subrouter()               //routes only GET requests
+	post_subrouter := main_router.Methods("POST").Subrouter()             //routes only POST requests
 	auth_subrouter := post_subrouter.Headers("x-api-key", "").Subrouter() //calls requested with POST must provide authentication credentials otherwise will not be routed
 
 	//Basic api calls
@@ -54,12 +54,12 @@ func main() {
 	//get_subrouter.HandleFunc("/api/v1/service_flavor_availability_in_profile", Respond("text/xml", "utf-8", ServiceFlavorAvailabilityInProfile))
 	//CRUD functions for profiles
 	auth_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
-    get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
+	get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
 	get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", profileCRUD.ReadOneProfile))
-// 	//SOME UPDATE METHOD MISSING
+	// 	//SOME UPDATE METHOD MISSING
 	auth_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", profileCRUD.DeleteProfile))
-// 	//Miscallenious calls
-// 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
+	// 	//Miscallenious calls
+	// 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	auth_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)

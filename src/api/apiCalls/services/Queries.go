@@ -24,13 +24,12 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
-package services 
+package services
 
 import (
 	"labix.org/v2/mgo/bson"
-	"time"
 	"strconv"
+	"time"
 )
 
 type list []interface{}
@@ -38,13 +37,13 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M{
-	
+func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M {
+
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-	
+
 	filter := bson.M{
 		"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"vo": bson.M{"$in": input.vo_name},
@@ -66,17 +65,13 @@ func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M{
 	if len(input.service_hostname) > 0 {
 		filter["h"] = bson.M{"$in": input.service_hostname}
 	}
-	
+
 	return filter
 }
 
-func Timeline(input ApiServiceAvailabilityInProfileInput) []bson.M{
-	filter:=prepareFilter(input)
+func Timeline(input ApiServiceAvailabilityInProfileInput) []bson.M {
+	filter := prepareFilter(input)
 	query := []bson.M{{"$match": filter}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}, {"d", 1}}}}
 	return query
-	
+
 }
-
-
-
-

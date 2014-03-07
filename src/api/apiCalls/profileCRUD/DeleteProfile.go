@@ -27,48 +27,47 @@
 package profileCRUD
 
 import (
+	"api/utils/authentication"
+	"api/utils/config"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
-	"api/utils/config"
-	"api/utils/authentication"
-	
 )
 
 func DeleteProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	answer:=""
-	if authentication.Authenticate(r.Header,cfg){
-			session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
-			if err != nil {
-				return []byte("ERROR")//TODO
-			}
-			session.SetMode(mgo.Monotonic, true)
-			defer session.Close()
-			c := session.DB(cfg.MongoDB.Db).C("Profiles")
-			result := MongoProfile{}
-			type ProfileInput struct {
-				// mandatory values
-				Name string
-			}
-			urlValues := r.URL.Query()//CONVERT TO POST
-			input := ProfileInput{
-				urlValues.Get("name"),
-			}
-			q := bson.M{
-				"p": input.Name,
-			}
-			err2 := c.Find(q).One(&result)
-			if fmt.Sprint(err2) == "not found" {
-				return []byte("ERROR")//TODO
-			}
-			doc := bson.M{
-				"p": input.Name,
-			}
-			err3 := c.Remove(doc)
-			return []byte(fmt.Sprint(err3))
-		} else {
-			answer = http.StatusText(403)
-		} 
-		return []byte (answer)
+	answer := ""
+	if authentication.Authenticate(r.Header, cfg) {
+		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+		if err != nil {
+			return []byte("ERROR") //TODO
+		}
+		session.SetMode(mgo.Monotonic, true)
+		defer session.Close()
+		c := session.DB(cfg.MongoDB.Db).C("Profiles")
+		result := MongoProfile{}
+		type ProfileInput struct {
+			// mandatory values
+			Name string
+		}
+		urlValues := r.URL.Query() //CONVERT TO POST
+		input := ProfileInput{
+			urlValues.Get("name"),
+		}
+		q := bson.M{
+			"p": input.Name,
+		}
+		err2 := c.Find(q).One(&result)
+		if fmt.Sprint(err2) == "not found" {
+			return []byte("ERROR") //TODO
+		}
+		doc := bson.M{
+			"p": input.Name,
+		}
+		err3 := c.Remove(doc)
+		return []byte(fmt.Sprint(err3))
+	} else {
+		answer = http.StatusText(403)
+	}
+	return []byte(answer)
 }

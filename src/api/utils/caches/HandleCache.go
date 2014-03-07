@@ -28,8 +28,8 @@ package caches
 
 import (
 	"api/utils/config"
-	"github.com/makistsan/go-lru-cache"
 	"fmt"
+	"github.com/makistsan/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache
@@ -40,22 +40,22 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
-func HitCache(name string,input interface{},cfg config.Config) (bool, []byte){
+func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) {
 	output := []byte(nil)
 	found := false
 	if cfg.Server.Cache == true {
 		out, found := httpcache.Get(name + fmt.Sprint(input))
 		if found {
-			 output = []byte(fmt.Sprint(out))
-		 }
+			output = []byte(fmt.Sprint(out))
+		}
 	}
-	return found,output	
+	return found, output
 }
 
-func WriteCache(name string,input interface{}, output interface{},cfg config.Config) bool{
-	
+func WriteCache(name string, input interface{}, output interface{}, cfg config.Config) bool {
+
 	if cfg.Server.Cache == true {
-		httpcache.Set(name + fmt.Sprint(input), output.(mystring))
+		httpcache.Set(name+fmt.Sprint(input), output.(mystring))
 	}
 	return true
 }

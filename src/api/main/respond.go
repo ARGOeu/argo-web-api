@@ -27,12 +27,12 @@
 package main
 
 import (
+	"api/utils/config"
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
 	"net/http"
-	"api/utils/config"
 	//  "encoding/xml"
 )
 
@@ -45,7 +45,7 @@ const ymdForm = "20060102"
 func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
-		output := fn(w, r,cfg)
+		output := fn(w, r, cfg)
 		var b bytes.Buffer
 		var data []byte
 		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
@@ -84,4 +84,3 @@ func ResetCache(w http.ResponseWriter, r *http.Request) []byte {
 	answer = "No Caching is active"
 	return []byte(answer)
 }
-

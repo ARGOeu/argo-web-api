@@ -29,19 +29,19 @@ package services
 var customForm []string
 
 type ApiServiceAvailabilityInProfileInput struct {
-		// mandatory values
-		start_time          string   // UTC time in W3C format
-		end_time            string   // UTC time in W3C format
-		vo_name             []string // may appear more than once. (eg: ops)
-		profile_name        []string // may appear more than once. (eg: CMS_CRITICAL)
-		group_type          []string // may appear more than once. (eg: CMS_Site)
-		availability_period string   // availability period; possible values: 'HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'
-		// optional values
-		output           string   // default XML; possible values are: XML, JSON
-		namespace        []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-		group_name       []string // site name; may appear more than once
-		service_flavour  []string // service flavour name; may appear more than once. (eg: SRMv2)
-		service_hostname []string // service hostname; may appear more than once. (eg: ce202.cern.ch)
+	// mandatory values
+	start_time          string   // UTC time in W3C format
+	end_time            string   // UTC time in W3C format
+	vo_name             []string // may appear more than once. (eg: ops)
+	profile_name        []string // may appear more than once. (eg: CMS_CRITICAL)
+	group_type          []string // may appear more than once. (eg: CMS_Site)
+	availability_period string   // availability period; possible values: 'HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'
+	// optional values
+	output           string   // default XML; possible values are: XML, JSON
+	namespace        []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
+	group_name       []string // site name; may appear more than once
+	service_flavour  []string // service flavour name; may appear more than once. (eg: SRMv2)
+	service_hostname []string // service hostname; may appear more than once. (eg: ce202.cern.ch)
 }
 
 type ApiServiceAvailabilityInProfileOutput struct {
@@ -54,6 +54,6 @@ type ApiServiceAvailabilityInProfileOutput struct {
 	Namespace     string "ns"
 }
 
-func init(){
+func init() {
 	customForm = []string{"20060102", "2006-01-02T15:04:05Z"}
 }

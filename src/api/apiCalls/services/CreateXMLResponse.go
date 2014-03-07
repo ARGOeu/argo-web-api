@@ -64,7 +64,7 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results [] ApiServiceAvailabilityInProfileOutput) ([]byte, error) {
+func CreateXMLResponse(results []ApiServiceAvailabilityInProfileOutput) ([]byte, error) {
 	docRoot := &Root{}
 
 	prevProfile := ""

@@ -24,18 +24,16 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
 package profileCRUD
 
 import (
+	"api/apiCalls/profileCRUD/XMLresponses"
+	"api/utils/config"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
-	"api/utils/config"
-	"api/apiCalls/profileCRUD/XMLresponses"
 )
-
 
 func ReadAllProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	var results []XMLresponses.PoemProfile

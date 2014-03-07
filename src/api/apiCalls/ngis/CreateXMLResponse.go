@@ -58,7 +58,6 @@ type Root struct {
 	Profile []*Profile
 }
 
-
 func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}

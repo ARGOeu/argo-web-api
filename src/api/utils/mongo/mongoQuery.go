@@ -31,39 +31,39 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection{
-	
+func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
+
 	c := session.DB(dbName).C(collectionName)
-	
+
 	return c
 }
 
-func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
+func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
+
+	c := openCollection(session, dbName, collectionName)
+
 	err := c.Pipe(query).All(results)
-	
+
 	return err
-	
+
 }
 
-func Find(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
+func Find(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
+
+	c := openCollection(session, dbName, collectionName)
+
 	err := c.Find(query).All(results)
-	
+
 	return err
-	
+
 }
 
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error{
-	
-	c := openCollection(session,dbName,collectionName)
-	
+func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
+
+	c := openCollection(session, dbName, collectionName)
+
 	err := c.Insert(query)
-	
+
 	return err
-	
+
 }

@@ -27,12 +27,12 @@
 package mongo
 
 import (
-	"labix.org/v2/mgo"
 	"api/utils/config"
 	"fmt"
+	"labix.org/v2/mgo"
 )
 
-func OpenSession(cfg config.Config) *mgo.Session{
+func OpenSession(cfg config.Config) *mgo.Session {
 	s, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
 		s.Close()
@@ -43,8 +43,7 @@ func OpenSession(cfg config.Config) *mgo.Session{
 	return s
 }
 
-func CloseSession(session *mgo.Session) bool{
+func CloseSession(session *mgo.Session) bool {
 	session.Close()
-	return true 
+	return true
 }
-

@@ -27,13 +27,13 @@
 package recalculations
 
 import (
-	"net/http"
-	"time"
-	"labix.org/v2/mgo/bson"
-	"api/utils/config"
 	"api/utils/authentication"
+	"api/utils/config"
 	"api/utils/mongo"
 	"fmt"
+	"labix.org/v2/mgo/bson"
+	"net/http"
+	"time"
 	//  "encoding/xml"
 )
 
@@ -41,10 +41,10 @@ import (
 func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	answer := ""
 	//only authenticated requests triger the handling code
-	if authentication.Authenticate(r.Header,cfg) {
+	if authentication.Authenticate(r.Header, cfg) {
 		fmt.Println(r)
 		err := r.ParseForm()
-		if err !=nil{
+		if err != nil {
 			panic(err)
 		}
 		urlValues := r.Form
@@ -74,9 +74,9 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			"exclude_site": input.Exclude_site,
 		}
 		session := mongo.OpenSession(cfg)
-		err = mongo.Insert(session,"AR","Recalculations",query)
+		err = mongo.Insert(session, "AR", "Recalculations", query)
 		if err != nil {
-			return []byte("ERROR")//TODO
+			return []byte("ERROR") //TODO
 		}
 		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
 		mongo.CloseSession(session)

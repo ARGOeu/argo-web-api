@@ -118,7 +118,7 @@ func LoadConfiguration() Config {
 	if *flGzip == "no" {
 		cfg.Server.Gzip = false
 	}
-	if *flProfile !=""{
+	if *flProfile != "" {
 		cfg.Profile = *flProfile
 	}
 

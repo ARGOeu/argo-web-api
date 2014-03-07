@@ -27,13 +27,13 @@
 package profileCRUD
 
 import (
+	"api/utils/authentication"
+	"api/utils/config"
 	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strings"
-	"api/utils/config"
-	"api/utils/authentication"
 )
 
 type MongoProfile struct {
@@ -44,11 +44,11 @@ type MongoProfile struct {
 type list []interface{}
 
 func CreateProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	answer:=""
-	if authentication.Authenticate(r.Header,cfg){
+	answer := ""
+	if authentication.Authenticate(r.Header, cfg) {
 		session, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 		if err != nil {
-			return []byte("ERROR")//TODO
+			return []byte("ERROR") //TODO
 		}
 		session.SetMode(mgo.Monotonic, true)
 		defer session.Close()
@@ -60,7 +60,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []
 			Group []string
 			Json  string
 		}
-		err=r.ParseForm()
+		err = r.ParseForm()
 		urlValues := r.Form
 		input := ProfileInput{
 			urlValues.Get("name"),
@@ -72,10 +72,10 @@ func CreateProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []
 		}
 		err2 := c.Find(q).One(&result)
 		if fmt.Sprint(err2) != "not found" {
-			return []byte("ERROR")//TODO
+			return []byte("ERROR") //TODO
 		}
 		if len(input.Group) > 0 {
-			
+
 			doc := bson.M{
 				"p": input.Name,
 			}
@@ -87,14 +87,14 @@ func CreateProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []
 			doc["g"] = groups
 			err3 := c.Insert(doc)
 			return []byte(fmt.Sprint(err3))
-			
+
 		} else if len(input.Json) > 0 {
-			return []byte("ERROR")//TODO
+			return []byte("ERROR") //TODO
 		} else {
-			return []byte("ERROR")//TODO
+			return []byte("ERROR") //TODO
 		}
 	} else {
 		answer = http.StatusText(403)
 	}
-	return []byte (answer)
-}	
+	return []byte(answer)
+}

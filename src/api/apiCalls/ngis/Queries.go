@@ -24,13 +24,12 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
 package ngis
 
 import (
 	"labix.org/v2/mgo/bson"
-	"time"
 	"strconv"
+	"time"
 )
 
 type list []interface{}
@@ -38,14 +37,13 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
+func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 
-func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M{
-	
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-	
+
 	filter := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"p":  bson.M{"$in": input.profile_name},
@@ -62,8 +60,8 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M{
 	return filter
 }
 
-func Daily(input ApiNgiAvailabilityInProfileInput) []bson.M{
-	filter:=prepareFilter(input)
+func Daily(input ApiNgiAvailabilityInProfileInput) []bson.M {
+	filter := prepareFilter(input)
 	// Mongo aggregation pipeline
 	// Select all the records that match q
 	// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
@@ -76,25 +74,25 @@ func Daily(input ApiNgiAvailabilityInProfileInput) []bson.M{
 	// r = r/hs
 	// Sort by profile->ngi->site->datetime
 	query := []bson.M{
-	{"$match": filter}, 
-	{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}}, 
-	{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"},
-	"a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, 
-	{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, 
-	"r": bson.M{"$divide": list{"$r", "$hs"}}}}, 
-	{"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
-	
+		{"$match": filter},
+		{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"},
+			"a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}},
+			"r": bson.M{"$divide": list{"$r", "$hs"}}}},
+		{"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+
 	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
-	
+
 	return query
 }
 
-func Monthly(input ApiNgiAvailabilityInProfileInput) []bson.M{
-	filter:=prepareFilter(input)
+func Monthly(input ApiNgiAvailabilityInProfileInput) []bson.M {
+	filter := prepareFilter(input)
 	//PROBABLY THIS LEADS TO THE SAME BUG WE RAN INTO WITH SITES. MUST BE INVESTIGATED!!!!!!!!!!!!
 	filter["a"] = bson.M{"$gte": 0}
 	filter["r"] = bson.M{"$gte": 0}
-	
+
 	// Mongo aggregation pipeline
 	// Select all the records that match q
 	// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
@@ -110,15 +108,15 @@ func Monthly(input ApiNgiAvailabilityInProfileInput) []bson.M{
 	// r = average(r)
 	// Project the results to a better format
 	// Sort by namespace->profile->ngi->datetime
-	
+
 	query := []bson.M{
-	{"$match": filter}, {"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}}, 
-	{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}},
-	"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, 
-	{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, 
-	{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$avg": "$a"}, 
-	"r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": 1, "r": 1}}, 
-	{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"dt", 1}}}}
-	
+		{"$match": filter}, {"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}},
+			"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}},
+		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$avg": "$a"},
+			"r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": 1, "r": 1}},
+		{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"dt", 1}}}}
+
 	return query
 }

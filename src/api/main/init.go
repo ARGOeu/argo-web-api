@@ -24,17 +24,16 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
 package main
 
 import (
+	"api/utils/config"
 	"github.com/makistsan/go-lru-cache"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
-	"api/utils/config"
 )
 
 var httpcache *cache.LRUCache
