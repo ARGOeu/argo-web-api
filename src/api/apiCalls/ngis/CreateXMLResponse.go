@@ -24,9 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package sites
-
-//we import the appropriate libraries
+package ngis
 
 import (
 	"encoding/xml"
@@ -34,27 +32,8 @@ import (
 	"time"
 )
 
-//struct contains all information required to form an appropriate xml respnose
-
-type MongoSite struct {
-	SiteScope     string  "ss"
-	Scope         string  "sc"
-	Date          string  "dt"
-	Namespace     string  "ns"
-	Profile       string  "p"
-	Production    string  "pr"
-	Monitored     string  "m"
-	Ngi           string  "n"
-	Site          string  "s"
-	Infastructure string  "i"
-	CertStatus    string  "cs"
-	Availability  float64 "a"
-	Reliability   float64 "r"
-}
-
 // a series of auxiliary structs that will
 // help us form the xml response
-
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability"`
 	Timestamp    string   `xml:"timestamp,attr"`
@@ -62,23 +41,16 @@ type Availability struct {
 	Reliability  string   `xml:"reliability,attr"`
 }
 
-type Site struct {
-	Site          string `xml:"site,attr"`
-	Ngi           string `xml:"NGI,attr"`
-	Infastructure string `xml:"infastructure,attr"`
-	Scope         string `xml:"scope,attr"`
-	SiteScope     string `xml:"site_scope,attr"`
-	Production    string `xml:"production,attr"`
-	Monitored     string `xml:"monitored,attr"`
-	CertStatus    string `xml:"certification_status,attr"`
-	Availability  []*Availability
+type Ngi struct {
+	Ngi          string `xml:"NGI,attr"`
+	Availability []*Availability
 }
 
 type Profile struct {
 	XMLName   xml.Name `xml:"Profile"`
 	Name      string   `xml:"name,attr"`
 	Namespace string   `xml:"namespace,attr"`
-	Site      []*Site
+	Ngi       []*Ngi
 }
 
 type Root struct {
@@ -86,20 +58,18 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error) {
+func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
 	prevProfile := ""
-	prevSite := ""
-	site := &Site{}
+	prevNgi := ""
+	ngi := &Ngi{}
 	profile := &Profile{}
-
 	// we iterate through the results struct array
 	// keeping only the value of each row
-
 	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		timestamp, _ := time.Parse(customForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
 		if prevProfile != row.Profile {
@@ -108,25 +78,19 @@ func CreateXMLResponse(results []MongoSite, customForm []string) ([]byte, error)
 				Name:      row.Profile,
 				Namespace: row.Namespace}
 			docRoot.Profile = append(docRoot.Profile, profile)
-			prevSite = ""
+			prevNgi = ""
 		}
-		//if new site does not match the previous service value
-		//we create a new site entry in the xml
-		if prevSite != row.Site {
-			prevSite = row.Site
-			site = &Site{
-				Site:          row.Site,
-				Ngi:           row.Ngi,
-				Infastructure: row.Infastructure,
-				Scope:         row.Scope,
-				SiteScope:     row.SiteScope,
-				Production:    row.Production,
-				Monitored:     row.Monitored,
-				CertStatus:    row.CertStatus}
-			profile.Site = append(profile.Site, site)
+		//if new ngi does not match the previous ngi value
+		//we create a new ngi entry in the xml
+		if prevNgi != row.Ngi {
+			prevNgi = row.Ngi
+			ngi = &Ngi{
+				Ngi: row.Ngi,
+			}
+			profile.Ngi = append(profile.Ngi, ngi)
 		}
 		//we append the new availability values
-		site.Availability = append(site.Availability,
+		ngi.Availability = append(ngi.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
