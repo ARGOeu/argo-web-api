@@ -33,6 +33,7 @@ import (
 	"api/utils/config"
 	"api/utils/authentication"
 	"api/utils/mongo"
+	"fmt"
 	//  "encoding/xml"
 )
 
@@ -41,8 +42,13 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 	answer := ""
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header,cfg) {
+		fmt.Println(r)
 		err := r.ParseForm()
+		if err !=nil{
+			panic(err)
+		}
 		urlValues := r.Form
+		fmt.Println(urlValues)
 		now := time.Now()
 		input := ApiRecalculationIO{
 			urlValues.Get("start_time"),
@@ -56,6 +62,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
+		fmt.Println(input)
 		query := bson.M{
 			"start_time":   input.Start_time,
 			"end_time":     input.End_time,
