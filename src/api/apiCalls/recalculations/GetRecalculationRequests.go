@@ -28,21 +28,20 @@ package recalculations
 
 import (
 	"net/http"
-	"encoding/json"
 	"api/utils/config"
 	"api/utils/mongo"
-	//  "encoding/xml"
+	"encoding/xml"
 )
 
 func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	
-	results := ApiRecalculationIO{}
+	results := []ApiRecalculationIO{}
 		
 	session := mongo.OpenSession(cfg)
 	
 	err := mongo.Find(session,"AR","Recalculations",nil,&results)
-	
-	answer,err:=json.MarshalIndent(results,""," ")
+		
+	answer,err:=xml.MarshalIndent(results,""," ")
 	
 	if err!=nil{
 		panic(err)
@@ -50,5 +49,5 @@ func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config
 	
 	mongo.CloseSession(session)
 			
-	return []byte(answer)
+	return []byte("<root>"+string(answer)+"</root>")
 }

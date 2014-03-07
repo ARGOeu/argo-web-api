@@ -32,8 +32,8 @@ type ApiRecalculationIO struct {
 		Start_time   string
 		End_time     string
 		Reason       string
-		Vo_name      string
-		Ngi_name     string
+		Vo_name      string `bson:"vo"`
+		Ngi_name     string `bson:"ngi"`
 		Exclude_site []string
 		Status       string
 		Timestamp    time.Time
