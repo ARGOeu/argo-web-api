@@ -24,32 +24,41 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package main
+package authentication
 
 import (
-	"bufio"
+	"api/utils/config"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"net/http"
-	"os"
-	"strings"
 )
 
-var m = make(map[string]string, 128)
+type Auth struct {
+	apiKey string `bson:"apiKey"`
+}
 
-func Authenticate(h http.Header) bool {
-	user := h.Get("x-api-requestor")                //Suggested username: host FQDN passed with the http request headers
-	key := h.Get("x-api-key")                       //Api key shared with webUI
-	file, err := os.Open("/root/api_password_file") //Username-passwords stored into file. Future work: store password values hashed into mongoDB
+func Authenticate(h http.Header, cfg config.Config) bool {
+
+	var result []Auth
+
+	session, err := mgo.Dial(cfg.MongoDB.Host) //conect to mongo server
 	if err != nil {
 		panic(err)
 	}
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.Split(scanner.Text(), ":") //all values stored inside a map structure
-		m[line[0]] = line[1]
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)                //set mongo to monotonic behavioer
+	c := session.DB(cfg.MongoDB.Db).C("Authentication") //connect to collection
+	//define the query to be retrieved from mongo
+	retrieve := bson.M{
+		"apiKey": h.Get("x-api-key"),
 	}
-	if m[user] == key {
+	err = c.Find(retrieve).All(&result)
+	if err != nil {
+		panic(err)
+	}
+	//if password is found we return true
+	if len(result) > 0 {
 		return true
-	} else {
-		return false
 	}
+	return false //else we return false
 }
