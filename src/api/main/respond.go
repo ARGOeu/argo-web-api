@@ -33,6 +33,7 @@ import (
 	"compress/zlib"
 	"fmt"
 	"net/http"
+	"strings"
 	//  "encoding/xml"
 )
 
@@ -40,6 +41,19 @@ type list []interface{}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
+
+
+func parseCSV(data string) []string {
+	splitted := strings.SplitN(data, ",", -1)
+
+	data_tmp := make([]string, len(splitted))
+
+	for i, val := range splitted {
+		data_tmp[i] = strings.TrimSpace(val)
+	}
+
+	return data_tmp
+}
 
 // The respond function that will be called to answer to http requests to the PI
 func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte) http.HandlerFunc {
