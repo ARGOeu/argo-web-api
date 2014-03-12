@@ -74,7 +74,7 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			"exclude_site": input.Exclude_site,
 		}
 		session := mongo.OpenSession(cfg)
-		err = mongo.Insert(session, "AR", "Recalculations", query)
+		err = mongo.Insert(session, "AR", "recalculations", query)
 		if err != nil {
 			return []byte("ERROR") //TODO
 		}

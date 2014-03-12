@@ -27,7 +27,7 @@
 package vos
 
 import (
-	//"api/utils/caches"
+	"api/utils/caches"
 	"api/utils/config"
 	"api/utils/mongo"
 	"net/http"
@@ -49,10 +49,10 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 	
 	output := []byte("")
 
-	// found, output := caches.HitCache("ngis", input, cfg)
-// 	if found {
-// 		return output
-// 	}
+	found, output := caches.HitCache("vos", input, cfg)
+	if found {
+		return output
+	}
 	session := mongo.OpenSession(cfg)
 
 	results := []ApiVoAvailabilityInProfileOutput{}
@@ -65,7 +65,7 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 		query := Daily(input)
 		
 		
-		err := mongo.Find(session, "AR", "voreports", query, "d", &results)
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
 		if err != nil{
 			panic(err)
 		}
@@ -73,25 +73,23 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
 
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
 		
-		return []byte("<root>WAIT!</root>")
-		// customForm[0] = "200601"
-// 		customForm[1] = "2006-01"
-// 
-// 		query := Monthly(input)
-// 
-// 		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		query := Monthly(input)
+		
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		
+		if err !=nil {
+			panic(err)
+		}
+		
 	}
-
-	if err != nil {
-		return []byte("<root><error>" + err.Error() + "</error></root>")
-	}
-	
 	output, err = CreateXMLResponse(results)
 	
-	// if len(results) > 0 {
-// 		caches.WriteCache("ngis", input, output, cfg)
-// 	}
+	if len(results) > 0 {
+		caches.WriteCache("vos", input, output, cfg)
+	}
 
 	mongo.CloseSession(session)
 

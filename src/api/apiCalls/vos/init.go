@@ -37,7 +37,7 @@ type ApiVoAvailabilityInProfileInput struct {
 }
 
 type ApiVoAvailabilityInProfileOutput struct {
-	Date         int  	 "d"
+	Date         string  "d"
 	Profile      string  "p"
 	Vo           string  "v"
 	Availability float64 "a"

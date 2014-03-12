@@ -30,7 +30,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"time"
-	"strconv"
+	//"strconv"
 )
 
 // a series of auxiliary structs that will
@@ -69,7 +69,7 @@ func CreateXMLResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, erro
 	// we iterate through the results struct array
 	// keeping only the value of each row
 	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], strconv.Itoa(row.Date))
+		timestamp, _ := time.Parse(customForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
 		if prevProfile != row.Profile {

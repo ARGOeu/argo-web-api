@@ -48,7 +48,7 @@ func Pipe(session *mgo.Session, dbName string, collectionName string, query []bs
 
 }
 
-func Find(session *mgo.Session, dbName string, collectionName string, query bson.M,sorter string, results interface{}) error {
+func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)
 
