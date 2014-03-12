@@ -32,6 +32,7 @@ import (
 	"api/apiCalls/recalculations"
 	"api/apiCalls/services"
 	"api/apiCalls/sites"
+	"api/apiCalls/vos"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -51,6 +52,7 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/vo_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile))
 	//get_subrouter.HandleFunc("/api/v1/service_flavor_availability_in_profile", Respond("text/xml", "utf-8", ServiceFlavorAvailabilityInProfile))
 	//CRUD functions for profiles
 	auth_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
@@ -64,7 +66,7 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
 	//Web service binds to server. Requests served over HTTPS.
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/ansible/egi-ar-rest-api/cert/cert.pem", "/ansible/egi-ar-rest-api/cert/key.pem", nil)
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/Users/nick/Desktop/cert.pem", "/Users/nick/Desktop/key.pem", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
