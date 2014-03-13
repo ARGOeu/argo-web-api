@@ -69,22 +69,6 @@ func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
 
 func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
-	
-	// Mongo aggregation pipeline
-	// Select all the records that match q
-	// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
-	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
-	// a = sum(a*hs)
-	// r = sum(r*hs)
-	// hs = sum(hs)
-	// Project to a better format and do these computations
-	// a = a/hs
-	// r = r/hs
-	// Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
-	// a = average(a)
-	// r = average(r)
-	// Project the results to a better format
-	// Sort by namespace->profile->ngi->datetime
 
 	query := []bson.M{
 		{"$match": filter}, 
