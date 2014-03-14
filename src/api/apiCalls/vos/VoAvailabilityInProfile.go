@@ -40,11 +40,14 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 	urlValues := r.URL.Query()
 
 	input := ApiVoAvailabilityInProfileInput{
-		urlValues.Get("vo_name"),
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues["profile_name"],
+		urlValues["group_type"],
 		urlValues.Get("type"),
+		urlValues.Get("output"),
+		urlValues["namespace"],
+		urlValues["group_name"],
 	}
 	
 	output := []byte("")
@@ -63,7 +66,6 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 		customForm[1] = "2006-01-02"
 
 		query := Daily(input)
-		
 		
 		err = mongo.Pipe(session, "AR", "voreports", query, &results)
 		if err != nil{
