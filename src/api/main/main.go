@@ -49,11 +49,11 @@ func main() {
 	auth_subrouter := post_subrouter.Headers("x-api-key", "").Subrouter() //calls requested with POST must provide authentication credentials otherwise will not be routed
 
 	//Basic api calls
-	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile)).
 	//Grouping calls. 
 	//Groups are routed depending on the value of the parameter group type. FUTURE WORK: 1) Move calls to a separate subrouter. 2) Provide with a default call informing the user of an invalid parameter
-	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile)).
-	Queries("group_type", "ngi")	
+	// get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile)).
+// 	Queries("group_type", "ngi")	
 	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
 	Queries("group_type", "vo")
 	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).

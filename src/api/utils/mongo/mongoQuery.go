@@ -54,7 +54,7 @@ func Find(session *mgo.Session, dbName string, collectionName string, query bson
 
 	err := c.Find(query).Sort(sorter).All(results)
 
-	return err	
+	return err
 
 }
 
