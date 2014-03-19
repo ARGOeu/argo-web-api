@@ -24,30 +24,31 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package vos
 
-import (
-	"api/utils/config"
-	"api/utils/mongo"
-	"encoding/xml"
-	"net/http"
-)
+var customForm []string
 
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+type ApiVoAvailabilityInProfileInput struct {
+	// mandatory values
+	start_time         string   // UTC time in W3C format
+	end_time           string   // UTC time in W3C format
+	profile_name       []string // may appear more than once. (eg: CMS_CRITICAL)
+	group_type         []string // may appear more than once. (eg: CMS_Site)
+	availabilityperiod string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	// optional values
+	output     string   // default XML; possible values are: XML, JSON
+	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
+	group_name []string // vo name; may appear more than once
+}
 
-	results := []ApiRecalculationIO{}
+type ApiVoAvailabilityInProfileOutput struct {
+	Date         string  "d"
+	Profile      string  "p"
+	Vo           string  "v"
+	Availability float64 "a"
+	Reliability  float64 "r"
+}
 
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "recalculations", nil, "", &results)
-
-	answer, err := xml.MarshalIndent(results, "", " ")
-
-	if err != nil {
-		panic(err)
-	}
-
-	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+func init() {
+	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
 }
