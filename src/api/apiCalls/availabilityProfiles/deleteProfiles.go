@@ -24,56 +24,49 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package mongo
+package availabilityProfiles
 
 import (
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"api/utils/authentication"
+	"api/utils/config"
+	"api/utils/mongo"
+	"net/http"
+	"strconv"
 )
 
-func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
-
-	c := session.DB(dbName).C(collectionName)
-
-	return c
-}
-
-func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Pipe(query).All(results)
-
-	return err
-
-}
-
-func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Find(query).Sort(sorter).All(results)
-
-	return err
-
-}
-
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Insert(query)
-
-	return err
-
-}
-
-func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo , error) {
+func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	
-	c := openCollection(session, dbName, collectionName)
-	
-	info, err := c.RemoveAll(query)
-	
-	return info, err
+	answer:=""
+	if authentication.Authenticate(r.Header, cfg) {
+		
+		urlValues := r.URL.Query()
+		
+		input := ApiAPInput{
+			urlValues["name"],
+			urlValues["service_flavor"],
+			urlValues["grouping"],
+		}	
+		
+		session := mongo.OpenSession(cfg)
+		
+		if len(input.Name) > 0 {
+
+			query := deleteOne(input)
+
+			info, _ := mongo.Remove(session, "AR", "hlps2", query)
+			
+			answer = "Deleted " + strconv.Itoa(info.Removed) + " profile records"
+
+		} else {
+			answer = "Profile name missing"
+		}
+	} else {
+		answer = http.StatusText(403)
+	}
+	output, err := messageXML(answer)
+	if err != nil {
+		panic(err)
+	}
+	return output
 	
 }

@@ -24,56 +24,41 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package mongo
+package availabilityProfiles
 
 import (
-	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 )
 
-func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
+func prepareFilter(input ApiAPInput) bson.M {
 
-	c := session.DB(dbName).C(collectionName)
+	filter := bson.M{
+		"n": bson.M{"$in": input.Name},
+	}
 
-	return c
-}
-
-func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Pipe(query).All(results)
-
-	return err
-
-}
-
-func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Find(query).Sort(sorter).All(results)
-
-	return err
-
-}
-
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
-
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Insert(query)
-
-	return err
-
-}
-
-func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo , error) {
+	if len(input.ServiceFlavor) > 0 {
+		filter["sf"] = input.ServiceFlavor
+	}
 	
-	c := openCollection(session, dbName, collectionName)
-	
-	info, err := c.RemoveAll(query)
-	
-	return info, err
-	
+	return filter
 }
+
+func createOne(input ApiAPOutput) bson.M {
+	query := bson.M{
+		"n": input.Name,
+		"sf": input.ServiceFlavor,
+		"g": input.Grouping,
+	}
+	return query
+}
+
+func readOne(input ApiAPInput) bson.M {
+	filter := prepareFilter(input)
+	return filter
+}
+
+func deleteOne(input ApiAPInput) bson.M {
+	filter := prepareFilter(input)
+	return filter
+}
+

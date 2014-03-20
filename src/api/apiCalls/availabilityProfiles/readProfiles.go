@@ -24,56 +24,47 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package mongo
+package availabilityProfiles
 
 import (
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"api/utils/config"
+	"api/utils/mongo"
+	"net/http"
 )
 
-func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
 
-	c := session.DB(dbName).C(collectionName)
+func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	return c
-}
+	err := error(nil)
 
-func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
+	urlValues := r.URL.Query()
 
-	c := openCollection(session, dbName, collectionName)
+	input := ApiAPInput{
+		urlValues["name"],
+		urlValues["service_flavor"],
+		urlValues["grouping"],
+	}	
 
-	err := c.Pipe(query).All(results)
+	results := []ApiAPOutput{}
 
-	return err
+	session := mongo.OpenSession(cfg)
 
-}
+	if len(input.Name) > 0 {
 
-func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
+		query := readOne(input)
 
-	c := openCollection(session, dbName, collectionName)
+		err = mongo.Find(session, "AR", "hlps", query, "g", &results)
 
-	err := c.Find(query).Sort(sorter).All(results)
+	} else {
+		err = mongo.Find(session, "AR", "hlps", nil, "g", &results)
+	}
 
-	return err
+	output, err := readXML(results)
 
-}
+	if err != nil {
+		panic(err)
+	}
 
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
+	return output
 
-	c := openCollection(session, dbName, collectionName)
-
-	err := c.Insert(query)
-
-	return err
-
-}
-
-func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo , error) {
-	
-	c := openCollection(session, dbName, collectionName)
-	
-	info, err := c.RemoveAll(query)
-	
-	return info, err
-	
 }
