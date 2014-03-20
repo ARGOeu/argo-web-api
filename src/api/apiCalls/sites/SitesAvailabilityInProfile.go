@@ -42,7 +42,6 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 	input := ApiSiteAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("profile_name"),
 		urlValues.Get("availability_profile"),
 		urlValues["group_type"],
 		urlValues.Get("type"),

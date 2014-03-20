@@ -32,7 +32,6 @@ type ApiNgiAvailabilityInProfileInput struct {
 	// mandatory values
 	start_time         string   // UTC time in W3C format
 	end_time           string   // UTC time in W3C format
-	profile_name       string // poem profile
 	availability_profile string //availability profile
 	group_type         []string // may appear more than once. (eg: CMS_Site)
 	availabilityperiod string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`

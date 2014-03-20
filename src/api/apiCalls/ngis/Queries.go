@@ -46,7 +46,6 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 
 	filter := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"p":  input.profile_name,
 		"ap": input.availability_profile,
 	}
 
