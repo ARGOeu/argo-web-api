@@ -46,7 +46,6 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"p":  input.profile_name,
 		"ap": input.availability_profile,
 	}
 
