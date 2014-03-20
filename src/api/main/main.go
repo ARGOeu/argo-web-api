@@ -64,7 +64,7 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
 	//Web service binds to server. Requests served over HTTPS.
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/ansible/egi-ar-rest-api/cert/cert.pem", "/ansible/egi-ar-rest-api/cert/key.pem", nil)
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
