@@ -24,30 +24,41 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package availabilityProfiles
 
 import (
-	"api/utils/config"
-	"api/utils/mongo"
-	"encoding/xml"
-	"net/http"
+	"labix.org/v2/mgo/bson"
 )
 
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func prepareFilter(input ApiAPInput) bson.M {
 
-	results := []ApiRecalculationIO{}
-
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
-
-	answer, err := xml.MarshalIndent(results, "", " ")
-
-	if err != nil {
-		panic(err)
+	filter := bson.M{
+		"n": bson.M{"$in": input.Name},
 	}
 
-	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+	if len(input.ServiceFlavor) > 0 {
+		filter["sf"] = input.ServiceFlavor
+	}
+	
+	return filter
 }
+
+func createOne(input ApiAPOutput) bson.M {
+	query := bson.M{
+		"n": input.Name,
+		"sf": input.ServiceFlavor,
+		"g": input.Grouping,
+	}
+	return query
+}
+
+func readOne(input ApiAPInput) bson.M {
+	filter := prepareFilter(input)
+	return filter
+}
+
+func deleteOne(input ApiAPInput) bson.M {
+	filter := prepareFilter(input)
+	return filter
+}
+

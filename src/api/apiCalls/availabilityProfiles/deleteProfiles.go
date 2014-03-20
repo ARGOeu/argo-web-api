@@ -24,30 +24,49 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package availabilityProfiles
 
 import (
+	"api/utils/authentication"
 	"api/utils/config"
 	"api/utils/mongo"
-	"encoding/xml"
 	"net/http"
+	"strconv"
 )
 
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+	
+	answer:=""
+	if authentication.Authenticate(r.Header, cfg) {
+		
+		urlValues := r.URL.Query()
+		
+		input := ApiAPInput{
+			urlValues["name"],
+			urlValues["service_flavor"],
+			urlValues["grouping"],
+		}	
+		
+		session := mongo.OpenSession(cfg)
+		
+		if len(input.Name) > 0 {
 
-	results := []ApiRecalculationIO{}
+			query := deleteOne(input)
 
-	session := mongo.OpenSession(cfg)
+			info, _ := mongo.Remove(session, "AR", "hlps2", query)
+			
+			answer = "Deleted " + strconv.Itoa(info.Removed) + " profile records"
 
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
-
-	answer, err := xml.MarshalIndent(results, "", " ")
-
+		} else {
+			answer = "Profile name missing"
+		}
+	} else {
+		answer = http.StatusText(403)
+	}
+	output, err := messageXML(answer)
 	if err != nil {
 		panic(err)
 	}
-
-	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+	return output
+	
 }

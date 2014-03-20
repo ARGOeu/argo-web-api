@@ -24,30 +24,47 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package availabilityProfiles
 
 import (
 	"api/utils/config"
 	"api/utils/mongo"
-	"encoding/xml"
 	"net/http"
 )
 
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	results := []ApiRecalculationIO{}
+func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+
+	err := error(nil)
+
+	urlValues := r.URL.Query()
+
+	input := ApiAPInput{
+		urlValues["name"],
+		urlValues["service_flavor"],
+		urlValues["grouping"],
+	}	
+
+	results := []ApiAPOutput{}
 
 	session := mongo.OpenSession(cfg)
 
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
+	if len(input.Name) > 0 {
 
-	answer, err := xml.MarshalIndent(results, "", " ")
+		query := readOne(input)
+
+		err = mongo.Find(session, "AR", "hlps", query, "g", &results)
+
+	} else {
+		err = mongo.Find(session, "AR", "hlps", nil, "g", &results)
+	}
+
+	output, err := readXML(results)
 
 	if err != nil {
 		panic(err)
 	}
 
-	mongo.CloseSession(session)
+	return output
 
-	return []byte("<root>" + string(answer) + "</root>")
 }

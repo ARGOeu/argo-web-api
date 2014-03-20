@@ -24,30 +24,20 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
-
-import (
-	"api/utils/config"
-	"api/utils/mongo"
-	"encoding/xml"
-	"net/http"
-)
-
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-
-	results := []ApiRecalculationIO{}
-
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
-
-	answer, err := xml.MarshalIndent(results, "", " ")
-
-	if err != nil {
-		panic(err)
-	}
-
-	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+package availabilityProfiles
+ 
+type ApiAPInput struct {
+ 	Name 		  []string 	"n"
+ 	ServiceFlavor []string 	"sf"
+ 	Grouping      []string  "g"
 }
+
+type ApiAPOutput struct {
+ 	Name          string "n"
+ 	ServiceFlavor string "sf"
+ 	Grouping      string "g"
+}
+ 
+ 
+//func init() {}
+ 
