@@ -1,12 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
-<<<<<<< HEAD
 Version: 1.2.1
 Release: 1%{?dist}
-=======
-Version: 1.1.1
-Release: 2%{?dist}
->>>>>>> origin/devel
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -68,4 +63,3 @@ go clean
 - Fix in Av computation
 * Thu Nov 7 2013 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.0.17-2%{?dist}
 - Initial koji import
-=======
