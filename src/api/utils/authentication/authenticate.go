@@ -47,7 +47,7 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 	}
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)                //set mongo to monotonic behavioer
-	c := session.DB(cfg.MongoDB.Db).C("Authentication") //connect to collection
+	c := session.DB(cfg.MongoDB.Db).C("authentication") //connect to collection
 	//define the query to be retrieved from mongo
 	retrieve := bson.M{
 		"apiKey": h.Get("x-api-key"),
