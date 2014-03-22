@@ -55,7 +55,6 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 
 	if len(input.group_name) > 0 {
 		filter["n"] = bson.M{"$in": input.group_name}
-		// TODO: We do not have the ngi name in the timeline
 	}
 	return filter
 }

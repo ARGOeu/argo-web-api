@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
-Version: 1.1.1
-Release: 2%{?dist}
+Version: 1.2.1
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -51,8 +51,10 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
-* Tue Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.1.1-1%{?dist}
+* Tue Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-1%{?dist}
 - Changes in results querying to reflect new database schema
+* Wed Mar 19 2014 Nikolaos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.0-1%{?dist}
+- Support for VOs. Changes in grouping
 * Tue Mar 4 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.1-1%{?dist}
 - Suport for https
 * Thu Feb 6 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.0-2%{?dist}

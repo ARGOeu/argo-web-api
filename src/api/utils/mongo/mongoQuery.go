@@ -48,11 +48,11 @@ func Pipe(session *mgo.Session, dbName string, collectionName string, query []bs
 
 }
 
-func Find(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
+func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)
 
-	err := c.Find(query).All(results)
+	err := c.Find(query).Sort(sorter).All(results)
 
 	return err
 
