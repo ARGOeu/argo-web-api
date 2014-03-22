@@ -51,7 +51,9 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
-* Wed Mar 19 2014 Nikolaos Triantafyllidis <ntrianta@grid.auth.gr> - 1.1.1-1%{?dist}
+* Tue Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-1%{?dist}
+- Changes in results querying to reflect new database schema
+* Wed Mar 19 2014 Nikolaos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.0-1%{?dist}
 - Support for VOs. Changes in grouping
 * Tue Mar 4 2014 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.1.1-1%{?dist}
 - Suport for https
