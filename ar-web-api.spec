@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.2.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -51,6 +51,8 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
+* Tue Mar 25 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-2%{?dist}
+- Fixed recalculation history bug
 * Tue Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-1%{?dist}
 - Changes in results querying to reflect new database schema
 * Wed Mar 19 2014 Nikolaos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.0-1%{?dist}
