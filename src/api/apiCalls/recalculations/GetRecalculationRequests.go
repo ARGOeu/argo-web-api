@@ -39,7 +39,7 @@ func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config
 
 	session := mongo.OpenSession(cfg)
 
-	err := mongo.Find(session, "AR", "recalculations", nil, "", &results)
+	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
 
 	answer, err := xml.MarshalIndent(results, "", " ")
 
