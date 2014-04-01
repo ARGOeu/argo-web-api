@@ -33,21 +33,19 @@ import (
 func prepareFilter(input ApiAPInput) bson.M {
 
 	filter := bson.M{
-		"n": bson.M{"$in": input.Name},
-	}
-
-	if len(input.ServiceFlavor) > 0 {
-		filter["sf"] = input.ServiceFlavor
+		"name": bson.M{"$in": input.Name},
+		"namespace" : bson.M{"$in": input.Namespace},
 	}
 	
 	return filter
 }
 
-func createOne(input ApiAPOutput) bson.M {
+func createOne(input ApiAPInput) bson.M {
 	query := bson.M{
-		"n": input.Name,
-		"sf": input.ServiceFlavor,
-		"g": input.Grouping,
+		"name": input.Name,
+		"namespace": input.Namespace,
+		"groups": input.Groups,
+		"poem": input.Poem,
 	}
 	return query
 }

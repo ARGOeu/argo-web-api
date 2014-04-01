@@ -30,56 +30,48 @@ import (
 	"api/utils/authentication"
 	"api/utils/config"
 	"api/utils/mongo"
+	"encoding/json"
+    "io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-
+	
 	answer := ""
+	
 	if authentication.Authenticate(r.Header, cfg) {
-
-		err := r.ParseForm()
+		
+		reqBody, err := ioutil.ReadAll(r.Body)
+	
 		if err != nil {
 			panic(err)
 		}
-		urlValues := r.Form
-
-		input := ApiAPInput{
-			urlValues["name"],
-			urlValues["service_flavor"],
-			urlValues["grouping"],
-		}
+	
+		var input ApiAPInput
+		
+		err = json.Unmarshal(reqBody, &input)
+		
 		session := mongo.OpenSession(cfg)
-		if len(input.ServiceFlavor) == len(input.Grouping) {
-			if len(input.Name) == 0 {
-				answer = "Profile name missing"
-			} else if len(input.Name) == 1 {
-				for i, sf := range input.ServiceFlavor {
-					qinput := ApiAPOutput{
-						input.Name[0],
-						sf,
-						input.Grouping[i],
-					}
-					query := createOne(qinput)
-					err := mongo.Insert(session, "AR", "hlps", query)
-					if err != nil {
-						panic(err)
-					}
-				}
-				answer = "Created " + strconv.Itoa(len(input.ServiceFlavor)) + " profile records"
-			} else {
-				answer = "Cannot have multiple profile names"
-			}
-		} else {
-			answer = "The number of service flavors must match the number of group types"
+		
+		query := createOne(input)
+		
+		err = mongo.Insert(session, "AR", "aps", query)
+		
+		if err != nil {
+			panic(err)
 		}
+					
+		answer = "Availability Profile record successfully created"
+	
 	} else {
 		answer = http.StatusText(403)
 	}
+	
 	output, err := messageXML(answer)
+	
 	if err != nil {
 		panic(err)
 	}
+	
 	return output
 }
