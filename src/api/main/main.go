@@ -46,7 +46,7 @@ func main() {
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
 	get_subrouter := main_router.Methods("GET").Subrouter()               //Routes only GET requests
 	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()
-	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter()//Routes only DELETE requests. Calls requested with POST must provide authentication credentials otherwise will not be routed
+	//delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter()//Routes only DELETE requests. Calls requested with POST must provide authentication credentials otherwise will not be routed
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
@@ -62,15 +62,14 @@ func main() {
 
 	post_subrouter.HandleFunc("/api/v1/AP/create", Respond("text/xml", "utf-8", availabilityProfiles.CreateProfiles))
 	get_subrouter.HandleFunc("/api/v1/AP/getall", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
-	delete_subrouter.HandleFunc("/api/v1/AP/delete", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
+	//delete_subrouter.HandleFunc("/api/v1/AP/delete", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
 	// 	//Miscallenious calls
 	// 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
 	//Web service binds to server. Requests served over HTTPS.
-	//err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/Users/nick/Desktop/cert.pem", "/Users/nick/Desktop/key.pem", nil)
+	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
