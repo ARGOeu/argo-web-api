@@ -30,7 +30,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-func prepareFilter(input ApiAPInput) bson.M {
+func prepareFilter(input ApiAPSearch) bson.M {
 
 	filter := bson.M{
 		"name": bson.M{"$in": input.Name},
@@ -50,13 +50,13 @@ func createOne(input ApiAPInput) bson.M {
 	return query
 }
 
-func readOne(input ApiAPInput) bson.M {
+func readOne(input ApiAPSearch) bson.M {
 	filter := prepareFilter(input)
 	return filter
 }
 
-func deleteOne(input ApiAPInput) bson.M {
-	filter := prepareFilter(input)
-	return filter
-}
+// func deleteOne(input ApiAPInput) bson.M {
+// 	filter := prepareFilter(input)
+// 	return filter
+// }
 

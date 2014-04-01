@@ -28,16 +28,28 @@ package availabilityProfiles
 
 import "encoding/xml"
 
-type Content struct {
-	XMLName       xml.Name `xml:Content`
-	ServiceFlavor string   `xml:"ServiceFlavor,attr"`
-	Grouping      string   `xml:"Grouping,attr"`
+
+type Group struct{
+	XMLName xml.Name 
+	ServiceFlavor string `xml:"service_flavor,attr"`
+}
+
+type Or struct {
+	XMLName       xml.Name `xml:"OR"`
+	Group 		  []*Group   
+}
+
+type And struct{
+	XMLName xml.Name `xml:"AND"`
+	Or []*Or
 }
 
 type Profile struct {
-	XMLName xml.Name `xml:"Profile"`
+	XMLName xml.Name `xml:"profile"`
 	Name    string   `xml:"name,attr"`
-	Content []*Content
+	Namespace string `xml:"namespace,attr"`
+	Poem 	string 	 `xml:"poem,attr"`
+	And  	*And
 }
 
 type ReadRoot struct {
@@ -52,21 +64,26 @@ type Message struct {
 
 
 func readXML(results []ApiAPOutput) ([]byte, error) {
-	prevProfile := ""
 	docRoot := &ReadRoot{}
-	profile := &Profile{}
 	for _, row := range results {
-		if prevProfile != row.Name {
-			prevProfile = row.Name
-			profile = &Profile{
-				Name: row.Name,
-			}
-			docRoot.Profile = append(docRoot.Profile, profile)
+		profile := &Profile{
+			Name:row.Name,
+			Namespace:row.Namespace,
+			Poem:row.Poem,
 		}
-		profile.Content = append(profile.Content,
-			&Content{
-				ServiceFlavor: row.ServiceFlavor,
-				Grouping:      row.Grouping})
+		and := &And{}
+		docRoot.Profile = append(docRoot.Profile, profile)
+		for _, group := range row.Groups{
+			or:=&Or{}	
+	        for _, sf := range group{
+				group:=&Group{
+					ServiceFlavor:sf,
+				}
+				or.Group = append(or.Group, group)
+			}
+			and.Or = append (and.Or,or)
+		}
+		profile.And = and
 	}
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
