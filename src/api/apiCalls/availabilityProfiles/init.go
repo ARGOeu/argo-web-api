@@ -25,18 +25,26 @@
  */
 
 package availabilityProfiles
- 
+
 type ApiAPInput struct {
- 	Name 		  []string 	"n"
- 	ServiceFlavor []string 	"sf"
- 	Grouping      []string  "g"
+ 	Name 		  string 
+ 	Namespace	  string 	
+ 	Groups        [][]string
+	Poem 		  string  
 }
 
-type ApiAPOutput struct {
- 	Name          string "n"
- 	ServiceFlavor string "sf"
- 	Grouping      string "g"
+type ApiAPSearch struct{
+	Name string
+	Namespace string
 }
+
+// type ApiAPOutput struct {
+// 	
+//  	Name 		  string `bson:name`
+//  	Namespace	  string `bson:namespace`	
+//  	Groups        [][]string `bson:groups`
+// 	Poem 		  string  `bson:poem`
+// }
  
  
 //func init() {}
