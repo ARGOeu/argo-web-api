@@ -36,8 +36,8 @@ type ApiAPInput struct {
 }
 
 type ApiAPSearch struct{
-	Name string
-	Namespace string
+	Name []string
+	Namespace []string
 }
 
 type ApiAPOutput struct {
