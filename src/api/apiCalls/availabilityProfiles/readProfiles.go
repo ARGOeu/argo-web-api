@@ -40,8 +40,8 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	urlValues := r.URL.Query()
 
 	input := ApiAPSearch{
-		urlValues.Get("name"),
-		urlValues.Get("namespace"),
+		urlValues["name"],
+		urlValues["namespace"],
 	}	
 
 	results := []ApiAPOutput{}
