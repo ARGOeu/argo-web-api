@@ -29,7 +29,6 @@ package mongo
 import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"strings"
 )
 
 type Id struct {
@@ -96,9 +95,19 @@ func IdRemove(session *mgo.Session, dbName string, collectionName string, id str
 	
 }
 
-func GetId(session *mgo.Session, dbName string, collectionName string, query bson.M) ([]string , error){
+func IdUpdate(session *mgo.Session, dbName string, collectionName string, id string, update interface{}) error{
 	
-	r:=strings.NewReplacer("ObjectIdHex","","(","","\"","",")","")
+	c := openCollection(session, dbName, collectionName)
+	
+	rid := bson.ObjectIdHex(id)
+	
+	err := c.UpdateId(rid,update)
+	
+	return err
+	
+}
+
+func GetId(session *mgo.Session, dbName string, collectionName string, query bson.M) ([]string , error){
 	
 	temp:=[]Id{}
 	
@@ -110,9 +119,8 @@ func GetId(session *mgo.Session, dbName string, collectionName string, query bso
 	
 	for i := range temp{
 		
-		s = append(s,temp[i].ID.String())
+		s = append(s,temp[i].ID.Hex())
 		
-		s[i] = r.Replace(s[i])
 	}
 
 	return s ,err

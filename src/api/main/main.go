@@ -46,7 +46,8 @@ func main() {
 	//first_subrouter := main_router.Headers("x-api-key","").Subrouter()//routes only the requets that provide an api key
 	get_subrouter := main_router.Methods("GET").Subrouter()               //Routes only GET requests
 	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()
-	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter()//Routes only DELETE requests. Calls requested with POST must provide authentication credentials otherwise will not be routed
+	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter()//Routes only DELETE requests. 
+	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
@@ -63,6 +64,7 @@ func main() {
 	post_subrouter.HandleFunc("/api/v1/AP/create", Respond("text/xml", "utf-8", availabilityProfiles.CreateProfiles))
 	get_subrouter.HandleFunc("/api/v1/AP/getall", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
+	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.UpdateProfiles))
 	// 	//Miscallenious calls
 	// 	get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
