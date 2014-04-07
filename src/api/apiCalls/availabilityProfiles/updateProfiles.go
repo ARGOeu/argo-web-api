@@ -24,6 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
+
 package availabilityProfiles
 
 import (
@@ -33,13 +34,18 @@ import (
 	"encoding/json"
     "io/ioutil"
 	"net/http"
+	"strings"
 )
 
-func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func UpdateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	
-	answer := ""
+	answer:=""
 	
 	if authentication.Authenticate(r.Header, cfg) {
+		
+		urlValues := r.URL.Path
+		
+		id := strings.Split(urlValues,"/")[4]
 		
 		reqBody, err := ioutil.ReadAll(r.Body)
 	
@@ -47,31 +53,26 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 			panic(err)
 		}
 		
-		input := ApiAPInput{}
+	 	input := ApiAPInput{}
 		
 		err = json.Unmarshal(reqBody, &input)
-				
+		
 		session := mongo.OpenSession(cfg)
-		
-		query := createOne(input)
-		
-		err = mongo.Insert(session, "AR", "aps", query)
-		
-		if err != nil {
-			panic(err)
-		}
-					
-		answer = "Availability Profile record successfully created"
 	
+		err = mongo.IdUpdate(session,"AR","aps",id,input)
+			
+		if err!=nil{
+			answer="No profile matching the requested id"
+		} else {
+			answer = "Update successful"
+		}
 	} else {
 		answer = http.StatusText(403)
 	}
-	
 	output, err := messageXML(answer)
-	
 	if err != nil {
 		panic(err)
 	}
+ 	return output
 	
-	return output
 }
