@@ -29,7 +29,12 @@ package mongo
 import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
+	"strings"
 )
+
+type Id struct {
+	ID		bson.ObjectId `bson:"_id"`		
+}
 
 func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
 
@@ -75,5 +80,41 @@ func Remove(session *mgo.Session, dbName string, collectionName string, query bs
 	info, err := c.RemoveAll(query)
 	
 	return info, err
+	
+}
+
+
+func IdRemove(session *mgo.Session, dbName string, collectionName string, id string) error {
+	
+	c := openCollection(session, dbName, collectionName)
+	
+	rid := bson.ObjectIdHex(id)
+	
+	err := c.RemoveId(rid)
+	
+	return err
+	
+}
+
+func GetId(session *mgo.Session, dbName string, collectionName string, query bson.M) ([]string , error){
+	
+	r:=strings.NewReplacer("ObjectIdHex","","(","","\"","",")","")
+	
+	temp:=[]Id{}
+	
+	var s []string 
+	
+	c := openCollection(session, dbName, collectionName)
+	
+	err := 	c.Find(query).Select(bson.M{"_id": 1}).All(&temp)
+	
+	for i := range temp{
+		
+		s = append(s,temp[i].ID.String())
+		
+		s[i] = r.Replace(s[i])
+	}
+
+	return s ,err
 	
 }

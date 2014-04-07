@@ -31,34 +31,27 @@ import (
 	"api/utils/config"
 	"api/utils/mongo"
 	"net/http"
-	"strconv"
+	"strings"
 )
 
 func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	
 	answer:=""
+	
 	if authentication.Authenticate(r.Header, cfg) {
 		
-		urlValues := r.URL.Query()
+		urlValues := r.URL.Path
 		
-		input := ApiAPInput{
-			urlValues["name"],
-			urlValues["service_flavor"],
-			urlValues["grouping"],
-		}	
+		id := strings.Split(urlValues,"/")[4]
 		
 		session := mongo.OpenSession(cfg)
-		
-		if len(input.Name) > 0 {
-
-			query := deleteOne(input)
-
-			info, _ := mongo.Remove(session, "AR", "hlps2", query)
+	
+		err := mongo.IdRemove(session,"AR","aps",id)
 			
-			answer = "Deleted " + strconv.Itoa(info.Removed) + " profile records"
-
+		if err!=nil{
+			answer="No profile matching the requested id"
 		} else {
-			answer = "Profile name missing"
+			answer = "Delete successful"
 		}
 	} else {
 		answer = http.StatusText(403)
@@ -67,6 +60,6 @@ func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 	if err != nil {
 		panic(err)
 	}
-	return output
+ 	return output
 	
 }
