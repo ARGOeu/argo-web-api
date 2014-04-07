@@ -46,6 +46,7 @@ type And struct{
 
 type Profile struct {
 	XMLName xml.Name `xml:"profile"`
+	ID 		string 	 `xml:"id,attr"`
 	Name    string   `xml:"name,attr"`
 	Namespace string `xml:"namespace,attr"`
 	Poem 	string 	 `xml:"poem,attr"`
@@ -67,6 +68,7 @@ func readXML(results []ApiAPOutput) ([]byte, error) {
 	docRoot := &ReadRoot{}
 	for _, row := range results {
 		profile := &Profile{
+			ID:row.ID,
 			Name:row.Name,
 			Namespace:row.Namespace,
 			Poem:row.Poem,

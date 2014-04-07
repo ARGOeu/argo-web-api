@@ -27,7 +27,6 @@
 package availabilityProfiles
 
 
-
 type ApiAPInput struct {
  	Name 		  string 
  	Namespace	  string 	
@@ -41,6 +40,7 @@ type ApiAPSearch struct{
 }
 
 type ApiAPOutput struct {
+	ID			  string 			
  	Name 		  string 	 	`bson:"name"`
  	Namespace	  string 	 	`bson:"namespace"`	
  	Groups        [][]string 	`bson:"groups"`
