@@ -28,8 +28,8 @@ package availabilityProfiles
 
 
 type ApiAPInput struct {
- 	Name 		  string 
- 	Namespace	  string 	
+ 	Name 		  string `json:"Name"`
+ 	Namespace	  string `json:"Namespace"`	
  	Groups        [][]string
 	Poem 		  string  
 }
