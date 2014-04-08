@@ -38,8 +38,10 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 
 	recordId := []string{}
 
+	//Read the search values
 	urlValues := r.URL.Query()
 
+	//Searchig is based on name and namespace
 	input := ApiAPSearch{
 		urlValues["name"],
 		urlValues["namespace"],
@@ -52,7 +54,7 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	query := readOne(input)
 
 	if len(input.Name) == 0 {
-		query = nil
+		query = nil //If no name and namespace is provided then we have to retrieve all profiles thus we send nil into db query
 	}
 
 	err = mongo.Find(session, "AR", "aps", query, "name", &results)
@@ -60,10 +62,10 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	recordId, err = mongo.GetId(session, "AR", "aps", query)
 
 	for i := range results {
-		results[i].ID = recordId[i]
+		results[i].ID = recordId[i] //We add a record id value to the records we retrieved
 	}
 
-	output, err := readXML(results)
+	output, err := readXML(results) //Render the results into XML format
 
 	if err != nil {
 		panic(err)
