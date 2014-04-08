@@ -33,19 +33,19 @@ import (
 func prepareFilter(input ApiAPSearch) bson.M {
 
 	filter := bson.M{
-		"name": bson.M{"$in": input.Name},
-		"namespace" : bson.M{"$in": input.Namespace},
+		"name":      bson.M{"$in": input.Name},
+		"namespace": bson.M{"$in": input.Namespace},
 	}
-	
+
 	return filter
 }
 
 func createOne(input ApiAPInput) bson.M {
 	query := bson.M{
-		"name": input.Name,
+		"name":      input.Name,
 		"namespace": input.Namespace,
-		"groups": input.Groups,
-		"poem": input.Poem,
+		"groups":    input.Groups,
+		"poem":      input.Poem,
 	}
 	return query
 }
@@ -59,4 +59,3 @@ func readOne(input ApiAPSearch) bson.M {
 // 	filter := prepareFilter(input)
 // 	return filter
 // }
-

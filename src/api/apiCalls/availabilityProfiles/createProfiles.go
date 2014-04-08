@@ -31,70 +31,70 @@ import (
 	"api/utils/config"
 	"api/utils/mongo"
 	"encoding/json"
-    "io/ioutil"
+	"io/ioutil"
 	"net/http"
 )
 
 func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	
+
 	answer := ""
-	
+
 	if authentication.Authenticate(r.Header, cfg) {
-		var name []string 
-		var namespace []string 
-			
+		var name []string
+		var namespace []string
+
 		reqBody, err := ioutil.ReadAll(r.Body)
-	
+
 		if err != nil {
 			panic(err)
 		}
-		
+
 		input := ApiAPInput{}
-		
+
 		results := []ApiAPOutput{}
-		
+
 		err = json.Unmarshal(reqBody, &input)
-		
-		name = append(name,input.Name)
-		
-		namespace = append(namespace,input.Name)
-		
+
+		name = append(name, input.Name)
+
+		namespace = append(namespace, input.Name)
+
 		search := ApiAPSearch{
 			name,
 			namespace,
-		}		
-				
+		}
+
 		session := mongo.OpenSession(cfg)
-		
+
 		query := readOne(search)
-		
+
 		err = mongo.Find(session, "AR", "aps", query, "name", &results)
-		
-		if len(results)<=0{
-			
+
+		if len(results) <= 0 {
+
 			query := createOne(input)
-			
+
 			err = mongo.Insert(session, "AR", "aps", query)
-			
+
 			if err != nil {
 				panic(err)
 			}
-			
+
 			answer = "Availability Profile record successfully created"
-			
-		} else{
+
+		} else {
 			answer = "An availability profile with that name already exists"
 		}
-	
+
 	} else {
 		answer = http.StatusText(403)
 	}
-	
+
 	output, err := messageXML(answer)
-	
+
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return output
 }

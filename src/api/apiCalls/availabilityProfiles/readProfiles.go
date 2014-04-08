@@ -32,11 +32,10 @@ import (
 	"net/http"
 )
 
-
 func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	err := error(nil)
-	
+
 	recordId := []string{}
 
 	urlValues := r.URL.Query()
@@ -44,26 +43,26 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	input := ApiAPSearch{
 		urlValues["name"],
 		urlValues["namespace"],
-	}	
+	}
 
 	results := []ApiAPOutput{}
 
 	session := mongo.OpenSession(cfg)
-	
+
 	query := readOne(input)
 
 	if len(input.Name) == 0 {
 		query = nil
 	}
 
-    err = mongo.Find(session, "AR", "aps", query, "name", &results)
-	
+	err = mongo.Find(session, "AR", "aps", query, "name", &results)
+
 	recordId, err = mongo.GetId(session, "AR", "aps", query)
-	
+
 	for i := range results {
-		results[i].ID=recordId[i]
+		results[i].ID = recordId[i]
 	}
-		
+
 	output, err := readXML(results)
 
 	if err != nil {
@@ -71,5 +70,5 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	}
 
 	return output
-		
+
 }
