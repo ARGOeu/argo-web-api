@@ -40,7 +40,9 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 	answer := ""
 	
 	if authentication.Authenticate(r.Header, cfg) {
-		
+		var name []string 
+		var namespace []string 
+			
 		reqBody, err := ioutil.ReadAll(r.Body)
 	
 		if err != nil {
@@ -49,19 +51,40 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 		
 		input := ApiAPInput{}
 		
+		results := []ApiAPOutput{}
+		
 		err = json.Unmarshal(reqBody, &input)
+		
+		name = append(name,input.Name)
+		
+		namespace = append(namespace,input.Name)
+		
+		search := ApiAPSearch{
+			name,
+			namespace,
+		}		
 				
 		session := mongo.OpenSession(cfg)
 		
-		query := createOne(input)
+		query := readOne(search)
 		
-		err = mongo.Insert(session, "AR", "aps", query)
+		err = mongo.Find(session, "AR", "aps", query, "name", &results)
 		
-		if err != nil {
-			panic(err)
+		if len(results)<=0{
+			
+			query := createOne(input)
+			
+			err = mongo.Insert(session, "AR", "aps", query)
+			
+			if err != nil {
+				panic(err)
+			}
+			
+			answer = "Availability Profile record successfully created"
+			
+		} else{
+			answer = "An availability profile with that name already exists"
 		}
-					
-		answer = "Availability Profile record successfully created"
 	
 	} else {
 		answer = http.StatusText(403)
