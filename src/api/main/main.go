@@ -43,17 +43,17 @@ func main() {
 
 	//Create the server router
 	main_router := mux.NewRouter()
-	get_subrouter := main_router.Methods("GET").Subrouter() //Routes only GET requests
-	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter() //Routes only POST requests
-	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests 
-	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter() //Routes only PUT requests 
+	get_subrouter := main_router.Methods("GET").Subrouter()                                //Routes only GET requests
+	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
+	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
+	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile))
-	
+
 	//POEM PROFILE MANAGEMENT TO BE REMOVED/MODIFIED!!!!
 	// post_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
 	// get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
@@ -65,19 +65,18 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.UpdateProfiles))
 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
-	
+
 	//Recalculations
 	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
 	http.Handle("/", main_router)
-	
+
 	//Cache
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
-	
-	
+
 	//Web service binds to server. Requests served over HTTPS.
 	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
-		
+
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}

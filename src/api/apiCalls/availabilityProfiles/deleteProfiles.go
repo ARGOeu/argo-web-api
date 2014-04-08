@@ -35,21 +35,21 @@ import (
 )
 
 func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	
-	answer:=""
-	
+
+	answer := ""
+
 	if authentication.Authenticate(r.Header, cfg) {
-		
+
 		urlValues := r.URL.Path
-		
-		id := strings.Split(urlValues,"/")[4]
-		
+
+		id := strings.Split(urlValues, "/")[4]
+
 		session := mongo.OpenSession(cfg)
-	
-		err := mongo.IdRemove(session,"AR","aps",id)
-			
-		if err!=nil{
-			answer="No profile matching the requested id"
+
+		err := mongo.IdRemove(session, "AR", "aps", id)
+
+		if err != nil {
+			answer = "No profile matching the requested id"
 		} else {
 			answer = "Delete successful"
 		}
@@ -60,6 +60,6 @@ func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 	if err != nil {
 		panic(err)
 	}
- 	return output
-	
+	return output
+
 }

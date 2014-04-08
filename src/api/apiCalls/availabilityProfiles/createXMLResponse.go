@@ -28,29 +28,28 @@ package availabilityProfiles
 
 import "encoding/xml"
 
-
-type Group struct{
-	XMLName xml.Name 
+type Group struct {
+	XMLName       xml.Name
 	ServiceFlavor string `xml:"service_flavor,attr"`
 }
 
 type Or struct {
-	XMLName       xml.Name `xml:"OR"`
-	Group 		  []*Group   
+	XMLName xml.Name `xml:"OR"`
+	Group   []*Group
 }
 
-type And struct{
+type And struct {
 	XMLName xml.Name `xml:"AND"`
-	Or []*Or
+	Or      []*Or
 }
 
 type Profile struct {
-	XMLName xml.Name `xml:"profile"`
-	ID 		string 	 `xml:"id,attr"`
-	Name    string   `xml:"name,attr"`
-	Namespace string `xml:"namespace,attr"`
-	Poem 	string 	 `xml:"poem,attr"`
-	And  	*And
+	XMLName   xml.Name `xml:"profile"`
+	ID        string   `xml:"id,attr"`
+	Name      string   `xml:"name,attr"`
+	Namespace string   `xml:"namespace,attr"`
+	Poem      string   `xml:"poem,attr"`
+	And       *And
 }
 
 type ReadRoot struct {
@@ -60,30 +59,29 @@ type ReadRoot struct {
 
 type Message struct {
 	XMLName xml.Name `xml:"root"`
-	Message string	 
+	Message string
 }
-
 
 func readXML(results []ApiAPOutput) ([]byte, error) {
 	docRoot := &ReadRoot{}
 	for _, row := range results {
 		profile := &Profile{
-			ID:row.ID,
-			Name:row.Name,
-			Namespace:row.Namespace,
-			Poem:row.Poem,
+			ID:        row.ID,
+			Name:      row.Name,
+			Namespace: row.Namespace,
+			Poem:      row.Poem,
 		}
 		and := &And{}
 		docRoot.Profile = append(docRoot.Profile, profile)
-		for _, group := range row.Groups{
-			or:=&Or{}	
-	        for _, sf := range group{
-				group:=&Group{
-					ServiceFlavor:sf,
+		for _, group := range row.Groups {
+			or := &Or{}
+			for _, sf := range group {
+				group := &Group{
+					ServiceFlavor: sf,
 				}
 				or.Group = append(or.Group, group)
 			}
-			and.Or = append (and.Or,or)
+			and.Or = append(and.Or, or)
 		}
 		profile.And = and
 	}
@@ -91,7 +89,7 @@ func readXML(results []ApiAPOutput) ([]byte, error) {
 	return output, err
 }
 
-func messageXML(answer string) ([]byte, error){
+func messageXML(answer string) ([]byte, error) {
 	docRoot := &Message{}
 	docRoot.Message = answer
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
