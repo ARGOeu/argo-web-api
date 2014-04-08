@@ -38,28 +38,33 @@ func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 	answer := ""
 
+	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
 
+		//Extracting record id from url
 		urlValues := r.URL.Path
 
 		id := strings.Split(urlValues, "/")[4]
 
 		session := mongo.OpenSession(cfg)
 
+		//We remove the record bassed on its unique id
 		err := mongo.IdRemove(session, "AR", "aps", id)
 
 		if err != nil {
-			answer = "No profile matching the requested id"
+			answer = "No profile matching the requested id" //If not found we inform the user
 		} else {
-			answer = "Delete successful"
+			answer = "Delete successful" //We provide with the appropriate user response
 		}
 	} else {
-		answer = http.StatusText(403)
+		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
 	}
 	output, err := messageXML(answer)
+
 	if err != nil {
 		panic(err)
 	}
+
 	return output
 
 }

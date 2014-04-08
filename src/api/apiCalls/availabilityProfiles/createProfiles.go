@@ -39,10 +39,13 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 	answer := ""
 
+	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
+
 		var name []string
 		var namespace []string
 
+		//Reading the json input
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err != nil {
@@ -53,8 +56,10 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 		results := []ApiAPOutput{}
 
+		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
 
+		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
 
 		namespace = append(namespace, input.Name)
@@ -71,7 +76,7 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 		err = mongo.Find(session, "AR", "aps", query, "name", &results)
 
 		if len(results) <= 0 {
-
+			//If name-namespace combination is unique we insert the new record into mongo
 			query := createOne(input)
 
 			err = mongo.Insert(session, "AR", "aps", query)
@@ -79,7 +84,7 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 			if err != nil {
 				panic(err)
 			}
-
+			//Providing with the appropriate user response
 			answer = "Availability Profile record successfully created"
 
 		} else {
@@ -87,10 +92,10 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 		}
 
 	} else {
-		answer = http.StatusText(403)
+		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
 	}
 
-	output, err := messageXML(answer)
+	output, err := messageXML(answer) //Render the response into XML
 
 	if err != nil {
 		panic(err)
