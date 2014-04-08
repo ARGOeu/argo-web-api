@@ -24,7 +24,6 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-
 package availabilityProfiles
 
 import (
@@ -32,37 +31,37 @@ import (
 	"api/utils/config"
 	"api/utils/mongo"
 	"encoding/json"
-    "io/ioutil"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 func UpdateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	
-	answer:=""
-	
+
+	answer := ""
+
 	if authentication.Authenticate(r.Header, cfg) {
-		
+
 		urlValues := r.URL.Path
-		
-		id := strings.Split(urlValues,"/")[4]
-		
+
+		id := strings.Split(urlValues, "/")[4]
+
 		reqBody, err := ioutil.ReadAll(r.Body)
-	
+
 		if err != nil {
 			panic(err)
 		}
-		
-	 	input := ApiAPInput{}
-		
+
+		input := ApiAPInput{}
+
 		err = json.Unmarshal(reqBody, &input)
-		
+
 		session := mongo.OpenSession(cfg)
-	
-		err = mongo.IdUpdate(session,"AR","aps",id,input)
-			
-		if err!=nil{
-			answer="No profile matching the requested id"
+
+		err = mongo.IdUpdate(session, "AR", "aps", id, input)
+
+		if err != nil {
+			answer = "No profile matching the requested id"
 		} else {
 			answer = "Update successful"
 		}
@@ -73,6 +72,6 @@ func UpdateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 	if err != nil {
 		panic(err)
 	}
- 	return output
-	
+	return output
+
 }

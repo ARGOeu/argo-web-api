@@ -26,27 +26,24 @@
 
 package availabilityProfiles
 
-
 type ApiAPInput struct {
- 	Name 		  string `json:"Name"`
- 	Namespace	  string `json:"Namespace"`	
- 	Groups        [][]string
-	Poem 		  string  
+	Name      string `json:"Name"`
+	Namespace string `json:"Namespace"`
+	Groups    [][]string
+	Poem      string
 }
 
-type ApiAPSearch struct{
-	Name []string
+type ApiAPSearch struct {
+	Name      []string
 	Namespace []string
 }
 
 type ApiAPOutput struct {
-	ID			  string 			
- 	Name 		  string 	 	`bson:"name"`
- 	Namespace	  string 	 	`bson:"namespace"`	
- 	Groups        [][]string 	`bson:"groups"`
-	Poem 		  string  	 	`bson:"poem"`
+	ID        string
+	Name      string     `bson:"name"`
+	Namespace string     `bson:"namespace"`
+	Groups    [][]string `bson:"groups"`
+	Poem      string     `bson:"poem"`
 }
- 
- 
+
 //func init() {}
- 
