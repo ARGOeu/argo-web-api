@@ -40,12 +40,15 @@ func UpdateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 	answer := ""
 
+	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
 
+		//Extracting record id from url
 		urlValues := r.URL.Path
 
 		id := strings.Split(urlValues, "/")[4]
 
+		//Reading the json input
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err != nil {
@@ -54,24 +57,29 @@ func UpdateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 		input := ApiAPInput{}
 
+		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
 
 		session := mongo.OpenSession(cfg)
 
+		//We update the record bassed on its unique id
 		err = mongo.IdUpdate(session, "AR", "aps", id, input)
 
 		if err != nil {
-			answer = "No profile matching the requested id"
+			answer = "No profile matching the requested id" //If not found we inform the user
 		} else {
-			answer = "Update successful"
+			answer = "Update successful" //We provide with the appropriate user response
 		}
 	} else {
-		answer = http.StatusText(403)
+		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
 	}
-	output, err := messageXML(answer)
+
+	output, err := messageXML(answer) //Render the response into XML
+
 	if err != nil {
 		panic(err)
 	}
+
 	return output
 
 }

@@ -26,6 +26,7 @@
 
 package availabilityProfiles
 
+//Struct for inserting data into DB
 type ApiAPInput struct {
 	Name      string `json:"Name"`
 	Namespace string `json:"Namespace"`
@@ -33,11 +34,13 @@ type ApiAPInput struct {
 	Poem      string
 }
 
+//Struct for searching based on name and namespace combination
 type ApiAPSearch struct {
 	Name      []string
 	Namespace []string
 }
 
+//Struct for record retrieval
 type ApiAPOutput struct {
 	ID        string
 	Name      string     `bson:"name"`

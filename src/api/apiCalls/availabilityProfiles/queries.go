@@ -54,8 +54,3 @@ func readOne(input ApiAPSearch) bson.M {
 	filter := prepareFilter(input)
 	return filter
 }
-
-// func deleteOne(input ApiAPInput) bson.M {
-// 	filter := prepareFilter(input)
-// 	return filter
-// }
