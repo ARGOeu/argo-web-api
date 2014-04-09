@@ -24,32 +24,47 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngis
+package availabilityProfiles
 
-var customForm []string
+import (
+	"api/utils/authentication"
+	"api/utils/config"
+	"api/utils/mongo"
+	"net/http"
+	"strings"
+)
 
-type ApiNgiAvailabilityInProfileInput struct {
-	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
-	group_type           []string // may appear more than once. (eg: CMS_Site)
-	availabilityperiod   string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	// optional values
-	output     string   // default XML; possible values are: XML, JSON
-	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-	group_name []string // ngi name; may appear more than once
-}
+func DeleteProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-type ApiNgiAvailabilityInProfileOutput struct {
-	Date         string  "dt"
-	Namespace    string  "ns"
-	Profile      string  "p"
-	Ngi          string  "n"
-	Availability float64 "a"
-	Reliability  float64 "r"
-}
+	answer := ""
 
-func init() {
-	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+	//Authentication procedure
+	if authentication.Authenticate(r.Header, cfg) {
+
+		//Extracting record id from url
+		urlValues := r.URL.Path
+
+		id := strings.Split(urlValues, "/")[4]
+
+		session := mongo.OpenSession(cfg)
+
+		//We remove the record bassed on its unique id
+		err := mongo.IdRemove(session, "AR", "aps", id)
+
+		if err != nil {
+			answer = "No profile matching the requested id" //If not found we inform the user
+		} else {
+			answer = "Delete successful" //We provide with the appropriate user response
+		}
+	} else {
+		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
+	}
+	output, err := messageXML(answer)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return output
+
 }

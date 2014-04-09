@@ -24,32 +24,53 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngis
+package availabilityProfiles
 
-var customForm []string
+import (
+	"api/utils/config"
+	"api/utils/mongo"
+	"net/http"
+)
 
-type ApiNgiAvailabilityInProfileInput struct {
-	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
-	group_type           []string // may appear more than once. (eg: CMS_Site)
-	availabilityperiod   string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	// optional values
-	output     string   // default XML; possible values are: XML, JSON
-	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-	group_name []string // ngi name; may appear more than once
-}
+func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-type ApiNgiAvailabilityInProfileOutput struct {
-	Date         string  "dt"
-	Namespace    string  "ns"
-	Profile      string  "p"
-	Ngi          string  "n"
-	Availability float64 "a"
-	Reliability  float64 "r"
-}
+	err := error(nil)
 
-func init() {
-	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+	recordId := []string{}
+
+	//Read the search values
+	urlValues := r.URL.Query()
+
+	//Searchig is based on name and namespace
+	input := ApiAPSearch{
+		urlValues["name"],
+		urlValues["namespace"],
+	}
+
+	results := []ApiAPOutput{}
+
+	session := mongo.OpenSession(cfg)
+
+	query := readOne(input)
+
+	if len(input.Name) == 0 {
+		query = nil //If no name and namespace is provided then we have to retrieve all profiles thus we send nil into db query
+	}
+
+	err = mongo.Find(session, "AR", "aps", query, "name", &results)
+
+	recordId, err = mongo.GetId(session, "AR", "aps", query)
+
+	for i := range results {
+		results[i].ID = recordId[i] //We add a record id value to the records we retrieved
+	}
+
+	output, err := readXML(results) //Render the results into XML format
+
+	if err != nil {
+		panic(err)
+	}
+
+	return output
+
 }
