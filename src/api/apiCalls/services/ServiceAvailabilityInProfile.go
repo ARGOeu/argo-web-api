@@ -27,9 +27,9 @@
 package services
 
 import (
+	"api/utils/caches"
 	"api/utils/config"
 	"api/utils/mongo"
-	"api/utils/caches"
 	"net/http"
 )
 
@@ -57,7 +57,7 @@ func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg co
 	if found {
 		return output
 	}
-	
+
 	err := error(nil)
 	// Create a mongodb session
 	session := mongo.OpenSession(cfg)
