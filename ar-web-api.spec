@@ -51,11 +51,11 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
-* Wed Apr 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
-- Fixed sites result querying
+* Wed Apr 09 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
+- Added CRUD support for Availability Profiles
 * Tue Mar 25 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-2%{?dist}
 - Fixed recalculation history bug
-* Tue Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-1%{?dist}
+* Thu Mar 20 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-1%{?dist}
 - Changes in results querying to reflect new database schema
 * Wed Mar 19 2014 Nikolaos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.0-1%{?dist}
 - Support for VOs. Changes in grouping

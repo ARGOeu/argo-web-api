@@ -49,10 +49,21 @@ func main() {
 	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
+	
+	
+	// Grouping calls. 
+	// Groups are routed depending on the value of the parameter group type. FUTURE WORK: 
+	// 1) Move calls to a separate subrouter. 	
+	// 2) Provide with a default call informing the user of an invalid parameter
+	
+	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
+	Queries("group_type", "vo")
+	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
+	Queries("group_type", "site")
+	
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
-	get_subrouter.HandleFunc("/api/v1/sites_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile))
 
 	//POEM PROFILE MANAGEMENT TO BE REMOVED/MODIFIED!!!!
 	// post_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
