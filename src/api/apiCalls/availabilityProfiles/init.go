@@ -24,32 +24,29 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngis
+package availabilityProfiles
 
-var customForm []string
-
-type ApiNgiAvailabilityInProfileInput struct {
-	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
-	group_type           []string // may appear more than once. (eg: CMS_Site)
-	availabilityperiod   string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	// optional values
-	output     string   // default XML; possible values are: XML, JSON
-	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-	group_name []string // ngi name; may appear more than once
+//Struct for inserting data into DB
+type ApiAPInput struct {
+	Name      string `json:"Name"`
+	Namespace string `json:"Namespace"`
+	Groups    [][]string
+	Poem      string
 }
 
-type ApiNgiAvailabilityInProfileOutput struct {
-	Date         string  "dt"
-	Namespace    string  "ns"
-	Profile      string  "p"
-	Ngi          string  "n"
-	Availability float64 "a"
-	Reliability  float64 "r"
+//Struct for searching based on name and namespace combination
+type ApiAPSearch struct {
+	Name      []string
+	Namespace []string
 }
 
-func init() {
-	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+//Struct for record retrieval
+type ApiAPOutput struct {
+	ID        string
+	Name      string     `bson:"name"`
+	Namespace string     `bson:"namespace"`
+	Groups    [][]string `bson:"groups"`
+	Poem      string     `bson:"poem"`
 }
+
+//func init() {}
