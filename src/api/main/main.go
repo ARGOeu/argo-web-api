@@ -32,6 +32,7 @@ import (
 	//"api/apiCalls/profileCRUD"
 	"api/apiCalls/recalculations"
 	"api/apiCalls/services"
+	"api/apiCalls/serviceFlavors"
 	"api/apiCalls/sites"
 	"github.com/gorilla/mux"
 	"log"
