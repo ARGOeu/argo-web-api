@@ -54,7 +54,7 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 	}
 
 	if len(input.group_name) > 0 {
-		// TODO: We do not have the site name in the timeline
+		filter["s"] = bson.M{"$in": input.group_name}
 	}
 
 	filter["i"] = "Production"
