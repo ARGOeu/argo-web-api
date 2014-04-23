@@ -32,7 +32,6 @@ import (
 	"api/utils/mongo"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -90,9 +89,7 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 	}
 	
 	output, err = CreateXMLResponse(results)
-	
-	fmt.Println(results)
-	
+		
 	if len(results) > 0 {
 		caches.WriteCache("sf", input, output, cfg)
 	}

@@ -68,7 +68,7 @@ func Daily(input ApiSFAvailabilityInProfileInput) []bson.M {
 		{"$match": filter}, 
 		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "sf": "$sf", "s":"$s", "a":"$a", "r":"$r","p":"$p"}}},
 		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf","a":"$_id.a","r":"$_id.r","s":"$_id.s","p":"$_id.p"}},
-		{"$sort": bson.D{ {"sf", 1}, {"dt", 1}}}}
+		{"$sort": bson.D{ {"s",1}, {"sf", 1}, {"dt", 1}}}}
 
 	
 	return query
@@ -80,9 +80,9 @@ func Monthly(input ApiSFAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter}, 
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "p": "$p", "sf": "$sf"}, "a": bson.M{"$avg": "$a"},"r": bson.M{"$avg": "$r"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a":"$a","r":"$r"}},
-		{"$sort": bson.D{{"sf", 1}, {"d", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "s":"$s", "p": "$p", "sf": "$sf"}, "a": bson.M{"$avg": "$a"},"r": bson.M{"$avg": "$r"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a":"$a","r":"$r","s":"$_id.s","p":"$_id.p"}},
+		{"$sort": bson.D{{"s",1},{"sf", 1}, {"dt", 1}}}}
 
 	return query
 }

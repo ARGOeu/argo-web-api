@@ -92,6 +92,7 @@ func CreateXMLResponse(results []ApiSFAvailabilityInProfileOutput) ([]byte, erro
 				Site: row.Site,
 			}
 			profile.Site = append(profile.Site, site)
+			prevSF = ""
 		}
 		if prevSF != row.SF{
 			prevSF = row.SF
