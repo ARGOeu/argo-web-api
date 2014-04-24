@@ -1,6 +1,6 @@
 Name: ar-web-api
 Summary: A/R API
-Version: 1.2.2
+Version: 1.2.3
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -51,6 +51,10 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
+* Thu Apr 24 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.3-1%{?dist}
+- Added support for service flavor result querying 
+* Wed Apr 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
+- Fixed sites result querying
 * Wed Apr 09 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
 - Added CRUD support for Availability Profiles
 * Tue Mar 25 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.1-2%{?dist}
