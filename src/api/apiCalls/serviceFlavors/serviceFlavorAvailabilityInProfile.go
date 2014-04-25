@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -24,60 +24,73 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package services
+package serviceFlavors
 
 import (
 	"api/utils/caches"
 	"api/utils/config"
 	"api/utils/mongo"
 	"net/http"
+	"strings"
 )
 
-//Reply to requests about service_availability_in_profile
-func ServiceAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	// Parse the request into the input
+	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
-	input := ApiServiceAvailabilityInProfileInput{
+	input := ApiSFAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues["vo_name"],
-		urlValues["profile_name"],
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("period"),
+		urlValues.Get("profile"),
+		urlValues["site"],
 		urlValues["group_name"],
-		urlValues["service_flavour"],
-		urlValues["service_hostname"],
 	}
 
-	found, output := caches.HitCache("service_endpoint ", input, cfg)
+	output := []byte("")
+
+	found, output := caches.HitCache("sf", input, cfg)
 	if found {
 		return output
 	}
 
-	err := error(nil)
-	// Create a mongodb session
 	session := mongo.OpenSession(cfg)
 
-	results := []ApiServiceAvailabilityInProfileOutput{}
+	results := []ApiSFAvailabilityInProfileOutput{}
 
-	query := Timeline(input)
+	err := error(nil)
 
-	err = mongo.Pipe(session, "AR", "sites", query, &results)
+	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
 
-	//err = c.Find(q).Sort("p", "h", "sf").All(&results)
-	if err != nil {
-		return []byte("<root><error>" + err.Error() + "</error></root>")
+		query := Daily(input)
+
+		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
+
+		if err != nil {
+			panic(err)
+		}
+
+	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+
+		query := Monthly(input)
+
+		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
+
+		if err != nil {
+			panic(err)
+		}
+
 	}
 
-	//rootfmt.Println(results)
 	output, err = CreateXMLResponse(results)
 
 	if len(results) > 0 {
-		caches.WriteCache("service_endpoint ", input, output, cfg)
+		caches.WriteCache("sf", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)

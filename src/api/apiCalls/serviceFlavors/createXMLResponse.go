@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package vos
+package serviceFlavors
 
 import (
 	"encoding/xml"
@@ -41,15 +41,20 @@ type Availability struct {
 	Reliability  string   `xml:"reliability,attr"`
 }
 
-type Vo struct {
-	Vo          string `xml:"VO,attr"`
+type SF struct {
+	SF           string `xml:"Flavor,attr"`
 	Availability []*Availability
 }
 
+type Site struct {
+	Site string `xml:"Site,attr"`
+	SF   []*SF
+}
+
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Vo       []*Vo
+	XMLName xml.Name `xml:"Profile"`
+	Name    string   `xml:"name,attr"`
+	Site    []*Site
 }
 
 type Root struct {
@@ -57,13 +62,15 @@ type Root struct {
 	Profile []*Profile
 }
 
-func CreateXMLResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, error) {
+func CreateXMLResponse(results []ApiSFAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
 	prevProfile := ""
-	prevVo := ""
-	vo := &Vo{}
+	prevSite := ""
+	prevSF := ""
+	sf := &SF{}
+	site := &Site{}
 	profile := &Profile{}
 	// we iterate through the results struct array
 	// keeping only the value of each row
@@ -74,22 +81,28 @@ func CreateXMLResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, erro
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
-				Name:      row.Profile,
+				Name: row.Profile,
 			}
 			docRoot.Profile = append(docRoot.Profile, profile)
-			prevVo = ""
+			prevSite = ""
 		}
-		//if new ngi does not match the previous ngi value
-		//we create a new ngi entry in the xml
-		if prevVo != row.Vo {
-			prevVo = row.Vo
-			vo = &Vo{
-				Vo: row.Vo,
+		if prevSite != row.Site {
+			prevSite = row.Site
+			site = &Site{
+				Site: row.Site,
 			}
-			profile.Vo = append(profile.Vo, vo)
+			profile.Site = append(profile.Site, site)
+			prevSF = ""
+		}
+		if prevSF != row.SF {
+			prevSF = row.SF
+			sf = &SF{
+				SF: row.SF,
+			}
+			site.SF = append(site.SF, sf)
 		}
 		//we append the new availability values
-		vo.Availability = append(vo.Availability,
+		sf.Availability = append(sf.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),

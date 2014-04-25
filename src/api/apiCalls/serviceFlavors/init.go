@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -24,28 +24,25 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngis
+package serviceFlavors
 
 var customForm []string
 
-type ApiNgiAvailabilityInProfileInput struct {
+type ApiSFAvailabilityInProfileInput struct {
 	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
-	group_type           []string // may appear more than once. (eg: CMS_Site)
-	availabilityperiod   string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	// optional values
-	output     string   // default XML; possible values are: XML, JSON
-	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-	group_name []string // ngi name; may appear more than once
+	start_time         string // UTC time in W3C format
+	end_time           string // UTC time in W3C format
+	availabilityperiod string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	profile            string
+	site               []string // egi site
+	group_name         []string // sf name; may appear more than once
 }
 
-type ApiNgiAvailabilityInProfileOutput struct {
+type ApiSFAvailabilityInProfileOutput struct {
 	Date         string  "dt"
-	Namespace    string  "ns"
+	SF           string  "sf"
+	Site         string  "s"
 	Profile      string  "p"
-	Ngi          string  "n"
 	Availability float64 "a"
 	Reliability  float64 "r"
 }

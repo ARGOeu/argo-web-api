@@ -31,6 +31,10 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+type Id struct {
+	ID bson.ObjectId `bson:"_id"`
+}
+
 func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
 
 	c := session.DB(dbName).C(collectionName)
@@ -65,5 +69,59 @@ func Insert(session *mgo.Session, dbName string, collectionName string, query bs
 	err := c.Insert(query)
 
 	return err
+
+}
+
+func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo, error) {
+
+	c := openCollection(session, dbName, collectionName)
+
+	info, err := c.RemoveAll(query)
+
+	return info, err
+
+}
+
+func IdRemove(session *mgo.Session, dbName string, collectionName string, id string) error {
+
+	c := openCollection(session, dbName, collectionName)
+
+	rid := bson.ObjectIdHex(id)
+
+	err := c.RemoveId(rid)
+
+	return err
+
+}
+
+func IdUpdate(session *mgo.Session, dbName string, collectionName string, id string, update interface{}) error {
+
+	c := openCollection(session, dbName, collectionName)
+
+	rid := bson.ObjectIdHex(id)
+
+	err := c.UpdateId(rid, update)
+
+	return err
+
+}
+
+func GetId(session *mgo.Session, dbName string, collectionName string, query bson.M) ([]string, error) {
+
+	temp := []Id{}
+
+	var s []string
+
+	c := openCollection(session, dbName, collectionName)
+
+	err := c.Find(query).Select(bson.M{"_id": 1}).All(&temp)
+
+	for i := range temp {
+
+		s = append(s, temp[i].ID.Hex())
+
+	}
+
+	return s, err
 
 }
