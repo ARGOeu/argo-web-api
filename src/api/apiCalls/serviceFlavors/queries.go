@@ -45,44 +45,43 @@ func prepareFilter(input ApiSFAvailabilityInProfileInput) bson.M {
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
-		"p" : input.profile,
+		"p":  input.profile,
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
-	}	
-	
+	}
+
 	if len(input.group_name) > 0 {
 		filter["sf"] = bson.M{"$in": input.group_name}
 	}
-	
+
 	if len(input.site) > 0 {
 		filter["s"] = bson.M{"$in": input.site}
 	}
-	
+
 	return filter
 }
 
 func Daily(input ApiSFAvailabilityInProfileInput) []bson.M {
-	
-	filter := prepareFilter(input)
-		
-	query := []bson.M{
-		{"$match": filter}, 
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "sf": "$sf", "s":"$s", "a":"$a", "r":"$r","p":"$p"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf","a":"$_id.a","r":"$_id.r","s":"$_id.s","p":"$_id.p"}},
-		{"$sort": bson.D{ {"s",1}, {"sf", 1}, {"dt", 1}}}}
 
-	
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "sf": "$sf", "s": "$s", "a": "$a", "r": "$r", "p": "$p"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a": "$_id.a", "r": "$_id.r", "s": "$_id.s", "p": "$_id.p"}},
+		{"$sort": bson.D{{"s", 1}, {"sf", 1}, {"dt", 1}}}}
+
 	return query
 }
 
 func Monthly(input ApiSFAvailabilityInProfileInput) []bson.M {
-	
+
 	filter := prepareFilter(input)
 
 	query := []bson.M{
-		{"$match": filter}, 
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "s":"$s", "p": "$p", "sf": "$sf"}, "a": bson.M{"$avg": "$a"},"r": bson.M{"$avg": "$r"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a":"$a","r":"$r","s":"$_id.s","p":"$_id.p"}},
-		{"$sort": bson.D{{"s",1},{"sf", 1}, {"dt", 1}}}}
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "s": "$s", "p": "$p", "sf": "$sf"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a": "$a", "r": "$r", "s": "$_id.s", "p": "$_id.p"}},
+		{"$sort": bson.D{{"s", 1}, {"sf", 1}, {"dt", 1}}}}
 
 	return query
 }

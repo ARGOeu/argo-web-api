@@ -34,6 +34,7 @@ import (
 	"api/apiCalls/services"
 	"api/apiCalls/serviceFlavors"
 	"api/apiCalls/sites"
+	"api/apiCalls/vos"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

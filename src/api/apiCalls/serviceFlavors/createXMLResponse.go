@@ -47,14 +47,14 @@ type SF struct {
 }
 
 type Site struct {
-	Site          string `xml:"Site,attr"`
-	SF			  []*SF
+	Site string `xml:"Site,attr"`
+	SF   []*SF
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Site      []*Site
+	XMLName xml.Name `xml:"Profile"`
+	Name    string   `xml:"name,attr"`
+	Site    []*Site
 }
 
 type Root struct {
@@ -81,7 +81,7 @@ func CreateXMLResponse(results []ApiSFAvailabilityInProfileOutput) ([]byte, erro
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
-				Name:      row.Profile,
+				Name: row.Profile,
 			}
 			docRoot.Profile = append(docRoot.Profile, profile)
 			prevSite = ""
@@ -94,15 +94,15 @@ func CreateXMLResponse(results []ApiSFAvailabilityInProfileOutput) ([]byte, erro
 			profile.Site = append(profile.Site, site)
 			prevSF = ""
 		}
-		if prevSF != row.SF{
+		if prevSF != row.SF {
 			prevSF = row.SF
 			sf = &SF{
 				SF: row.SF,
 			}
-			site.SF = append(site.SF, sf)		
+			site.SF = append(site.SF, sf)
 		}
 		//we append the new availability values
-	    sf.Availability = append(sf.Availability,
+		sf.Availability = append(sf.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
