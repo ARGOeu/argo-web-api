@@ -27,9 +27,9 @@
 package sites
 
 import (
+	"api/utils/caches"
 	"api/utils/config"
 	"api/utils/mongo"
-	"api/utils/caches"
 	"net/http"
 	"strings"
 )
@@ -49,7 +49,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
-	
+
 	found, output := caches.HitCache("sites", input, cfg)
 	if found {
 		return output

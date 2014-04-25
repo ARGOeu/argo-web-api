@@ -42,7 +42,6 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-
 func parseCSV(data string) []string {
 	splitted := strings.SplitN(data, ",", -1)
 
