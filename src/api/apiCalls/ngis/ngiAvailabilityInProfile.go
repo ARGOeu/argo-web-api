@@ -43,10 +43,8 @@ func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("availability_profile"),
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("granularity"),
+		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 

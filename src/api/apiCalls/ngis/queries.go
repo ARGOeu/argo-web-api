@@ -49,10 +49,6 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 		"ap": input.availability_profile,
 	}
 
-	if len(input.namespace) > 0 {
-		filter["ns"] = bson.M{"$in": input.namespace}
-	}
-
 	if len(input.group_name) > 0 {
 		filter["n"] = bson.M{"$in": input.group_name}
 	}
