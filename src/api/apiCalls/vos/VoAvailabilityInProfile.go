@@ -49,7 +49,7 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 		urlValues["namespace"],
 		urlValues["group_name"],
 	}
-	
+
 	output := []byte("")
 
 	found, output := caches.HitCache("vos", input, cfg)
@@ -66,9 +66,9 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 		customForm[1] = "2006-01-02"
 
 		query := Daily(input)
-		
+
 		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 
@@ -77,18 +77,18 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		
+
 		query := Monthly(input)
-		
+
 		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		
-		if err !=nil {
+
+		if err != nil {
 			panic(err)
 		}
-		
+
 	}
 	output, err = CreateXMLResponse(results)
-	
+
 	if len(results) > 0 {
 		caches.WriteCache("vos", input, output, cfg)
 	}

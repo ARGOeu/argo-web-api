@@ -42,14 +42,14 @@ type Availability struct {
 }
 
 type Vo struct {
-	Vo          string `xml:"VO,attr"`
+	Vo           string `xml:"VO,attr"`
 	Availability []*Availability
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Vo       []*Vo
+	XMLName xml.Name `xml:"Profile"`
+	Name    string   `xml:"name,attr"`
+	Vo      []*Vo
 }
 
 type Root struct {
@@ -74,7 +74,7 @@ func CreateXMLResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, erro
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
-				Name:      row.Profile,
+				Name: row.Profile,
 			}
 			docRoot.Profile = append(docRoot.Profile, profile)
 			prevVo = ""

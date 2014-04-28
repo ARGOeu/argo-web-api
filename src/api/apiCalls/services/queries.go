@@ -71,9 +71,9 @@ func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M {
 
 func Timeline(input ApiServiceAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
-	
+
 	query := []bson.M{{"$match": filter}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}, {"d", 1}}}}
-	
+
 	return query
 
 }

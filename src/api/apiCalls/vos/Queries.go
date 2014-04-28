@@ -45,28 +45,27 @@ func prepareFilter(input ApiVoAvailabilityInProfileInput) bson.M {
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
-		"p":bson.M{"$in": input.profile_name},
+		"p": bson.M{"$in": input.profile_name},
 		"d": bson.M{"$gte": tsYMD, "$lte": teYMD},
-	}	
-	
+	}
+
 	if len(input.group_name) > 0 {
 		filter["v"] = bson.M{"$in": input.group_name}
 	}
-	
+
 	return filter
 }
 
 func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
-	
+
 	filter := prepareFilter(input)
-	
+
 	query := []bson.M{
-		{"$match": filter}, 
-		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a","r": "$r"}}},
-		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p","a":"$_id.a","r":"$_id.r"}},
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
 		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
 
-	
 	return query
 }
 
@@ -74,9 +73,9 @@ func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
 
 	query := []bson.M{
-		{"$match": filter}, 
-		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 6}}}, "p": "$p", "v": "$v"}, "a": bson.M{"$avg": "$a"},"r": bson.M{"$avg": "$r"}}},
-		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p","a":"$a","r":"$r"}},
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 6}}}, "p": "$p", "v": "$v"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$a", "r": "$r"}},
 		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
 
 	return query
