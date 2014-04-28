@@ -32,10 +32,10 @@ type ApiSFAvailabilityInProfileInput struct {
 	// mandatory values
 	start_time         string // UTC time in W3C format
 	end_time           string // UTC time in W3C format
-	availabilityperiod string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
 	profile            string
+	granularity		   string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	flavor        []string // sf name; may appear more than once
 	site               []string // egi site
-	group_name         []string // sf name; may appear more than once
 }
 
 type ApiSFAvailabilityInProfileOutput struct {
