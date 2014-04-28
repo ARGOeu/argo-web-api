@@ -59,7 +59,7 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 	results := []ApiVoAvailabilityInProfileOutput{}
 
 	err := error(nil)
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
@@ -72,7 +72,7 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 
 		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 

@@ -45,7 +45,7 @@ func prepareFilter(input ApiVoAvailabilityInProfileInput) bson.M {
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
-		"p": bson.M{"$in": input.profile_name},
+		"p": bson.M{"$in": input.availability_profile},
 		"d": bson.M{"$gte": tsYMD, "$lte": teYMD},
 	}
 
