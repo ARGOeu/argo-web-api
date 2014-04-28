@@ -42,11 +42,9 @@ func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.
 	input := ApiVoAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues["profile_name"],
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("availability_profile"),
+		urlValues.Get("granularity"),
+		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
