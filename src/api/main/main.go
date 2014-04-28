@@ -54,9 +54,9 @@ func main() {
 	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
 
-	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
 		Queries("group_type", "vo")
-	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
 		Queries("group_type", "site")
 
 	//Basic api calls
