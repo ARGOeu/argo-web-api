@@ -52,8 +52,7 @@ func main() {
 	//All requests that modify data must provide with authentication credentials
 		
 	// Grouping calls. 
-	// Groups are routed depending on the value of the parameter group type. FUTURE WORK: 
-	// 1) Move calls to a separate subrouter. 	
+	// Groups are routed depending on the value of the parameter group type. 
 	// 2) Provide with a default call informing the user of an invalid parameter
 	
 	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
@@ -66,12 +65,7 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavors.ServiceFlavorAvailabilityInProfile)).
 	Queries("group_type", "sf")
-	//POEM PROFILE MANAGEMENT TO BE REMOVED/MODIFIED!!!!
-	// post_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
-	// get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
-	// get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", profileCRUD.ReadOneProfile))
-	//SOME UPDATE METHOD MISSING
-	//post_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", profileCRUD.DeleteProfile))
+	
 
 	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.CreateProfiles))
 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
