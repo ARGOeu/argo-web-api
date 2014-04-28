@@ -43,10 +43,8 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("availability_profile"),
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("granularity"),
+		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
@@ -61,7 +59,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 	results := []ApiSiteAvailabilityInProfileOutput{}
 
 	// Select the granularity of the search daily/monthly
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
@@ -69,7 +67,7 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 
 		err = mongo.Pipe(session, "AR", "sites", query, &results)
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 
