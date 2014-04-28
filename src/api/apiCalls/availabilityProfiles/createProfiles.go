@@ -62,7 +62,7 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
 
-		namespace = append(namespace, input.Name)
+		namespace = append(namespace, input.Namespace)
 
 		search := ApiAPSearch{
 			name,
