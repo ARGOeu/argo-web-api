@@ -53,11 +53,10 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 		filter["s"] = bson.M{"$in": input.group_name}
 	}
 
-	//Don't see the purpose for that 
-	// filter["i"] = "Production"
-// 	filter["cs"] = "Certified"
-// 	filter["pr"] = "Y"
-// 	filter["m"] = "Y"
+	filter["i"] = input.infrastructure
+	filter["cs"] = input.certification
+	filter["pr"] = input.production
+	filter["m"] =  input.monitored
 
 	return filter
 }
