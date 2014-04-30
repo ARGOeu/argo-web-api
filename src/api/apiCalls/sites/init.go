@@ -30,15 +30,15 @@ var customForm []string
 
 type ApiSiteAvailabilityInProfileInput struct {
 	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
+	start_time           string // UTC time in W3C format
+	end_time             string // UTC time in W3C format
+	availability_profile string //availability profile
 	// optional values
-	granularity   		 string //availability period; possible values: `DAILY`, MONTHLY`
-	infrastructure 		 string   //infrastructure name
-	production			 string   //production or not
-	monitored 			 string   //yes or no
-	certification		 string   //certification status
+	granularity    string //availability period; possible values: `DAILY`, MONTHLY`
+	infrastructure string //infrastructure name
+	production     string //production or not
+	monitored      string //yes or no
+	certification  string //certification status
 	//format    string   // default XML; possible values are: XML, JSON
 	group_name []string // site name; may appear more than once
 }

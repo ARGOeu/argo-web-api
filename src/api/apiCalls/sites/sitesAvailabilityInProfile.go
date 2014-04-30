@@ -51,32 +51,32 @@ func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg conf
 		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
-	
-	if len(input.infrastructure)==0{
+
+	if len(input.infrastructure) == 0 {
 		input.infrastructure = "Production"
 	}
-	
-	if len(input.production)==0 || input.production=="true"{
+
+	if len(input.production) == 0 || input.production == "true" {
 		input.production = "Y"
-	}else{
+	} else {
 		input.production = "N"
 	}
-	
-	if len(input.monitored)==0 || input.monitored=="true"{
+
+	if len(input.monitored) == 0 || input.monitored == "true" {
 		input.monitored = "Y"
-	}else{
+	} else {
 		input.monitored = "N"
 	}
 
-	if len(input.certification)==0{
+	if len(input.certification) == 0 {
 		input.certification = "Certified"
 	}
-		
+
 	found, output := caches.HitCache("sites", input, cfg)
 	if found {
 		return output
 	}
-	
+
 	err := error(nil)
 	session := mongo.OpenSession(cfg)
 

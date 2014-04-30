@@ -30,12 +30,12 @@ var customForm []string
 
 type ApiSFAvailabilityInProfileInput struct {
 	// mandatory values
-	start_time         string // UTC time in W3C format
-	end_time           string // UTC time in W3C format
-	profile            string
-	granularity		   string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	flavor        []string // sf name; may appear more than once
-	site               []string // egi site
+	start_time  string // UTC time in W3C format
+	end_time    string // UTC time in W3C format
+	profile     string
+	granularity string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	flavor      []string // sf name; may appear more than once
+	site        []string // egi site
 }
 
 type ApiSFAvailabilityInProfileOutput struct {

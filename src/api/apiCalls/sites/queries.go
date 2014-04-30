@@ -56,7 +56,7 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 	filter["i"] = input.infrastructure
 	filter["cs"] = input.certification
 	filter["pr"] = input.production
-	filter["m"] =  input.monitored
+	filter["m"] = input.monitored
 
 	return filter
 }
