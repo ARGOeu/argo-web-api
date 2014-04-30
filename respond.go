@@ -27,7 +27,7 @@
 package main
 
 import (
-	"api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/config"
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"

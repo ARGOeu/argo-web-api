@@ -27,7 +27,7 @@
 package authentication
 
 import (
-	"api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/config"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"

@@ -27,13 +27,13 @@
 package main
 
 import (
-	"api/apiCalls/availabilityProfiles"
-	"api/apiCalls/ngis"
-	"api/apiCalls/recalculations"
-	"api/apiCalls/serviceFlavors"
-	"api/apiCalls/services"
-	"api/apiCalls/sites"
-	"api/apiCalls/vos"
+	"github.com/argoeu/ar-web-api/apiCalls/availabilityProfiles"
+	"github.com/argoeu/ar-web-api/apiCalls/ngis"
+	"github.com/argoeu/ar-web-api/apiCalls/recalculations"
+	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
+	"github.com/argoeu/ar-web-api/apiCalls/services"
+	"github.com/argoeu/ar-web-api/apiCalls/sites"
+	"github.com/argoeu/ar-web-api/apiCalls/vos"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

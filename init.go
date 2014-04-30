@@ -27,7 +27,7 @@
 package main
 
 import (
-	"api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/makistsan/go-lru-cache"
 	"log"
 	"os"

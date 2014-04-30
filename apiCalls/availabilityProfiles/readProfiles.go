@@ -27,8 +27,8 @@
 package availabilityProfiles
 
 import (
-	"api/utils/config"
-	"api/utils/mongo"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 )
 

@@ -27,9 +27,9 @@
 package recalculations
 
 import (
-	"api/utils/authentication"
-	"api/utils/config"
-	"api/utils/mongo"
+	"github.com/argoeu/ar-web-api/utils/authentication"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
 	"fmt"
 	"labix.org/v2/mgo/bson"
 	"net/http"
