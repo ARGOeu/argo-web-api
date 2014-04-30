@@ -49,8 +49,8 @@ func prepareFilter(input ApiSFAvailabilityInProfileInput) bson.M {
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 	}
 
-	if len(input.group_name) > 0 {
-		filter["sf"] = bson.M{"$in": input.group_name}
+	if len(input.flavor) > 0 {
+		filter["sf"] = bson.M{"$in": input.flavor}
 	}
 
 	if len(input.site) > 0 {

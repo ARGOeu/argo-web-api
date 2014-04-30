@@ -29,10 +29,9 @@ package main
 import (
 	"api/apiCalls/availabilityProfiles"
 	"api/apiCalls/ngis"
-	//"api/apiCalls/profileCRUD"
 	"api/apiCalls/recalculations"
-	"api/apiCalls/services"
 	"api/apiCalls/serviceFlavors"
+	"api/apiCalls/services"
 	"api/apiCalls/sites"
 	"api/apiCalls/vos"
 	"github.com/gorilla/mux"
@@ -50,28 +49,21 @@ func main() {
 	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
 	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
-		
-	// Grouping calls. 
-	// Groups are routed depending on the value of the parameter group type. FUTURE WORK: 
-	// 1) Move calls to a separate subrouter. 	
+
+	// Grouping calls.
+	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
-	
-	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
-	Queries("group_type", "vo")
-	get_subrouter.HandleFunc("/api/v1/group_availability_in_profile", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
-	Queries("group_type", "site")
-	
+
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", vos.VoAvailabilityInProfile)).
+		Queries("group_type", "vo")
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
+		Queries("group_type", "site")
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile)).
+		Queries("group_type", "ngi")
+
 	//Basic api calls
-	get_subrouter.HandleFunc("/api/v1/service_availability_in_profile", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
-	get_subrouter.HandleFunc("/api/v1/ngi_availability_in_profile", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile))
-	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavors.ServiceFlavorAvailabilityInProfile)).
-	Queries("group_type", "sf")
-	//POEM PROFILE MANAGEMENT TO BE REMOVED/MODIFIED!!!!
-	// post_subrouter.HandleFunc("/api/v1/profiles/create", Respond("text/xml", "utf-8", profileCRUD.CreateProfile))
-	// get_subrouter.HandleFunc("/api/v1/profiles", Respond("text/xml", "utf-8", profileCRUD.ReadAllProfiles))
-	// get_subrouter.HandleFunc("/api/v1/profiles/getone", Respond("text/xml", "utf-8", profileCRUD.ReadOneProfile))
-	//SOME UPDATE METHOD MISSING
-	//post_subrouter.HandleFunc("/api/v1/profiles/remove", Respond("text/xml", "utf-8", profileCRUD.DeleteProfile))
+	get_subrouter.HandleFunc("/api/v1/service_availability", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavors.ServiceFlavorAvailabilityInProfile))
 
 	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.CreateProfiles))
 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))

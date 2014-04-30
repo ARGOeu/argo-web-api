@@ -49,18 +49,14 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 		"ap": input.availability_profile,
 	}
 
-	if len(input.namespace) > 0 {
-		filter["ns"] = bson.M{"$in": input.namespace}
-	}
-
 	if len(input.group_name) > 0 {
 		filter["s"] = bson.M{"$in": input.group_name}
 	}
 
-	filter["i"] = "Production"
-	filter["cs"] = "Certified"
-	filter["pr"] = "Y"
-	filter["m"] = "Y"
+	filter["i"] = input.infrastructure
+	filter["cs"] = input.certification
+	filter["pr"] = input.production
+	filter["m"] = input.monitored
 
 	return filter
 }
