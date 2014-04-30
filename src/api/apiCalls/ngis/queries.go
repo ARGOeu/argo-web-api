@@ -52,6 +52,12 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 	if len(input.group_name) > 0 {
 		filter["n"] = bson.M{"$in": input.group_name}
 	}
+	
+	filter["i"] = input.infrastructure
+	filter["cs"] = input.certification
+	filter["pr"] = input.production
+	filter["m"] =  input.monitored
+	
 	return filter
 }
 
