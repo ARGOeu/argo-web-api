@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package vos
+package ngis
 
 import (
 	"api/utils/caches"
@@ -34,63 +34,77 @@ import (
 	"strings"
 )
 
-func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func NgiAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
-	input := ApiVoAvailabilityInProfileInput{
+	input := ApiNgiAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues["profile_name"],
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("availability_profile"),
+		urlValues.Get("granularity"),
+		urlValues.Get("infrastructure"),
+		urlValues.Get("production"),
+		urlValues.Get("monitored"),
+		urlValues.Get("certification"),
+		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
-	
-	output := []byte("")
 
-	found, output := caches.HitCache("vos", input, cfg)
+	if len(input.infrastructure) == 0 {
+		input.infrastructure = "Production"
+	}
+
+	if len(input.production) == 0 || input.production == "true" {
+		input.production = "Y"
+	} else {
+		input.production = "N"
+	}
+
+	if len(input.monitored) == 0 || input.monitored == "true" {
+		input.monitored = "Y"
+	} else {
+		input.monitored = "N"
+	}
+
+	if len(input.certification) == 0 {
+		input.certification = "Certified"
+	}
+
+	found, output := caches.HitCache("ngis", input, cfg)
 	if found {
 		return output
 	}
 	session := mongo.OpenSession(cfg)
 
-	results := []ApiVoAvailabilityInProfileOutput{}
+	results := []ApiNgiAvailabilityInProfileOutput{}
 
 	err := error(nil)
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
 		query := Daily(input)
-		
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		if err != nil{
-			panic(err)
-		}
 
-		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		
+
 		query := Monthly(input)
-		
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		
-		if err !=nil {
-			panic(err)
-		}
-		
+
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
 	}
+
+	if err != nil {
+		return []byte("<root><error>" + err.Error() + "</error></root>")
+	}
+
 	output, err = CreateXMLResponse(results)
-	
 	if len(results) > 0 {
-		caches.WriteCache("vos", input, output, cfg)
+		caches.WriteCache("ngis", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)

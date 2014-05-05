@@ -42,10 +42,10 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 	input := ApiSFAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("period"),
 		urlValues.Get("profile"),
+		urlValues.Get("granularity"),
+		urlValues["flavor"],
 		urlValues["site"],
-		urlValues["group_name"],
 	}
 
 	output := []byte("")
@@ -61,7 +61,7 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 
 	err := error(nil)
 
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
@@ -73,7 +73,7 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 			panic(err)
 		}
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 

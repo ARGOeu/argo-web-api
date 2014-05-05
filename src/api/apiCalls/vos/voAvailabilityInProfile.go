@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package sites
+package vos
 
 import (
 	"api/utils/caches"
@@ -34,61 +34,64 @@ import (
 	"strings"
 )
 
-func SitesAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func VoAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	// Parse the request into the input
+	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
-	input := ApiSiteAvailabilityInProfileInput{
+	input := ApiVoAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("availability_profile"),
-		urlValues["group_type"],
-		urlValues.Get("type"),
-		urlValues.Get("output"),
-		urlValues["namespace"],
+		urlValues.Get("granularity"),
+		//urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
-	found, output := caches.HitCache("sites", input, cfg)
+	output := []byte("")
+
+	found, output := caches.HitCache("vos", input, cfg)
 	if found {
 		return output
 	}
-
-	err := error(nil)
 	session := mongo.OpenSession(cfg)
 
-	results := []ApiSiteAvailabilityInProfileOutput{}
+	results := []ApiVoAvailabilityInProfileOutput{}
 
-	// Select the granularity of the search daily/monthly
-	if len(input.availabilityperiod) == 0 || strings.ToLower(input.availabilityperiod) == "daily" {
+	err := error(nil)
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
 		query := Daily(input)
 
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		if err != nil {
+			panic(err)
+		}
 
-	} else if strings.ToLower(input.availabilityperiod) == "monthly" {
+		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
+
+	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 
 		query := Monthly(input)
 
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
-	}
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
 
-	if err != nil {
-		return []byte("<root><error>" + err.Error() + "</error></root>")
-	}
+		if err != nil {
+			panic(err)
+		}
 
+	}
 	output, err = CreateXMLResponse(results)
+
 	if len(results) > 0 {
-		caches.WriteCache("sites", input, output, cfg)
+		caches.WriteCache("vos", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
 
 	return output
-
 }

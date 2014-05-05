@@ -30,15 +30,17 @@ var customForm []string
 
 type ApiNgiAvailabilityInProfileInput struct {
 	// mandatory values
-	start_time           string   // UTC time in W3C format
-	end_time             string   // UTC time in W3C format
-	availability_profile string   //availability profile
-	group_type           []string // may appear more than once. (eg: CMS_Site)
-	availabilityperiod   string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	start_time           string // UTC time in W3C format
+	end_time             string // UTC time in W3C format
+	availability_profile string //availability profile
 	// optional values
-	output     string   // default XML; possible values are: XML, JSON
-	namespace  []string // profile namespace; may appear more than once. (eg: ch.cern.sam)
-	group_name []string // ngi name; may appear more than once
+	granularity    string //availability period; possible values: `DAILY`, MONTHLY`
+	infrastructure string //infrastructure name
+	production     string //production or not
+	monitored      string //yes or no
+	certification  string //certification status
+	//format    string   // default XML; possible values are: XML, JSON
+	group_name []string // site name; may appear more than once
 }
 
 type ApiNgiAvailabilityInProfileOutput struct {

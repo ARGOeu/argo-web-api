@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package services
+package vos
 
 import (
 	"labix.org/v2/mgo/bson"
@@ -37,7 +37,7 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M {
+func prepareFilter(input ApiVoAvailabilityInProfileInput) bson.M {
 
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
@@ -45,35 +45,38 @@ func prepareFilter(input ApiServiceAvailabilityInProfileInput) bson.M {
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
-		"d":  bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"vo": bson.M{"$in": input.vo_name},
-		"p":  bson.M{"$in": input.profile_name},
-	}
-
-	if len(input.namespace) > 0 {
-		filter["ns"] = bson.M{"$in": input.namespace}
+		"p": bson.M{"$in": input.availability_profile},
+		"d": bson.M{"$gte": tsYMD, "$lte": teYMD},
 	}
 
 	if len(input.group_name) > 0 {
-		// TODO: We do not have the site name in the timeline
-	}
-
-	if len(input.service_flavour) > 0 {
-		filter["sf"] = bson.M{"$in": input.service_flavour}
-	}
-
-	if len(input.service_hostname) > 0 {
-		filter["h"] = bson.M{"$in": input.service_hostname}
+		filter["v"] = bson.M{"$in": input.group_name}
 	}
 
 	return filter
 }
 
-func Timeline(input ApiServiceAvailabilityInProfileInput) []bson.M {
-	filter := prepareFilter(input)
-	
-	query := []bson.M{{"$match": filter}, {"$sort": bson.D{{"p", 1}, {"h", 1}, {"sf", 1}, {"d", 1}}}}
-	
-	return query
+func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
 
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+
+	return query
+}
+
+func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 6}}}, "p": "$p", "v": "$v"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$a", "r": "$r"}},
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+
+	return query
 }
