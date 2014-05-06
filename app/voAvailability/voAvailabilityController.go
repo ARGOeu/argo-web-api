@@ -24,40 +24,82 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package vos
+package voAvailability
 
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/argoeu/ar-web-api/utils/caches"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
+	"net/http"
+	"strings"
 	"time"
 )
 
-// a series of auxiliary structs that will
-// help us form the xml response
-type Availability struct {
-	XMLName      xml.Name `xml:"Availability"`
-	Timestamp    string   `xml:"timestamp,attr"`
-	Availability string   `xml:"availability,attr"`
-	Reliability  string   `xml:"reliability,attr"`
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+
+	// This is the input we will receive from the API
+	urlValues := r.URL.Query()
+
+	input := ApiVoAvailabilityInProfileInput{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		urlValues.Get("availability_profile"),
+		urlValues.Get("granularity"),
+		//urlValues.Get("format"),
+		urlValues["group_name"],
+	}
+
+	output := []byte("")
+
+	found, output := caches.HitCache("vos", input, cfg)
+	if found {
+		return output
+	}
+	session := mongo.OpenSession(cfg)
+
+	results := []ApiVoAvailabilityInProfileOutput{}
+
+	err := error(nil)
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+
+		query := Daily(input)
+
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		if err != nil {
+			panic(err)
+		}
+
+		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
+
+	} else if strings.ToLower(input.granularity) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+
+		query := Monthly(input)
+
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	output, err = createResponse(results)
+
+	if len(results) > 0 {
+		caches.WriteCache("vos", input, output, cfg)
+	}
+
+	mongo.CloseSession(session)
+
+	return output
 }
 
-type Vo struct {
-	Vo           string `xml:"VO,attr"`
-	Availability []*Availability
-}
-
-type Profile struct {
-	XMLName xml.Name `xml:"Profile"`
-	Name    string   `xml:"name,attr"`
-	Vo      []*Vo
-}
-
-type Root struct {
-	XMLName xml.Name `xml:"root"`
-	Profile []*Profile
-}
-
-func CreateXMLResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 

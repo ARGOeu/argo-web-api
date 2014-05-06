@@ -24,9 +24,33 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package vos
+package voAvailability
 
-var customForm []string
+import (
+	"labix.org/v2/mgo/bson"
+	"strconv"
+	"time"
+)
+
+type Availability struct {
+	Timestamp    string `xml:"timestamp,attr"`
+	Availability string `xml:"availability,attr"`
+	Reliability  string `xml:"reliability,attr"`
+}
+
+type Vo struct {
+	Vo           string `xml:"VO,attr"`
+	Availability []*Availability
+}
+
+type Profile struct {
+	Name string `xml:"name,attr"`
+	Vo   []*Vo
+}
+
+type Root struct {
+	Profile []*Profile
+}
 
 type ApiVoAvailabilityInProfileInput struct {
 	// mandatory values
@@ -47,6 +71,57 @@ type ApiVoAvailabilityInProfileOutput struct {
 	Reliability  float64 "r"
 }
 
+type list []interface{}
+
+var customForm []string
+
 func init() {
 	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+}
+
+const zuluForm = "2006-01-02T15:04:05Z"
+const ymdForm = "20060102"
+
+func prepareFilter(input ApiVoAvailabilityInProfileInput) bson.M {
+
+	ts, _ := time.Parse(zuluForm, input.start_time)
+	te, _ := time.Parse(zuluForm, input.end_time)
+	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+
+	filter := bson.M{
+		"p": bson.M{"$in": input.availability_profile},
+		"d": bson.M{"$gte": tsYMD, "$lte": teYMD},
+	}
+
+	if len(input.group_name) > 0 {
+		filter["v"] = bson.M{"$in": input.group_name}
+	}
+
+	return filter
+}
+
+func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
+
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+
+	return query
+}
+
+func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 6}}}, "p": "$p", "v": "$v"}, "a": bson.M{"$avg": "$a"}, "r": bson.M{"$avg": "$r"}}},
+		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$a", "r": "$r"}},
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+
+	return query
 }
