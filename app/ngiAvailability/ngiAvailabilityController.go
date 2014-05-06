@@ -24,41 +24,98 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngis
+package ngiAvailability
 
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/argoeu/ar-web-api/utils/caches"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
+	"net/http"
+	"strings"
 	"time"
 )
 
-// a series of auxiliary structs that will
-// help us form the xml response
-type Availability struct {
-	XMLName      xml.Name `xml:"Availability"`
-	Timestamp    string   `xml:"timestamp,attr"`
-	Availability string   `xml:"availability,attr"`
-	Reliability  string   `xml:"reliability,attr"`
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+
+	// This is the input we will receive from the API
+	urlValues := r.URL.Query()
+
+	input := ApiNgiAvailabilityInProfileInput{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		urlValues.Get("availability_profile"),
+		urlValues.Get("granularity"),
+		urlValues.Get("infrastructure"),
+		urlValues.Get("production"),
+		urlValues.Get("monitored"),
+		urlValues.Get("certification"),
+		//urlValues.Get("format"),
+		urlValues["group_name"],
+	}
+
+	if len(input.Infrastructure) == 0 {
+		input.Infrastructure = "Production"
+	}
+
+	if len(input.Production) == 0 || input.Production == "true" {
+		input.Production = "Y"
+	} else {
+		input.Production = "N"
+	}
+
+	if len(input.Monitored) == 0 || input.Monitored == "true" {
+		input.Monitored = "Y"
+	} else {
+		input.Monitored = "N"
+	}
+
+	if len(input.Certification) == 0 {
+		input.Certification = "Certified"
+	}
+
+	found, output := caches.HitCache("ngis", input, cfg)
+	if found {
+		return output
+	}
+	session := mongo.OpenSession(cfg)
+
+	results := []ApiNgiAvailabilityInProfileOutput{}
+
+	err := error(nil)
+	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+		CustomForm[0] = "20060102"
+		CustomForm[1] = "2006-01-02"
+
+		query := Daily(input)
+
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
+
+	} else if strings.ToLower(input.Granularity) == "monthly" {
+		CustomForm[0] = "200601"
+		CustomForm[1] = "2006-01"
+
+		query := Monthly(input)
+
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
+	}
+
+	if err != nil {
+		return []byte("<root><error>" + err.Error() + "</error></root>")
+	}
+
+	output, err = createResponse(results)
+	if len(results) > 0 {
+		caches.WriteCache("ngis", input, output, cfg)
+	}
+
+	mongo.CloseSession(session)
+
+	return output
 }
 
-type Ngi struct {
-	Ngi          string `xml:"NGI,attr"`
-	Availability []*Availability
-}
-
-type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
-	Ngi       []*Ngi
-}
-
-type Root struct {
-	XMLName xml.Name `xml:"root"`
-	Profile []*Profile
-}
-
-func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
@@ -69,7 +126,7 @@ func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, err
 	// we iterate through the results struct array
 	// keeping only the value of each row
 	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], row.Date)
+		timestamp, _ := time.Parse(CustomForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
 		if prevProfile != row.Profile {
@@ -92,7 +149,7 @@ func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, err
 		//we append the new availability values
 		ngi.Availability = append(ngi.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    timestamp.Format(CustomForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}

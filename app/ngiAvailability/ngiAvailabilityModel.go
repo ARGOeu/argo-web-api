@@ -1,30 +1,4 @@
-/*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the
- * License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS
- * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- *
- * The views and conclusions contained in the software and
- * documentation are those of the authors and should not be
- * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
- *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
- */
-
-package ngis
+package ngiAvailability
 
 import (
 	"labix.org/v2/mgo/bson"
@@ -32,31 +6,82 @@ import (
 	"time"
 )
 
+type Availability struct {
+	Timestamp    string `xml:"timestamp,attr"`
+	Availability string `xml:"availability,attr"`
+	Reliability  string `xml:"reliability,attr"`
+}
+
+type Ngi struct {
+	Ngi          string `xml:"NGI,attr"`
+	Availability []*Availability
+}
+
+type Profile struct {
+	Name      string `xml:"name,attr"`
+	Namespace string `xml:"namespace,attr"`
+	Ngi       []*Ngi
+}
+
+type Root struct {
+	Profile []*Profile
+}
+
+type ApiNgiAvailabilityInProfileInput struct {
+	// mandatory values
+	Start_time           string // UTC time in W3C format
+	End_time             string // UTC time in W3C format
+	Availability_profile string //availability profile
+	// optional values
+	Granularity    string //availability period; possible values: `DAILY`, MONTHLY`
+	Infrastructure string //infrastructure name
+	Production     string //production or not
+	Monitored      string //yes or no
+	Certification  string //certification status
+	//format    string   // default XML; possible values are: XML, JSON
+	Group_name []string // site name; may appear more than once
+}
+
+type ApiNgiAvailabilityInProfileOutput struct {
+	Date         string  "dt"
+	Namespace    string  "ns"
+	Profile      string  "p"
+	Ngi          string  "n"
+	Availability float64 "a"
+	Reliability  float64 "r"
+}
+
 type list []interface{}
+
+var CustomForm []string
+
+func init() {
+	CustomForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
 func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
+	ts, _ := time.Parse(zuluForm, input.Start_time)
+	te, _ := time.Parse(zuluForm, input.End_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
 		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"ap": input.availability_profile,
+		"ap": input.Availability_profile,
 	}
 
-	if len(input.group_name) > 0 {
-		filter["n"] = bson.M{"$in": input.group_name}
+	if len(input.Group_name) > 0 {
+		filter["n"] = bson.M{"$in": input.Group_name}
 	}
 
-	filter["i"] = input.infrastructure
-	filter["cs"] = input.certification
-	filter["pr"] = input.production
-	filter["m"] = input.monitored
+	filter["i"] = input.Infrastructure
+	filter["cs"] = input.Certification
+	filter["pr"] = input.Production
+	filter["m"] = input.Monitored
 
 	return filter
 }

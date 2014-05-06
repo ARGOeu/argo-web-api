@@ -28,12 +28,12 @@ package main
 
 import (
 	"github.com/argoeu/ar-web-api/apiCalls/availabilityProfiles"
-	"github.com/argoeu/ar-web-api/apiCalls/ngis"
 	"github.com/argoeu/ar-web-api/apiCalls/recalculations"
 	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
 	"github.com/argoeu/ar-web-api/apiCalls/sites"
 	"github.com/argoeu/ar-web-api/apiCalls/vos"
+	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -58,7 +58,7 @@ func main() {
 		Queries("group_type", "vo")
 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
 		Queries("group_type", "site")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngis.NgiAvailabilityInProfile)).
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngiAvailability.Index)).
 		Queries("group_type", "ngi")
 
 	//Basic api calls
@@ -79,7 +79,8 @@ func main() {
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 
 	//Web service binds to server. Requests served over HTTPS.
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+	//err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+	err := http.ListenAndServe(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), nil)
 
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
