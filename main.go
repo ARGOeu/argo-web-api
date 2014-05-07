@@ -31,8 +31,8 @@ import (
 	"github.com/argoeu/ar-web-api/apiCalls/recalculations"
 	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
-	"github.com/argoeu/ar-web-api/apiCalls/sites"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
+	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
@@ -56,7 +56,7 @@ func main() {
 
 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", voAvailability.Index)).
 		Queries("group_type", "vo")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", sites.SitesAvailabilityInProfile)).
+	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", siteAvailability.Index)).
 		Queries("group_type", "site")
 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngiAvailability.Index)).
 		Queries("group_type", "ngi")

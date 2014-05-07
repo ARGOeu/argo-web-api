@@ -24,49 +24,101 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package sites
+package siteAvailability
 
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/argoeu/ar-web-api/utils/caches"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
+	"net/http"
+	"strings"
 	"time"
 )
 
-// a series of auxiliary structs that will
-// help us form the xml response
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-type Availability struct {
-	XMLName      xml.Name `xml:"Availability"`
-	Timestamp    string   `xml:"timestamp,attr"`
-	Availability string   `xml:"availability,attr"`
-	Reliability  string   `xml:"reliability,attr"`
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+
+	input := ApiSiteAvailabilityInProfileInput{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		urlValues.Get("availability_profile"),
+		urlValues.Get("granularity"),
+		urlValues.Get("infrastructure"),
+		urlValues.Get("production"),
+		urlValues.Get("monitored"),
+		urlValues.Get("certification"),
+		//urlValues.Get("format"),
+		urlValues["group_name"],
+	}
+
+	if len(input.infrastructure) == 0 {
+		input.infrastructure = "Production"
+	}
+
+	if len(input.production) == 0 || input.production == "true" {
+		input.production = "Y"
+	} else {
+		input.production = "N"
+	}
+
+	if len(input.monitored) == 0 || input.monitored == "true" {
+		input.monitored = "Y"
+	} else {
+		input.monitored = "N"
+	}
+
+	if len(input.certification) == 0 {
+		input.certification = "Certified"
+	}
+
+	found, output := caches.HitCache("sites", input, cfg)
+	if found {
+		return output
+	}
+
+	err := error(nil)
+	session := mongo.OpenSession(cfg)
+
+	results := []ApiSiteAvailabilityInProfileOutput{}
+
+	// Select the granularity of the search daily/monthly
+	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+
+		query := Daily(input)
+
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
+
+	} else if strings.ToLower(input.granularity) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+
+		query := Monthly(input)
+
+		err = mongo.Pipe(session, "AR", "sites", query, &results)
+	}
+
+	if err != nil {
+		return []byte("<root><error>" + err.Error() + "</error></root>")
+	}
+
+	output, err = createResponse(results)
+	if len(results) > 0 {
+		caches.WriteCache("sites", input, output, cfg)
+	}
+
+	mongo.CloseSession(session)
+
+	return output
+
 }
 
-type Site struct {
-	Site          string `xml:"site,attr"`
-	Ngi           string `xml:"NGI,attr"`
-	Infastructure string `xml:"infastructure,attr"`
-	Scope         string `xml:"scope,attr"`
-	SiteScope     string `xml:"site_scope,attr"`
-	Production    string `xml:"production,attr"`
-	Monitored     string `xml:"monitored,attr"`
-	CertStatus    string `xml:"certification_status,attr"`
-	Availability  []*Availability
-}
-
-type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
-	Site      []*Site
-}
-
-type Root struct {
-	XMLName xml.Name `xml:"root"`
-	Profile []*Profile
-}
-
-func CreateXMLResponse(results []ApiSiteAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiSiteAvailabilityInProfileOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 

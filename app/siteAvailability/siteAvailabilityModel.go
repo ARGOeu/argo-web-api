@@ -24,15 +24,84 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package sites
+package siteAvailability
 
 import (
+	"encoding/xml"
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
 )
 
+type Availability struct {
+	XMLName      xml.Name `xml:"Availability"`
+	Timestamp    string   `xml:"timestamp,attr"`
+	Availability string   `xml:"availability,attr"`
+	Reliability  string   `xml:"reliability,attr"`
+}
+
+type Site struct {
+	Site          string `xml:"site,attr"`
+	Ngi           string `xml:"NGI,attr"`
+	Infastructure string `xml:"infastructure,attr"`
+	Scope         string `xml:"scope,attr"`
+	SiteScope     string `xml:"site_scope,attr"`
+	Production    string `xml:"production,attr"`
+	Monitored     string `xml:"monitored,attr"`
+	CertStatus    string `xml:"certification_status,attr"`
+	Availability  []*Availability
+}
+
+type Profile struct {
+	XMLName   xml.Name `xml:"Profile"`
+	Name      string   `xml:"name,attr"`
+	Namespace string   `xml:"namespace,attr"`
+	Site      []*Site
+}
+
+type Root struct {
+	XMLName xml.Name `xml:"root"`
+	Profile []*Profile
+}
+
+type ApiSiteAvailabilityInProfileInput struct {
+	// mandatory values
+	start_time           string // UTC time in W3C format
+	end_time             string // UTC time in W3C format
+	availability_profile string //availability profile
+	// optional values
+	granularity    string //availability period; possible values: `DAILY`, MONTHLY`
+	infrastructure string //infrastructure name
+	production     string //production or not
+	monitored      string //yes or no
+	certification  string //certification status
+	//format    string   // default XML; possible values are: XML, JSON
+	group_name []string // site name; may appear more than once
+}
+
+type ApiSiteAvailabilityInProfileOutput struct {
+	SiteScope     string  "ss"
+	Scope         string  "sc"
+	Date          string  "dt"
+	Namespace     string  "ns"
+	Profile       string  "p"
+	Production    string  "pr"
+	Monitored     string  "m"
+	Ngi           string  "n"
+	Site          string  "s"
+	Infastructure string  "i"
+	CertStatus    string  "cs"
+	Availability  float64 "a"
+	Reliability   float64 "r"
+}
+
 type list []interface{}
+
+var customForm []string
+
+func init() {
+	customForm = []string{"20060102", "2006-01-02T15:04:05Z"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
