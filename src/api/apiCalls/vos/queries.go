@@ -46,7 +46,7 @@ func prepareFilter(input ApiVoAvailabilityInProfileInput) bson.M {
 
 	filter := bson.M{
 		"ap": input.availability_profile,
-		"d": bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
 	}
 
 	if len(input.group_name) > 0 {
