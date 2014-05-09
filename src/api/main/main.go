@@ -33,6 +33,7 @@ import (
 	"api/apiCalls/serviceFlavors"
 	"api/apiCalls/services"
 	"api/apiCalls/sites"
+	"api/apiCalls/poems"
 	"api/apiCalls/vos"
 	"github.com/gorilla/mux"
 	"log"
@@ -70,6 +71,8 @@ func main() {
 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.UpdateProfiles))
 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
 
+	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8",poems.ReadPoems))
+	
 	//Recalculations
 	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
 	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
@@ -80,7 +83,7 @@ func main() {
 
 	//Web service binds to server. Requests served over HTTPS.
 	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
-
+	
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
