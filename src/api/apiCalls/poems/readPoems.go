@@ -29,46 +29,30 @@ package poems
 import (
 	"api/utils/config"
 	"api/utils/mongo"
-	"encoding/xml"
 	"net/http"
 
 )
 
-type ApiPOEM struct{
-	Poem string `bson:"p"`
-}
-
-type Poem struct{
-	Poem string `xml:"profile,attr"`
-}
-
-type POEMxml struct{
-	XMLName      xml.Name `xml:"POEM_List"`
-	Poem	  	 []*Poem 
-}
 
 func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	results := []ApiPOEM{}
-	output  := &POEMxml{}
 
 	session := mongo.OpenSession(cfg)
 
 	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
 	
-	for _, row := range results{
-		p := &Poem{}
-		p.Poem = row.Poem
-		output.Poem =append(output.Poem,p)
+	if err != nil {
+		panic(err)
 	}
 	
-	answer, err := xml.MarshalIndent(output, "", " ")
-	
+	output, err := readXML(results) //Render the results into XML format
+
 	if err != nil {
 		panic(err)
 	}
 
 	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+	
+	return []byte(output)
 }
