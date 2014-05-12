@@ -62,9 +62,9 @@ func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
-		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
-		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"dt", 1}}}}
 
 	return query
 }
@@ -74,12 +74,12 @@ func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"d": bson.D{{"$substr", list{"$d", 0, 6}}}, "p": "$p", "v": "$v"},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "p": "$p", "v": "$v"},
 			"avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}},
-		{"$project": bson.M{"d": "$_id.d", "v": "$_id.v", "p": "$_id.p",
+		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "p": "$_id.p",
 			"a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
 			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
-		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"d", 1}}}}
+		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"dt", 1}}}}
 
 	return query
 }
