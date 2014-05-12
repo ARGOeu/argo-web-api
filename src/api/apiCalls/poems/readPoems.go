@@ -30,9 +30,7 @@ import (
 	"api/utils/config"
 	"api/utils/mongo"
 	"net/http"
-
 )
-
 
 func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
@@ -41,11 +39,11 @@ func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte
 	session := mongo.OpenSession(cfg)
 
 	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
-	
+
 	if err != nil {
 		panic(err)
 	}
-	
+
 	output, err := readXML(results) //Render the results into XML format
 
 	if err != nil {
@@ -53,6 +51,6 @@ func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte
 	}
 
 	mongo.CloseSession(session)
-	
+
 	return []byte(output)
 }

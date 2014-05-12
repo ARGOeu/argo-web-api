@@ -28,24 +28,24 @@ package poems
 
 import "encoding/xml"
 
-type Poem struct{
+type Poem struct {
 	Poem string `xml:"profile,attr"`
 }
 
-type Root struct{
-	XMLName      xml.Name `xml:"root"`
-	Poem	  	 []*Poem 
+type Root struct {
+	XMLName xml.Name `xml:"root"`
+	Poem    []*Poem
 }
 
-func readXML(results []ApiPOEM) ([]byte, error){
-	docRoot  := &Root{}
-	
-	for _, row := range results{
+func readXML(results []ApiPOEM) ([]byte, error) {
+	docRoot := &Root{}
+
+	for _, row := range results {
 		p := &Poem{}
 		p.Poem = row.Poem
-		docRoot.Poem =append(docRoot.Poem,p)
+		docRoot.Poem = append(docRoot.Poem, p)
 	}
-	
+
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
 }

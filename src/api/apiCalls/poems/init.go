@@ -26,6 +26,6 @@
 
 package poems
 
-type ApiPOEM struct{
+type ApiPOEM struct {
 	Poem string `bson:"p"`
 }
