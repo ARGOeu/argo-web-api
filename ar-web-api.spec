@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
-Version: 1.2.4
-Release: 4%{?dist}
+Version: 1.2.5
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -51,6 +51,8 @@ go clean
 %attr(0644,root,root) /etc/init/go-api.conf
 
 %changelog
+* Mon May 12 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.5-1%{?dist}
+- POEM profile retrieval support 
 * Wed May 7 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-2%{?dist}
 - VO and SF resutls fix
 * Wed Apr 30 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-1%{?dist}
