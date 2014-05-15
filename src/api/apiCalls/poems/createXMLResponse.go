@@ -37,7 +37,7 @@ type Root struct {
 	Poem    []*Poem
 }
 
-func readXML(results []ApiPOEM) ([]byte, error) {
+func marshalXML(results []ApiPOEM) ([]byte, error) {
 	docRoot := &Root{}
 
 	for _, row := range results {
