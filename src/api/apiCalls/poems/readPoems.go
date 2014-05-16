@@ -44,7 +44,7 @@ func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte
 		panic(err)
 	}
 
-	output, err := readXML(results) //Render the results into XML format
+	output, err := marshalXML(results) //Render the results into XML format
 
 	if err != nil {
 		panic(err)
