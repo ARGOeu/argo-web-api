@@ -45,7 +45,7 @@ func createOne(input ApiAPInput) bson.M {
 		"name":      input.Name,
 		"namespace": input.Namespace,
 		"groups":    input.Groups,
-		"poem":      input.Poem,
+		"poems":     input.Poems,
 	}
 	return query
 }
