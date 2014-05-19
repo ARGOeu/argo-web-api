@@ -58,7 +58,7 @@ func CreateProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) [
 
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
-		
+
 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
 
