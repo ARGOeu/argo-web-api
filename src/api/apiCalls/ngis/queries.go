@@ -57,6 +57,11 @@ func prepareFilter(input ApiNgiAvailabilityInProfileInput) bson.M {
 	filter["cs"] = input.certification
 	filter["pr"] = input.production
 	filter["m"] = input.monitored
+	
+	//TODO: Remove hardcoded filtering and add this 
+	// as a parameter
+	filter["sc"] = "EGI"
+	filter["ss"] = "EGI"
 
 	return filter
 }
