@@ -46,7 +46,7 @@ type ApiAPOutput struct {
 	Name      string     `bson:"name"`
 	Namespace string     `bson:"namespace"`
 	Groups    [][]string `bson:"groups"`
-	Poem      string     `bson:"poems"`
+	Poems     []string   `bson:"poems"`
 }
 
 //func init() {}
