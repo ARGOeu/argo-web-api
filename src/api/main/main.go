@@ -29,6 +29,7 @@ package main
 import (
 	"api/apiCalls/availabilityProfiles"
 	"api/apiCalls/ngis"
+	"api/apiCalls/poems"
 	"api/apiCalls/recalculations"
 	"api/apiCalls/serviceFlavors"
 	"api/apiCalls/services"
@@ -69,6 +70,8 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.UpdateProfiles))
 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
+
+	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poems.ReadPoems))
 
 	//Recalculations
 	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))

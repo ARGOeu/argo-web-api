@@ -28,10 +28,10 @@ package availabilityProfiles
 
 //Struct for inserting data into DB
 type ApiAPInput struct {
-	Name      string `json:"Name"`
-	Namespace string `json:"Namespace"`
-	Groups    [][]string
-	Poem      string
+	Name      string     `json:"name"`
+	Namespace string     `json:"namespace"`
+	Groups    [][]string `json:"groups"`
+	Poems     []string   `json:"poems"`
 }
 
 //Struct for searching based on name and namespace combination
@@ -46,7 +46,7 @@ type ApiAPOutput struct {
 	Name      string     `bson:"name"`
 	Namespace string     `bson:"namespace"`
 	Groups    [][]string `bson:"groups"`
-	Poem      string     `bson:"poem"`
+	Poems     []string   `bson:"poems"`
 }
 
 //func init() {}

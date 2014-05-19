@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -24,33 +24,8 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package availabilityProfiles
+package poems
 
-import (
-	"labix.org/v2/mgo/bson"
-)
-
-func prepareFilter(input ApiAPSearch) bson.M {
-
-	filter := bson.M{
-		"name":      bson.M{"$in": input.Name},
-		"namespace": bson.M{"$in": input.Namespace},
-	}
-
-	return filter
-}
-
-func createOne(input ApiAPInput) bson.M {
-	query := bson.M{
-		"name":      input.Name,
-		"namespace": input.Namespace,
-		"groups":    input.Groups,
-		"poems":     input.Poems,
-	}
-	return query
-}
-
-func readOne(input ApiAPSearch) bson.M {
-	filter := prepareFilter(input)
-	return filter
+type ApiPOEM struct {
+	Poem string `bson:"p"`
 }
