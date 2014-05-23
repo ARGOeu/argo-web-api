@@ -30,6 +30,7 @@ import (
 	"api/utils/config"
 	"api/utils/mongo"
 	"net/http"
+	"fmt"
 )
 
 func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -58,8 +59,12 @@ func ReadProfiles(w http.ResponseWriter, r *http.Request, cfg config.Config) []b
 	}
 
 	err = mongo.Find(session, "AR", "aps", query, "name", &results)
+	
+	fmt.Println(results)
 
-	recordId, err = mongo.GetId(session, "AR", "aps", query)
+	recordId, err = mongo.GetId(session, "AR", "aps", " ", query)
+	
+	fmt.Println(recordId)
 
 	for i := range results {
 		results[i].ID = recordId[i] //We add a record id value to the records we retrieved
