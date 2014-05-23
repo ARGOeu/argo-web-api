@@ -29,7 +29,6 @@ package mongo
 import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"fmt"
 )
 
 type Id struct {
@@ -107,17 +106,15 @@ func IdUpdate(session *mgo.Session, dbName string, collectionName string, id str
 
 }
 
-func GetId(session *mgo.Session, dbName string, collectionName string, sorter string ,query bson.M) ([]string, error) {
+func GetId(session *mgo.Session, dbName string, collectionName string, sorter string, query bson.M) ([]string, error) {
 
 	temp := []Id{}
 
 	var s []string
 
 	c := openCollection(session, dbName, collectionName)
-	
+
 	err := c.Find(query).Sort(sorter).All(&temp)
-	
-	fmt.Println(temp)
 
 	for i := range temp {
 

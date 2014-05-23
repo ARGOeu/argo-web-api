@@ -55,9 +55,9 @@ type Site struct {
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Site      []*Site
+	XMLName xml.Name `xml:"Profile"`
+	Name    string   `xml:"name,attr"`
+	Site    []*Site
 }
 
 type Root struct {
@@ -84,7 +84,7 @@ func CreateXMLResponse(results []ApiSiteAvailabilityInProfileOutput) ([]byte, er
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
-				Name:      row.Profile}
+				Name: row.Profile}
 			docRoot.Profile = append(docRoot.Profile, profile)
 			prevSite = ""
 		}
