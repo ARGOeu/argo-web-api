@@ -49,7 +49,6 @@ type Ngi struct {
 type Profile struct {
 	XMLName   xml.Name `xml:"Profile"`
 	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
 	Ngi       []*Ngi
 }
 
@@ -75,8 +74,7 @@ func CreateXMLResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, err
 		if prevProfile != row.Profile {
 			prevProfile = row.Profile
 			profile = &Profile{
-				Name:      row.Profile,
-				Namespace: row.Namespace}
+				Name:      row.Profile}
 			docRoot.Profile = append(docRoot.Profile, profile)
 			prevNgi = ""
 		}
