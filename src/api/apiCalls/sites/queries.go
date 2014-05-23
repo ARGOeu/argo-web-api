@@ -101,7 +101,7 @@ func Monthly(input ApiSiteAvailabilityInProfileInput) []bson.M {
 		{"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "s": "$_id.s", "ap": "$_id.ap", "avgup": 1, "avgu": 1, "avgd": 1,
 			"a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
 			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
-		{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
 	return query
 }
