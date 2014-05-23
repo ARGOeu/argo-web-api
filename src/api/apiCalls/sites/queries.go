@@ -75,8 +75,8 @@ func Daily(input ApiSiteAvailabilityInProfileInput) []bson.M {
 	// Sort by profile->ngi->site->datetime
 	query := []bson.M{
 		{"$match": filter},
-		{"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}},
-		{"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		{"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "ap":1 ,"i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "s": 1, "a": 1, "r": 1}},
+		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
 	return query
 }
@@ -96,9 +96,9 @@ func Monthly(input ApiSiteAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "s": "$s", "ap":"$ap"},
 			"avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1,
+		{"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "s": "$_id.s", "ap": "$_id.ap", "avgup": 1, "avgu": 1, "avgd": 1,
 			"a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
 			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
 		{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}

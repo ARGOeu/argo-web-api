@@ -48,7 +48,7 @@ type ApiSiteAvailabilityInProfileOutput struct {
 	Scope         string  "sc"
 	Date          string  "dt"
 	Namespace     string  "ns"
-	Profile       string  "p"
+	Profile       string  "ap"
 	Production    string  "pr"
 	Monitored     string  "m"
 	Ngi           string  "n"
