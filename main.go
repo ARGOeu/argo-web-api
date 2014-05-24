@@ -27,12 +27,12 @@
 package main
 
 import (
-	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	"github.com/argoeu/ar-web-api/app/recomputations"
+	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
@@ -64,7 +64,7 @@ func main() {
 
 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_availability", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
-	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavors.ServiceFlavorAvailabilityInProfile))
+	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavorAvailability.Index))
 
 	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.New))
 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.Index))

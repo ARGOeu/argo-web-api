@@ -24,15 +24,71 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package serviceFlavors
+package serviceFlavorAvailability
 
 import (
+	"encoding/xml"
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
 )
 
+// a series of auxiliary structs that will
+// help us form the xml response
+type Availability struct {
+	XMLName      xml.Name `xml:"Availability"`
+	Timestamp    string   `xml:"timestamp,attr"`
+	Availability string   `xml:"availability,attr"`
+	Reliability  string   `xml:"reliability,attr"`
+}
+
+type SF struct {
+	SF           string `xml:"Flavor,attr"`
+	Availability []*Availability
+}
+
+type Site struct {
+	Site string `xml:"Site,attr"`
+	SF   []*SF
+}
+
+type Profile struct {
+	XMLName xml.Name `xml:"Profile"`
+	Name    string   `xml:"name,attr"`
+	Site    []*Site
+}
+
+type Root struct {
+	XMLName xml.Name `xml:"root"`
+	Profile []*Profile
+}
+
+type ApiSFAvailabilityInProfileInput struct {
+	// mandatory values
+	start_time  string // UTC time in W3C format
+	end_time    string // UTC time in W3C format
+	profile     string
+	granularity string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	flavor      []string // sf name; may appear more than once
+	site        []string // egi site
+}
+
+type ApiSFAvailabilityInProfileOutput struct {
+	Date         string  "dt"
+	SF           string  "sf"
+	Site         string  "s"
+	Profile      string  "p"
+	Availability float64 "a"
+	Reliability  float64 "r"
+}
+
 type list []interface{}
+
+var customForm []string
+
+func init() {
+	customForm = []string{"20060102", "2006-01-02"} //{"Format that is returned by the database" , "Format that will be used in the generated report"}
+}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"

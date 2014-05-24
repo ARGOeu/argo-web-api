@@ -24,17 +24,20 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package serviceFlavors
+package serviceFlavorAvailability
 
 import (
+	"encoding/xml"
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
+	"time"
 )
 
-func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
@@ -87,7 +90,7 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 
 	}
 
-	output, err = CreateXMLResponse(results)
+	output, err = CreateResponse(results)
 
 	if len(results) > 0 {
 		caches.WriteCache("sf", input, output, cfg)
@@ -96,4 +99,57 @@ func ServiceFlavorAvailabilityInProfile(w http.ResponseWriter, r *http.Request, 
 	mongo.CloseSession(session)
 
 	return output
+}
+
+func CreateResponse(results []ApiSFAvailabilityInProfileOutput) ([]byte, error) {
+
+	docRoot := &Root{}
+
+	prevProfile := ""
+	prevSite := ""
+	prevSF := ""
+	sf := &SF{}
+	site := &Site{}
+	profile := &Profile{}
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], row.Date)
+		//if new profile value does not match the previous profile value
+		//we create a new profile in the xml
+		if prevProfile != row.Profile {
+			prevProfile = row.Profile
+			profile = &Profile{
+				Name: row.Profile,
+			}
+			docRoot.Profile = append(docRoot.Profile, profile)
+			prevSite = ""
+		}
+		if prevSite != row.Site {
+			prevSite = row.Site
+			site = &Site{
+				Site: row.Site,
+			}
+			profile.Site = append(profile.Site, site)
+			prevSF = ""
+		}
+		if prevSF != row.SF {
+			prevSF = row.SF
+			sf = &SF{
+				SF: row.SF,
+			}
+			site.SF = append(site.SF, sf)
+		}
+		//we append the new availability values
+		sf.Availability = append(sf.Availability,
+			&Availability{
+				Timestamp:    timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability)})
+	}
+	//we create the xml response and record the output and any possible errors
+	//in the appropriate variables
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	//we return the output
+	return output, err
 }
