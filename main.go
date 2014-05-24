@@ -27,7 +27,6 @@
 package main
 
 import (
-	"github.com/argoeu/ar-web-api/apiCalls/services"
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
@@ -63,7 +62,6 @@ func main() {
 		Queries("group_type", "ngi")
 
 	//Basic api calls
-	get_subrouter.HandleFunc("/api/v1/service_availability", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavorAvailability.Index))
 
 	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.New))
