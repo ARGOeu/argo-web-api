@@ -27,8 +27,8 @@
 package main
 
 import (
-	"api/apiCalls/poems"
 	"github.com/argoeu/ar-web-api/apiCalls/availabilityProfiles"
+	"github.com/argoeu/ar-web-api/apiCalls/poems"
 	"github.com/argoeu/ar-web-api/apiCalls/recalculations"
 	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
