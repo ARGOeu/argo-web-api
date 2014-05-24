@@ -27,9 +27,9 @@
 package main
 
 import (
-	"github.com/argoeu/ar-web-api/apiCalls/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
+	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	"github.com/argoeu/ar-web-api/app/recomputations"
@@ -66,10 +66,10 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/service_availability", Respond("text/xml", "utf-8", services.ServiceAvailabilityInProfile))
 	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavors.ServiceFlavorAvailabilityInProfile))
 
-	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.CreateProfiles))
-	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.ReadProfiles))
-	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.UpdateProfiles))
-	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.DeleteProfiles))
+	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.New))
+	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.Index))
+	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Update))
+	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Delete))
 
 	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poemProfiles.Index))
 

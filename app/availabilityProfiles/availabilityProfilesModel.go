@@ -27,10 +27,68 @@
 package availabilityProfiles
 
 import (
+	"encoding/xml"
 	"labix.org/v2/mgo/bson"
 )
 
-func prepareFilter(input ApiAPSearch) bson.M {
+type Group struct {
+	XMLName       xml.Name
+	ServiceFlavor string `xml:"service_flavor,attr"`
+}
+
+type Or struct {
+	XMLName xml.Name `xml:"OR"`
+	Group   []*Group
+}
+
+type And struct {
+	XMLName xml.Name `xml:"AND"`
+	Or      []*Or
+}
+
+type Profile struct {
+	XMLName   xml.Name `xml:"profile"`
+	ID        string   `xml:"id,attr"`
+	Name      string   `xml:"name,attr"`
+	Namespace string   `xml:"namespace,attr"`
+	Poem      string   `xml:"poems,attr"`
+	And       *And
+}
+
+type ReadRoot struct {
+	XMLName xml.Name `xml:"root"`
+	Profile []*Profile
+}
+
+type Message struct {
+	XMLName xml.Name `xml:"root"`
+	Message string
+}
+
+//Struct for inserting data into DB
+type ApiAvailabilityProfileInput struct {
+	Name      string     `json:"name"`
+	Namespace string     `json:"namespace"`
+	Groups    [][]string `json:"groups"`
+	Poems     []string   `json:"poems"`
+}
+
+//Struct for searching based on name and namespace combination
+type ApiAvailabilityProfileSearch struct {
+	Name      []string
+	Namespace []string
+}
+
+//Struct for record retrieval
+type ApiAvailabilityProfileOutput struct {
+	ID        string
+	Name      string     `bson:"name"`
+	Namespace string     `bson:"namespace"`
+	Groups    [][]string `bson:"groups"`
+	Poems     []string   `bson:"poems"`
+}
+
+func prepareFilter(input ApiAvailabilityProfileSearch) bson.M {
 
 	filter := bson.M{
 		"name":      bson.M{"$in": input.Name},
@@ -40,7 +98,7 @@ func prepareFilter(input ApiAPSearch) bson.M {
 	return filter
 }
 
-func createOne(input ApiAPInput) bson.M {
+func createOne(input ApiAvailabilityProfileInput) bson.M {
 	query := bson.M{
 		"name":      input.Name,
 		"namespace": input.Namespace,
@@ -50,7 +108,7 @@ func createOne(input ApiAPInput) bson.M {
 	return query
 }
 
-func readOne(input ApiAPSearch) bson.M {
+func readOne(input ApiAvailabilityProfileSearch) bson.M {
 	filter := prepareFilter(input)
 	return filter
 }
