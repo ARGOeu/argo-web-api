@@ -24,8 +24,47 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poems
+package poemProfiles
 
-type ApiPOEM struct {
-	Poem string `bson:"p"`
+import (
+	"encoding/xml"
+	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
+	"net/http"
+)
+
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+
+	results := []ApiPoemProfilesOutput{}
+
+	session := mongo.OpenSession(cfg)
+
+	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
+
+	if err != nil {
+		panic(err)
+	}
+
+	output, err := createResponse(results) //Render the results into XML format
+
+	if err != nil {
+		panic(err)
+	}
+
+	mongo.CloseSession(session)
+
+	return []byte(output)
+}
+
+func createResponse(results []ApiPoemProfilesOutput) ([]byte, error) {
+	docRoot := &Root{}
+
+	for _, row := range results {
+		p := &Poem{}
+		p.Poem = row.Poem
+		docRoot.Poem = append(docRoot.Poem, p)
+	}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
 }

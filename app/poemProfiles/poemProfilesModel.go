@@ -24,33 +24,16 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poems
+package poemProfiles
 
-import (
-	"api/utils/config"
-	"api/utils/mongo"
-	"net/http"
-)
+type Poem struct {
+	Poem string `xml:"profile,attr"`
+}
 
-func ReadPoems(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+type Root struct {
+	Poem []*Poem
+}
 
-	results := []ApiPOEM{}
-
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
-
-	if err != nil {
-		panic(err)
-	}
-
-	output, err := marshalXML(results) //Render the results into XML format
-
-	if err != nil {
-		panic(err)
-	}
-
-	mongo.CloseSession(session)
-
-	return []byte(output)
+type ApiPoemProfilesOutput struct {
+	Poem string `bson:"p"`
 }
