@@ -46,7 +46,7 @@ type ApiNgiAvailabilityInProfileInput struct {
 type ApiNgiAvailabilityInProfileOutput struct {
 	Date         string  "dt"
 	Namespace    string  "ns"
-	Profile      string  "p"
+	Profile      string  "ap"
 	Ngi          string  "n"
 	Availability float64 "a"
 	Reliability  float64 "r"
