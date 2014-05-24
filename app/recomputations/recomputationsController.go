@@ -36,7 +36,7 @@ import (
 	"time"
 )
 
-func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	results := []ApiRecomputationOutput{}
 
@@ -55,7 +55,7 @@ func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	return []byte("<root>" + string(answer) + "</root>")
 }
 
-func New(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	answer := ""
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header, cfg) {

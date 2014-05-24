@@ -33,7 +33,7 @@ import (
 	"net/http"
 )
 
-func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	results := []ApiPoemProfilesOutput{}
 

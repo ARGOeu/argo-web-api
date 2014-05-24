@@ -37,7 +37,7 @@ import (
 	"strings"
 )
 
-func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	err := error(nil)
 
@@ -79,7 +79,7 @@ func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	return output
 }
 
-func New(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	answer := ""
 

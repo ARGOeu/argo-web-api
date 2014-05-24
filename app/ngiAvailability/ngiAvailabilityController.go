@@ -37,7 +37,7 @@ import (
 	"time"
 )
 
-func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
