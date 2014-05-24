@@ -28,11 +28,11 @@ package main
 
 import (
 	"github.com/argoeu/ar-web-api/apiCalls/availabilityProfiles"
-	"github.com/argoeu/ar-web-api/apiCalls/recalculations"
 	"github.com/argoeu/ar-web-api/apiCalls/serviceFlavors"
 	"github.com/argoeu/ar-web-api/apiCalls/services"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
+	"github.com/argoeu/ar-web-api/app/recomputations"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
@@ -74,8 +74,9 @@ func main() {
 	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poemProfiles.Index))
 
 	//Recalculations
-	post_subrouter.HandleFunc("/api/v1/recalculate", Respond("text/xml", "utf-8", recalculations.Recalculate))
-	get_subrouter.HandleFunc("/api/v1/get_recalculation_requests", Respond("text/xml", "utf-8", recalculations.GetRecalculationRequests))
+	post_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.New))
+	get_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.Index))
+
 	http.Handle("/", main_router)
 
 	//Cache

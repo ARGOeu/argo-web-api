@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -24,30 +24,32 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package recomputations
 
-import (
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
-	"encoding/xml"
-	"net/http"
-)
+import "time"
 
-func GetRecalculationRequests(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+type ApiRecomputationInput struct {
+	Start_time   string
+	End_time     string
+	Reason       string
+	Vo_name      string `bson:"vo"`
+	Ngi_name     string `bson:"ngi"`
+	Exclude_site []string
+	Status       string
+	Timestamp    time.Time
+	//Exclude_sf		[]string
+	//Exclude_end_point []string
+}
 
-	results := []ApiRecalculationIO{}
-
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
-
-	answer, err := xml.MarshalIndent(results, "", " ")
-
-	if err != nil {
-		panic(err)
-	}
-
-	mongo.CloseSession(session)
-
-	return []byte("<root>" + string(answer) + "</root>")
+type ApiRecomputationOutput struct {
+	Start_time   string
+	End_time     string
+	Reason       string
+	Vo_name      string `bson:"vo"`
+	Ngi_name     string `bson:"ngi"`
+	Exclude_site []string
+	Status       string
+	Timestamp    time.Time
+	//Exclude_sf		[]string
+	//Exclude_end_point []string
 }

@@ -24,33 +24,48 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package recalculations
+package recomputations
 
 import (
+	"encoding/xml"
 	"github.com/argoeu/ar-web-api/utils/authentication"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
-	"fmt"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 	"time"
-	//  "encoding/xml"
 )
 
-//Scedule a recalculation
-func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func Index(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+
+	results := []ApiRecomputationOutput{}
+
+	session := mongo.OpenSession(cfg)
+
+	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
+
+	answer, err := xml.MarshalIndent(results, "", " ")
+
+	if err != nil {
+		panic(err)
+	}
+
+	mongo.CloseSession(session)
+
+	return []byte("<root>" + string(answer) + "</root>")
+}
+
+func New(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	answer := ""
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header, cfg) {
-		fmt.Println(r)
 		err := r.ParseForm()
 		if err != nil {
 			panic(err)
 		}
 		urlValues := r.Form
-		fmt.Println(urlValues)
 		now := time.Now()
-		input := ApiRecalculationIO{
+		input := ApiRecomputationInput{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
 			urlValues.Get("reason"),
@@ -62,7 +77,6 @@ func Recalculate(w http.ResponseWriter, r *http.Request, cfg config.Config) []by
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
-		fmt.Println(input)
 		query := bson.M{
 			"start_time":   input.Start_time,
 			"end_time":     input.End_time,
