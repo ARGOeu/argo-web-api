@@ -48,7 +48,7 @@ type Profile struct {
 	ID        string   `xml:"id,attr"`
 	Name      string   `xml:"name,attr"`
 	Namespace string   `xml:"namespace,attr"`
-	Poem      string   `xml:"poem,attr"`
+	Poem      string   `xml:"poems,attr"`
 	And       *And
 }
 
@@ -69,7 +69,7 @@ func readXML(results []ApiAPOutput) ([]byte, error) {
 			ID:        row.ID,
 			Name:      row.Name,
 			Namespace: row.Namespace,
-			Poem:      row.Poem,
+			Poem:      row.Poems[0],
 		}
 		and := &And{}
 		docRoot.Profile = append(docRoot.Profile, profile)
