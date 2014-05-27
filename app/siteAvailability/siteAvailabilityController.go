@@ -27,14 +27,11 @@
 package siteAvailability
 
 import (
-	"encoding/xml"
-	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -51,7 +48,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		urlValues.Get("production"),
 		urlValues.Get("monitored"),
 		urlValues.Get("certification"),
-		//urlValues.Get("format"),
+		urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
@@ -106,8 +103,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	if err != nil {
 		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
-
-	output, err = createResponse(results)
+	output, err = createResponse(results,input.format)
 	if len(results) > 0 {
 		caches.WriteCache("sites", input, output, cfg)
 	}
@@ -118,55 +114,10 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 }
 
-func createResponse(results []ApiSiteAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiSiteAvailabilityInProfileOutput,format string) ([]byte, error) {
+    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
+	   
+	output, err := CreateView(results,format)
 
-	docRoot := &Root{}
-
-	prevProfile := ""
-	prevSite := ""
-	site := &Site{}
-	profile := &Profile{}
-
-	// we iterate through the results struct array
-	// keeping only the value of each row
-
-	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name:      row.Profile,
-				Namespace: row.Namespace}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevSite = ""
-		}
-		//if new site does not match the previous service value
-		//we create a new site entry in the xml
-		if prevSite != row.Site {
-			prevSite = row.Site
-			site = &Site{
-				Site:          row.Site,
-				Ngi:           row.Ngi,
-				Infastructure: row.Infastructure,
-				Scope:         row.Scope,
-				SiteScope:     row.SiteScope,
-				Production:    row.Production,
-				Monitored:     row.Monitored,
-				CertStatus:    row.CertStatus}
-			profile.Site = append(profile.Site, site)
-		}
-		//we append the new availability values
-		site.Availability = append(site.Availability,
-			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
-				Availability: fmt.Sprintf("%g", row.Availability),
-				Reliability:  fmt.Sprintf("%g", row.Reliability)})
-	}
-	//we create the xml response and record the output and any possible errors
-	//in the appropriate variables
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
-	//we return the output
 	return output, err
 }

@@ -34,35 +34,36 @@ import (
 )
 
 type Availability struct {
-	XMLName      xml.Name `xml:"Availability"`
-	Timestamp    string   `xml:"timestamp,attr"`
-	Availability string   `xml:"availability,attr"`
-	Reliability  string   `xml:"reliability,attr"`
+	XMLName      xml.Name `xml:"Availability" json:"-"`
+	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"` 
+	Availability string   `xml:"availability,attr" json:"availability"`
+	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type Site struct {
-	Site          string `xml:"site,attr"`
-	Ngi           string `xml:"NGI,attr"`
-	Infastructure string `xml:"infastructure,attr"`
-	Scope         string `xml:"scope,attr"`
-	SiteScope     string `xml:"site_scope,attr"`
-	Production    string `xml:"production,attr"`
-	Monitored     string `xml:"monitored,attr"`
-	CertStatus    string `xml:"certification_status,attr"`
+	XMLName 	  xml.Name 	`xml:"Site" json:"-"`
+	Site          string 	`xml:"site,attr" json:"site"`
+	Ngi           string 	`xml:"NGI,attr"	 json:"NGI"`
+	Infastructure string 	`xml:"infastructure,attr" json:"infrastructure"`
+	Scope         string 	`xml:"scope,attr" json:"scope"`
+	SiteScope     string 	`xml:"site_scope,attr" json:"site_scope"`
+	Production    string 	`xml:"production,attr" json:"production"`
+	Monitored     string 	`xml:"monitored,attr" json:"monitored"`
+	CertStatus    string 	`xml:"certification_status,attr" json:"certification_status"`
 	Availability  []*Availability
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile"`
-	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
+	XMLName   xml.Name `xml:"Profile" json:"-"`
+	Name      string   `xml:"name,attr" json:"name"`
 	Site      []*Site
 }
 
 type Root struct {
-	XMLName xml.Name `xml:"root"`
+	XMLName xml.Name `xml:"root" json:"-"`
 	Profile []*Profile
 }
+
 
 type ApiSiteAvailabilityInProfileInput struct {
 	// mandatory values
@@ -75,7 +76,7 @@ type ApiSiteAvailabilityInProfileInput struct {
 	production     string //production or not
 	monitored      string //yes or no
 	certification  string //certification status
-	//format    string   // default XML; possible values are: XML, JSON
+	format    	   string // default XML; possible values are: XML, JSON
 	group_name []string // site name; may appear more than once
 }
 
@@ -84,7 +85,7 @@ type ApiSiteAvailabilityInProfileOutput struct {
 	Scope         string  "sc"
 	Date          string  "dt"
 	Namespace     string  "ns"
-	Profile       string  "p"
+	Profile       string  "ap"
 	Production    string  "pr"
 	Monitored     string  "m"
 	Ngi           string  "n"
@@ -144,8 +145,8 @@ func Daily(input ApiSiteAvailabilityInProfileInput) []bson.M {
 	// Sort by profile->ngi->site->datetime
 	query := []bson.M{
 		{"$match": filter},
-		{"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "p": 1, "a": 1, "r": 1}},
-		{"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		{"$project": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 8}}, "i": 1, "sc": 1, "ss": 1, "n": 1, "pr": 1, "m": 1, "cs": 1, "ns": 1, "s": 1, "ap": 1, "a": 1, "r": 1}},
+		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
 	return query
 }
@@ -165,12 +166,12 @@ func Monthly(input ApiSiteAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "p": "$p"},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.M{"$substr": list{"$dt", 0, 6}}, "i": "$i", "n": "$n", "pr": "$pr", "m": "$m", "cs": "$cs", "ns": "$ns", "s": "$s", "ap": "$ap"},
 			"avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "p": "$_id.p", "avgup": 1, "avgu": 1, "avgd": 1,
+		{"$project": bson.M{"dt": "$_id.dt", "i": "$_id.i", "n": "$_id.n", "pr": "$_id.pr", "m": "$_id.m", "cs": "$_id.cs", "ns": "$_id.ns", "s": "$_id.s", "ap": "$_id.ap", "avgup": 1, "avgu": 1, "avgd": 1,
 			"a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
 			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
-		{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		{"$sort": bson.D{{"ns", 1}, {"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
 	return query
 }
