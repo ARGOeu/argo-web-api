@@ -43,15 +43,15 @@ type Availability struct {
 }
 
 type SF struct {
-	XMLName xml.Name 	`xml:"Flavor" json:"-"`
-	SF           string `xml:"Flavor,attr" json:"Flavor"`
+	XMLName      xml.Name `xml:"Flavor" json:"-"`
+	SF           string   `xml:"Flavor,attr" json:"Flavor"`
 	Availability []*Availability
 }
 
 type Site struct {
 	XMLName xml.Name `xml:"Site" json:"-"`
-	Site string		 `xml:"Site,attr" json:"Site"`
-	SF   []*SF
+	Site    string   `xml:"Site,attr" json:"Site"`
+	SF      []*SF
 }
 
 type Profile struct {
@@ -70,8 +70,8 @@ type ApiSFAvailabilityInProfileInput struct {
 	start_time  string // UTC time in W3C format
 	end_time    string // UTC time in W3C format
 	profile     string
-	granularity string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	format 		string
+	granularity string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	format      string
 	flavor      []string // sf name; may appear more than once
 	site        []string // egi site
 }

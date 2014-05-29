@@ -27,11 +27,11 @@
 package main
 
 import (
-	"github.com/argoeu/ar-web-api/utils/config"
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
+	"github.com/argoeu/ar-web-api/utils/config"
 	"net/http"
 	"strings"
 	//  "encoding/xml"

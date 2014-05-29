@@ -29,13 +29,12 @@ package voAvailability
 import (
 	"encoding/json"
 	"encoding/xml"
-	"time"
 	"fmt"
 	"strings"
+	"time"
 )
 
-
-func CreateView(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error){
+func CreateView(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
 	docRoot := &Root{}
 
 	prevProfile := ""
@@ -75,8 +74,8 @@ func CreateView(results []ApiVoAvailabilityInProfileOutput, format string) ([]by
 	//we create the xml response and record the output and any possible errors
 	//in the appropriate variables
 	if strings.ToLower(format) == "json" {
-		 return json.MarshalIndent(docRoot, " ", "  ")
-	} else{
-		return  xml.MarshalIndent(docRoot, " ", "  ")
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
 }

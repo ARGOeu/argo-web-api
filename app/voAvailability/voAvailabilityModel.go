@@ -27,10 +27,10 @@
 package voAvailability
 
 import (
+	"encoding/xml"
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
-	"encoding/xml"
 )
 
 type Availability struct {
@@ -41,15 +41,15 @@ type Availability struct {
 }
 
 type Vo struct {
-	XMLName   xml.Name `xml:"Vo" json:"-"`
-	Vo           string `xml:"VO,attr" json:"VO"`
+	XMLName      xml.Name `xml:"Vo" json:"-"`
+	Vo           string   `xml:"VO,attr" json:"VO"`
 	Availability []*Availability
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile" json:"-"`
-	Name string 	   `xml:"name,attr" json:"name"`
-	Vo   []*Vo
+	XMLName xml.Name `xml:"Profile" json:"-"`
+	Name    string   `xml:"name,attr" json:"name"`
+	Vo      []*Vo
 }
 
 type Root struct {
@@ -64,7 +64,7 @@ type ApiVoAvailabilityInProfileInput struct {
 	availability_profile string //availability profile
 	granularity          string // availability period; possible values: `DAILY`  `MONTHLY`
 	// optional values
-	format    string   // default XML; possible values are: XML, JSON
+	format     string   // default XML; possible values are: XML, JSON
 	group_name []string // site name; may appear more than once
 }
 

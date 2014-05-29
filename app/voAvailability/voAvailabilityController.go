@@ -86,29 +86,29 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		}
 
 	}
-	output, err = createResponse(results,input.format)
+	output, err = createResponse(results, input.format)
 
 	if len(results) > 0 {
 		caches.WriteCache("vos", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
-	
+
 	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format)=="json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json","utf-8"))
-	} else{
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml","utf-8"))
+	if strings.ToLower(input.format) == "json" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
+	} else {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
 	}
 
 	return output
 }
 
-func createResponse(results []ApiVoAvailabilityInProfileOutput,format string) ([]byte, error) {
+func createResponse(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
 
-    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
+	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
 
-	output, err := CreateView(results,format)
+	output, err := CreateView(results, format)
 
 	return output, err
 }

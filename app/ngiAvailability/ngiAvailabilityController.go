@@ -27,14 +27,11 @@
 package ngiAvailability
 
 import (
-	"encoding/xml"
-	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -51,7 +48,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		urlValues.Get("production"),
 		urlValues.Get("monitored"),
 		urlValues.Get("certification"),
-		//urlValues.Get("format"),
+		urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
@@ -105,7 +102,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		return []byte("<root><error>" + err.Error() + "</error></root>")
 	}
 
-	output, err = createResponse(results)
+	output, err = createResponse(results, input.format)
 	if len(results) > 0 {
 		caches.WriteCache("ngis", input, output, cfg)
 	}
@@ -115,47 +112,10 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	return output
 }
 
-func createResponse(results []ApiNgiAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
+	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
 
-	docRoot := &Root{}
+	output, err := CreateView(results, format)
 
-	prevProfile := ""
-	prevNgi := ""
-	ngi := &Ngi{}
-	profile := &Profile{}
-	// we iterate through the results struct array
-	// keeping only the value of each row
-	for _, row := range results {
-		timestamp, _ := time.Parse(CustomForm[0], row.Date)
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name:      row.Profile,
-				Namespace: row.Namespace}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevNgi = ""
-		}
-		//if new ngi does not match the previous ngi value
-		//we create a new ngi entry in the xml
-		if prevNgi != row.Ngi {
-			prevNgi = row.Ngi
-			ngi = &Ngi{
-				Ngi: row.Ngi,
-			}
-			profile.Ngi = append(profile.Ngi, ngi)
-		}
-		//we append the new availability values
-		ngi.Availability = append(ngi.Availability,
-			&Availability{
-				Timestamp:    timestamp.Format(CustomForm[1]),
-				Availability: fmt.Sprintf("%g", row.Availability),
-				Reliability:  fmt.Sprintf("%g", row.Reliability)})
-	}
-	//we create the xml response and record the output and any possible errors
-	//in the appropriate variables
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
-	//we return the output
 	return output, err
 }

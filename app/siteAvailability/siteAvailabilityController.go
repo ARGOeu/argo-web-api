@@ -27,21 +27,20 @@
 package siteAvailability
 
 import (
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 // func CreateResponse(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error,int){
-// 	
+//
 // }
 
-
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([]byte, error)*/ {
-	
+
 	err := error(nil)
 
 	// Parse the request into the input
@@ -81,7 +80,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 	}
 
 	found, output := caches.HitCache("sites", input, cfg)
-	
+
 	if found {
 		return output
 	}
@@ -109,34 +108,32 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 	}
 
 	if err != nil {
-		
+
 	}
-	
-	output, err = createResponse(results,input.format)
-	
+
+	output, err = createResponse(results, input.format)
+
 	if len(results) > 0 {
 		caches.WriteCache("sites", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
-	
+
 	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format)=="json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json","utf-8"))
-	} else{
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml","utf-8"))
+	if strings.ToLower(input.format) == "json" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
+	} else {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
 	}
 
 	return output
 
 }
 
-func createResponse(results []ApiSiteAvailabilityInProfileOutput,format string) ([]byte, error) {
-    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
+func createResponse(results []ApiSiteAvailabilityInProfileOutput, format string) ([]byte, error) {
+	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
 
-	output, err := CreateView(results,format)
+	output, err := CreateView(results, format)
 
 	return output, err
 }
-
-

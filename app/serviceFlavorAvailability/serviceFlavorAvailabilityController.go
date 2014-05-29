@@ -27,12 +27,12 @@
 package serviceFlavorAvailability
 
 import (
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -89,29 +89,29 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	}
 
-	output, err = CreateResponse(results,input.format)
+	output, err = CreateResponse(results, input.format)
 
 	if len(results) > 0 {
 		caches.WriteCache("sf", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
-	
+
 	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format)=="json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json","utf-8"))
-	} else{
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml","utf-8"))
+	if strings.ToLower(input.format) == "json" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
+	} else {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
 	}
 
 	return output
 }
 
-func CreateResponse(results []ApiSFAvailabilityInProfileOutput,format string) ([]byte, error) {
+func CreateResponse(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error) {
 
-	output, err := CreateView(results,format)
-	
+	output, err := CreateView(results, format)
+
 	fmt.Println(string(output))
-	
+
 	return output, err
 }

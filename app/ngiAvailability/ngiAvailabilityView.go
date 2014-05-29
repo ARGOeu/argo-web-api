@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package siteAvailability
+package ngiAvailability
 
 import (
 	"encoding/json"
@@ -34,20 +34,18 @@ import (
 	"time"
 )
 
-func CreateView(results []ApiSiteAvailabilityInProfileOutput, format string) ([]byte, error) {
+func CreateView(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
 
 	docRoot := &Root{}
 
 	prevProfile := ""
-	prevSite := ""
-	site := &Site{}
+	prevNgi := ""
+	ngi := &Ngi{}
 	profile := &Profile{}
-
 	// we iterate through the results struct array
 	// keeping only the value of each row
-
 	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		timestamp, _ := time.Parse(CustomForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
 		if prevProfile != row.Profile {
@@ -56,34 +54,28 @@ func CreateView(results []ApiSiteAvailabilityInProfileOutput, format string) ([]
 				Name: row.Profile,
 			}
 			docRoot.Profile = append(docRoot.Profile, profile)
-			prevSite = ""
+			prevNgi = ""
 		}
-		//if new site does not match the previous service value
-		//we create a new site entry in the xml
-		if prevSite != row.Site {
-			prevSite = row.Site
-			site = &Site{
-				Site:          row.Site,
-				Ngi:           row.Ngi,
-				Infastructure: row.Infastructure,
-				Scope:         row.Scope,
-				SiteScope:     row.SiteScope,
-				Production:    row.Production,
-				Monitored:     row.Monitored,
-				CertStatus:    row.CertStatus}
-			profile.Site = append(profile.Site, site)
+		//if new ngi does not match the previous ngi value
+		//we create a new ngi entry in the xml
+		if prevNgi != row.Ngi {
+			prevNgi = row.Ngi
+			ngi = &Ngi{
+				Ngi: row.Ngi,
+			}
+			profile.Ngi = append(profile.Ngi, ngi)
 		}
 		//we append the new availability values
-		site.Availability = append(site.Availability,
+		ngi.Availability = append(ngi.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    timestamp.Format(CustomForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}
+
 	if strings.ToLower(format) == "json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
 	} else {
 		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
-
 }

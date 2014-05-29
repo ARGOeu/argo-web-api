@@ -29,13 +29,13 @@ package serviceFlavorAvailability
 import (
 	"encoding/json"
 	"encoding/xml"
-	"time"
 	"fmt"
 	"strings"
+	"time"
 )
-	
-func CreateView(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error){	
-	
+
+func CreateView(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error) {
+
 	docRoot := &Root{}
 
 	prevProfile := ""
@@ -81,9 +81,8 @@ func CreateView(results []ApiSFAvailabilityInProfileOutput, format string) ([]by
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}
 	if strings.ToLower(format) == "json" {
-		 return json.MarshalIndent(docRoot, " ", "  ")
-	} else{
-		return  xml.MarshalIndent(docRoot, " ", "  ")
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
 }
-	

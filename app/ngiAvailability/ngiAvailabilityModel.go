@@ -1,29 +1,33 @@
 package ngiAvailability
 
 import (
+	"encoding/xml"
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
 )
 
 type Availability struct {
-	Timestamp    string `xml:"timestamp,attr"`
-	Availability string `xml:"availability,attr"`
-	Reliability  string `xml:"reliability,attr"`
+	XMLName      xml.Name `xml:"availability" json:"-"`
+	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
+	Availability string   `xml:"availability,attr" json:"availability"`
+	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type Ngi struct {
-	Ngi          string `xml:"NGI,attr"`
+	XMLName      xml.Name `xml:"ngi" json:"-"`
+	Ngi          string   `xml:"NGI,attr" json:"NGI"`
 	Availability []*Availability
 }
 
 type Profile struct {
-	Name      string `xml:"name,attr"`
-	Namespace string `xml:"namespace,attr"`
-	Ngi       []*Ngi
+	XMLName xml.Name `xml:"Profile" json:"-"`
+	Name    string   `xml:"name,attr" json:"name"`
+	Ngi     []*Ngi
 }
 
 type Root struct {
+	XMLName xml.Name `xml:"root" json:"-"`
 	Profile []*Profile
 }
 
@@ -33,19 +37,19 @@ type ApiNgiAvailabilityInProfileInput struct {
 	End_time             string // UTC time in W3C format
 	Availability_profile string //availability profile
 	// optional values
-	Granularity    string //availability period; possible values: `DAILY`, MONTHLY`
-	Infrastructure string //infrastructure name
-	Production     string //production or not
-	Monitored      string //yes or no
-	Certification  string //certification status
-	//format    string   // default XML; possible values are: XML, JSON
-	Group_name []string // site name; may appear more than once
+	Granularity    string   //availability period; possible values: `DAILY`, MONTHLY`
+	Infrastructure string   //infrastructure name
+	Production     string   //production or not
+	Monitored      string   //yes or no
+	Certification  string   //certification status
+	format         string   // default XML; possible values are: XML, JSON
+	Group_name     []string // site name; may appear more than once
 }
 
 type ApiNgiAvailabilityInProfileOutput struct {
 	Date         string  "dt"
 	Namespace    string  "ns"
-	Profile      string  "p"
+	Profile      string  "ap"
 	Ngi          string  "n"
 	Availability float64 "a"
 	Reliability  float64 "r"
@@ -106,12 +110,12 @@ func Daily(input ApiNgiAvailabilityInProfileInput) []bson.M {
 	// Sort by profile->ngi->site->datetime
 	query := []bson.M{
 		{"$match": filter},
-		{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"},
+		{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "ap": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "ap": "$ap"},
 			"a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}},
+		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "ap": "$_id.ap", "a": bson.M{"$divide": list{"$a", "$hs"}},
 			"r": bson.M{"$divide": list{"$r", "$hs"}}}},
-		{"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
 	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 
@@ -141,13 +145,13 @@ func Monthly(input ApiNgiAvailabilityInProfileInput) []bson.M {
 	// Sort by namespace->profile->ngi->datetime
 
 	query := []bson.M{
-		{"$match": filter}, {"$project": bson.M{"dt": 1, "a": 1, "r": 1, "p": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}},
+		{"$match": filter}, {"$project": bson.M{"dt": 1, "a": 1, "r": 1, "ap": 1, "ns": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "ap": "$ap"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}},
 			"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}},
 		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$avg": "$a"},
-			"r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": "$_id.p", "a": 1, "r": 1}},
-		{"$sort": bson.D{{"ns", 1}, {"p", 1}, {"n", 1}, {"dt", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ns": "$ns", "ap": "$ap"}, "a": bson.M{"$avg": "$a"},
+			"r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "ap": "$_id.ap", "a": 1, "r": 1}},
+		{"$sort": bson.D{{"ns", 1}, {"ap", 1}, {"n", 1}, {"dt", 1}}}}
 
 	return query
 }

@@ -35,28 +35,28 @@ import (
 
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability" json:"-"`
-	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"` 
+	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
 	Availability string   `xml:"availability,attr" json:"availability"`
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type Site struct {
-	XMLName 	  xml.Name 	`xml:"Site" json:"-"`
-	Site          string 	`xml:"site,attr" json:"site"`
-	Ngi           string 	`xml:"NGI,attr"	 json:"NGI"`
-	Infastructure string 	`xml:"infastructure,attr" json:"infrastructure"`
-	Scope         string 	`xml:"scope,attr" json:"scope"`
-	SiteScope     string 	`xml:"site_scope,attr" json:"site_scope"`
-	Production    string 	`xml:"production,attr" json:"production"`
-	Monitored     string 	`xml:"monitored,attr" json:"monitored"`
-	CertStatus    string 	`xml:"certification_status,attr" json:"certification_status"`
+	XMLName       xml.Name `xml:"Site" json:"-"`
+	Site          string   `xml:"site,attr" json:"site"`
+	Ngi           string   `xml:"NGI,attr"	 json:"NGI"`
+	Infastructure string   `xml:"infastructure,attr" json:"infrastructure"`
+	Scope         string   `xml:"scope,attr" json:"scope"`
+	SiteScope     string   `xml:"site_scope,attr" json:"site_scope"`
+	Production    string   `xml:"production,attr" json:"production"`
+	Monitored     string   `xml:"monitored,attr" json:"monitored"`
+	CertStatus    string   `xml:"certification_status,attr" json:"certification_status"`
 	Availability  []*Availability
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"Profile" json:"-"`
-	Name      string   `xml:"name,attr" json:"name"`
-	Site      []*Site
+	XMLName xml.Name `xml:"Profile" json:"-"`
+	Name    string   `xml:"name,attr" json:"name"`
+	Site    []*Site
 }
 
 type Root struct {
@@ -64,20 +64,19 @@ type Root struct {
 	Profile []*Profile
 }
 
-
 type ApiSiteAvailabilityInProfileInput struct {
 	// mandatory values
 	start_time           string // UTC time in W3C format
 	end_time             string // UTC time in W3C format
 	availability_profile string //availability profile
 	// optional values
-	granularity    string //availability period; possible values: `DAILY`, MONTHLY`
-	infrastructure string //infrastructure name
-	production     string //production or not
-	monitored      string //yes or no
-	certification  string //certification status
-	format    	   string // default XML; possible values are: XML, JSON
-	group_name []string // site name; may appear more than once
+	granularity    string   //availability period; possible values: `DAILY`, MONTHLY`
+	infrastructure string   //infrastructure name
+	production     string   //production or not
+	monitored      string   //yes or no
+	certification  string   //certification status
+	format         string   // default XML; possible values are: XML, JSON
+	group_name     []string // site name; may appear more than once
 }
 
 type ApiSiteAvailabilityInProfileOutput struct {
