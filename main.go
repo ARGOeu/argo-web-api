@@ -27,13 +27,13 @@
 package main
 
 import (
-	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
-	"github.com/argoeu/ar-web-api/app/ngiAvailability"
-	"github.com/argoeu/ar-web-api/app/poemProfiles"
-	"github.com/argoeu/ar-web-api/app/recomputations"
-	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
+	// "github.com/argoeu/ar-web-api/app/availabilityProfiles"
+// 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
+// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
+// 	"github.com/argoeu/ar-web-api/app/recomputations"
+// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
-	"github.com/argoeu/ar-web-api/app/voAvailability"
+// 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -45,35 +45,35 @@ func main() {
 	//Create the server router
 	main_router := mux.NewRouter()
 	get_subrouter := main_router.Methods("GET").Subrouter()                                //Routes only GET requests
-	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
-	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
+	//post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
+	//delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
+	//put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	// Grouping calls.
 	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
 
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", voAvailability.List)).
-		Queries("group_type", "vo")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", siteAvailability.List)).
-		Queries("group_type", "site")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngiAvailability.List)).
-		Queries("group_type", "ngi")
-
-	//Basic api calls
-	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavorAvailability.List))
-
-	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.Create))
-	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.List))
-	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Update))
-	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Delete))
-
-	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poemProfiles.List))
-
-	//Recalculations
-	post_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.Create))
-	get_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.List))
+	// get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", voAvailability.List)).
+// 		Queries("group_type", "vo")
+ 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", siteAvailability.List)).
+	Queries("group_type", "site")
+// 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngiAvailability.List)).
+// 		Queries("group_type", "ngi")
+// 
+// 	//Basic api calls
+// 	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond("text/xml", "utf-8", serviceFlavorAvailability.List))
+// 
+// 	post_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.Create))
+// 	get_subrouter.HandleFunc("/api/v1/AP", Respond("text/xml", "utf-8", availabilityProfiles.List))
+// 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Update))
+// 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Delete))
+// 
+// 	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poemProfiles.List))
+// 
+// 	//Recalculations
+// 	post_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.Create))
+// 	get_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.List))
 
 	http.Handle("/", main_router)
 

@@ -34,7 +34,19 @@ import (
 	"strings"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+// func CreateResponse(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error,int){
+// 	
+// }
+
+
+
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error) {
+	
+	err := error(nil)
+	
+	contentType := "text/xml"
+	status := http.StatusOK
+	length := 0 
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -73,11 +85,11 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	found, output := caches.HitCache("sites", input, cfg)
+	
 	if found {
-		return output
+		return output,err
 	}
 
-	err := error(nil)
 	session := mongo.OpenSession(cfg)
 
 	results := []ApiSiteAvailabilityInProfileOutput{}
@@ -101,9 +113,11 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	if err != nil {
-		return []byte("<root><error>" + err.Error() + "</error></root>")
+		
 	}
+	
 	output, err = createResponse(results,input.format)
+	
 	if len(results) > 0 {
 		caches.WriteCache("sites", input, output, cfg)
 	}
@@ -114,10 +128,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 }
 
-func createResponse(results []ApiSiteAvailabilityInProfileOutput,format string) ([]byte, error) {
-    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
-	   
-	output, err := CreateView(results,format)
+// func writeHeader(status string, ) {
+// 	
+// }
 
-	return output, err
-}

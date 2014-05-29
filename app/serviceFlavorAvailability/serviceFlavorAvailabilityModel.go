@@ -36,30 +36,32 @@ import (
 // a series of auxiliary structs that will
 // help us form the xml response
 type Availability struct {
-	XMLName      xml.Name `xml:"Availability"`
-	Timestamp    string   `xml:"timestamp,attr"`
-	Availability string   `xml:"availability,attr"`
-	Reliability  string   `xml:"reliability,attr"`
+	XMLName      xml.Name `xml:"Availability" json:"-"`
+	Timestamp    string   `xml:"timestamp,attr", json:"timestamp"`
+	Availability string   `xml:"availability,attr" json:"availability"`
+	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type SF struct {
-	SF           string `xml:"Flavor,attr"`
+	XMLName xml.Name 	`xml:"Flavor" json:"-"`
+	SF           string `xml:"Flavor,attr" json:"Flavor"`
 	Availability []*Availability
 }
 
 type Site struct {
-	Site string `xml:"Site,attr"`
+	XMLName xml.Name `xml:"Site" json:"-"`
+	Site string		 `xml:"Site,attr" json:"Site"`
 	SF   []*SF
 }
 
 type Profile struct {
-	XMLName xml.Name `xml:"Profile"`
-	Name    string   `xml:"name,attr"`
+	XMLName xml.Name `xml:"Profile" json:"-"`
+	Name    string   `xml:"name,attr" json:"name"`
 	Site    []*Site
 }
 
 type Root struct {
-	XMLName xml.Name `xml:"root"`
+	XMLName xml.Name `xml:"root" json:"-"`
 	Profile []*Profile
 }
 
@@ -69,6 +71,7 @@ type ApiSFAvailabilityInProfileInput struct {
 	end_time    string // UTC time in W3C format
 	profile     string
 	granularity string   // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	format 		string
 	flavor      []string // sf name; may appear more than once
 	site        []string // egi site
 }
