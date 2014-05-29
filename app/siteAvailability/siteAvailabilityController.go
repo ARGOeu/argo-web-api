@@ -32,6 +32,7 @@ import (
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
+	"fmt"
 )
 
 // func CreateResponse(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error,int){
@@ -39,14 +40,9 @@ import (
 // }
 
 
-
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error) {
+func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([]byte, error)*/ {
 	
 	err := error(nil)
-	
-	contentType := "text/xml"
-	status := http.StatusOK
-	length := 0 
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -87,7 +83,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, er
 	found, output := caches.HitCache("sites", input, cfg)
 	
 	if found {
-		return output,err
+		return output
 	}
 
 	session := mongo.OpenSession(cfg)
@@ -123,12 +119,23 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, er
 	}
 
 	mongo.CloseSession(session)
+	//BAD HACK. TO BE MODIFIED
+	if strings.ToLower(input.format)=="json" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json","utf-8"))
+	} else{
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml","utf-8"))
+	}
 
 	return output
 
 }
 
-// func writeHeader(status string, ) {
-// 	
-// }
+func createResponse(results []ApiSiteAvailabilityInProfileOutput,format string) ([]byte, error) {
+    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
+
+	output, err := CreateView(results,format)
+
+	return output, err
+}
+
 

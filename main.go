@@ -56,7 +56,7 @@ func main() {
 
 	// get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", voAvailability.List)).
 // 		Queries("group_type", "vo")
- 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", siteAvailability.List)).
+ 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 	Queries("group_type", "site")
 // 	get_subrouter.HandleFunc("/api/v1/group_availability", Respond("text/xml", "utf-8", ngiAvailability.List)).
 // 		Queries("group_type", "ngi")

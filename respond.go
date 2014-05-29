@@ -55,9 +55,9 @@ func parseCSV(data string) []string {
 }
 
 // The respond function that will be called to answer to http requests to the PI
-func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte) http.HandlerFunc {
+func Respond(fn func(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
+		//w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
 		output := fn(w, r, cfg)
 		var b bytes.Buffer
 		var data []byte
