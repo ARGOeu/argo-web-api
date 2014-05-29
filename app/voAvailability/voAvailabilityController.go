@@ -27,14 +27,12 @@
 package voAvailability
 
 import (
-	"encoding/xml"
 	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"time"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -47,7 +45,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		urlValues.Get("end_time"),
 		urlValues.Get("availability_profile"),
 		urlValues.Get("granularity"),
-		//urlValues.Get("format"),
+		urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
@@ -88,58 +86,29 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		}
 
 	}
-	output, err = createResponse(results)
+	output, err = createResponse(results,input.format)
 
 	if len(results) > 0 {
 		caches.WriteCache("vos", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
+	
+	//BAD HACK. TO BE MODIFIED
+	if strings.ToLower(input.format)=="json" {
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json","utf-8"))
+	} else{
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml","utf-8"))
+	}
 
 	return output
 }
 
-func createResponse(results []ApiVoAvailabilityInProfileOutput) ([]byte, error) {
+func createResponse(results []ApiVoAvailabilityInProfileOutput,format string) ([]byte, error) {
 
-	docRoot := &Root{}
+    ///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
 
-	prevProfile := ""
-	prevVo := ""
-	vo := &Vo{}
-	profile := &Profile{}
-	// we iterate through the results struct array
-	// keeping only the value of each row
-	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], row.Date)
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name: row.Profile,
-			}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevVo = ""
-		}
-		//if new ngi does not match the previous ngi value
-		//we create a new ngi entry in the xml
-		if prevVo != row.Vo {
-			prevVo = row.Vo
-			vo = &Vo{
-				Vo: row.Vo,
-			}
-			profile.Vo = append(profile.Vo, vo)
-		}
-		//we append the new availability values
-		vo.Availability = append(vo.Availability,
-			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
-				Availability: fmt.Sprintf("%g", row.Availability),
-				Reliability:  fmt.Sprintf("%g", row.Reliability)})
-	}
-	//we create the xml response and record the output and any possible errors
-	//in the appropriate variables
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
-	//we return the output
+	output, err := CreateView(results,format)
+
 	return output, err
 }

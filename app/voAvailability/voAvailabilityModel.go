@@ -30,25 +30,30 @@ import (
 	"labix.org/v2/mgo/bson"
 	"strconv"
 	"time"
+	"encoding/xml"
 )
 
 type Availability struct {
-	Timestamp    string `xml:"timestamp,attr"`
-	Availability string `xml:"availability,attr"`
-	Reliability  string `xml:"reliability,attr"`
+	XMLName      xml.Name `xml:"Availability" json:"-"`
+	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
+	Availability string   `xml:"availability,attr" json:"availability"`
+	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type Vo struct {
-	Vo           string `xml:"VO,attr"`
+	XMLName   xml.Name `xml:"Vo" json:"-"`
+	Vo           string `xml:"VO,attr" json:"VO"`
 	Availability []*Availability
 }
 
 type Profile struct {
-	Name string `xml:"name,attr"`
+	XMLName   xml.Name `xml:"Profile" json:"-"`
+	Name string 	   `xml:"name,attr" json:"name"`
 	Vo   []*Vo
 }
 
 type Root struct {
+	XMLName xml.Name `xml:"root" json:"-"`
 	Profile []*Profile
 }
 
@@ -57,15 +62,15 @@ type ApiVoAvailabilityInProfileInput struct {
 	start_time           string // UTC time in W3C format
 	end_time             string // UTC time in W3C format
 	availability_profile string //availability profile
-	granularity          string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
+	granularity          string // availability period; possible values: `DAILY`  `MONTHLY`
 	// optional values
-	//format    string   // default XML; possible values are: XML, JSON
+	format    string   // default XML; possible values are: XML, JSON
 	group_name []string // site name; may appear more than once
 }
 
 type ApiVoAvailabilityInProfileOutput struct {
 	Date         string  "dt"
-	Profile      string  "p"
+	Profile      string  "ap"
 	Vo           string  "v"
 	Availability float64 "a"
 	Reliability  float64 "r"
@@ -107,9 +112,9 @@ func Daily(input ApiVoAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "p": "$p", "v": "$v", "a": "$a", "r": "$r"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "p": "$_id.p", "a": "$_id.a", "r": "$_id.r"}},
-		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"dt", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "ap": "$ap", "v": "$v", "a": "$a", "r": "$r"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "ap": "$_id.ap", "a": "$_id.a", "r": "$_id.r"}},
+		{"$sort": bson.D{{"ap", 1}, {"v", 1}, {"dt", 1}}}}
 
 	return query
 }
@@ -119,12 +124,12 @@ func Monthly(input ApiVoAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "p": "$p", "v": "$v"},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "ap": "$ap", "v": "$v"},
 			"avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "p": "$_id.p",
+		{"$project": bson.M{"dt": "$_id.dt", "v": "$_id.v", "ap": "$_id.ap",
 			"a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
 			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
-		{"$sort": bson.D{{"p", 1}, {"v", 1}, {"dt", 1}}}}
+		{"$sort": bson.D{{"ap", 1}, {"v", 1}, {"dt", 1}}}}
 
 	return query
 }
