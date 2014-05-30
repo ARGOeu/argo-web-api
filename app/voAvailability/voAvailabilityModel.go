@@ -69,11 +69,11 @@ type ApiVoAvailabilityInProfileInput struct {
 }
 
 type ApiVoAvailabilityInProfileOutput struct {
-	Date         string  "dt"
-	Profile      string  "ap"
-	Vo           string  "v"
-	Availability float64 "a"
-	Reliability  float64 "r"
+	Date         string  `bson:"dt"`
+	Profile      string  `bson:"ap"`
+	Vo           string  `bson:"v"`
+	Availability float64 `bson:"a"`
+	Reliability  float64 `bson:"r"`
 }
 
 type list []interface{}
