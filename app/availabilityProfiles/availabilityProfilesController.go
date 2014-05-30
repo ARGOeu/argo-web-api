@@ -64,7 +64,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	err = mongo.Find(session, "AR", "aps", query, "name", &results)
 
-	recordId, err = mongo.GetId(session, "AR", "aps", query)
+	recordId, err = mongo.GetId(session, "AR", "aps", "name", query)
 
 	for i := range results {
 		results[i].ID = recordId[i] //We add a record id value to the records we retrieved
