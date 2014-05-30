@@ -27,42 +27,20 @@
 package poemProfiles
 
 import (
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
-	"net/http"
-	"fmt"
+	"encoding/xml"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func CreateView(results []PoemProfilesOutput) ([]byte, error){
+	
+	docRoot := &Root{}
 
-	results := []PoemProfilesOutput{}
-
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
-
-	if err != nil {
-		panic(err)
+	for _, row := range results {
+		p := &Poem{}
+		p.Poem = row.Poem
+		docRoot.Poem = append(docRoot.Poem, p)
 	}
 
-	output, err := createResponse(results) //Render the results into XML format
-
-	if err != nil {
-		panic(err)
-	}
-
-	mongo.CloseSession(session)
-	
-	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-
-	return output
-	
-}
-
-func createResponse(results []PoemProfilesOutput) ([]byte, error) {
-	
-	output, err := CreateView(results)
-	
+	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
 	
 }

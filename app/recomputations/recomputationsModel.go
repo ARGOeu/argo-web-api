@@ -28,8 +28,8 @@ package recomputations
 
 import "time"
 
-type ApiRecomputationInput struct {
-	Start_time   string
+type RecomputationsInputOutput struct {
+	Start_time   string 
 	End_time     string
 	Reason       string
 	Vo_name      string `bson:"vo"`
@@ -41,15 +41,3 @@ type ApiRecomputationInput struct {
 	//Exclude_end_point []string
 }
 
-type ApiRecomputationOutput struct {
-	Start_time   string
-	End_time     string
-	Reason       string
-	Vo_name      string `bson:"vo"`
-	Ngi_name     string `bson:"ngi"`
-	Exclude_site []string
-	Status       string
-	Timestamp    time.Time
-	//Exclude_sf		[]string
-	//Exclude_end_point []string
-}

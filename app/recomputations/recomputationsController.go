@@ -38,13 +38,13 @@ import (
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	results := []ApiRecomputationOutput{}
+	results := []RecomputationInputOutput{}
 
 	session := mongo.OpenSession(cfg)
 
 	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
 
-	answer, err := xml.MarshalIndent(results, "", " ")
+	output, err := CreateView(results)
 
 	if err != nil {
 		panic(err)
@@ -65,7 +65,7 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		}
 		urlValues := r.Form
 		now := time.Now()
-		input := ApiRecomputationInput{
+		input := RecomputationOutput{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
 			urlValues.Get("reason"),

@@ -34,6 +34,6 @@ type Root struct {
 	Poem []*Poem
 }
 
-type ApiPoemProfilesOutput struct {
+type PoemProfilesOutput struct {
 	Poem string `bson:"p"`
 }

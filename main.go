@@ -29,7 +29,7 @@ package main
 import (
 	// "github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
-	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
+	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
     "github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
@@ -69,7 +69,7 @@ func main() {
 	// 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Update))
 	// 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond("text/xml", "utf-8", availabilityProfiles.Delete))
 	//
-	// 	get_subrouter.HandleFunc("/api/v1/poems", Respond("text/xml", "utf-8", poemProfiles.List))
+	get_subrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
 	//
 	// 	//Recalculations
 	// 	post_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.Create))
