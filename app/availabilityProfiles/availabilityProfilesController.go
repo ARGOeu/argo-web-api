@@ -28,13 +28,13 @@ package availabilityProfiles
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"github.com/argoeu/ar-web-api/utils/authentication"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"fmt"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -47,12 +47,12 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	urlValues := r.URL.Query()
 
 	//Searchig is based on name and namespace
-	input := ApiAvailabilityProfileSearch{
+	input := AvailabilityProfileSearch{
 		urlValues["name"],
 		urlValues["namespace"],
 	}
 
-	results := []ApiAvailabilityProfileOutput{}
+	results := []AvailabilityProfileOutput{}
 
 	session := mongo.OpenSession(cfg)
 
@@ -76,6 +76,8 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		panic(err)
 	}
 
+	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+
 	return output
 }
 
@@ -96,9 +98,9 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 			panic(err)
 		}
 
-		input := ApiAvailabilityProfileInput{}
+		input := AvailabilityProfileInput{}
 
-		results := []ApiAvailabilityProfileOutput{}
+		results := []AvailabilityProfileOutput{}
 
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
@@ -108,7 +110,7 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 		namespace = append(namespace, input.Namespace)
 
-		search := ApiAvailabilityProfileSearch{
+		search := AvailabilityProfileSearch{
 			name,
 			namespace,
 		}
@@ -145,6 +147,8 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		panic(err)
 	}
 
+	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+
 	return output
 }
 
@@ -167,7 +171,7 @@ func Update(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 			panic(err)
 		}
 
-		input := ApiAvailabilityProfileInput{}
+		input := AvailabilityProfileInput{}
 
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
@@ -192,6 +196,8 @@ func Update(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		panic(err)
 	}
 
+	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+	
 	return output
 
 }
@@ -226,41 +232,19 @@ func Delete(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	if err != nil {
 		panic(err)
 	}
-
+	
+	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+	
 	return output
 
 }
 
-func createResponse(results []ApiAvailabilityProfileOutput) ([]byte, error) {
-	docRoot := &ReadRoot{}
-	for _, row := range results {
-		profile := &Profile{
-			ID:        row.ID,
-			Name:      row.Name,
-			Namespace: row.Namespace,
-			Poem:      row.Poems[0],
-		}
-		and := &And{}
-		docRoot.Profile = append(docRoot.Profile, profile)
-		for _, group := range row.Groups {
-			or := &Or{}
-			for _, sf := range group {
-				group := &Group{
-					ServiceFlavor: sf,
-				}
-				or.Group = append(or.Group, group)
-			}
-			and.Or = append(and.Or, or)
-		}
-		profile.And = and
-	}
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+func createResponse(results []AvailabilityProfileOutput) ([]byte, error) {
+	
+	output, err := CreateView(results)
+	
 	return output, err
+	
 }
 
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &Message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
-	return output, err
-}
+

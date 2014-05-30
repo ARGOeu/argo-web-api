@@ -66,7 +66,7 @@ type Message struct {
 }
 
 //Struct for inserting data into DB
-type ApiAvailabilityProfileInput struct {
+type AvailabilityProfileInput struct {
 	Name      string     `json:"name"`
 	Namespace string     `json:"namespace"`
 	Groups    [][]string `json:"groups"`
@@ -74,13 +74,13 @@ type ApiAvailabilityProfileInput struct {
 }
 
 //Struct for searching based on name and namespace combination
-type ApiAvailabilityProfileSearch struct {
+type AvailabilityProfileSearch struct {
 	Name      []string
 	Namespace []string
 }
 
 //Struct for record retrieval
-type ApiAvailabilityProfileOutput struct {
+type AvailabilityProfileOutput struct {
 	ID        string
 	Name      string     `bson:"name"`
 	Namespace string     `bson:"namespace"`
@@ -88,7 +88,7 @@ type ApiAvailabilityProfileOutput struct {
 	Poems     []string   `bson:"poems"`
 }
 
-func prepareFilter(input ApiAvailabilityProfileSearch) bson.M {
+func prepareFilter(input AvailabilityProfileSearch) bson.M {
 
 	filter := bson.M{
 		"name":      bson.M{"$in": input.Name},
@@ -98,7 +98,7 @@ func prepareFilter(input ApiAvailabilityProfileSearch) bson.M {
 	return filter
 }
 
-func createOne(input ApiAvailabilityProfileInput) bson.M {
+func createOne(input AvailabilityProfileInput) bson.M {
 	query := bson.M{
 		"name":      input.Name,
 		"namespace": input.Namespace,
@@ -108,7 +108,7 @@ func createOne(input ApiAvailabilityProfileInput) bson.M {
 	return query
 }
 
-func readOne(input ApiAvailabilityProfileSearch) bson.M {
+func readOne(input AvailabilityProfileSearch) bson.M {
 	filter := prepareFilter(input)
 	return filter
 }
