@@ -80,19 +80,19 @@ type SiteAvailabilityInput struct {
 }
 
 type SiteAvailabilityOutput struct {
-	SiteScope     string  "ss"
-	Scope         string  "sc"
-	Date          string  "dt"
-	Namespace     string  "ns"
-	Profile       string  "ap"
-	Production    string  "pr"
-	Monitored     string  "m"
-	Ngi           string  "n"
-	Site          string  "s"
-	Infastructure string  "i"
-	CertStatus    string  "cs"
-	Availability  float64 "a"
-	Reliability   float64 "r"
+	SiteScope     string  `bson:"ss"`
+	Scope         string  `bson:"sc"`
+	Date          string  `bson:"dt"`
+	Namespace     string  `bson:"ns"`
+	Profile       string  `bson:"ap"`
+	Production    string  `bson:"pr"`
+	Monitored     string  `bson:"m"`
+	Ngi           string  `bson:"n"`
+ 	Site          string  `bson:"s"`
+	Infastructure string  `bson:"i"`
+	CertStatus    string  `bson:"cs"`
+	Availability  float64 `bson:"a"`
+	Reliability   float64 `bson:"r"`
 }
 
 type list []interface{}
