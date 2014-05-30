@@ -64,7 +64,7 @@ type Root struct {
 	Profile []*Profile
 }
 
-type ApiSiteAvailabilityInProfileInput struct {
+type SiteAvailabilityInput struct {
 	// mandatory values
 	start_time           string // UTC time in W3C format
 	end_time             string // UTC time in W3C format
@@ -79,7 +79,7 @@ type ApiSiteAvailabilityInProfileInput struct {
 	group_name     []string // site name; may appear more than once
 }
 
-type ApiSiteAvailabilityInProfileOutput struct {
+type SiteAvailabilityOutput struct {
 	SiteScope     string  "ss"
 	Scope         string  "sc"
 	Date          string  "dt"
@@ -106,7 +106,7 @@ func init() {
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
+func prepareFilter(input SiteAvailabilityInput) bson.M {
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
@@ -135,7 +135,7 @@ func prepareFilter(input ApiSiteAvailabilityInProfileInput) bson.M {
 	return filter
 }
 
-func Daily(input ApiSiteAvailabilityInProfileInput) []bson.M {
+func Daily(input SiteAvailabilityInput) []bson.M {
 	filter := prepareFilter(input)
 
 	// Mongo aggregation pipeline
@@ -150,7 +150,7 @@ func Daily(input ApiSiteAvailabilityInProfileInput) []bson.M {
 	return query
 }
 
-func Monthly(input ApiSiteAvailabilityInProfileInput) []bson.M {
+func Monthly(input SiteAvailabilityInput) []bson.M {
 
 	filter := prepareFilter(input)
 

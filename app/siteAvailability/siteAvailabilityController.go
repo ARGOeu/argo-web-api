@@ -46,7 +46,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 
-	input := ApiSiteAvailabilityInProfileInput{
+	input := SiteAvailabilityInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("availability_profile"),
@@ -87,7 +87,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 
 	session := mongo.OpenSession(cfg)
 
-	results := []ApiSiteAvailabilityInProfileOutput{}
+	results := []SiteAvailabilityOutput{}
 
 	// Select the granularity of the search daily/monthly
 	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
@@ -130,7 +130,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 
 }
 
-func createResponse(results []ApiSiteAvailabilityInProfileOutput, format string) ([]byte, error) {
+func createResponse(results []SiteAvailabilityOutput, format string) ([]byte, error) {
 	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
 
 	output, err := CreateView(results, format)
