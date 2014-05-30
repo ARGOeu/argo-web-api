@@ -77,12 +77,12 @@ type ApiSFAvailabilityInProfileInput struct {
 }
 
 type ApiSFAvailabilityInProfileOutput struct {
-	Date         string  "dt"
-	SF           string  "sf"
-	Site         string  "s"
-	Profile      string  "p"
-	Availability float64 "a"
-	Reliability  float64 "r"
+	Date         string  `bson:"dt"`
+	SF           string  `bson:"sf"` 
+	Site         string  `bson:"s"`
+	Profile      string  `bson:"p"`
+	Availability float64 `bson:"a"`
+	Reliability  float64 `bson:"r"`
 }
 
 type list []interface{}

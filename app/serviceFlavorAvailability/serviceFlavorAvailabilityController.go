@@ -111,7 +111,5 @@ func CreateResponse(results []ApiSFAvailabilityInProfileOutput, format string) (
 
 	output, err := CreateView(results, format)
 
-	fmt.Println(string(output))
-
 	return output, err
 }
