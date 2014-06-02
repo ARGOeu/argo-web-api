@@ -28,13 +28,13 @@ package availabilityProfiles
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/authentication"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -197,7 +197,7 @@ func Update(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	
+
 	return output
 
 }
@@ -232,19 +232,17 @@ func Delete(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	
+
 	return output
 
 }
 
 func createResponse(results []AvailabilityProfileOutput) ([]byte, error) {
-	
+
 	output, err := CreateView(results)
-	
+
 	return output, err
-	
+
 }
-
-

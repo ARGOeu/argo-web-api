@@ -27,10 +27,10 @@
 package poemProfiles
 
 import (
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
-	"fmt"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -52,17 +52,17 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	mongo.CloseSession(session)
-	
+
 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
 
 	return output
-	
+
 }
 
 func createResponse(results []PoemProfilesOutput) ([]byte, error) {
-	
+
 	output, err := CreateView(results)
-	
+
 	return output, err
-	
+
 }

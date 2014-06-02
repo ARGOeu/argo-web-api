@@ -27,12 +27,12 @@
 package ngiAvailability
 
 import (
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/caches"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -109,7 +109,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	mongo.CloseSession(session)
-	
+
 	//BAD HACK. TO BE MODIFIED
 	if strings.ToLower(input.format) == "json" {
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))

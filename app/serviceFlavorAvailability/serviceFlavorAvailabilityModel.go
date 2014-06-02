@@ -78,7 +78,7 @@ type ApiSFAvailabilityInProfileInput struct {
 
 type ApiSFAvailabilityInProfileOutput struct {
 	Date         string  `bson:"dt"`
-	SF           string  `bson:"sf"` 
+	SF           string  `bson:"sf"`
 	Site         string  `bson:"s"`
 	Profile      string  `bson:"p"`
 	Availability float64 `bson:"a"`

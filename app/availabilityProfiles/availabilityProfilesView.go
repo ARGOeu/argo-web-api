@@ -28,8 +28,8 @@ package availabilityProfiles
 
 import "encoding/xml"
 
-func CreateView(results []AvailabilityProfileOutput) ([]byte, error){
-	
+func CreateView(results []AvailabilityProfileOutput) ([]byte, error) {
+
 	docRoot := &ReadRoot{}
 	for _, row := range results {
 		profile := &Profile{
@@ -54,9 +54,8 @@ func CreateView(results []AvailabilityProfileOutput) ([]byte, error){
 	}
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
-	
-}
 
+}
 
 func messageXML(answer string) ([]byte, error) {
 	docRoot := &Message{}

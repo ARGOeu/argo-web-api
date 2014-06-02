@@ -38,7 +38,7 @@ import (
 
 func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
-	results := []RecomputationInputOutput{}
+	results := []RecomputationsInputOutput{}
 
 	session := mongo.OpenSession(cfg)
 
@@ -65,11 +65,10 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		}
 		urlValues := r.Form
 		now := time.Now()
-		input := RecomputationOutput{
+		input := RecomputationsInputOutput{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
 			urlValues.Get("reason"),
-			urlValues.Get("vo_name"),
 			urlValues.Get("ngi_name"),
 			urlValues["exclude_site"],
 			"pending",
@@ -77,21 +76,17 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
-		query := bson.M{
-			"start_time":   input.Start_time,
-			"end_time":     input.End_time,
-			"reason":       input.Reason,
-			"vo":           input.Vo_name,
-			"ngi":          input.Ngi_name,
-			"status":       input.Status,
-			"timestamp":    input.Timestamp,
-			"exclude_site": input.Exclude_site,
-		}
+
+		query := insertQuery(input)
+
 		session := mongo.OpenSession(cfg)
+
 		err = mongo.Insert(session, "AR", "recalculations", query)
+
 		if err != nil {
 			return []byte("ERROR") //TODO
 		}
+
 		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
 		mongo.CloseSession(session)
 	} else {

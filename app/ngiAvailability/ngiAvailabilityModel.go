@@ -49,7 +49,7 @@ type ApiNgiAvailabilityInProfileInput struct {
 type ApiNgiAvailabilityInProfileOutput struct {
 	Date         string  `bson:"dt"`
 	Profile      string  `bson:"ap"`
-	Ngi          string  `bson:"n"`	
+	Ngi          string  `bson:"n"`
 	Availability float64 `bson:"a"`
 	Reliability  float64 `bson:"r"`
 }

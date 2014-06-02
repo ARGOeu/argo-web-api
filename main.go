@@ -30,8 +30,8 @@ import (
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
-	// 	"github.com/argoeu/ar-web-api/app/recomputations"
-    "github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
+	"github.com/argoeu/ar-web-api/app/recomputations"
+	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
@@ -44,7 +44,7 @@ func main() {
 
 	//Create the server router
 	main_router := mux.NewRouter()
-	get_subrouter := main_router.Methods("GET").Subrouter() //Routes only GET requests
+	get_subrouter := main_router.Methods("GET").Subrouter()                                //Routes only GET requests
 	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
 	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
 	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
@@ -63,17 +63,17 @@ func main() {
 	//
 	// 	//Basic api calls
 	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
-	
+
 	post_subrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
 	get_subrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
 	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
-	
+
 	get_subrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
-	//
-	// 	//Recalculations
-	// 	post_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.Create))
-	// 	get_subrouter.HandleFunc("/api/v1/recomputations", Respond("text/xml", "utf-8", recomputations.List))
+
+	//Recalculations
+	post_subrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
+	get_subrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
 
 	http.Handle("/", main_router)
 

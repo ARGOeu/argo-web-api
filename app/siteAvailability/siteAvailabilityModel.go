@@ -88,7 +88,7 @@ type SiteAvailabilityOutput struct {
 	Production    string  `bson:"pr"`
 	Monitored     string  `bson:"m"`
 	Ngi           string  `bson:"n"`
- 	Site          string  `bson:"s"`
+	Site          string  `bson:"s"`
 	Infastructure string  `bson:"i"`
 	CertStatus    string  `bson:"cs"`
 	Availability  float64 `bson:"a"`

@@ -30,8 +30,8 @@ import (
 	"encoding/xml"
 )
 
-func CreateView(results []PoemProfilesOutput) ([]byte, error){
-	
+func CreateView(results []PoemProfilesOutput) ([]byte, error) {
+
 	docRoot := &Root{}
 
 	for _, row := range results {
@@ -42,5 +42,5 @@ func CreateView(results []PoemProfilesOutput) ([]byte, error){
 
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
-	
+
 }
