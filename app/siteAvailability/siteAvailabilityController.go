@@ -39,10 +39,24 @@ import (
 //
 // }
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([]byte, error)*/ {
-
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
+	
+	code := http.StatusOK
+	
+	h := http.Header{}
+	
+	output := []byte("")
+	
 	err := error(nil)
-
+	
+	contentType := "text/xml"
+	
+	charset := "utf-8"
+	
+	//STANDARD DECLARATIONS END
+	
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 
@@ -78,14 +92,31 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 	if len(input.certification) == 0 {
 		input.certification = "Certified"
 	}
+	
+	if strings.ToLower(input.format) == "json" {
+		
+		contentType = "application/json"
+	
+	}
+	
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	found, output := caches.HitCache("sites", input, cfg)
 
 	if found {
-		return output
+		
+		return code, h, output, err
+		
 	}
 
-	session := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg)
+	
+	if err != nil {
+		
+		code=http.StatusInternalServerError
+		
+		return code, h, output, err	
+	}
 
 	results := []SiteAvailabilityOutput{}
 
@@ -108,32 +139,19 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte /*([
 	}
 
 	if err != nil {
-
+		
+		code=http.StatusInternalServerError
+		
+		return code, h, output, err	
 	}
 
-	output, err = createResponse(results, input.format)
+	output, err = createView(results, input.format)
 
 	if len(results) > 0 {
 		caches.WriteCache("sites", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
-
-	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format) == "json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
-	} else {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	}
-
-	return output
-
-}
-
-func createResponse(results []SiteAvailabilityOutput, format string) ([]byte, error) {
-	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
-
-	output, err := CreateView(results, format)
-
-	return output, err
+	
+	return code, h, output, err
 }
