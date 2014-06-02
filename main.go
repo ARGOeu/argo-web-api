@@ -28,7 +28,7 @@ package main
 
 import (
 	// "github.com/argoeu/ar-web-api/app/availabilityProfiles"
-	// 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
+	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
 	// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
@@ -58,8 +58,8 @@ func main() {
 	// 		Queries("group_type", "vo")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 		Queries("group_type", "site")
-	// getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
-	// 		Queries("group_type", "ngi")
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
+		Queries("group_type", "ngi")
 	// 	//
 	// 	// 	//Basic api calls
 	// 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))

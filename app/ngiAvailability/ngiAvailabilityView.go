@@ -34,7 +34,7 @@ import (
 	"time"
 )
 
-func CreateView(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
+func createView(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
 
 	docRoot := &Root{}
 

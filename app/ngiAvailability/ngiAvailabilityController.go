@@ -35,7 +35,23 @@ import (
 	"strings"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
@@ -73,15 +89,34 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		input.Certification = "Certified"
 	}
 
-	found, output := caches.HitCache("ngis", input, cfg)
-	if found {
-		return output
+	if strings.ToLower(input.format) == "json" {
+
+		contentType = "application/json"
+
 	}
-	session := mongo.OpenSession(cfg)
+
+	found, output := caches.HitCache("ngis", input, cfg)
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if found {
+
+		return code, h, output, err
+
+	}
+
+	session, err := mongo.OpenSession(cfg)
+
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	results := []ApiNgiAvailabilityInProfileOutput{}
 
-	err := error(nil)
+	// Select the granularity of the search daily/monthly
 	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
 		CustomForm[0] = "20060102"
 		CustomForm[1] = "2006-01-02"
@@ -100,30 +135,26 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 	}
 
 	if err != nil {
-		return []byte("<root><error>" + err.Error() + "</error></root>")
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
-	output, err = createResponse(results, input.format)
+	output, err = createView(results, input.format)
+
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
+
 	if len(results) > 0 {
 		caches.WriteCache("ngis", input, output, cfg)
 	}
 
 	mongo.CloseSession(session)
 
-	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format) == "json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
-	} else {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	}
-
-	return output
-}
-
-func createResponse(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
-	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
-
-	output, err := CreateView(results, format)
-
-	return output, err
+	return code, h, output, err
 }

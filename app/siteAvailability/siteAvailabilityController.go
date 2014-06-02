@@ -147,6 +147,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	output, err = createView(results, input.format)
 
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
+
 	if len(results) > 0 {
 		caches.WriteCache("sites", input, output, cfg)
 	}
