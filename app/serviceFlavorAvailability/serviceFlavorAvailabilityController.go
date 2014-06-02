@@ -35,7 +35,23 @@ import (
 	"strings"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
@@ -49,19 +65,33 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		urlValues["flavor"],
 		urlValues["site"],
 	}
+	
+	if strings.ToLower(input.format) == "json" {
 
-	output := []byte("")
+		contentType = "application/json"
 
-	found, output := caches.HitCache("sf", input, cfg)
-	if found {
-		return output
 	}
 
-	session := mongo.OpenSession(cfg)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	found, output := caches.HitCache("sf", input, cfg)
+	
+	if found {
+
+		return code, h, output, err
+
+	}
+
+	session, err := mongo.OpenSession(cfg)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	results := []ApiSFAvailabilityInProfileOutput{}
-
-	err := error(nil)
 
 	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
@@ -71,10 +101,6 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
 
-		if err != nil {
-			panic(err)
-		}
-
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
@@ -83,13 +109,23 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
 
-		if err != nil {
-			panic(err)
-		}
-
 	}
+	
+	if err != nil {
 
-	output, err = CreateResponse(results, input.format)
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
+	
+	output, err = createView(results, input.format)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	if len(results) > 0 {
 		caches.WriteCache("sf", input, output, cfg)
@@ -97,19 +133,5 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	mongo.CloseSession(session)
 
-	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format) == "json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
-	} else {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	}
-
-	return output
-}
-
-func CreateResponse(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error) {
-
-	output, err := CreateView(results, format)
-
-	return output, err
+	return code, h, output, err
 }

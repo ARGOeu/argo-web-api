@@ -31,7 +31,7 @@ import (
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
-	// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
+	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
@@ -60,9 +60,8 @@ func main() {
 		Queries("group_type", "site")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
 		Queries("group_type", "ngi")
-	// 	//
-	// 	// 	//Basic api calls
-	// 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
+	
+	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
 	//
 	// 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
 	// 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))

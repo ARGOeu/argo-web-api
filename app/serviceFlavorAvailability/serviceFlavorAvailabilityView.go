@@ -34,7 +34,7 @@ import (
 	"time"
 )
 
-func CreateView(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error) {
+func createView(results []ApiSFAvailabilityInProfileOutput, format string) ([]byte, error) {
 
 	docRoot := &Root{}
 
