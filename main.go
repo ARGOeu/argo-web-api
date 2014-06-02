@@ -43,39 +43,39 @@ import (
 func main() {
 
 	//Create the server router
-	main_router := mux.NewRouter()
-	get_subrouter := main_router.Methods("GET").Subrouter()                                //Routes only GET requests
-	post_subrouter := main_router.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
-	delete_subrouter := main_router.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-	put_subrouter := main_router.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
+	mainRouter := mux.NewRouter()
+	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes only GET requests
+	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
+	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
+	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	// Grouping calls.
 	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
 
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
 		Queries("group_type", "vo")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 		Queries("group_type", "site")
-	get_subrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
 		Queries("group_type", "ngi")
 	//
 	// 	//Basic api calls
-	get_subrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
+	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
 
-	post_subrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-	get_subrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
-	put_subrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
-	delete_subrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
+	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
+	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
+	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
+	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 
-	get_subrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
+	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
 
 	//Recalculations
-	post_subrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
-	get_subrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
+	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
+	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
 
-	http.Handle("/", main_router)
+	http.Handle("/", mainRouter)
 
 	//Cache
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
