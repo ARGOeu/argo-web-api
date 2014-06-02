@@ -27,11 +27,10 @@
 package recomputations
 
 import (
-	"encoding/xml"
+	"fmt"
 	"github.com/argoeu/ar-web-api/utils/authentication"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"time"
 )
@@ -42,7 +41,7 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	session := mongo.OpenSession(cfg)
 
-	err := mongo.Find(session, "AR", "recalculations", nil, "timestamp", &results)
+	err := mongo.Find(session, "AR", "recalculations", nil, "t", &results)
 
 	output, err := CreateView(results)
 
@@ -50,9 +49,13 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		panic(err)
 	}
 
+	fmt.Println(results)
+
 	mongo.CloseSession(session)
 
-	return []byte("<root>" + string(answer) + "</root>")
+	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+
+	return output
 }
 
 func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
@@ -72,11 +75,10 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 			urlValues.Get("ngi_name"),
 			urlValues["exclude_site"],
 			"pending",
-			now,
+			now.Format("2006-01-02 15:04:05"),
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
-
 		query := insertQuery(input)
 
 		session := mongo.OpenSession(cfg)
