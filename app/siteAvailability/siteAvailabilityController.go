@@ -35,10 +35,6 @@ import (
 	"strings"
 )
 
-// func CreateResponse(w http.ResponseWriter, r *http.Request, cfg config.Config) ([]byte, error,int){
-//
-// }
-
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

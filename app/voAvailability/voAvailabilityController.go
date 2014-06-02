@@ -35,8 +35,24 @@ import (
 	"strings"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
 
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+	
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
@@ -49,29 +65,40 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		urlValues["group_name"],
 	}
 
-	output := []byte("")
+	if strings.ToLower(input.format) == "json" {
+
+		contentType = "application/json"
+
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	found, output := caches.HitCache("vos", input, cfg)
+	
 	if found {
-		return output
+
+		return code, h, output, err
+
 	}
-	session := mongo.OpenSession(cfg)
+	
+	session, err := mongo.OpenSession(cfg)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	results := []ApiVoAvailabilityInProfileOutput{}
 
-	err := error(nil)
 	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 
 		query := Daily(input)
 
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		if err != nil {
-			panic(err)
-		}
-
-		//err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)		
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
@@ -80,13 +107,24 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 		query := Monthly(input)
 
 		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-
-		if err != nil {
-			panic(err)
-		}
-
+		
 	}
-	output, err = createResponse(results, input.format)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
+	
+	output, err = createView(results, input.format)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	if len(results) > 0 {
 		caches.WriteCache("vos", input, output, cfg)
@@ -94,21 +132,5 @@ func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 
 	mongo.CloseSession(session)
 
-	//BAD HACK. TO BE MODIFIED
-	if strings.ToLower(input.format) == "json" {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "application/json", "utf-8"))
-	} else {
-		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-	}
-
-	return output
-}
-
-func createResponse(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
-
-	///TO BE COMPLEMENTED WITH HEADER VALUES RETURN CODES ETC.
-
-	output, err := CreateView(results, format)
-
-	return output, err
+	return code, h, output, err
 }

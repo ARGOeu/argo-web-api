@@ -34,7 +34,7 @@ import (
 	"time"
 )
 
-func CreateView(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
+func createView(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
 	docRoot := &Root{}
 
 	prevProfile := ""

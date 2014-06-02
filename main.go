@@ -33,7 +33,7 @@ import (
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
 	// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
-	// 	"github.com/argoeu/ar-web-api/app/voAvailability"
+	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -54,8 +54,8 @@ func main() {
 	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
 
-	// getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
-	// 		Queries("group_type", "vo")
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
+		Queries("group_type", "vo")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 		Queries("group_type", "site")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
