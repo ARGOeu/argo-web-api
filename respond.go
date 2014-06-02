@@ -34,7 +34,6 @@ import (
 	"github.com/argoeu/ar-web-api/utils/config"
 	"net/http"
 	"strings"
-	//  "encoding/xml"
 )
 
 type list []interface{}
@@ -42,41 +41,26 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-func parseCSV(data string) []string {
-	splitted := strings.SplitN(data, ",", -1)
-
-	data_tmp := make([]string, len(splitted))
-
-	for i, val := range splitted {
-		data_tmp[i] = strings.TrimSpace(val)
-	}
-
-	return data_tmp
-}
 
 // The respond function that will be called to answer to http requests to the PI
 func Respond(fn func(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", mediaType, charset))
 		output := fn(w, r, cfg)
-		var b bytes.Buffer
-		var data []byte
+		data := []byte("")	
+		encoding := strings.Split(r.Header.Get("Accept-Encoding"), ",")[0]//get the first accepted encoding		
 		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
-			encodings := parseCSV(r.Header.Get("Accept-Encoding"))
-			for _, val := range encodings {
-				if val == "gzip" {
-					writer := gzip.NewWriter(&b)
-					writer.Write(output)
-					writer.Close()
-					w.Header().Set("Content-Encoding", "gzip")
-					break
-				} else if val == "deflate" {
-					writer := zlib.NewWriter(&b)
-					writer.Write(output)
-					writer.Close()
-					w.Header().Set("Content-Encoding", "deflate")
-					break
-				}
+			var b bytes.Buffer
+			if encoding == "gzip" {
+				writer := gzip.NewWriter(&b)
+				writer.Write(output)
+				writer.Close()
+				w.Header().Set("Content-Encoding", "gzip")
+			} else if encoding == "deflate" {
+				writer := zlib.NewWriter(&b)
+				writer.Write(output)
+				writer.Close()
+				w.Header().Set("Content-Encoding", "deflate")
 			}
 			data = b.Bytes()
 		} else {
