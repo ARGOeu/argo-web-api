@@ -40,23 +40,23 @@ import (
 // }
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	
+
 	//STANDARD DECLARATIONS START
-	
+
 	code := http.StatusOK
-	
+
 	h := http.Header{}
-	
+
 	output := []byte("")
-	
+
 	err := error(nil)
-	
+
 	contentType := "text/xml"
-	
+
 	charset := "utf-8"
-	
+
 	//STANDARD DECLARATIONS END
-	
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 
@@ -92,30 +92,30 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	if len(input.certification) == 0 {
 		input.certification = "Certified"
 	}
-	
+
 	if strings.ToLower(input.format) == "json" {
-		
+
 		contentType = "application/json"
-	
+
 	}
-	
+
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	found, output := caches.HitCache("sites", input, cfg)
 
 	if found {
-		
+
 		return code, h, output, err
-		
+
 	}
 
 	session, err := mongo.OpenSession(cfg)
-	
+
 	if err != nil {
-		
-		code=http.StatusInternalServerError
-		
-		return code, h, output, err	
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
 	results := []SiteAvailabilityOutput{}
@@ -139,10 +139,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	if err != nil {
-		
-		code=http.StatusInternalServerError
-		
-		return code, h, output, err	
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
 	output, err = createView(results, input.format)
@@ -152,6 +152,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	mongo.CloseSession(session)
-	
+
 	return code, h, output, err
 }

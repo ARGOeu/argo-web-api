@@ -32,9 +32,9 @@ import (
 	"compress/zlib"
 	"fmt"
 	"github.com/argoeu/ar-web-api/utils/config"
+	"log"
 	"net/http"
 	"strings"
-	"log"
 )
 
 type list []interface{}
@@ -42,59 +42,58 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-
 // The respond function that will be called to answer to http requests to the PI
 func Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-				
+
 		code, h, output, err := fn(r, cfg)
-		
-		if code == http.StatusInternalServerError{
-			
+
+		if code == http.StatusInternalServerError {
+
 			log.Panic("Internal Server Error:", err)
-			
+
 		}
-		
-		encoding := strings.Split(r.Header.Get("Accept-Encoding"), ",")[0]//get the first accepted encoding		
+
+		encoding := strings.Split(r.Header.Get("Accept-Encoding"), ",")[0] //get the first accepted encoding
 		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
-			
+
 			var b bytes.Buffer
-			
+
 			if encoding == "gzip" {
-				
+
 				writer := gzip.NewWriter(&b)
-				
+
 				writer.Write(output)
-				
+
 				writer.Close()
-				
-				w.Header().Set("Content-Encoding", "gzip")		
+
+				w.Header().Set("Content-Encoding", "gzip")
 			} else if encoding == "deflate" {
-				
+
 				writer := zlib.NewWriter(&b)
-				
+
 				writer.Write(output)
-				
+
 				writer.Close()
-				
+
 				w.Header().Set("Content-Encoding", "deflate")
 			}
 			output = b.Bytes()
 		}
-		//Add headers 
-		
+		//Add headers
+
 		h.Set("Content-Length", fmt.Sprintf("%d", len(output)))
-		
+
 		for name, values := range h {
-			
+
 			for _, value := range values {
-				
+
 				w.Header().Add(name, value)
-				
+
 			}
-		}		
+		}
 		w.WriteHeader(code)
-		
+
 		w.Write(output)
 	}
 }

@@ -28,12 +28,12 @@ package main
 
 import (
 	// "github.com/argoeu/ar-web-api/app/availabilityProfiles"
-// 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
-// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
-// 	"github.com/argoeu/ar-web-api/app/recomputations"
-// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
- 	"github.com/argoeu/ar-web-api/app/siteAvailability"
-// 	"github.com/argoeu/ar-web-api/app/voAvailability"
+	// 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
+	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
+	// 	"github.com/argoeu/ar-web-api/app/recomputations"
+	// 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
+	"github.com/argoeu/ar-web-api/app/siteAvailability"
+	// 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -44,10 +44,10 @@ func main() {
 
 	//Create the server router
 	mainRouter := mux.NewRouter()
-	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes only GET requests
+	getSubrouter := mainRouter.Methods("GET").Subrouter() //Routes only GET requests
 	// postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
-// 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-// 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
+	// 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
+	// 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	// Grouping calls.
@@ -55,25 +55,25 @@ func main() {
 	// 2) Provide with a default call informing the user of an invalid parameter
 
 	// getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
-// 		Queries("group_type", "vo")
+	// 		Queries("group_type", "vo")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 		Queries("group_type", "site")
 	// getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
-// 		Queries("group_type", "ngi")
-// 	//
-// 	// 	//Basic api calls
-// 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
-// 
-// 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-// 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
-// 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
-// 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
-// 
-// 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
-// 
-// 	//Recalculations
-// 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
-// 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
+	// 		Queries("group_type", "ngi")
+	// 	//
+	// 	// 	//Basic api calls
+	// 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
+	//
+	// 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
+	// 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
+	// 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
+	// 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
+	//
+	// 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
+	//
+	// 	//Recalculations
+	// 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
+	// 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
 
 	http.Handle("/", mainRouter)
 

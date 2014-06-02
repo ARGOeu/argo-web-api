@@ -35,7 +35,7 @@ import (
 func OpenSession(cfg config.Config) (*mgo.Session, error) {
 	s, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
 	if err != nil {
-		return s, err		
+		return s, err
 	}
 	// Optional. Switch the session to a monotonic behavior.
 	s.SetMode(mgo.Monotonic, true)
