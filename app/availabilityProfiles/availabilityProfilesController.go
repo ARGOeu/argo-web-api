@@ -34,7 +34,7 @@ import (
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"io/ioutil"
 	"net/http"
-
+	"strings"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -239,91 +239,184 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-// func Update(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-// 
-// 	answer := ""
-// 
-// 	//Authentication procedure
-// 	if authentication.Authenticate(r.Header, cfg) {
-// 
-// 		//Extracting record id from url
-// 		urlValues := r.URL.Path
-// 
-// 		id := strings.Split(urlValues, "/")[4]
-// 
-// 		//Reading the json input
-// 		reqBody, err := ioutil.ReadAll(r.Body)
-// 
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 
-// 		input := AvailabilityProfileInput{}
-// 
-// 		//Unmarshalling the json input into byte form
-// 		err = json.Unmarshal(reqBody, &input)
-// 
-// 		session := mongo.OpenSession(cfg)
-// 
-// 		//We update the record bassed on its unique id
-// 		err = mongo.IdUpdate(session, "AR", "aps", id, input)
-// 
-// 		if err != nil {
-// 			answer = "No profile matching the requested id" //If not found we inform the user
-// 		} else {
-// 			answer = "Update successful" //We provide with the appropriate user response
-// 		}
-// 	} else {
-// 		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
-// 	}
-// 
-// 	output, err := messageXML(answer) //Render the response into XML
-// 
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 
-// 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-// 
-// 	return output
-// 
-// }
-// 
-// func Delete(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-// 
-// 	answer := ""
-// 
-// 	//Authentication procedure
-// 	if authentication.Authenticate(r.Header, cfg) {
-// 
-// 		//Extracting record id from url
-// 		urlValues := r.URL.Path
-// 
-// 		id := strings.Split(urlValues, "/")[4]
-// 
-// 		session := mongo.OpenSession(cfg)
-// 
-// 		//We remove the record bassed on its unique id
-// 		err := mongo.IdRemove(session, "AR", "aps", id)
-// 
-// 		if err != nil {
-// 			answer = "No profile matching the requested id" //If not found we inform the user
-// 		} else {
-// 			answer = "Delete successful" //We provide with the appropriate user response
-// 		}
-// 	} else {
-// 		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
-// 	}
-// 	output, err := messageXML(answer)
-// 
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 
-// 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-// 
-// 	return output
-// 
-// }
+func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
 
+	code := http.StatusOK
 
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	message := ""
+
+	//Authentication procedure
+	if authentication.Authenticate(r.Header, cfg) {
+
+		//Extracting record id from url
+		urlValues := r.URL.Path
+
+		id := strings.Split(urlValues, "/")[4]
+
+		//Reading the json input
+		reqBody, err := ioutil.ReadAll(r.Body)
+
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+
+		input := AvailabilityProfileInput{}
+
+		//Unmarshalling the json input into byte form
+		err = json.Unmarshal(reqBody, &input)
+
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
+		session, err := mongo.OpenSession(cfg)
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+
+		//We update the record bassed on its unique id
+		err = mongo.IdUpdate(session, "AR", "aps", id, input)
+
+		if err != nil {
+			
+			message = "No profile matching the requested id" //If not found we inform the user
+			
+			output, err := messageXML(message)
+			
+			if err != nil {
+
+				code = http.StatusInternalServerError
+
+				return code, h, output, err
+			}
+			
+			code = http.StatusBadRequest
+			
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			
+			return code, h, output, err		
+			
+		} else {
+
+				code = http.StatusNoContent
+				
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			
+				return code, h, output, err
+				
+		}
+	} else {
+		
+		code = http.StatusUnauthorized
+		
+		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
+		
+		return code, h, output, err
+		
+	}
+
+}
+
+func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	message := ""
+
+	//Authentication procedure
+	if authentication.Authenticate(r.Header, cfg) {
+
+		//Extracting record id from url
+		urlValues := r.URL.Path
+
+		id := strings.Split(urlValues, "/")[4]
+
+		session, err := mongo.OpenSession(cfg)
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+
+		//We remove the record bassed on its unique id
+		
+		err = mongo.IdRemove(session, "AR", "aps", id)
+
+		if err != nil {
+			
+			message = "No profile matching the requested id" //If not found we inform the user
+			
+			output, err := messageXML(message)
+			
+			if err != nil {
+
+				code = http.StatusInternalServerError
+
+				return code, h, output, err
+			}
+			
+			code = http.StatusBadRequest
+			
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			
+			return code, h, output, err	
+			
+		} else {
+			
+			code = http.StatusNoContent
+			
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		
+			return code, h, output, err
+			
+		}
+	} else {
+		
+		code = http.StatusUnauthorized
+		
+		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
+		
+		return code, h, output, err
+	}
+
+}

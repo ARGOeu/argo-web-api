@@ -48,8 +48,10 @@ func main() {
 	getSubrouter := mainRouter.Methods("GET").Subrouter() //Routes only GET requests
 	
 	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
-	// 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-	// 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
+	
+	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
+	
+	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter() //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	// Grouping calls.
@@ -66,10 +68,13 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
 	
 		postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-	 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
-	// 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
-	// 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
-	//
+	 	
+		getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
+	    
+		putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
+		
+		deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
+	
 	// 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
 	//
 	// 	//Recalculations
