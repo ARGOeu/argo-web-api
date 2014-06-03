@@ -30,7 +30,7 @@ import (
 	"encoding/xml"
 )
 
-func CreateView(results []PoemProfilesOutput) ([]byte, error) {
+func createView(results []PoemProfilesOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 

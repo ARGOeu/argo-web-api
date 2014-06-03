@@ -33,36 +33,57 @@ import (
 	"net/http"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+	
+	session,err := mongo.OpenSession(cfg)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	results := []PoemProfilesOutput{}
 
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "poem_list", nil, "p", &results)
+	err = mongo.Find(session, "AR", "poem_list", nil, "p", &results)
 
 	if err != nil {
-		panic(err)
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
-	output, err := createResponse(results) //Render the results into XML format
+	output, err = createView(results) //Render the results into XML format
 
 	if err != nil {
-		panic(err)
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
 	mongo.CloseSession(session)
 
-	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	return output
-
-}
-
-func createResponse(results []PoemProfilesOutput) ([]byte, error) {
-
-	output, err := CreateView(results)
-
-	return output, err
+	return code, h, output, err
 
 }

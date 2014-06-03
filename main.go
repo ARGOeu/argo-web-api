@@ -29,7 +29,7 @@ package main
 import (
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
-	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
+	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
@@ -75,7 +75,7 @@ func main() {
 		
 		deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 	
-	// 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
+		getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
 	//
 	// 	//Recalculations
 	// 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
