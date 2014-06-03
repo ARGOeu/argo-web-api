@@ -27,14 +27,14 @@
 package availabilityProfiles
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
-	//"github.com/argoeu/ar-web-api/utils/authentication"
+	"github.com/argoeu/ar-web-api/utils/authentication"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
-	//"io/ioutil"
+	"io/ioutil"
 	"net/http"
-	//"strings"
+
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -104,77 +104,141 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-// func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-// 
-// 	answer := ""
-// 
-// 	//Authentication procedure
-// 	if authentication.Authenticate(r.Header, cfg) {
-// 
-// 		var name []string
-// 		var namespace []string
-// 
-// 		//Reading the json input
-// 		reqBody, err := ioutil.ReadAll(r.Body)
-// 
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 
-// 		input := AvailabilityProfileInput{}
-// 
-// 		results := []AvailabilityProfileOutput{}
-// 
-// 		//Unmarshalling the json input into byte form
-// 		err = json.Unmarshal(reqBody, &input)
-// 
-// 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
-// 		name = append(name, input.Name)
-// 
-// 		namespace = append(namespace, input.Namespace)
-// 
-// 		search := AvailabilityProfileSearch{
-// 			name,
-// 			namespace,
-// 		}
-// 
-// 		session := mongo.OpenSession(cfg)
-// 
-// 		query := readOne(search)
-// 
-// 		err = mongo.Find(session, "AR", "aps", query, "name", &results)
-// 
-// 		if len(results) <= 0 {
-// 			//If name-namespace combination is unique we insert the new record into mongo
-// 			query := createOne(input)
-// 
-// 			err = mongo.Insert(session, "AR", "aps", query)
-// 
-// 			if err != nil {
-// 				panic(err)
-// 			}
-// 			//Providing with the appropriate user response
-// 			answer = "Availability Profile record successfully created"
-// 
-// 		} else {
-// 			answer = "An availability profile with that name already exists"
-// 		}
-// 
-// 	} else {
-// 		answer = http.StatusText(403) //If wrong api key is passed we return FORBIDDEN http status
-// 	}
-// 
-// 	output, err := messageXML(answer) //Render the response into XML
-// 
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 
-// 	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
-// 
-// 	return output
-// }
-// 
+func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+	
+	message := ""
+	
+	//Authentication procedure
+	if authentication.Authenticate(r.Header, cfg) {
+
+		name := []string{}
+		namespace := []string{}
+
+		//Reading the json input
+		reqBody, err := ioutil.ReadAll(r.Body)
+
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
+		input := AvailabilityProfileInput{}
+
+		results := []AvailabilityProfileOutput{}
+
+		//Unmarshalling the json input into byte form
+		err = json.Unmarshal(reqBody, &input)
+		
+		//Making sure that no profile with the requested name and namespace combination already exists in the DB
+		name = append(name, input.Name)
+
+		namespace = append(namespace, input.Namespace)
+
+		search := AvailabilityProfileSearch{
+			name,
+			namespace,
+		}
+
+		session, err := mongo.OpenSession(cfg)
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
+		query := readOne(search)
+
+		err = mongo.Find(session, "AR", "aps", query, "name", &results)
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+
+		if len(results) <= 0 {
+			//If name-namespace combination is unique we insert the new record into mongo
+			query := createOne(input)
+
+			err = mongo.Insert(session, "AR", "aps", query)
+
+			if err != nil {
+
+				code = http.StatusInternalServerError
+
+				return code, h, output, err
+			}
+			
+			//Providing with the appropriate user response
+			message = "Availability Profile record successfully created"
+			
+			output, err := messageXML(message) //Render the response into XML
+			
+			if err != nil {
+
+				code = http.StatusInternalServerError
+
+				return code, h, output, err
+			}
+			
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			
+			return code, h, output, err
+
+		} else {
+			
+			message = "An availability profile with that name already exists"
+			
+			output, err := messageXML(message) //Render the response into XML
+			
+			if err != nil {
+
+				code = http.StatusInternalServerError
+
+				return code, h, output, err
+			}
+			
+			code = http.StatusBadRequest
+			
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			
+			return code, h, output, err		
+		}
+
+	} else {
+		
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		
+		return code, h, output, err		
+	}
+
+}
+
 // func Update(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 // 
 // 	answer := ""

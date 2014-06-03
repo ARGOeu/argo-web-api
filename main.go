@@ -44,8 +44,10 @@ func main() {
 
 	//Create the server router
 	mainRouter := mux.NewRouter()
+	
 	getSubrouter := mainRouter.Methods("GET").Subrouter() //Routes only GET requests
-	// postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
+	
+	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
 	// 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
 	// 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
@@ -62,8 +64,8 @@ func main() {
 		Queries("group_type", "ngi")
 	
 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
-	//
-	// 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
+	
+		postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
 	 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
 	// 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	// 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
