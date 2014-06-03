@@ -36,7 +36,7 @@ import (
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	
+
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
@@ -52,7 +52,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-	
+
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
@@ -74,15 +74,15 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	found, output := caches.HitCache("vos", input, cfg)
-	
+
 	if found {
 
 		return code, h, output, err
 
 	}
-	
+
 	session, err := mongo.OpenSession(cfg)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
@@ -98,7 +98,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 		query := Daily(input)
 
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)		
+		err = mongo.Pipe(session, "AR", "voreports", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
@@ -107,18 +107,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		query := Monthly(input)
 
 		err = mongo.Pipe(session, "AR", "voreports", query, &results)
-		
+
 	}
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
 
 		return code, h, output, err
 	}
-	
+
 	output, err = createView(results, input.format)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError

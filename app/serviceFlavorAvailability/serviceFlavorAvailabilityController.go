@@ -36,7 +36,7 @@ import (
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	
+
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
@@ -65,7 +65,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		urlValues["flavor"],
 		urlValues["site"],
 	}
-	
+
 	if strings.ToLower(input.format) == "json" {
 
 		contentType = "application/json"
@@ -75,7 +75,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	found, output := caches.HitCache("sf", input, cfg)
-	
+
 	if found {
 
 		return code, h, output, err
@@ -83,7 +83,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	session, err := mongo.OpenSession(cfg)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
@@ -110,16 +110,16 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
 
 	}
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
 
 		return code, h, output, err
 	}
-	
+
 	output, err = createView(results, input.format)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError

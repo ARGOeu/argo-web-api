@@ -67,7 +67,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []AvailabilityProfileOutput{}
 
 	session, err := mongo.OpenSession(cfg)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
@@ -82,7 +82,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	err = mongo.Find(session, "AR", "aps", query, "_id", &results)
-	
+
 	if err != nil {
 
 		code = http.StatusInternalServerError
@@ -121,14 +121,14 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-	
+
 	message := ""
-	
+
 	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
-		
+
 		session, err := mongo.OpenSession(cfg)
-		
+
 		if err != nil {
 
 			code = http.StatusInternalServerError
@@ -148,14 +148,14 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 			return code, h, output, err
 		}
-		
+
 		input := AvailabilityProfileInput{}
 
 		results := []AvailabilityProfileOutput{}
 
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
-		
+
 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
 
@@ -165,11 +165,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			name,
 			namespace,
 		}
-		
+
 		query := readOne(search)
 
 		err = mongo.Find(session, "AR", "aps", query, "name", &results)
-		
+
 		if err != nil {
 
 			code = http.StatusInternalServerError
@@ -189,58 +189,58 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 				return code, h, output, err
 			}
-			
+
 			//Providing with the appropriate user response
 			message = "Availability Profile record successfully created"
-			
+
 			output, err := messageXML(message) //Render the response into XML
-			
+
 			if err != nil {
 
 				code = http.StatusInternalServerError
 
 				return code, h, output, err
 			}
-			
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			
+
 			return code, h, output, err
 
 		} else {
-			
+
 			message = "An availability profile with that name already exists"
-			
+
 			output, err := messageXML(message) //Render the response into XML
-			
+
 			if err != nil {
 
 				code = http.StatusInternalServerError
 
 				return code, h, output, err
 			}
-			
+
 			code = http.StatusBadRequest
-			
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			
-			return code, h, output, err		
+
+			return code, h, output, err
 		}
 
 	} else {
-		
+
 		output = []byte(http.StatusText(http.StatusUnauthorized))
-		
+
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		
+
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		
-		return code, h, output, err		
+
+		return code, h, output, err
 	}
 
 }
 
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	
+
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
@@ -288,9 +288,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 			return code, h, output, err
 		}
-		
+
 		session, err := mongo.OpenSession(cfg)
-		
+
 		if err != nil {
 
 			code = http.StatusInternalServerError
@@ -302,41 +302,41 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		err = mongo.IdUpdate(session, "AR", "aps", id, input)
 
 		if err != nil {
-			
+
 			message = "No profile matching the requested id" //If not found we inform the user
-			
+
 			output, err := messageXML(message)
-			
+
 			if err != nil {
 
 				code = http.StatusInternalServerError
 
 				return code, h, output, err
 			}
-			
+
 			code = http.StatusBadRequest
-			
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			
-			return code, h, output, err		
-			
+
+			return code, h, output, err
+
 		} else {
 
-				code = http.StatusNoContent
-				
-				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			
-				return code, h, output, err
-				
+			code = http.StatusNoContent
+
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+			return code, h, output, err
+
 		}
 	} else {
-		
+
 		code = http.StatusUnauthorized
-		
+
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
-		
+
 		return code, h, output, err
-		
+
 	}
 
 }
@@ -370,7 +370,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		id := strings.Split(urlValues, "/")[4]
 
 		session, err := mongo.OpenSession(cfg)
-		
+
 		if err != nil {
 
 			code = http.StatusInternalServerError
@@ -379,43 +379,43 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We remove the record bassed on its unique id
-		
+
 		err = mongo.IdRemove(session, "AR", "aps", id)
 
 		if err != nil {
-			
+
 			message = "No profile matching the requested id" //If not found we inform the user
-			
+
 			output, err := messageXML(message)
-			
+
 			if err != nil {
 
 				code = http.StatusInternalServerError
 
 				return code, h, output, err
 			}
-			
+
 			code = http.StatusBadRequest
-			
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			
-			return code, h, output, err	
-			
-		} else {
-			
-			code = http.StatusNoContent
-			
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		
+
 			return code, h, output, err
-			
+
+		} else {
+
+			code = http.StatusNoContent
+
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+			return code, h, output, err
+
 		}
 	} else {
-		
+
 		code = http.StatusUnauthorized
-		
+
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
-		
+
 		return code, h, output, err
 	}
 

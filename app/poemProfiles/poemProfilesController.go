@@ -34,7 +34,7 @@ import (
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	
+
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
@@ -50,9 +50,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-	
-	session,err := mongo.OpenSession(cfg)
-	
+
+	session, err := mongo.OpenSession(cfg)
+
 	if err != nil {
 
 		code = http.StatusInternalServerError

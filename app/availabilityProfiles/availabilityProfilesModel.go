@@ -81,11 +81,11 @@ type AvailabilityProfileSearch struct {
 
 //Struct for record retrieval
 type AvailabilityProfileOutput struct {
-	ID        bson.ObjectId	 `bson:"_id"`
-	Name      string     `bson:"name"`
-	Namespace string     `bson:"namespace"`
-	Groups    [][]string `bson:"groups"`
-	Poems     []string   `bson:"poems"`
+	ID        bson.ObjectId `bson:"_id"`
+	Name      string        `bson:"name"`
+	Namespace string        `bson:"namespace"`
+	Groups    [][]string    `bson:"groups"`
+	Poems     []string      `bson:"poems"`
 }
 
 func prepareFilter(input AvailabilityProfileSearch) bson.M {
