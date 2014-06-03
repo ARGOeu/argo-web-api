@@ -126,6 +126,15 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	
 	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
+		
+		session, err := mongo.OpenSession(cfg)
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
 
 		name := []string{}
 		namespace := []string{}
@@ -155,15 +164,6 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		search := AvailabilityProfileSearch{
 			name,
 			namespace,
-		}
-
-		session, err := mongo.OpenSession(cfg)
-		
-		if err != nil {
-
-			code = http.StatusInternalServerError
-
-			return code, h, output, err
 		}
 		
 		query := readOne(search)

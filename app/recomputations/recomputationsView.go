@@ -31,7 +31,7 @@ import (
 	"encoding/xml"
 )
 
-func CreateView(results []RecomputationsInputOutput) ([]byte, error) {
+func createView(results []RecomputationsInputOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
@@ -56,4 +56,11 @@ func CreateView(results []RecomputationsInputOutput) ([]byte, error) {
 
 	return output, err
 
+}
+
+func messageXML(answer string) ([]byte, error) {
+	docRoot := &Message{}
+	docRoot.Message = answer
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	return output, err
 }

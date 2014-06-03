@@ -64,6 +64,11 @@ type Root struct {
 	Request []*Request
 }
 
+type Message struct {
+	XMLName xml.Name `xml:"root"`
+	Message string
+}
+
 func insertQuery(input RecomputationsInputOutput) bson.M {
 
 	query := bson.M{

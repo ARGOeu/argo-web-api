@@ -35,39 +35,105 @@ import (
 	"time"
 )
 
-func List(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
+func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
 
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+	
+	session, err := mongo.OpenSession(cfg)
+	
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
+	
 	results := []RecomputationsInputOutput{}
 
-	session := mongo.OpenSession(cfg)
-
-	err := mongo.Find(session, "AR", "recalculations", nil, "t", &results)
-
-	output, err := CreateView(results)
-
+	err = mongo.Find(session, "AR", "recalculations", nil, "t", &results)
+	
 	if err != nil {
-		panic(err)
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
 	}
 
-	fmt.Println(results)
+	output, err = createView(results)
+
+	if err != nil {
+
+		code = http.StatusInternalServerError
+
+		return code, h, output, err
+	}
 
 	mongo.CloseSession(session)
 
-	w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=%s", "text/xml", "utf-8"))
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	return output
+	return code, h, output, err
 }
 
-func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	answer := ""
+func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+
+	h := http.Header{}
+
+	output := []byte("")
+
+	err := error(nil)
+
+	contentType := "text/xml"
+
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+	
+	message := ""
+	
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header, cfg) {
-		err := r.ParseForm()
+		
+		session, err := mongo.OpenSession(cfg)
+		
 		if err != nil {
-			panic(err)
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
 		}
+		
+		err = r.ParseForm()
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
 		urlValues := r.Form
+		
 		now := time.Now()
+		
 		input := RecomputationsInputOutput{
 			urlValues.Get("start_time"),
 			urlValues.Get("end_time"),
@@ -79,20 +145,44 @@ func Create(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
 			//urlValues["exclude_sf"],
 			//urlValues["exclude_end_point"],
 		}
+		
 		query := insertQuery(input)
 
-		session := mongo.OpenSession(cfg)
-
 		err = mongo.Insert(session, "AR", "recalculations", query)
-
+		
 		if err != nil {
-			return []byte("ERROR") //TODO
-		}
 
-		answer = "A recalculation request has been filed" //Provide the webUI with an appropriate xml/json response
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
 		mongo.CloseSession(session)
+
+		message = "A recalculation request has been filed" 
+		
+		output, err := messageXML(message) //Render the response into XML
+		
+		if err != nil {
+
+			code = http.StatusInternalServerError
+
+			return code, h, output, err
+		}
+		
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		
+		return code, h, output, err
+		
 	} else {
-		answer = http.StatusText(403)
+		
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		
+		return code, h, output, err	
+			
 	}
-	return []byte(answer)
 }
