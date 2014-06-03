@@ -46,7 +46,7 @@ const ymdForm = "20060102"
 func Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		code, h, output, err := fn(r, cfg)
+		code, header, output, err := fn(r, cfg)
 
 		if code == http.StatusInternalServerError {
 
@@ -82,9 +82,9 @@ func Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []by
 		}
 		//Add headers
 
-		h.Set("Content-Length", fmt.Sprintf("%d", len(output)))
+		header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
 
-		for name, values := range h {
+		for name, values := range header {
 
 			for _, value := range values {
 

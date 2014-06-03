@@ -105,23 +105,3 @@ func IdUpdate(session *mgo.Session, dbName string, collectionName string, id str
 	return err
 
 }
-
-//f// unc GetId(session *mgo.Session, dbName string, collectionName string, sorter string, query bson.M) ([]string, error) {
-//
-// 	temp := []Id{}
-//
-// 	var s []string
-//
-// 	c := openCollection(session, dbName, collectionName)
-//
-// 	err := c.Find(query).Sort(sorter).All(&temp)
-//
-// 	for i := range temp {
-//
-// 		s = append(s, temp[i].ID.Hex())
-//
-// 	}
-//
-// 	return s, err
-//
-// }
