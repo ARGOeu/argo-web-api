@@ -27,7 +27,7 @@
 package main
 
 import (
-	// "github.com/argoeu/ar-web-api/app/availabilityProfiles"
+	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	// 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	// 	"github.com/argoeu/ar-web-api/app/recomputations"
@@ -64,7 +64,7 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
 	//
 	// 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-	// 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
+	 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
 	// 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	// 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 	//

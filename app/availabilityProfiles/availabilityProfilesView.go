@@ -28,12 +28,12 @@ package availabilityProfiles
 
 import "encoding/xml"
 
-func CreateView(results []AvailabilityProfileOutput) ([]byte, error) {
+func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 	for _, row := range results {
 		profile := &Profile{
-			ID:        row.ID,
+			ID:        row.ID.Hex(),
 			Name:      row.Name,
 			Namespace: row.Namespace,
 			Poem:      row.Poems[0],

@@ -81,7 +81,7 @@ type AvailabilityProfileSearch struct {
 
 //Struct for record retrieval
 type AvailabilityProfileOutput struct {
-	ID        string
+	ID        bson.ObjectId	 `bson:"_id"`
 	Name      string     `bson:"name"`
 	Namespace string     `bson:"namespace"`
 	Groups    [][]string `bson:"groups"`
