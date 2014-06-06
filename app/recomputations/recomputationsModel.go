@@ -82,5 +82,4 @@ func insertQuery(input RecomputationsInputOutput) bson.M {
 	}
 
 	return query
-
 }

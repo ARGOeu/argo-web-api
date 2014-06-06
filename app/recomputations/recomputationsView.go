@@ -51,11 +51,8 @@ func createView(results []RecomputationsInputOutput) ([]byte, error) {
 		}
 		docRoot.Request = append(docRoot.Request, r)
 	}
-
 	output, err := xml.MarshalIndent(docRoot, "", " ")
-
 	return output, err
-
 }
 
 func messageXML(answer string) ([]byte, error) {

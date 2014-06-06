@@ -40,15 +40,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -67,27 +62,20 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	if strings.ToLower(input.format) == "json" {
-
 		contentType = "application/json"
-
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 	found, output := caches.HitCache("sf", input, cfg)
 
 	if found {
-
 		return code, h, output, err
-
 	}
 
 	session, err := mongo.OpenSession(cfg)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
@@ -96,34 +84,25 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-
 		query := Daily(input)
-
 		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-
 		query := Monthly(input)
-
 		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
-
 	}
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	output, err = createView(results, input.format)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 

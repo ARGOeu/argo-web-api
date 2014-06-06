@@ -40,15 +40,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -56,36 +51,27 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	session, err := mongo.OpenSession(cfg)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	results := []RecomputationsInputOutput{}
-
 	err = mongo.Find(session, "AR", "recalculations", nil, "t", &results)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	output, err = createView(results)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	mongo.CloseSession(session)
-
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 	return code, h, output, err
 }
 
@@ -94,15 +80,10 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -115,23 +96,18 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		session, err := mongo.OpenSession(cfg)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		err = r.ParseForm()
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		urlValues := r.Form
-
 		now := time.Now()
 
 		input := RecomputationsInputOutput{
@@ -147,42 +123,29 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		query := insertQuery(input)
-
 		err = mongo.Insert(session, "AR", "recalculations", query)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		mongo.CloseSession(session)
-
 		message = "A recalculation request has been filed"
-
 		output, err := messageXML(message) //Render the response into XML
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 		return code, h, output, err
 
 	} else {
-
 		output = []byte(http.StatusText(http.StatusUnauthorized))
-
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 		return code, h, output, err
-
 	}
 }

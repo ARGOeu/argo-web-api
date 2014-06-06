@@ -42,15 +42,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -65,13 +60,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []AvailabilityProfileOutput{}
-
 	session, err := mongo.OpenSession(cfg)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
@@ -84,23 +76,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	err = mongo.Find(session, "AR", "aps", query, "_id", &results)
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	output, err = createView(results) //Render the results into XML format
 
 	if err != nil {
-
 		code = http.StatusInternalServerError
-
 		return code, h, output, err
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 	return code, h, output, err
 }
 
@@ -109,15 +96,10 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -130,9 +112,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		session, err := mongo.OpenSession(cfg)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
@@ -143,22 +123,16 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		input := AvailabilityProfileInput{}
-
 		results := []AvailabilityProfileOutput{}
-
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
-
 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
-
 		namespace = append(namespace, input.Namespace)
 
 		search := AvailabilityProfileSearch{
@@ -167,73 +141,53 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		query := readOne(search)
-
 		err = mongo.Find(session, "AR", "aps", query, "name", &results)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		if len(results) <= 0 {
 			//If name-namespace combination is unique we insert the new record into mongo
 			query := createOne(input)
-
 			err = mongo.Insert(session, "AR", "aps", query)
 
 			if err != nil {
-
 				code = http.StatusInternalServerError
-
 				return code, h, output, err
 			}
 
 			//Providing with the appropriate user response
 			message = "Availability Profile record successfully created"
-
 			output, err := messageXML(message) //Render the response into XML
 
 			if err != nil {
-
 				code = http.StatusInternalServerError
-
 				return code, h, output, err
 			}
 
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
 
 		} else {
-
 			message = "An availability profile with that name already exists"
-
 			output, err := messageXML(message) //Render the response into XML
 
 			if err != nil {
-
 				code = http.StatusInternalServerError
-
 				return code, h, output, err
 			}
 
 			code = http.StatusBadRequest
-
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
 		}
 
 	} else {
-
 		output = []byte(http.StatusText(http.StatusUnauthorized))
-
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 		return code, h, output, err
 	}
 
@@ -244,15 +198,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -264,37 +213,28 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		//Extracting record id from url
 		urlValues := r.URL.Path
-
 		id := strings.Split(urlValues, "/")[4]
-
 		//Reading the json input
 		reqBody, err := ioutil.ReadAll(r.Body)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		input := AvailabilityProfileInput{}
-
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		session, err := mongo.OpenSession(cfg)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
@@ -302,41 +242,27 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		err = mongo.IdUpdate(session, "AR", "aps", id, input)
 
 		if err != nil {
-
 			message = "No profile matching the requested id" //If not found we inform the user
-
 			output, err := messageXML(message)
 
 			if err != nil {
-
 				code = http.StatusInternalServerError
-
 				return code, h, output, err
 			}
 
 			code = http.StatusBadRequest
-
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
 
 		} else {
-
 			code = http.StatusNoContent
-
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
-
 		}
 	} else {
-
 		code = http.StatusUnauthorized
-
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
-
 		return code, h, output, err
-
 	}
 
 }
@@ -346,15 +272,10 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
-
 	h := http.Header{}
-
 	output := []byte("")
-
 	err := error(nil)
-
 	contentType := "text/xml"
-
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -366,56 +287,38 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		//Extracting record id from url
 		urlValues := r.URL.Path
-
 		id := strings.Split(urlValues, "/")[4]
-
 		session, err := mongo.OpenSession(cfg)
 
 		if err != nil {
-
 			code = http.StatusInternalServerError
-
 			return code, h, output, err
 		}
 
 		//We remove the record bassed on its unique id
-
 		err = mongo.IdRemove(session, "AR", "aps", id)
 
 		if err != nil {
 
 			message = "No profile matching the requested id" //If not found we inform the user
-
 			output, err := messageXML(message)
 
 			if err != nil {
-
 				code = http.StatusInternalServerError
-
 				return code, h, output, err
 			}
 
 			code = http.StatusBadRequest
-
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
-
 		} else {
-
 			code = http.StatusNoContent
-
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 			return code, h, output, err
-
 		}
 	} else {
-
 		code = http.StatusUnauthorized
-
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
-
 		return code, h, output, err
 	}
 
