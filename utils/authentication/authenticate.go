@@ -28,37 +28,32 @@ package authentication
 
 import (
 	"github.com/argoeu/ar-web-api/utils/config"
-	"labix.org/v2/mgo"
+	"github.com/argoeu/ar-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 )
 
 type Auth struct {
-	apiKey string `bson:"apiKey"`
+	ApiKey string `bson:"apiKey"`
 }
 
 func Authenticate(h http.Header, cfg config.Config) bool {
 
-	var result []Auth
-
-	session, err := mgo.Dial(cfg.MongoDB.Host) //conect to mongo server
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)                //set mongo to monotonic behavioer
-	c := session.DB(cfg.MongoDB.Db).C("authentication") //connect to collection
-	//define the query to be retrieved from mongo
-	retrieve := bson.M{
+	session, err := mongo.OpenSession(cfg) 
+	
+	query := bson.M{
 		"apiKey": h.Get("x-api-key"),
 	}
-	err = c.Find(retrieve).All(&result)
+	
+	results := []Auth{}
+	err = mongo.Find(session, "AR", "authentication", query, "apiKey", &results)
+		
 	if err != nil {
-		panic(err)
+		return false
 	}
-	//if password is found we return true
-	if len(result) > 0 {
+
+	if len(results) > 0 {
 		return true
 	}
-	return false //else we return false
+	return false
 }
