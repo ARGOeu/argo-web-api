@@ -31,7 +31,7 @@ install --directory %{buildroot}/var/www/ar-web-api
 install --mode 755 bin/ar-web-api %{buildroot}/var/www/ar-web-api/ar-web-api
 
 install --directory %{buildroot}/etc/init
-install --mode 644 ar-web-api.conf %{buildroot}/etc/init/
+install --mode 644 src/github.com/argoeu/ar-web-api/ar-web-api.conf %{buildroot}/etc/init/
 
 %clean
 %{__rm} -rf %{buildroot}
