@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.3.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -21,34 +21,29 @@ Installs the A/R API.
 
 %build
 export GOPATH=$PWD
-cd src/api
-go get api/...
-cd main
+cd src/github.com/argoeu/ar-web-api/
+go get
 go build
 
 %install
 %{__rm} -rf %{buildroot}
-install --directory %{buildroot}/var/www/go-api
-install --mode 755 bin/main %{buildroot}/var/www/go-api/go-api
-
-install --directory %{buildroot}/etc/init.d
-install --mode 755 go-api.init %{buildroot}/etc/init.d/
+install --directory %{buildroot}/var/www/ar-web-api
+install --mode 755 bin/ar-web-api %{buildroot}/var/www/ar-web-api/ar-web-api
 
 install --directory %{buildroot}/etc/init
-install --mode 644 go-api.conf %{buildroot}/etc/init/
+install --mode 644 ar-web-api.conf %{buildroot}/etc/init/
 
 %clean
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
-cd src/api/main
+cd src/github.com/argoeu/ar-web-api/
 go clean
 
 %files
 %defattr(0644,root,root)
-%attr(0750,root,root) /var/www/go-api
-%attr(0755,root,root) /var/www/go-api/go-api
-%attr(0755,root,root) /etc/init.d/go-api.init
-%attr(0644,root,root) /etc/init/go-api.conf
+%attr(0750,root,root) /var/www/ar-web-api
+%attr(0755,root,root) /var/www/ar-web-api/ar-web-api
+%attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
 * Tue Jun 3 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.3.0-1%{?dist}
