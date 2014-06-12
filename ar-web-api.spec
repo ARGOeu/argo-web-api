@@ -23,7 +23,7 @@ Installs the A/R API.
 export GOPATH=$PWD
 cd src/github.com/argoeu/ar-web-api/
 go get
-go build
+go install
 
 %install
 %{__rm} -rf %{buildroot}
