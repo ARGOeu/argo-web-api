@@ -3,8 +3,8 @@ SPECFILE=${PKGNAME}.spec
 PKGVERSION = $(shell grep -s '^Version:' $(SPECFILE) | sed -e 's/Version: *//')
 
 sources:
-	mkdir ${PKGNAME}-${PKGVERSION}
-	cp -rp go-api.conf go-api.init src ${PKGNAME}-${PKGVERSION}
-	cp ${SPECFILE} ${PKGNAME}-${PKGVERSION}
+	mkdir -p ${PKGNAME}-${PKGVERSION}/src/github.com/argoeu/ar-web-api
+	cp -rp ar-web-api.conf app utils *.go ${PKGNAME}-${PKGVERSION}/src/github.com/argoeu/ar-web-api
+	cp ${SPECFILE} ${PKGNAME}-${PKGVERSION}/src/github.com/argoeu/ar-web-api
 	tar czf ${PKGNAME}-${PKGVERSION}.tar.gz ${PKGNAME}-${PKGVERSION}
 	rm -fr ${PKGNAME}-${PKGVERSION}
