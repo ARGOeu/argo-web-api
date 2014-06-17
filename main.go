@@ -34,6 +34,7 @@ import (
 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
+	"github.com/argoeu/ar-web-api/app/factors"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -46,11 +47,8 @@ func main() {
 	mainRouter := mux.NewRouter()
 	//SUBROUTER DEFINITIONS
 	getSubrouter := mainRouter.Methods("GET").Subrouter() //Routes only GET requests
-
 	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter() //Routes only POST requests
-
 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-
 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter() //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
@@ -79,6 +77,9 @@ func main() {
 	//Recalculations
 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
+	
+	getSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
+	
 
 	http.Handle("/", mainRouter)
 
@@ -87,6 +88,7 @@ func main() {
 
 	//Web service binds to server. Requests served over HTTPS.
 	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+	
 
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
