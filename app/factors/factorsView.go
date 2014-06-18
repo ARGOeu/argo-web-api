@@ -33,7 +33,7 @@ import (
 
 func createView(results []FactorsOutput) ([]byte, error) {
 	
-	docRoot := &Root{}
+	docRoot := &root{}
 
 	for _, row := range results {
 		f := &Factor{}

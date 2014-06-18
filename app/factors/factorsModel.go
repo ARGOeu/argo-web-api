@@ -31,7 +31,7 @@ type Factor struct {
 	Weight string `xml:"weight,attr"`
 }
 
-type Root struct {
+type root struct {
 	Factor []*Factor
 }
 
