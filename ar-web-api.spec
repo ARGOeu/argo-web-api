@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.3.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -23,7 +23,7 @@ Installs the A/R API.
 export GOPATH=$PWD
 cd src/github.com/argoeu/ar-web-api/
 go get
-go build
+go install
 
 %install
 %{__rm} -rf %{buildroot}

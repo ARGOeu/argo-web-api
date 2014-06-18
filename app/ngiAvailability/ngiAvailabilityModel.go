@@ -8,14 +8,14 @@ import (
 )
 
 type Availability struct {
-	XMLName      xml.Name `xml:"availability" json:"-"`
+	XMLName      xml.Name `xml:"Availability" json:"-"`
 	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
 	Availability string   `xml:"availability,attr" json:"availability"`
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
 type Ngi struct {
-	XMLName      xml.Name `xml:"ngi" json:"-"`
+	XMLName      xml.Name `xml:"Ngi" json:"-"`
 	Ngi          string   `xml:"NGI,attr" json:"NGI"`
 	Availability []*Availability
 }
