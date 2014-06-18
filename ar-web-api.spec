@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
-Version: 1.3.0
-Release: 4%{?dist}
+Version: 1.4.0
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -46,6 +46,8 @@ go clean
 %attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
+* Mon Jun 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.4.0-1%{?dist}
+- Added support for custom factor retrival per site
 * Tue Jun 3 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.3.0-1%{?dist}
 - Major code refactoring, proper error handling, http headers
 * Mon May 12 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.5-1%{?dist}
