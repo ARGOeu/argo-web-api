@@ -30,7 +30,7 @@ type Poem struct {
 	Poem string `xml:"profile,attr"`
 }
 
-type Root struct {
+type root struct {
 	Poem []*Poem
 }
 

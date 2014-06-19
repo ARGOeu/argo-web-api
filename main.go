@@ -69,11 +69,8 @@ func main() {
 
 	//Availability Profiles
 	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-
 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
-
 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
-
 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 
 	//POEM Profiles

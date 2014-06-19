@@ -49,33 +49,22 @@ func Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []by
 		code, header, output, err := fn(r, cfg)
 
 		if code == http.StatusInternalServerError {
-
 			log.Panic("Internal Server Error:", err)
-
 		}
 
 		encoding := strings.Split(r.Header.Get("Accept-Encoding"), ",")[0] //get the first accepted encoding
 		if (cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
-
 			var b bytes.Buffer
-
 			if encoding == "gzip" {
-
 				writer := gzip.NewWriter(&b)
-
 				writer.Write(output)
-
 				writer.Close()
-
 				w.Header().Set("Content-Encoding", "gzip")
+
 			} else if encoding == "deflate" {
-
 				writer := zlib.NewWriter(&b)
-
 				writer.Write(output)
-
 				writer.Close()
-
 				w.Header().Set("Content-Encoding", "deflate")
 			}
 			output = b.Bytes()
@@ -85,15 +74,12 @@ func Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []by
 		header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
 
 		for name, values := range header {
-
 			for _, value := range values {
-
 				w.Header().Add(name, value)
-
 			}
 		}
-		w.WriteHeader(code)
 
+		w.WriteHeader(code)
 		w.Write(output)
 	}
 }
