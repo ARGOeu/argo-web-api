@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.3.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
