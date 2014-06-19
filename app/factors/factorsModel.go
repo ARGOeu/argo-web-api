@@ -27,7 +27,7 @@
 package factors
 
 type Factor struct {
-	Site string `xml:"site,attr"`
+	Site   string `xml:"site,attr"`
 	Weight string `xml:"weight,attr"`
 }
 
@@ -36,6 +36,6 @@ type root struct {
 }
 
 type FactorsOutput struct {
-	Site string `bson:"s"`
+	Site   string  `bson:"s"`
 	Weight float64 `bson:"hs"`
 }

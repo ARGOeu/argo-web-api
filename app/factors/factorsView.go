@@ -32,12 +32,12 @@ import (
 )
 
 func createView(results []FactorsOutput) ([]byte, error) {
-	
+
 	docRoot := &root{}
 
 	for _, row := range results {
 		f := &Factor{}
-		f.Site = row.Site	
+		f.Site = row.Site
 		f.Weight = fmt.Sprintf("%g", row.Weight)
 		docRoot.Factor = append(docRoot.Factor, f)
 	}
