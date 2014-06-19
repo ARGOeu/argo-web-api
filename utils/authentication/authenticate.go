@@ -39,15 +39,15 @@ type Auth struct {
 
 func Authenticate(h http.Header, cfg config.Config) bool {
 
-	session, err := mongo.OpenSession(cfg) 
-	
+	session, err := mongo.OpenSession(cfg)
+
 	query := bson.M{
 		"apiKey": h.Get("x-api-key"),
 	}
-	
+
 	results := []Auth{}
 	err = mongo.Find(session, "AR", "authentication", query, "apiKey", &results)
-		
+
 	if err != nil {
 		return false
 	}
