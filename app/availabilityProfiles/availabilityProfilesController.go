@@ -79,6 +79,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	
+	mongo.CloseSession(session)
 
 	output, err = createView(results) //Render the results into XML format
 
@@ -157,7 +159,9 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 				code = http.StatusInternalServerError
 				return code, h, output, err
 			}
-
+			
+			mongo.CloseSession(session)
+			
 			//Providing with the appropriate user response
 			message = "Availability Profile record successfully created"
 			output, err := messageXML(message) //Render the response into XML
@@ -239,8 +243,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We update the record bassed on its unique id
-		err = mongo.IdUpdate(session, "AR", "aps", id, input)
-
+		err = mongo.IdUpdate(session, "AR", "aps", id, input)		
+		
+		mongo.CloseSession(session)
+		
 		if err != nil {
 			message = "No profile matching the requested id" //If not found we inform the user
 			output, err := messageXML(message)
@@ -297,7 +303,9 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		//We remove the record bassed on its unique id
 		err = mongo.IdRemove(session, "AR", "aps", id)
-
+		
+		mongo.CloseSession(session)
+		
 		if err != nil {
 
 			message = "No profile matching the requested id" //If not found we inform the user
