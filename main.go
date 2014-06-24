@@ -28,6 +28,7 @@ package main
 
 import (
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
+	"github.com/argoeu/ar-web-api/app/factors"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
 	"github.com/argoeu/ar-web-api/app/poemProfiles"
 	"github.com/argoeu/ar-web-api/app/recomputations"
@@ -45,13 +46,10 @@ func main() {
 	//Create the server router
 	mainRouter := mux.NewRouter()
 	//SUBROUTER DEFINITIONS
-	getSubrouter := mainRouter.Methods("GET").Subrouter() //Routes only GET requests
-
-	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter() //Routes only POST requests
-
+	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes only GET requests
+	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-
-	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter() //Routes only PUT requests
+	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
 	//All requests that modify data must provide with authentication credentials
 
 	// Grouping calls.
@@ -79,6 +77,8 @@ func main() {
 	//Recalculations
 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
+
+	getSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
 
 	http.Handle("/", mainRouter)
 
