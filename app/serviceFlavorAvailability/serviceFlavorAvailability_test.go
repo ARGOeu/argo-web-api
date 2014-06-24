@@ -33,6 +33,7 @@ import (
 	"testing"
 )
 
+//Default configuration has to be copied inside the source code in order for the test to be autonomous 
 const defaultConfig = `
     [server]
     bindip = ""
@@ -47,6 +48,7 @@ const defaultConfig = `
     port = 27017
     db = "AR"
 `
+//DECLARATIONS OF EXPECTED OUTPUTS
 const expectedOneDayOneSiteOneFlavorXML = ` <root>
    <Profile name="ch.cern.sam.ROC_CRITICAL">
      <Site Site="HG-03-AUTH">
@@ -680,7 +682,11 @@ const expectedMultipleDaysTwoSitesAllFlavorsJson = `{
      }
    ]
  }`
+ 
+// EXPECTED OUTPUTS END
 
+
+//Preparing configuration struct
 func prepare() config.Config {
 
 	var cfg config.Config
@@ -691,6 +697,7 @@ func prepare() config.Config {
 
 }
 
+//Tests for one day one egi site and one service flavor with xml formated output
 func TestOneDayOneSiteOneFlavorXML(t *testing.T) {
 
 	cfg := prepare()
@@ -706,6 +713,7 @@ func TestOneDayOneSiteOneFlavorXML(t *testing.T) {
 	}
 }
 
+//Tests for one day one egi site and one service flavor with json formated output
 func TestOneDayOneSiteOneFlavorJson(t *testing.T) {
 
 	cfg := prepare()
@@ -721,6 +729,7 @@ func TestOneDayOneSiteOneFlavorJson(t *testing.T) {
 	}
 }
 
+//Tests for one day one egi site and all service flavors with xml formated output
 func TestOneDayOneSiteAllFlavorsXML(t *testing.T) {
 
 	cfg := prepare()
@@ -736,6 +745,7 @@ func TestOneDayOneSiteAllFlavorsXML(t *testing.T) {
 	}
 }
 
+//Tests for one day one egi site and all service flavors with json formated output
 func TestOneDayOneSiteAllFlavorsJson(t *testing.T) {
 
 	cfg := prepare()
@@ -751,6 +761,7 @@ func TestOneDayOneSiteAllFlavorsJson(t *testing.T) {
 	}
 }
 
+//Tests for one day two egi sites and all service flavors with xml formated output
 func TestOneDayTwoSitesAllFlavorsXML(t *testing.T) {
 
 	cfg := prepare()
@@ -766,6 +777,7 @@ func TestOneDayTwoSitesAllFlavorsXML(t *testing.T) {
 	}
 }
 
+//Tests for one day two egi sites and all service flavors with json formated output
 func TestOneDayTwoSitesAllFlavorsJson(t *testing.T) {
 
 	cfg := prepare()
@@ -781,6 +793,7 @@ func TestOneDayTwoSitesAllFlavorsJson(t *testing.T) {
 	}
 }
 
+//Tests for multiple day two egi sites and all service flavors with xml formated output
 func TestMultipleDaysTwoSitesAllFlavorsXML(t *testing.T) {
 
 	cfg := prepare()
@@ -796,6 +809,7 @@ func TestMultipleDaysTwoSitesAllFlavorsXML(t *testing.T) {
 	}
 }
 
+//Tests for multiple day two egi sites and all service flavors with json formated output
 func TestMultipleDaysTwoSitesAllFlavorsJson(t *testing.T) {
 
 	cfg := prepare()
