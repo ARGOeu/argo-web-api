@@ -33,7 +33,7 @@ import (
 	"testing"
 )
 
-//Default configuration has to be copied inside the source code in order for the test to be autonomous 
+//Default configuration has to be copied inside the source code in order for the test to be autonomous
 const defaultConfig = `
     [server]
     bindip = ""
@@ -48,6 +48,7 @@ const defaultConfig = `
     port = 27017
     db = "AR"
 `
+
 //DECLARATIONS OF EXPECTED OUTPUTS
 const expectedOneDayOneSiteOneFlavorXML = ` <root>
    <Profile name="ch.cern.sam.ROC_CRITICAL">
@@ -682,9 +683,8 @@ const expectedMultipleDaysTwoSitesAllFlavorsJson = `{
      }
    ]
  }`
- 
-// EXPECTED OUTPUTS END
 
+// EXPECTED OUTPUTS END
 
 //Preparing configuration struct
 func prepare() config.Config {

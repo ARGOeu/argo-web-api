@@ -33,7 +33,7 @@ import (
 	"testing"
 )
 
-//Default configuration has to be copied inside the source code in order for the test to be autonomous 
+//Default configuration has to be copied inside the source code in order for the test to be autonomous
 const defaultConfig = `
     [server]
     bindip = ""
@@ -48,17 +48,18 @@ const defaultConfig = `
     port = 27017
     db = "AR"
 `
+
 //DECLARATIONS OF EXPECTED OUTPUTS
 
-const expectedOneDayOneSiteXML=` <root>
+const expectedOneDayOneSiteXML = ` <root>
    <Profile name="test-ap1">
      <Site site="GR-01-AUTH" NGI="NGI_GRNET" infastructure="Production" scope="EGI" site_scope="EGI" production="Y" monitored="Y" certification_status="Certified">
        <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
      </Site>
    </Profile>
  </root>`
- 
-const expectedOneDayOneSiteJson= `{
+
+const expectedOneDayOneSiteJson = `{
    "Profile": [
      {
        "name": "test-ap1",
@@ -84,8 +85,8 @@ const expectedOneDayOneSiteJson= `{
      }
    ]
  }`
- 
-const expectedTwoDaysOneSiteXML=` <root>
+
+const expectedTwoDaysOneSiteXML = ` <root>
    <Profile name="test-ap1">
      <Site site="GR-01-AUTH" NGI="NGI_GRNET" infastructure="Production" scope="EGI" site_scope="EGI" production="Y" monitored="Y" certification_status="Certified">
        <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
@@ -93,8 +94,8 @@ const expectedTwoDaysOneSiteXML=` <root>
      </Site>
    </Profile>
  </root>`
- 
-const expectedTwoDaysOneSiteJson= `{
+
+const expectedTwoDaysOneSiteJson = `{
    "Profile": [
      {
        "name": "test-ap1",
@@ -125,8 +126,8 @@ const expectedTwoDaysOneSiteJson= `{
      }
    ]
  }`
- 
-const expectedOneMonthOneSiteXML= ` <root>
+
+const expectedOneMonthOneSiteXML = ` <root>
    <Profile name="test-ap1">
      <Site site="GR-01-AUTH" NGI="NGI_GRNET" infastructure="Production" scope="EGI" site_scope="EGI" production="Y" monitored="Y" certification_status="Certified">
        <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
@@ -163,8 +164,8 @@ const expectedOneMonthOneSiteXML= ` <root>
      </Site>
    </Profile>
  </root>`
- 
-const expectedOneMonthOneSiteJson=`{
+
+const expectedOneMonthOneSiteJson = `{
    "Profile": [
      {
        "name": "test-ap1",
@@ -340,7 +341,7 @@ const expectedOneMonthOneSiteJson=`{
      }
    ]
  }`
- 
+
 const expectedOneMonthTwoSitesXML = ` <root>
    <Profile name="test-ap1">
      <Site site="GR-01-AUTH" NGI="NGI_GRNET" infastructure="Production" scope="EGI" site_scope="EGI" production="Y" monitored="Y" certification_status="Certified">
@@ -411,7 +412,7 @@ const expectedOneMonthTwoSitesXML = ` <root>
      </Site>
    </Profile>
  </root>`
- 
+
 const expectedOneMonthTwoSitesJson = `{
    "Profile": [
      {
@@ -755,9 +756,8 @@ const expectedOneMonthTwoSitesJson = `{
      }
    ]
  }`
- 
-// EXPECTED OUTPUTS END
 
+// EXPECTED OUTPUTS END
 
 //Preparing configuration struct
 func prepare() config.Config {
