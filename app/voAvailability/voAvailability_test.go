@@ -29,7 +29,10 @@ package voAvailability
 import (
 	"code.google.com/p/gcfg"
 	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/ar-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
+	"labix.org/v2/mgo/bson"
+	//"labix.org/v2/mgo"
 	"net/http"
 	"testing"
 )
@@ -56,8 +59,13 @@ func (suite *VOTestSuite) SetupTest() {
     port = 27017
     db = "AR_test"
 `
-
+	
 	_ = gcfg.ReadStringInto(&suite.cfg, defaultConfig)
+	
+	//SEED
+	seed := bson.M{ "dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 }
+	session, _ := mongo.OpenSession(suite.cfg)
+    _ = mongo.Insert(session, suite.cfg.MongoDB.Db, "voreports", seed)
 
 	suite.expectedOneDayOneVOXML = ` <root>
    <Profile name="test-ap1">
@@ -66,6 +74,17 @@ func (suite *VOTestSuite) SetupTest() {
      </Vo>
    </Profile>
  </root>`
+  
+	mongo.CloseSession(session)
+  
+
+}
+
+func (suite *VOTestSuite) TearDownTest() {
+
+	session, _ := mongo.OpenSession(suite.cfg)
+
+	_ = session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 
 }
 
@@ -73,9 +92,9 @@ func (suite *VOTestSuite) TestOneDayOneVOXML() {
 
 	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-01T10:00:00Z&granularity=daily&format=XML", nil)
 
-	_, _, output, _ := List(request, suite.cfg)
-
-	//suite.Nil()
+	code, _, output, _ := List(request, suite.cfg)
+	
+	suite.NotEqual(code,500,"Internal Server Error")
 	suite.Equal(string(output), suite.expectedOneDayOneVOXML, "Response body mismatch")
 
 }
