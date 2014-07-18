@@ -44,6 +44,7 @@ type VOTestSuite struct {
 }
 
 func (suite *VOTestSuite) SetupTest() {
+	
 
 	const defaultConfig = `
 	[server]
@@ -63,21 +64,24 @@ func (suite *VOTestSuite) SetupTest() {
 	_ = gcfg.ReadStringInto(&suite.cfg, defaultConfig)
 	
 	//SEED
-	seed := bson.M{ "dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 }
+	seed := []bson.M{bson.M{"dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140102, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 }}
+			   
 	session, _ := mongo.OpenSession(suite.cfg)
-    _ = mongo.Insert(session, suite.cfg.MongoDB.Db, "voreports", seed)
+	
+	_ = mongo.InsertMultiple(session, suite.cfg.MongoDB.Db, "voreports", seed)
 
 	suite.expectedOneDayOneVOXML = ` <root>
    <Profile name="test-ap1">
      <Vo VO="ops">
        <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
+       <Availability timestamp="2014-01-02" availability="100" reliability="100"></Availability>
      </Vo>
    </Profile>
  </root>`
   
 	mongo.CloseSession(session)
-  
-
+	
 }
 
 func (suite *VOTestSuite) TearDownTest() {
@@ -90,13 +94,13 @@ func (suite *VOTestSuite) TearDownTest() {
 
 func (suite *VOTestSuite) TestOneDayOneVOXML() {
 
-	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-01T10:00:00Z&granularity=daily&format=XML", nil)
+	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-02T10:00:00Z&granularity=daily&format=XML", nil)
 
 	code, _, output, _ := List(request, suite.cfg)
 	
 	suite.NotEqual(code,500,"Internal Server Error")
 	suite.Equal(string(output), suite.expectedOneDayOneVOXML, "Response body mismatch")
-
+	
 }
 
 func TestVOTestSuite(t *testing.T) {

@@ -62,6 +62,16 @@ func Insert(session *mgo.Session, dbName string, collectionName string, query bs
 	return err
 }
 
+func InsertMultiple(session *mgo.Session, dbName string, collectionName string, query []bson.M) error {
+
+	c := openCollection(session, dbName, collectionName)
+	err:=error(nil)
+	for _ , q := range(query){
+		err = c.Insert(q)
+	}
+	return err
+}
+
 func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo, error) {
 
 	c := openCollection(session, dbName, collectionName)
