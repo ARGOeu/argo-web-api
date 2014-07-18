@@ -35,10 +35,17 @@ type Id struct {
 	ID bson.ObjectId `bson:"_id"`
 }
 
+
 func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
 
 	c := session.DB(dbName).C(collectionName)
 	return c
+}
+
+func DropDatabase(session *mgo.Session, dbName string) error{
+	
+	err := session.DB(dbName).DropDatabase()
+	return err
 }
 
 func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {

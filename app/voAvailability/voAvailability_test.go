@@ -88,7 +88,7 @@ func (suite *VOTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg)
 
-	_ = session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	_ = mongo.DropDatabase(session, suite.cfg.MongoDB.Db)
 
 }
 
