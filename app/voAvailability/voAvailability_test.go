@@ -32,7 +32,6 @@ import (
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo/bson"
-	//"labix.org/v2/mgo"
 	"net/http"
 	"testing"
 )
@@ -64,8 +63,10 @@ func (suite *VOTestSuite) SetupTest() {
 	_ = gcfg.ReadStringInto(&suite.cfg, defaultConfig)
 	
 	//SEED
-	seed := []bson.M{bson.M{"dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
-					 bson.M{"dt" : 20140102, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 }}
+	seed := []bson.M{
+					 bson.M{"dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140102, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+				 }
 			   
 	session, _ := mongo.OpenSession(suite.cfg)
 	
