@@ -24,16 +24,18 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package factors
 
-type Poem struct {
-	Poem string `xml:"profile,attr"`
+type Factor struct {
+	Site   string `xml:"site,attr"`
+	Weight string `xml:"weight,attr"`
 }
 
 type root struct {
-	Poem []*Poem
+	Factor []*Factor
 }
 
-type PoemProfilesOutput struct {
-	Poem string `bson:"p"`
+type FactorsOutput struct {
+	Site   string  `bson:"s"`
+	Weight float64 `bson:"hs"`
 }

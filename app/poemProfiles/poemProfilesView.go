@@ -32,7 +32,7 @@ import (
 
 func createView(results []PoemProfilesOutput) ([]byte, error) {
 
-	docRoot := &Root{}
+	docRoot := &root{}
 
 	for _, row := range results {
 		p := &Poem{}

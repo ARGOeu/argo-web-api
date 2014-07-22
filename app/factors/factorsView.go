@@ -24,16 +24,25 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package factors
 
-type Poem struct {
-	Poem string `xml:"profile,attr"`
-}
+import (
+	"encoding/xml"
+	"fmt"
+)
 
-type root struct {
-	Poem []*Poem
-}
+func createView(results []FactorsOutput) ([]byte, error) {
 
-type PoemProfilesOutput struct {
-	Poem string `bson:"p"`
+	docRoot := &root{}
+
+	for _, row := range results {
+		f := &Factor{}
+		f.Site = row.Site
+		f.Weight = fmt.Sprintf("%g", row.Weight)
+		docRoot.Factor = append(docRoot.Factor, f)
+	}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
+
 }
