@@ -40,11 +40,11 @@ type VOTestSuite struct {
 	suite.Suite
 	cfg                    config.Config
 	expectedOneDayOneVOXML string
+	expectedTwoDaysOneVOXML string
 }
 
 func (suite *VOTestSuite) SetupTest() {
 	
-
 	const defaultConfig = `
 	[server]
 	bindip = ""
@@ -59,27 +59,156 @@ func (suite *VOTestSuite) SetupTest() {
     port = 27017
     db = "AR_test"
 `
-	
 	_ = gcfg.ReadStringInto(&suite.cfg, defaultConfig)
 	
 	//SEED
 	seed := []bson.M{
-					 bson.M{"dt" : 20140101, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
-					 bson.M{"dt" : 20140102, "v" : "ops", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
-				 }
+					 bson.M{"dt" : 20140101, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140102, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140103, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140104, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140105, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140106, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140107, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140108, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140109, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140110, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140111, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140112, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140113, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140114, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140115, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140116, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140117, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140118, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140119, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140120, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140121, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140122, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140123, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140124, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140125, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140126, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140127, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140128, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140129, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140130, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140131, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140101, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140102, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140103, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140104, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140105, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140106, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140107, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140108, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140109, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140110, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140111, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140112, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140113, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140114, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140115, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140116, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140117, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140118, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140119, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140120, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140121, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140122, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140123, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140124, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140125, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140126, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140127, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140128, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140129, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140130, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140131, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140201, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140202, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140203, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140204, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140205, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140206, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140207, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140208, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140209, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140210, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140211, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140212, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140213, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140214, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140215, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140216, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140217, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140218, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140219, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140220, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140221, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140222, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140223, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140224, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140225, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140226, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140227, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140228, "v" : "test-ops1", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140201, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140202, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140203, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140204, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140205, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140206, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140207, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140208, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140209, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140210, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140211, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140212, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140213, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140214, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140215, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140216, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140217, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140218, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140219, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140220, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140221, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140222, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140223, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140224, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140225, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140226, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140227, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },
+					 bson.M{"dt" : 20140228, "v" : "test-ops2", "p" : "ch.cern.sam.ROC_CRITICAL", "ap" : "test-ap1", "a" : 100, "r" : 100, "up" : 0.99306, "u" : 0.00694, "d" : 0 },				 
+	}
 			   
 	session, _ := mongo.OpenSession(suite.cfg)
 	
 	_ = mongo.InsertMultiple(session, suite.cfg.MongoDB.Db, "voreports", seed)
+	
+	//SEED END
 
+	//EXPECTED OUTPUT DEF
 	suite.expectedOneDayOneVOXML = ` <root>
    <Profile name="test-ap1">
-     <Vo VO="ops">
+     <Vo VO="test-ops1">
+       <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
+     </Vo>
+   </Profile>
+ </root>`
+ 
+	suite.expectedTwoDaysOneVOXML = ` <root>
+   <Profile name="test-ap1">
+     <Vo VO="test-ops1">
        <Availability timestamp="2014-01-01" availability="100" reliability="100"></Availability>
        <Availability timestamp="2014-01-02" availability="100" reliability="100"></Availability>
      </Vo>
    </Profile>
  </root>`
+
+//EXPECTED OUTPUT DEF
+
   
 	mongo.CloseSession(session)
 	
@@ -95,12 +224,23 @@ func (suite *VOTestSuite) TearDownTest() {
 
 func (suite *VOTestSuite) TestOneDayOneVOXML() {
 
-	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-02T10:00:00Z&granularity=daily&format=XML", nil)
+	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-01T10:00:00Z&granularity=daily&format=XML&group_name=test-ops1", nil)
 
 	code, _, output, _ := List(request, suite.cfg)
 	
 	suite.NotEqual(code,500,"Internal Server Error")
 	suite.Equal(string(output), suite.expectedOneDayOneVOXML, "Response body mismatch")
+	
+}
+
+func (suite *VOTestSuite) TestTwoDaysOneVOXML() {
+
+	request, _ := http.NewRequest("GET", "?availability_profile=test-ap1&group_type=vo&start_time=2014-01-01T10:00:00Z&end_time=2014-01-02T10:00:00Z&granularity=daily&format=XML&group_name=test-ops1", nil)
+
+	code, _, output, _ := List(request, suite.cfg)
+	
+	suite.NotEqual(code,500,"Internal Server Error")
+	suite.Equal(string(output), suite.expectedTwoDaysOneVOXML, "Response body mismatch")
 	
 }
 
