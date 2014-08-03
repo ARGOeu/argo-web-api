@@ -35,15 +35,14 @@ type Id struct {
 	ID bson.ObjectId `bson:"_id"`
 }
 
-
 func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {
 
 	c := session.DB(dbName).C(collectionName)
 	return c
 }
 
-func DropDatabase(session *mgo.Session, dbName string) error{
-	
+func DropDatabase(session *mgo.Session, dbName string) error {
+
 	err := session.DB(dbName).DropDatabase()
 	return err
 }
@@ -72,8 +71,8 @@ func Insert(session *mgo.Session, dbName string, collectionName string, query bs
 func InsertMultiple(session *mgo.Session, dbName string, collectionName string, query []bson.M) error {
 
 	c := openCollection(session, dbName, collectionName)
-	err:=error(nil)
-	for _ , q := range(query){
+	err := error(nil)
+	for _, q := range query {
 		err = c.Insert(q)
 	}
 	return err
