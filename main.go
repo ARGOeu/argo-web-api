@@ -27,6 +27,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"github.com/argoeu/ar-web-api/app/availabilityProfiles"
 	"github.com/argoeu/ar-web-api/app/factors"
 	"github.com/argoeu/ar-web-api/app/ngiAvailability"
@@ -86,7 +87,12 @@ func main() {
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 
 	//Web service binds to server. Requests served over HTTPS.
-	err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+	//err := http.ListenAndServeTLS(cfg.Server.Bindip+":"+strconv.Itoa(cfg.Server.Port), "/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key", nil)
+
+	//TLS support only
+	config := &tls.Config{MinVersion: tls.VersionTLS10}
+	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: config}
+	err := server.ListenAndServeTLS("/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key")
 
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
