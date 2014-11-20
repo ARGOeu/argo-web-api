@@ -55,6 +55,6 @@ type Metric struct {
 
 type Status struct {
 	XMLName   xml.Name `xml:"status"`
-	Timestamp string
-	Status    string
+	Timestamp string   `xml:"timestamp,attr"`
+	Status    string   `xml:"status,attr"`
 }
