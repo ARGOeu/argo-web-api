@@ -35,6 +35,7 @@ import (
 	"github.com/argoeu/ar-web-api/app/recomputations"
 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
+	"github.com/argoeu/ar-web-api/app/statusDetail"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
@@ -81,6 +82,9 @@ func main() {
 
 	getSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
 
+	//Status
+	getSubrouter.HandleFunc("/api/v1/status/metrics/timeline/{group}", Respond(statusDetail.List))
+
 	http.Handle("/", mainRouter)
 
 	//Cache
@@ -90,6 +94,7 @@ func main() {
 	config := &tls.Config{MinVersion: tls.VersionTLS10}
 	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: config}
 	//Web service binds to server. Requests served over HTTPS.
+
 	err := server.ListenAndServeTLS("/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key")
 
 	if err != nil {
