@@ -47,7 +47,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("Hello there!")
 	err := error(nil)
-	contentType := "text/plain"
+	contentType := "text/xml"
 	charset := "utf-8"
 
 	//var buffer bytes.Buffer

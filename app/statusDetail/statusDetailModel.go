@@ -30,12 +30,31 @@ type ReadRoot struct {
 type Profile struct {
 	XMLName xml.Name `xml:"profile"`
 	Name    string   `xml:"name,attr"`
-	Group   []*Group
+	Groups  []*Group
 }
 
 type Group struct {
 	XMLName xml.Name `xml:"group"`
 	Name    string   `xml:"name,attr"`
-	Type    string   `xml:"type,atrr"`
-	Group   []*Group
+	Type    string   `xml:"type,attr"`
+	Groups  []*Group
+	Hosts   []*Host
+}
+
+type Host struct {
+	XMLName xml.Name `xml:"host"`
+	Name    string   `xml:"name,attr"`
+	Metrics []*Metric
+}
+
+type Metric struct {
+	XMLName  xml.Name `xml:"metric"`
+	Name     string   `xml:"name,attr"`
+	Timeline []*Status
+}
+
+type Status struct {
+	XMLName   xml.Name `xml:"status"`
+	Timestamp string
+	Status    string
 }

@@ -18,10 +18,28 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 	vo.Type = "vo"
 	vo.Name = "ops"
 
-	//Removed loop call
+	prevHostname := ""
 
-	profile.Group = append(profile.Group, vo)
+	ngi := &Group{}
+	ngi.Type = "ngi"
+	ngi.Name = results[0].Roc
 
+	site := &Group{}
+	site.Type = "site"
+	site.Name = results[0].Site
+
+	for _, row := range results {
+		if row.Hostname != prevHostname && row.Hostname != "" {
+			host := &Host{} //create new host
+			host.Name = row.Hostname
+			site.Hosts = append(site.Hosts, host)
+			prevHostname = row.Hostname
+		}
+	}
+
+	profile.Groups = append(profile.Groups, vo)
+	vo.Groups = append(vo.Groups, ngi)
+	ngi.Groups = append(ngi.Groups, site)
 	docRoot.Profile = profile
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
