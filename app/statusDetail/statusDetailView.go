@@ -50,10 +50,6 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 	prevMetric := ""
 	prevSite := ""
 	prevRoc := ""
-	
-	ngi := &Group{}
-	ngi.Type = "ngi"
-	ngi.Name = results[0].Roc
 
 	var pp_Host *Host
 	var pp_Metric *Metric
@@ -62,13 +58,20 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 
 	for _, row := range results {
 
-		if row.Roc != prevRoc
+		if row.Roc != prevRoc && row.Roc != "" {
+			roc := &Group{}
+			roc.Name = row.Roc
+			roc.Type = "ngi"
+			vo.Groups = append(vo.Groups, roc)
+			prevRoc = roc.Name
+			pp_Roc = roc
+		}
 
 		if row.Site != prevSite && row.Site != "" {
 			site := &Group{}
 			site.Name = row.Site
 			site.Type = "site"
-			ngi.Groups = append(ngi.Groups, site)
+			pp_Roc.Groups = append(pp_Roc.Groups, site)
 			prevSite = row.Site
 			pp_Site = site
 		}
@@ -106,7 +109,6 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 	}
 
 	profile.Groups = append(profile.Groups, vo)
-	vo.Groups = append(vo.Groups, ngi)
 	docRoot.Profile = profile
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
