@@ -28,9 +28,7 @@ package statusDetail
 
 import "encoding/xml"
 
-//import "fmt"
-
-func createView(results []StatusDetailOutput) ([]byte, error) {
+func createView(results []StatusDetailOutput, input StatusDetailInput, poem_detail []PoemDetailOutput) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 
@@ -40,23 +38,28 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 	}
 
 	profile := &Profile{}
-	profile.Name = "ch.cern.sam.ROC_CRITICAL"
-
+	profile.Name = input.profile
 	vo := &Group{}
 	vo.Type = "vo"
-	vo.Name = "ops"
+	vo.Name = input.vo
 
 	prevHostname := ""
 	prevMetric := ""
 	prevSite := ""
 	prevRoc := ""
+	prevService := ""
 
 	var pp_Host *Host
 	var pp_Metric *Metric
 	var pp_Site *Group
 	var pp_Roc *Group
+	var pp_Service *Group
 
 	for _, row := range results {
+
+		if filter_by_profile(row.Service, row.Metric, poem_detail) == 1 {
+			continue
+		}
 
 		if row.Roc != prevRoc && row.Roc != "" {
 			roc := &Group{}
@@ -76,10 +79,20 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 			pp_Site = site
 		}
 
+		if row.Service != prevService && row.Service != "" {
+			service := &Group{}
+			service.Name = row.Service
+			service.Type = "service_type"
+			pp_Site.Groups = append(pp_Site.Groups, service)
+
+			prevService = row.Service
+			pp_Service = service
+		}
+
 		if row.Hostname != prevHostname && row.Hostname != "" {
 			host := &Host{} //create new host
 			host.Name = row.Hostname
-			pp_Site.Hosts = append(pp_Site.Hosts, host)
+			pp_Service.Hosts = append(pp_Service.Hosts, host)
 			prevHostname = row.Hostname
 			pp_Host = host
 		}
@@ -87,25 +100,25 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 		if row.Metric != prevMetric {
 
 			metric := &Metric{}
+			//Add the prev status as the firstone
+
 			metric.Name = row.Metric
 			pp_Host.Metrics = append(pp_Host.Metrics, metric)
 			prevMetric = row.Metric
 			pp_Metric = metric
-		}
 
-		if row.Metric != prevMetric {
+			status := &Status{}
+			status.Timestamp = input.start_time
+			status.Status = row.P_status
+			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 
-			metric := &Metric{}
-			metric.Name = row.Metric
-			pp_Host.Metrics = append(pp_Host.Metrics, metric)
-			prevMetric = row.Metric
-			pp_Metric = metric
 		}
 
 		status := &Status{}
 		status.Timestamp = row.Timestamp
 		status.Status = row.Status
 		pp_Metric.Timeline = append(pp_Metric.Timeline, status)
+
 	}
 
 	profile.Groups = append(profile.Groups, vo)
@@ -113,5 +126,20 @@ func createView(results []StatusDetailOutput) ([]byte, error) {
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
+
+}
+
+func filter_by_profile(stype string, metric string, poem_detail []PoemDetailOutput) int {
+
+	for _, item := range poem_detail {
+
+		if item.Metric == metric {
+			if item.Service == stype {
+				return 0
+			}
+		}
+	}
+
+	return 1
 
 }

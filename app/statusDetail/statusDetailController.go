@@ -82,32 +82,21 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		input.vo = "ops"
 	}
 
-	/* DEBUG RESPONSE INPUT
-	buffer.WriteString(group)
-	buffer.WriteString("\n")
-	buffer.WriteString(input.start_time)
-	buffer.WriteString("\n")
-	buffer.WriteString(input.end_time)
-	buffer.WriteString("\n")
-	buffer.WriteString(input.group_type)
-	buffer.WriteString("\n")
-	buffer.WriteString(input.vo)
-	buffer.WriteString("\n")
-	buffer.WriteString(input.profile)
-	buffer.WriteString("\n")
-	output = []byte(buffer.String())
-	*/
-
 	// Mongo Session
 	results := []StatusDetailOutput{}
+	poem_results := []PoemDetailOutput{}
+
 	session, err := mongo.OpenSession(cfg)
 
-	c := session.DB("AR").C("new_status")
+	c := session.DB("AR").C("status_metric")
+	pc := session.DB("AR").C("poem_details")
+
+	err = pc.Find(bson.M{"p": input.profile}).All(&poem_results)
 	err = c.Find(prepQuery(input)).All(&results)
 
 	mongo.CloseSession(session)
 
-	output, err = createView(results) //Render the results into XML format
+	output, err = createView(results, input, poem_results) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}
@@ -133,14 +122,6 @@ func prepQuery(input StatusDetailInput) bson.M {
 	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 	te_int := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	/* DEBUG
-	fmt.Println(ts)
-	fmt.Println(te)
-	fmt.Println(tsYMD)
-	fmt.Println(teYMD)
-	fmt.Println(ts_int)
-	fmt.Println(te_int)*/
-
 	if input.group_type == "site" {
 
 		query := bson.M{
@@ -151,7 +132,7 @@ func prepQuery(input StatusDetailInput) bson.M {
 
 		return query
 
-	} else if input.group == "ngi" {
+	} else if input.group_type == "ngi" {
 		query := bson.M{
 			"di":  tsYMD,
 			"roc": input.group,
@@ -159,8 +140,17 @@ func prepQuery(input StatusDetailInput) bson.M {
 		}
 
 		return query
+
+	} else if input.group_type == "host" {
+		query := bson.M{
+			"di": tsYMD,
+			"h":  input.group,
+			"ti": bson.M{"$gte": ts_int, "$lte": te_int},
+		}
+
+		return query
 	}
 
-	return bson.M{}
+	return bson.M{"di": 0}
 
 }

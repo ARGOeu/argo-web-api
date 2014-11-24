@@ -41,11 +41,17 @@ type StatusDetailOutput struct {
 	Timestamp string `bson:"ts"`
 	Roc       string `bson:"roc"`
 	Site      string `bson:"si"`
-	Service   string `bson:"sf"`
-	Hostname  string `bson:"sh"`
-	Metric    string `bson:"mn"`
+	Service   string `bson:"st"`
+	Hostname  string `bson:"h"`
+	Metric    string `bson:"m"`
 	Status    string `bson:"s"`
 	Time_int  int    `bson:"ti"`
+	P_status  string `bson:"ps"`
+}
+
+type PoemDetailOutput struct {
+	Service string `bson:"s"`
+	Metric  string `bson:"m"`
 }
 
 type ReadRoot struct {
