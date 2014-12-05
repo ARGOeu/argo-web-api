@@ -40,8 +40,8 @@ type StatusDetailInput struct {
 type StatusDetailOutput struct {
 	Timestamp string `bson:"ts"`
 	Roc       string `bson:"roc"`
-	Site      string `bson:"si"`
-	Service   string `bson:"st"`
+	Site      string `bson:"site"`
+	Service   string `bson:"srv"`
 	Hostname  string `bson:"h"`
 	Metric    string `bson:"m"`
 	Status    string `bson:"s"`
