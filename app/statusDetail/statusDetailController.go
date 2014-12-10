@@ -125,9 +125,9 @@ func prepQuery(input StatusDetailInput) bson.M {
 	if input.group_type == "site" {
 
 		query := bson.M{
-			"di": tsYMD,
-			"si": input.group,
-			"ti": bson.M{"$gte": ts_int, "$lte": te_int},
+			"di":   tsYMD,
+			"site": input.group,
+			"ti":   bson.M{"$gte": ts_int, "$lte": te_int},
 		}
 
 		return query
