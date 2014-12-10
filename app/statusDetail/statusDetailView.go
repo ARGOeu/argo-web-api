@@ -27,6 +27,7 @@
 package statusDetail
 
 import "encoding/xml"
+import "fmt"
 
 func createView(results []StatusDetailOutput, input StatusDetailInput, poem_detail []PoemDetailOutput) ([]byte, error) {
 
@@ -56,6 +57,8 @@ func createView(results []StatusDetailOutput, input StatusDetailInput, poem_deta
 	var pp_Service *Group
 
 	for _, row := range results {
+
+		fmt.Println(row)
 
 		if filter_by_profile(row.Service, row.Metric, poem_detail) == 1 {
 			continue
@@ -112,12 +115,12 @@ func createView(results []StatusDetailOutput, input StatusDetailInput, poem_deta
 			status.Status = row.P_status
 			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 
+		} else {
+			status := &Status{}
+			status.Timestamp = row.Timestamp
+			status.Status = row.Status
+			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 		}
-
-		status := &Status{}
-		status.Timestamp = row.Timestamp
-		status.Status = row.Status
-		pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 
 	}
 
