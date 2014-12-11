@@ -36,6 +36,7 @@ import (
 	"github.com/argoeu/ar-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/ar-web-api/app/siteAvailability"
 	"github.com/argoeu/ar-web-api/app/statusDetail"
+	"github.com/argoeu/ar-web-api/app/statusMsg"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
@@ -84,6 +85,9 @@ func main() {
 
 	//Status
 	getSubrouter.HandleFunc("/api/v1/status/metrics/timeline/{group}", Respond(statusDetail.List))
+
+	//Status
+	getSubrouter.HandleFunc("/api/v1/status/metrics/msg/{hostname}/{service}/{metric}", Respond(statusMsg.List))
 
 	http.Handle("/", mainRouter)
 

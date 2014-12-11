@@ -24,11 +24,11 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusDetail
+package statusMsg
 
 import "encoding/xml"
 
-func createView(results []StatusDetailOutput, input StatusDetailInput, poem_detail []PoemDetailOutput) ([]byte, error) {
+func createView(results []StatusMsgOutput, input StatusMsgInput, poem_detail []PoemDetailOutput) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 
@@ -108,15 +108,21 @@ func createView(results []StatusDetailOutput, input StatusDetailInput, poem_deta
 			pp_Metric = metric
 
 			status := &Status{}
-			status.Timestamp = input.start_time
+			status.Timestamp = input.exec_time
 			status.Status = row.P_status
+			status.Summary = row.Summary
+			status.Message = row.Message
 			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 
 		} else {
+
 			status := &Status{}
 			status.Timestamp = row.Timestamp
 			status.Status = row.Status
+			status.Summary = row.Summary
+			status.Message = row.Message
 			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
+
 		}
 
 	}

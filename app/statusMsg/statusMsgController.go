@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusDetail
+package statusMsg
 
 import (
 	//"bytes"
@@ -56,17 +56,19 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// URL PATH_VALUES
 	urlPath := r.URL.Path
-	group := strings.Split(urlPath, "/")[6]
+	hostname := strings.Split(urlPath, "/")[6]
+	service := strings.Split(urlPath, "/")[7]
+	metric := strings.Split(urlPath, "/")[8]
 
 	urlValues := r.URL.Query()
 
-	input := StatusDetailInput{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
+	input := StatusMsgInput{
+		urlValues.Get("exec_time"),
 		urlValues.Get("vo"),
 		urlValues.Get("profile"),
-		urlValues.Get("group_type"),
-		group,
+		hostname,
+		service,
+		metric,
 	}
 
 	// Set default values
@@ -74,16 +76,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		input.profile = "ch.cern.sam.ROC_CRITICAL"
 	}
 
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
-	}
-
 	if len(input.vo) == 0 {
 		input.vo = "ops"
 	}
 
 	// Mongo Session
-	results := []StatusDetailOutput{}
+	results := []StatusMsgOutput{}
 	poem_results := []PoemDetailOutput{}
 
 	session, err := mongo.OpenSession(cfg)
@@ -107,50 +105,27 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input StatusDetailInput) bson.M {
+func prepQuery(input StatusMsgInput) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
+	ts, _ := time.Parse(zuluForm, input.exec_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	//teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	// parse time as integer
 	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-	te_int := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.group_type == "site" {
-
-		query := bson.M{
-			"di":   tsYMD,
-			"site": input.group,
-			"ti":   bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
-	} else if input.group_type == "ngi" {
-		query := bson.M{
-			"di":  tsYMD,
-			"roc": input.group,
-			"ti":  bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
-	} else if input.group_type == "host" {
-		query := bson.M{
-			"di": tsYMD,
-			"h":  input.group,
-			"ti": bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
+	query := bson.M{
+		"di":  tsYMD,
+		"h":   input.host,
+		"srv": input.service,
+		"m":   input.metric,
+		"ti":  ts_int,
 	}
 
-	return bson.M{"di": 0}
+	return query
 
 }
