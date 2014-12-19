@@ -38,6 +38,7 @@ import (
 	"github.com/argoeu/ar-web-api/app/statusDetail"
 	"github.com/argoeu/ar-web-api/app/statusEndpoints"
 	"github.com/argoeu/ar-web-api/app/statusMsg"
+	"github.com/argoeu/ar-web-api/app/statusServices"
 	"github.com/argoeu/ar-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 	"log"
@@ -92,6 +93,9 @@ func main() {
 
 	//Status Endpoints
 	getSubrouter.HandleFunc("/api/v1/status/endpoints/timeline/{group}", Respond(statusEndpoints.List))
+
+	//Status Services
+	getSubrouter.HandleFunc("/api/v1/status/services/timeline/{group}", Respond(statusServices.List))
 
 	http.Handle("/", mainRouter)
 
