@@ -1,6 +1,6 @@
 Name: ar-web-api
 Summary: A/R API
-Version: 1.5.0
+Version: 1.5.1
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -46,6 +46,8 @@ go clean
 %attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
+* Fri Dec 19 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-1%{?dist}
+- Add support for endpoint/service/sites aggregations
 * Wed Dec 17 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.0-1%{?dist}
 - Add support for Status Results and raw data results
 * Mon Jun 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.4.0-1%{?dist}
