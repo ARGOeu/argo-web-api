@@ -46,7 +46,7 @@ go clean
 %attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
-* Thu Jan 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-2%{?dist}
+* Thu Jan 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-2%{?dist}
 - Add prev timestamp support at the beginning of status timelines
 * Fri Dec 19 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-1%{?dist}
 - Add support for endpoint/service/sites aggregations
