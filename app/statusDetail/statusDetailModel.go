@@ -38,15 +38,16 @@ type StatusDetailInput struct {
 }
 
 type StatusDetailOutput struct {
-	Timestamp string `bson:"ts"`
-	Roc       string `bson:"roc"`
-	Site      string `bson:"site"`
-	Service   string `bson:"srv"`
-	Hostname  string `bson:"h"`
-	Metric    string `bson:"m"`
-	Status    string `bson:"s"`
-	Time_int  int    `bson:"ti"`
-	P_status  string `bson:"ps"`
+	Timestamp   string `bson:"ts"`
+	Roc         string `bson:"roc"`
+	Site        string `bson:"site"`
+	Service     string `bson:"srv"`
+	Hostname    string `bson:"h"`
+	Metric      string `bson:"m"`
+	Status      string `bson:"s"`
+	Time_int    int    `bson:"ti"`
+	P_status    string `bson:"ps"`
+	P_timestamp string `bson:"pts"`
 }
 
 type PoemDetailOutput struct {

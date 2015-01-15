@@ -108,7 +108,7 @@ func createView(results []StatusDetailOutput, input StatusDetailInput, poem_deta
 			pp_Metric = metric
 
 			status := &Status{}
-			status.Timestamp = input.start_time
+			status.Timestamp = row.P_timestamp
 			status.Status = row.P_status
 			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
 
