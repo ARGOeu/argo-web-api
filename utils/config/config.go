@@ -64,7 +64,7 @@ type Config struct {
 const defaultConfig = `
     [server]
     bindip = ""
-    port = 8080
+    port = 443
     maxprocs = 4
     cache = false
     lrucache = 700000000
