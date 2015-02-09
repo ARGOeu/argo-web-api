@@ -107,11 +107,24 @@ func main() {
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 
 	//TLS support only
-	config := &tls.Config{MinVersion: tls.VersionTLS10}
+	config := &tls.Config{
+		MinVersion: tls.VersionTLS10,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+		},
+		PreferServerCipherSuites: true,
+	}
 	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: config}
 	//Web service binds to server. Requests served over HTTPS.
 
-	err := server.ListenAndServeTLS("/etc/pki/tls/certs/localhost.crt", "/etc/pki/tls/private/localhost.key")
+	err := server.ListenAndServeTLS(cfg.Server.Cert, cfg.Server.Privkey)
 
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
