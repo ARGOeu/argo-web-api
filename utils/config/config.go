@@ -43,6 +43,8 @@ var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database 
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
+var flCert = flag.String("cert", "", "speficy path to the host certificate")
+var flPrivKey = flag.String("privkey", "", "speficy path to the private key file")
 
 type Config struct {
 	Server struct {
@@ -52,6 +54,8 @@ type Config struct {
 		Cache    bool
 		Lrucache int
 		Gzip     bool
+		Cert     string
+		Privkey  string
 	}
 	MongoDB struct {
 		Host string
@@ -64,11 +68,13 @@ type Config struct {
 const defaultConfig = `
     [server]
     bindip = ""
-    port = 8080
+    port = 443
     maxprocs = 4
     cache = false
     lrucache = 700000000
     gzip = true
+    cert = /etc/pki/tls/certs/localhost.crt
+    privkey = /etc/pki/tls/private/localhost.key
 
     [mongodb]
     host = "127.0.0.1"
@@ -120,6 +126,14 @@ func LoadConfiguration() Config {
 	}
 	if *flProfile != "" {
 		cfg.Profile = *flProfile
+	}
+
+	if *flCert != "" {
+		cfg.Server.Cert = *flCert
+	}
+
+	if *flPrivKey != "" {
+		cfg.Server.Privkey = *flPrivKey
 	}
 
 	return cfg
