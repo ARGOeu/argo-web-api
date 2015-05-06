@@ -79,7 +79,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	
+
 	mongo.CloseSession(session)
 
 	output, err = createView(results) //Render the results into XML format
@@ -159,9 +159,9 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 				code = http.StatusInternalServerError
 				return code, h, output, err
 			}
-			
+
 			mongo.CloseSession(session)
-			
+
 			//Providing with the appropriate user response
 			message = "Availability Profile record successfully created"
 			output, err := messageXML(message) //Render the response into XML
@@ -243,10 +243,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We update the record bassed on its unique id
-		err = mongo.IdUpdate(session, "AR", "aps", id, input)		
-		
+		err = mongo.IdUpdate(session, "AR", "aps", id, input)
+
 		mongo.CloseSession(session)
-		
+
 		if err != nil {
 			message = "No profile matching the requested id" //If not found we inform the user
 			output, err := messageXML(message)
@@ -261,12 +261,21 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			return code, h, output, err
 
 		} else {
-			code = http.StatusNoContent
+			// Everything went fine and profile was deleted
+			message = "Availability Profile was successfully updated"
+			output, err := messageXML(message) //Render the response into XML
+
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 	} else {
 		code = http.StatusUnauthorized
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
@@ -285,7 +294,6 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-
 	message := ""
 
 	//Authentication procedure
@@ -303,9 +311,8 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		//We remove the record bassed on its unique id
 		err = mongo.IdRemove(session, "AR", "aps", id)
-		
 		mongo.CloseSession(session)
-		
+
 		if err != nil {
 
 			message = "No profile matching the requested id" //If not found we inform the user
@@ -320,13 +327,24 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		} else {
-			code = http.StatusNoContent
+
+			// Everything went fine and profile was deleted
+			message = "Availability Profile was successfully deleted"
+			output, err := messageXML(message) //Render the response into XML
+
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 	} else {
+
 		code = http.StatusUnauthorized
 		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 

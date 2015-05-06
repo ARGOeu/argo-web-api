@@ -27,6 +27,7 @@
 package mongo
 
 import (
+	"errors"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 )
@@ -70,7 +71,10 @@ func Remove(session *mgo.Session, dbName string, collectionName string, query bs
 }
 
 func IdRemove(session *mgo.Session, dbName string, collectionName string, id string) error {
-
+	// Check if given id is proper ObjectId
+	if bson.IsObjectIdHex(id) == false {
+		return errors.New("Invalid Object Id")
+	}
 	c := openCollection(session, dbName, collectionName)
 	rid := bson.ObjectIdHex(id)
 	err := c.RemoveId(rid)
@@ -78,7 +82,10 @@ func IdRemove(session *mgo.Session, dbName string, collectionName string, id str
 }
 
 func IdUpdate(session *mgo.Session, dbName string, collectionName string, id string, update interface{}) error {
-
+	// Check if given id is proper ObjectId
+	if bson.IsObjectIdHex(id) == false {
+		return errors.New("Invalid Object Id")
+	}
 	c := openCollection(session, dbName, collectionName)
 	rid := bson.ObjectIdHex(id)
 	err := c.UpdateId(rid, update)
