@@ -41,6 +41,12 @@ func openCollection(session *mgo.Session, dbName string, collectionName string) 
 	return c
 }
 
+func DropDatabase(session *mgo.Session, dbName string) error {
+
+	err := session.DB(dbName).DropDatabase()
+	return err
+}
+
 func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)
@@ -59,6 +65,16 @@ func Insert(session *mgo.Session, dbName string, collectionName string, query bs
 
 	c := openCollection(session, dbName, collectionName)
 	err := c.Insert(query)
+	return err
+}
+
+func InsertMultiple(session *mgo.Session, dbName string, collectionName string, query []bson.M) error {
+
+	c := openCollection(session, dbName, collectionName)
+	err := error(nil)
+	for _, q := range query {
+		err = c.Insert(q)
+	}
 	return err
 }
 

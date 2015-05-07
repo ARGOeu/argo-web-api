@@ -84,13 +84,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, cfg.MongoDB.Db, "voreports", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, cfg.MongoDB.Db, "voreports", query, &results)
 	}
 
 	if err != nil {
