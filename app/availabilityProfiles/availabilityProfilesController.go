@@ -73,7 +73,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		query = nil //If no name and namespace is provided then we have to retrieve all profiles thus we send nil into db query
 	}
 
-	err = mongo.Find(session, "AR", "aps", query, "_id", &results)
+	err = mongo.Find(session, cfg.MongoDB.Db, "aps", query, "_id", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -143,7 +143,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		query := readOne(search)
-		err = mongo.Find(session, "AR", "aps", query, "name", &results)
+		err = mongo.Find(session, cfg.MongoDB.Db, "aps", query, "name", &results)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -153,7 +153,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		if len(results) <= 0 {
 			//If name-namespace combination is unique we insert the new record into mongo
 			query := createOne(input)
-			err = mongo.Insert(session, "AR", "aps", query)
+			err = mongo.Insert(session, cfg.MongoDB.Db, "aps", query)
 
 			if err != nil {
 				code = http.StatusInternalServerError
@@ -243,7 +243,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We update the record bassed on its unique id
-		err = mongo.IdUpdate(session, "AR", "aps", id, input)
+		err = mongo.IdUpdate(session, cfg.MongoDB.Db, "aps", id, input)
 
 		mongo.CloseSession(session)
 
@@ -310,7 +310,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We remove the record bassed on its unique id
-		err = mongo.IdRemove(session, "AR", "aps", id)
+		err = mongo.IdRemove(session, cfg.MongoDB.Db, "aps", id)
 		mongo.CloseSession(session)
 
 		if err != nil {
