@@ -46,7 +46,7 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 	}
 
 	results := []Auth{}
-	err = mongo.Find(session, "AR", "authentication", query, "apiKey", &results)
+	err = mongo.Find(session, cfg.MongoDB.Db, "authentication", query, "apiKey", &results)
 
 	if err != nil {
 		return false
