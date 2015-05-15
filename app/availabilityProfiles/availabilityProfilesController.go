@@ -124,15 +124,27 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		//Reading the json input
 		reqBody, err := ioutil.ReadAll(r.Body)
 
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
 		input := AvailabilityProfileInput{}
 		results := []AvailabilityProfileOutput{}
 		//Unmarshalling the json input into byte form
 		err = json.Unmarshal(reqBody, &input)
+
+		if err != nil {
+			if err != nil {
+				message = "Malformated json input data" // User provided malformed json input data
+				output, err := messageXML(message)
+
+				if err != nil {
+					code = http.StatusInternalServerError
+					return code, h, output, err
+				}
+
+				code = http.StatusBadRequest
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			}
+		}
+
 		//Making sure that no profile with the requested name and namespace combination already exists in the DB
 		name = append(name, input.Name)
 		namespace = append(namespace, input.Namespace)
@@ -218,6 +230,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		//Extracting record id from url
 		urlValues := r.URL.Path
 		id := strings.Split(urlValues, "/")[4]
+
 		//Reading the json input
 		reqBody, err := ioutil.ReadAll(r.Body)
 
@@ -231,7 +244,16 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		err = json.Unmarshal(reqBody, &input)
 
 		if err != nil {
-			code = http.StatusInternalServerError
+			message = "Malformated json input data" // User provided malformed json input data
+			output, err := messageXML(message)
+
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+
+			code = http.StatusBadRequest
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 
