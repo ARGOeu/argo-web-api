@@ -28,7 +28,6 @@ package availabilityProfiles
 
 import (
 	"code.google.com/p/gcfg"
-	"fmt"
 	"github.com/argoeu/ar-web-api/utils/config"
 	"github.com/argoeu/ar-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"

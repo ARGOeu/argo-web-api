@@ -25,3 +25,7 @@ or
 5. Run the service:
 
         ./ar-web-api
+
+6. To run the unit-tests
+        go test ./...
+
