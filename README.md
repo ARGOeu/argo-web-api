@@ -26,6 +26,7 @@ or
 
         ./ar-web-api
 
-6. To run the unit-tests
+6. To run the unit-tests:
+
         go test ./...
 
