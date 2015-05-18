@@ -14,7 +14,7 @@
         go get code.google.com/p/gcfg
         go get github.com/argoeu/go-lru-cache
 
-or
+        or
 
         go get
 
@@ -30,3 +30,6 @@ or
 
         go test ./...
 
+7. To generate and serve godoc (@port 6060)
+
+	`godoc -http:6060`

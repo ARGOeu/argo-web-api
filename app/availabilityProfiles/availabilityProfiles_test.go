@@ -51,7 +51,7 @@ type AvProfileTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the enviroment
+// This function runs before any test and setups the environment
 // A test configuration object is instantiated using a reference
 // to testdb: AR_test. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
@@ -121,7 +121,7 @@ func (suite *AvProfileTestSuite) SetupTest() {
 }
 
 // Testing creation of a profile  using POST request.
-// During Setup of the test enviroment the testdb is seeded with
+// During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
 // two object _ids on these profiles which cannot predict so,
 // we have to read them from the database and insert them in the
@@ -176,7 +176,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 }
 
 // Testing Reading of profile list using GET request.
-// During Setup of the test enviroment the testdb is seeded with
+// During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
 // two object _ids on these profiles which cannot predict so,
 // we have to read them from the database and insert them in the
@@ -244,7 +244,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 }
 
 // Testing update of a profile  using POST request.
-// During Setup of the test enviroment the testdb is seeded with
+// During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
 // two object _ids on these profiles which cannot predict so,
 // we have to read them from the database and insert them in the
@@ -309,7 +309,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 }
 
 // Testing deletion of a profile  using DELETE request.
-// During Setup of the test enviroment the testdb is seeded with
+// During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
 // two object _ids on these profiles which cannot predict so,
 // we have to read them from the database and insert them in the
@@ -539,7 +539,7 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 }
 
 // This function is actually called in the end of all tests
-// and clears the test enviroment.
+// and clears the test environment.
 // Mainly it's purpose is to drop the testdb
 func (suite *AvProfileTestSuite) TearDownTest() {
 
