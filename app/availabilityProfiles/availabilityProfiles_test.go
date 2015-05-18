@@ -50,7 +50,7 @@ type AvProfileTestSuite struct {
 	resp_bad_json       string
 }
 
-// Setup the Test Enviroment
+// Setup the Test Environment
 // This function runs before any test and setups the enviroment
 // A test configuration object is instantiated using a reference
 // to testdb: AR_test. Also here is are instantiated some expected
