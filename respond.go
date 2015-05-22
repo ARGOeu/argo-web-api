@@ -31,7 +31,7 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"fmt"
-	"github.com/argoeu/ar-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/config"
 	"log"
 	"net/http"
 	"strings"
