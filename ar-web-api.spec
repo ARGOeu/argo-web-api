@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.5.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -21,22 +21,22 @@ Installs the A/R API.
 
 %build
 export GOPATH=$PWD
-cd src/github.com/argoeu/ar-web-api/
+cd src/github.com/argoeu/argo-web-api/
 go get
 go install
 
 %install
 %{__rm} -rf %{buildroot}
 install --directory %{buildroot}/var/www/ar-web-api
-install --mode 755 bin/ar-web-api %{buildroot}/var/www/ar-web-api/ar-web-api
+install --mode 755 bin/argo-web-api %{buildroot}/var/www/ar-web-api/ar-web-api
 
 install --directory %{buildroot}/etc/init
-install --mode 644 src/github.com/argoeu/ar-web-api/ar-web-api.conf %{buildroot}/etc/init/
+install --mode 644 src/github.com/argoeu/argo-web-api/ar-web-api.conf %{buildroot}/etc/init/
 
 %clean
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
-cd src/github.com/argoeu/ar-web-api/
+cd src/github.com/argoeu/argo-web-api/
 go clean
 
 %files
@@ -46,6 +46,8 @@ go clean
 %attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
+* Fri May 22 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.5.1-6%{?dist}
+- ARGO-104 Update github import urls to be consistent with the repo name changes
 * Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
 - Fix Av.profile update/delete responses. Add Check for valid object ids
 * Thu Jan 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-2%{?dist}
