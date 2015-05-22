@@ -14,7 +14,7 @@
         go get code.google.com/p/gcfg
         go get github.com/argoeu/go-lru-cache
 
-or
+        or
 
         go get
 
@@ -25,3 +25,11 @@ or
 5. Run the service:
 
         ./ar-web-api
+
+6. To run the unit-tests:
+
+        go test ./...
+
+7. To generate and serve godoc (@port 6060)
+
+	`godoc -http:6060`

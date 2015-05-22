@@ -1,7 +1,7 @@
 Name: ar-web-api
 Summary: A/R API
 Version: 1.5.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -46,6 +46,8 @@ go clean
 %attr(0644,root,root) /etc/init/ar-web-api.conf
 
 %changelog
+* Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
+- Fix Av.profile update/delete responses. Add Check for valid object ids
 * Thu Jan 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-2%{?dist}
 - Add prev timestamp support at the beginning of status timelines
 * Fri Dec 19 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-1%{?dist}
