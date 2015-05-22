@@ -29,9 +29,9 @@ package availabilityProfiles
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/argoeu/ar-web-api/utils/authentication"
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
 	"io/ioutil"
 	"net/http"
 	"strings"
