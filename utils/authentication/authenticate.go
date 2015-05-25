@@ -37,9 +37,31 @@ type Auth struct {
 	ApiKey string `bson:"apiKey"`
 }
 
-func Authenticate(h http.Header, cfg config.Config) bool {
+func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 
 	session, err := mongo.OpenSession(cfg)
+
+	// TODO: Fix this query below
+	query := bson.M{
+		"access_tokens": h.Get("x-api-key"),
+	}
+
+	results := []Auth{}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "access_tokens", &results)
+
+	if err != nil {
+		return false
+	}
+
+	if len(results) > 0 {
+		return true
+	}
+	return false
+}
+
+func AuthenticateTenant(h http.Header, cfg config.TenantConfig) bool {
+
+	session, err := mongo.OpenTenantSession(cfg)
 
 	query := bson.M{
 		"apiKey": h.Get("x-api-key"),
