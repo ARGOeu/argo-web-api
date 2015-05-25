@@ -65,6 +65,12 @@ type Config struct {
 	Profile string
 }
 
+type TenantConfig struct {
+	DbHost string
+	DbPort int
+	DbName string
+}
+
 const defaultConfig = `
     [server]
     bindip = ""
@@ -137,4 +143,18 @@ func LoadConfiguration() Config {
 	}
 
 	return cfg
+}
+
+//Loads the tenant specific configuration
+func LoadTenantConfiguration(tenant string) TenantConfig {
+
+	var tcfg TenantConfig
+
+	fmt.Println(tenant)
+	// TODO: query mongo tenants db for information
+	tcfg.DbHost = "localhost"
+	tcfg.DbPort = 27017
+	tcfg.DbName = tenant
+
+	return tcfg
 }
