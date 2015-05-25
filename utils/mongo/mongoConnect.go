@@ -42,6 +42,16 @@ func OpenSession(cfg config.Config) (*mgo.Session, error) {
 	return s, err
 }
 
+func OpenTenantSession(cfg config.TenantConfig) (*mgo.Session, error) {
+	s, err := mgo.Dial(cfg.DbHost + ":" + fmt.Sprint(cfg.DbPort))
+	if err != nil {
+		return s, err
+	}
+	// Optional. Switch the session to a monotonic behavior.
+	s.SetMode(mgo.Monotonic, true)
+	return s, err
+}
+
 func CloseSession(session *mgo.Session) bool {
 	session.Close()
 	return true
