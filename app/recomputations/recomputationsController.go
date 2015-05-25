@@ -75,7 +75,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func Create(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -91,9 +91,9 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	message := ""
 
 	//only authenticated requests triger the handling code
-	if authentication.Authenticate(r.Header, cfg) {
+	if authentication.AuthenticateTenant(r.Header, cfg) {
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := mongo.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -123,7 +123,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		query := insertQuery(input)
-		err = mongo.Insert(session, "AR", "recalculations", query)
+		err = mongo.Insert(session, cfg.DbName, "recalculations", query)
 
 		if err != nil {
 			code = http.StatusInternalServerError
