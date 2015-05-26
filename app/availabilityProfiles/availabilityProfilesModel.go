@@ -47,11 +47,11 @@ type And struct {
 }
 
 type Profile struct {
-	XMLName   xml.Name `xml:"profile"`
-	ID        string   `xml:"id,attr"`
-	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
-	Poem      string   `xml:"poems,attr"`
+	XMLName            xml.Name `xml:"profile"`
+	ID                 string   `xml:"id,attr"`
+	Name               string   `xml:"name,attr"`
+	Namespace          string   `xml:"namespace,attr"`
+	MetricProfile      string   `xml:"metric_profiles,attr"`
 	And       *And
 }
 
@@ -67,10 +67,10 @@ type Message struct {
 
 //Struct for inserting data into DB
 type AvailabilityProfileInput struct {
-	Name      string     `json:"name"`
-	Namespace string     `json:"namespace"`
-	Groups    [][]string `json:"groups"`
-	Poems     []string   `json:"poems"`
+	Name               string     `json:"name"`
+	Namespace          string     `json:"namespace"`
+	Groups             [][]string `json:"groups"`
+	MetricProfiles     []string   `json:"metric_profiles"`
 }
 
 //Struct for searching based on name and namespace combination
@@ -81,11 +81,11 @@ type AvailabilityProfileSearch struct {
 
 //Struct for record retrieval
 type AvailabilityProfileOutput struct {
-	ID        bson.ObjectId `bson:"_id"`
-	Name      string        `bson:"name"`
-	Namespace string        `bson:"namespace"`
-	Groups    [][]string    `bson:"groups"`
-	Poems     []string      `bson:"poems"`
+	ID                 bson.ObjectId `bson:"_id"`
+	Name               string        `bson:"name"`
+	Namespace          string        `bson:"namespace"`
+	Groups             [][]string    `bson:"groups"`
+	MetricProfiles     []string      `bson:"metric_profiles"`
 }
 
 func prepareFilter(input AvailabilityProfileSearch) bson.M {
@@ -100,10 +100,10 @@ func prepareFilter(input AvailabilityProfileSearch) bson.M {
 
 func createOne(input AvailabilityProfileInput) bson.M {
 	query := bson.M{
-		"name":      input.Name,
-		"namespace": input.Namespace,
-		"groups":    input.Groups,
-		"poems":     input.Poems,
+		"name":                input.Name,
+		"namespace":           input.Namespace,
+		"groups":              input.Groups,
+		"metric_profiles":     input.MetricProfiles,
 	}
 	return query
 }
