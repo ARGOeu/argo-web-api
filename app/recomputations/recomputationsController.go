@@ -47,6 +47,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	contentType := "text/xml"
 	charset := "utf-8"
 
+	//TODO: change this to the actual tenantdb
+	tenantdb := "AR_test"
 	//STANDARD DECLARATIONS END
 
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -57,7 +59,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []RecomputationsInputOutput{}
-	err = mongo.Find(session, "AR", "recalculations", nil, "t", &results)
+	err = mongo.Find(session, tenantdb, "recalculations", nil, "t", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -90,7 +92,6 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS END
 
 	message := ""
-
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header, cfg) {
 

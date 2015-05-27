@@ -40,7 +40,7 @@ func createView(results []RecomputationsInputOutput) ([]byte, error) {
 		r.StartTime = row.StartTime
 		r.EndTime = row.EndTime
 		r.Reason = row.Reason
-		r.NgiName = row.NgiName
+		r.Group = row.Group
 		r.Status = row.Status
 		r.Timestamp = row.Timestamp
 		for _, s := range row.ExcludeSite {

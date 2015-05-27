@@ -28,42 +28,48 @@ package recomputations
 
 import (
 	"encoding/xml"
+
 	"labix.org/v2/mgo/bson"
 )
 
+// RecomputationsInputOutput struct used to retrieve recomputations from db
 type RecomputationsInputOutput struct {
-	StartTime   string   `bson:"st"`
-	EndTime     string   `bson:"et"`
-	Reason      string   `bson:"r"`
-	NgiName     string   `bson:"n"`
-	ExcludeSite []string `bson:"es"`
-	Status      string   `bson:"s"`
-	Timestamp   string   `bson:"t"`
+	StartTime   string   `bson:"start_time"`
+	EndTime     string   `bson:"end_time"`
+	Reason      string   `bson:"reason"`
+	Group       string   `bson:"group"`
+	ExcludeSite []string `bson:"exclude"`
+	Status      string   `bson:"status"`
+	Timestamp   string   `bson:"timestamp"`
 	//Exclude_sf		[]string
 	//Exclude_end_point []string
 }
 
+// Exclude struct to represent the excluded sites for a recomputation
 type Exclude struct {
 	XMLName xml.Name `xml:"Exclude" json:"-"`
 	Site    string   `xml:"site,attr" json:"site"`
 }
 
+// Request struct to represent a request in xml/json
 type Request struct {
 	XMLName   xml.Name `xml:"Request" json:"-"`
 	StartTime string   `xml:"start_time,attr" json:"start_time"`
 	EndTime   string   `xml:"end_time,attr" json:"end_time"`
 	Reason    string   `xml:"reason,attr" json:"reason"`
-	NgiName   string   `xml:"ngi_name,attr" json:"ngi_name"`
+	Group     string   `xml:"group,attr" json:"group"`
 	Status    string   `xml:"status,attr" json:"status"`
 	Timestamp string   `xml:"timestamp,attr" json:"timestamp"`
 	Exclude   []*Exclude
 }
 
+// Root struct to represent the root of the xml/json document
 type Root struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Request []*Request
 }
 
+// Message struct to use when outputing an error in xml format
 type Message struct {
 	XMLName xml.Name `xml:"root"`
 	Message string
@@ -72,13 +78,13 @@ type Message struct {
 func insertQuery(input RecomputationsInputOutput) bson.M {
 
 	query := bson.M{
-		"st": input.StartTime,
-		"et": input.EndTime,
-		"r":  input.Reason,
-		"n":  input.NgiName,
-		"es": input.ExcludeSite,
-		"s":  input.Status,
-		"t":  input.Timestamp,
+		"start_time": input.StartTime,
+		"end_time":   input.EndTime,
+		"reason":     input.Reason,
+		"group":      input.Group,
+		"excluded":   input.ExcludeSite,
+		"status":     input.Status,
+		"timestamp":  input.Timestamp,
 	}
 
 	return query
