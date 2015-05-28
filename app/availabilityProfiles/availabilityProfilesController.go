@@ -37,7 +37,7 @@ import (
 	"strings"
 )
 
-func List(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, error) {
+func List(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -60,7 +60,7 @@ func List(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, e
 	}
 
 	results := []AvailabilityProfileOutput{}
-	session, err := mongo.OpenTenantSession(cfg)
+	session, err := multitenancy.OpenTenantSession(cfg)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -93,7 +93,7 @@ func List(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
-func Create(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, error) {
+func Create(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -111,7 +111,7 @@ func Create(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte,
 	//Authentication procedure
 	if authentication.AuthenticateTenant(r.Header, cfg) {
 
-		session, err := mongo.OpenTenantSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -209,7 +209,7 @@ func Create(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte,
 
 }
 
-func Update(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, error) {
+func Update(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -257,7 +257,7 @@ func Update(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte,
 			return code, h, output, err
 		}
 
-		session, err := mongo.OpenTenantSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -304,7 +304,7 @@ func Update(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte,
 
 }
 
-func Delete(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte, error) {
+func Delete(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -324,7 +324,7 @@ func Delete(r *http.Request, cfg config.TenantConfig) (int, http.Header, []byte,
 		//Extracting record id from url
 		urlValues := r.URL.Path
 		id := strings.Split(urlValues, "/")[4]
-		session, err := mongo.OpenTenantSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
