@@ -32,8 +32,8 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// RecomputationsInputOutput struct used to retrieve recomputations from db
-type RecomputationsInputOutput struct {
+// InputOutput struct used to retrieve recomputations from db
+type InputOutput struct {
 	StartTime   string   `bson:"start_time"`
 	EndTime     string   `bson:"end_time"`
 	Reason      string   `bson:"reason"`
@@ -49,6 +49,15 @@ type RecomputationsInputOutput struct {
 type Exclude struct {
 	XMLName xml.Name `xml:"Exclude" json:"-"`
 	Site    string   `xml:"site,attr" json:"site"`
+}
+
+// IncomingRequest struct to decode json from incoming http requests
+type IncomingRequest struct {
+	StartTime string   `xml:"start_time,attr" json:"start_time"`
+	EndTime   string   `xml:"end_time,attr" json:"end_time"`
+	Reason    string   `xml:"reason,attr" json:"reason"`
+	Group     string   `xml:"group,attr" json:"group"`
+	Exclude   []string `json:"excluded_sites"`
 }
 
 // Request struct to represent a request in xml/json
@@ -75,7 +84,7 @@ type Message struct {
 	Message string
 }
 
-func insertQuery(input RecomputationsInputOutput) bson.M {
+func insertQuery(input InputOutput) bson.M {
 
 	query := bson.M{
 		"start_time": input.StartTime,

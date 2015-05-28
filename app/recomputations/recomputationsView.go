@@ -31,7 +31,7 @@ import (
 	"encoding/xml"
 )
 
-func createView(results []RecomputationsInputOutput) ([]byte, error) {
+func createView(results []InputOutput) ([]byte, error) {
 
 	docRoot := &Root{}
 
