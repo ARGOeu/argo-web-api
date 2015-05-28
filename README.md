@@ -24,7 +24,7 @@
 
 5. Run the service:
 
-        ./ar-web-api
+        ./argo-web-api
 
 6. To run the unit-tests:
 
