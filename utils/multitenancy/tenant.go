@@ -24,59 +24,43 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package authentication
+package multitenancy
 
 import (
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
-	"net/http"
+//	"../mongo"
+	"labix.org/v2/mgo"
+	"fmt"
 )
 
-type Auth struct {
-	ApiKey string `bson:"apiKey"`
+type TenantConfig struct {
+	DbHost string
+	DbPort int
+	DbName string
 }
 
-func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
+//Loads the tenant specific configuration
+func LoadTenantConfiguration() TenantConfig {
 
-	session, err := mongo.OpenSession(cfg)
+	var tcfg TenantConfig
 
-	// TODO: Fix this query below
-	query := bson.M{
-		"access_tokens": h.Get("x-api-key"),
-	}
+	// TODO: query mongo tenants db for information
+	tcfg.DbHost = "127.0.0.1"
+	tcfg.DbPort = 27017
+	tcfg.DbName = "AR"
 
-	results := []Auth{}
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "access_tokens", &results)
+	fmt.Println(tcfg.DbHost)
+	fmt.Println(tcfg.DbPort)
+	fmt.Println(tcfg.DbName)
 
-	if err != nil {
-		return false
-	}
-
-	if len(results) > 0 {
-		return true
-	}
-	return false
+	return tcfg
 }
 
-func AuthenticateTenant(h http.Header, cfg config.Config) bool {
-
-	session, err := mongo.OpenSession(cfg)
-
-	// TODO: one complex query
-	query := bson.M{
-		"users.api_key": h.Get("x-api-key"),
-	}
-
-	results := []Auth{}
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "users.api_key", &results)
-
+func OpenTenantSession(cfg TenantConfig) (*mgo.Session, error) {
+	s, err := mgo.Dial(cfg.DbHost + ":" + fmt.Sprint(cfg.DbPort))
 	if err != nil {
-		return false
+		return s, err
 	}
-
-	if len(results) > 0 {
-		return true
-	}
-	return false
+	// Optional. Switch the session to a monotonic behavior.
+	s.SetMode(mgo.Monotonic, true)
+	return s, err
 }
