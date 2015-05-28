@@ -20,7 +20,7 @@
 
 5. To run the service use the following command:
 
-        ./ar-web-api
+        ./argo-web-api
 
   For a list of options use the following command:
 
