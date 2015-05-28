@@ -28,9 +28,9 @@ package ngiAvailability
 
 import (
 	"fmt"
-	"github.com/argoeu/ar-web-api/utils/caches"
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
+	"github.com/argoeu/argo-web-api/utils/caches"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
 	"net/http"
 	"strings"
 )
