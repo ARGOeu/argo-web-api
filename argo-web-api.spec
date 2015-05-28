@@ -1,6 +1,6 @@
 Name: argo-web-api
 Summary: A/R API
-Version: 1.5.2
+Version: 1.6.0
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -47,7 +47,7 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
-* Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.5.2-1%{?dist}
+* Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.6.0-1%{?dist}
 - ARGO-104 Update github import urls to be consistent with the repo name changes
 * Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
 - Fix Av.profile update/delete responses. Add Check for valid object ids
