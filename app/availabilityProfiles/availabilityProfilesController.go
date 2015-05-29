@@ -37,7 +37,7 @@ import (
 	"strings"
 )
 
-func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func List(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -60,7 +60,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []AvailabilityProfileOutput{}
-	session, err := mongo.OpenSession(cfg)
+	session, err := multitenancy.OpenTenantSession(cfg)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -73,7 +73,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		query = nil //If no name and namespace is provided then we have to retrieve all profiles thus we send nil into db query
 	}
 
-	err = mongo.Find(session, cfg.MongoDB.Db, "aps", query, "_id", &results)
+	err = mongo.Find(session, cfg.DbName, "aps", query, "_id", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -93,7 +93,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func Create(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -109,9 +109,9 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	message := ""
 
 	//Authentication procedure
-	if authentication.Authenticate(r.Header, cfg) {
+	if authentication.AuthenticateTenant(r.Header, cfg) {
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -155,7 +155,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		query := readOne(search)
-		err = mongo.Find(session, cfg.MongoDB.Db, "aps", query, "name", &results)
+		err = mongo.Find(session, cfg.DbName, "aps", query, "name", &results)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -165,7 +165,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		if len(results) <= 0 {
 			//If name-namespace combination is unique we insert the new record into mongo
 			query := createOne(input)
-			err = mongo.Insert(session, cfg.MongoDB.Db, "aps", query)
+			err = mongo.Insert(session, cfg.DbName, "aps", query)
 
 			if err != nil {
 				code = http.StatusInternalServerError
@@ -209,7 +209,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func Update(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -225,7 +225,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	message := ""
 
 	//Authentication procedure
-	if authentication.Authenticate(r.Header, cfg) {
+	if authentication.AuthenticateTenant(r.Header, cfg) {
 
 		//Extracting record id from url
 		urlValues := r.URL.Path
@@ -257,7 +257,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			return code, h, output, err
 		}
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -265,7 +265,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We update the record bassed on its unique id
-		err = mongo.IdUpdate(session, cfg.MongoDB.Db, "aps", id, input)
+		err = mongo.IdUpdate(session, cfg.DbName, "aps", id, input)
 
 		mongo.CloseSession(session)
 
@@ -304,7 +304,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func Delete(r *http.Request, cfg multitenancy.TenantConfig) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -319,12 +319,12 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	message := ""
 
 	//Authentication procedure
-	if authentication.Authenticate(r.Header, cfg) {
+	if authentication.AuthenticateTenant(r.Header, cfg) {
 
 		//Extracting record id from url
 		urlValues := r.URL.Path
 		id := strings.Split(urlValues, "/")[4]
-		session, err := mongo.OpenSession(cfg)
+		session, err := multitenancy.OpenTenantSession(cfg)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -332,7 +332,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		//We remove the record bassed on its unique id
-		err = mongo.IdRemove(session, cfg.MongoDB.Db, "aps", id)
+		err = mongo.IdRemove(session, cfg.DbName, "aps", id)
 		mongo.CloseSession(session)
 
 		if err != nil {

@@ -79,7 +79,7 @@ const defaultConfig = `
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR"
+    db = "argo_core"
 `
 
 //Loads the configurations passed either by flags or by the configuration file
@@ -127,14 +127,13 @@ func LoadConfiguration() Config {
 	if *flProfile != "" {
 		cfg.Profile = *flProfile
 	}
-
 	if *flCert != "" {
 		cfg.Server.Cert = *flCert
 	}
-
 	if *flPrivKey != "" {
 		cfg.Server.Privkey = *flPrivKey
 	}
 
 	return cfg
 }
+
