@@ -108,12 +108,12 @@ func (suite *AvProfileTestSuite) SetupTest() {
 
 	// Insert first seed profile
 	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
-	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "poems": []string{"poem01"},
+	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
 		"groups": [][]string{
 			[]string{"ap1-service1", "ap1-service2", "ap1-service3"},
 			[]string{"ap1-service4", "ap1-service5", "ap1-service6"}}})
 	// Insert first seed profile
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "poems": []string{"poem02"},
+	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
 		"groups": [][]string{
 			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
 			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
@@ -133,7 +133,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
     {
         "name": "fresh_test_profile",
         "namespace": "test_namespace",
-        "poems": ["test_poem"],
+        "metricprofiles": ["test_metricprofile"],
         "groups": [
             [
                "service1",
@@ -202,7 +202,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	id2 := (results.ID.Hex())
 	// Hold a string multiline literal including the two profile ids retrieved
 	profile_list_xml := ` <root>
-   <profile id="` + id1 + `" name="ap1" namespace="namespace1" poems="poem01">
+   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
      <AND>
        <OR>
          <Group service_flavor="ap1-service1"></Group>
@@ -216,7 +216,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
        </OR>
      </AND>
    </profile>
-   <profile id="` + id2 + `" name="ap2" namespace="namespace2" poems="poem02">
+   <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
      <AND>
        <OR>
          <Group service_flavor="ap2-service1"></Group>
@@ -256,7 +256,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
     {
         "name": "updated-ap2",
         "namespace": "updated-ap2-namespace",
-        "poems": ["updated-ap2-poem"],
+        "metricprofiles": ["updated-ap2-metricprofile"],
         "groups": [
             [
                "updated-srv1",
@@ -301,7 +301,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "poems": []string{"poem02"},
+	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
 		"groups": [][]string{
 			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
 			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
@@ -341,7 +341,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Prepare the expected xml response after deleting ap2
 	profile_list_xml := ` <root>
-   <profile id="` + id1 + `" name="ap1" namespace="namespace1" poems="poem01">
+   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
      <AND>
        <OR>
          <Group service_flavor="ap1-service1"></Group>
@@ -381,7 +381,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	suite.Equal(profile_list_xml, string(output), "Response body mismatch")
 
 	// Reestablish ap2 profile (reinsert)
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "poems": []string{"poem02"},
+	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
 		"groups": [][]string{
 			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
 			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
