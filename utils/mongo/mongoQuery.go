@@ -56,6 +56,14 @@ func Find(session *mgo.Session, dbName string, collectionName string, query bson
 	return err
 }
 
+// FindAndProject uses a query and projection pair, updates results object and returns error code
+func FindAndProject(session *mgo.Session, dbName string, collectionName string, query bson.M, projection bson.M, sorter string, results interface{}) error {
+
+	c := openCollection(session, dbName, collectionName)
+	err := c.Find(query).Select(projection).Sort(sorter).All(results)
+	return err
+}
+
 func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
 
 	c := openCollection(session, dbName, collectionName)
