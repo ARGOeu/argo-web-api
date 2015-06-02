@@ -28,11 +28,12 @@ package recomputations
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
-	"time"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -48,7 +49,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg.MongoDB)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -93,7 +94,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//only authenticated requests triger the handling code
 	if authentication.Authenticate(r.Header, cfg) {
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := mongo.OpenSession(cfg.MongoDB)
 
 		if err != nil {
 			code = http.StatusInternalServerError

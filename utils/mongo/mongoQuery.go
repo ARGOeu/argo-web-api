@@ -28,6 +28,7 @@ package mongo
 
 import (
 	"errors"
+
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 )

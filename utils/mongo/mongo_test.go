@@ -28,19 +28,19 @@ package mongo
 
 import (
 	"testing"
-	
+
 	"code.google.com/p/gcfg"
 	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"github.com/stretchr/testify/suite"
 )
 
 // This is a utility suite struct used in tests (see pkg "testify")
 type mongoTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	result                    bson.M
+	cfg    config.Config
+	result bson.M
 }
 
 // Setup the Test Environment
@@ -63,7 +63,7 @@ func (suite *mongoTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-//	suite.result = bson.M{ "name" : "Westeros", "db_conf" : bson.M{ "server" : "localhost", "port" : 27017, "database" : "argo_EGI" } }
+	//	suite.result = bson.M{ "name" : "Westeros", "db_conf" : bson.M{ "server" : "localhost", "port" : 27017, "database" : "argo_EGI" } }
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -115,7 +115,6 @@ func (suite *mongoTestSuite) SetupTest() {
 			}})
 }
 
-
 // Testing query and projection using FindAndProject method.
 // During Setup of the test environment the testdb is seeded with
 // two tenants ("Westeros","EGI"). We query for a tenant specific
@@ -125,13 +124,12 @@ func (suite *mongoTestSuite) TestFindAndProject() {
 	if err != nil {
 		panic(err)
 	}
-	query := bson.M{ "users.api_key" : "sansa3" }
-	projection := bson.M{ "_id": 0 , "name":1, "db_conf": 1 }
-	expected_result := []bson.M{ bson.M{ "name" : "Westeros", "db_conf": bson.M{ "server" : "localhost", "port" : 27017, "database" : "argo_GOT" }}}
+	query := bson.M{"users.api_key": "sansa3"}
+	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1}
+	expected_result := []bson.M{bson.M{"name": "Westeros", "db_conf": bson.M{"server": "localhost", "port": 27017, "database": "argo_GOT"}}}
 	result := []bson.M{}
 	err = FindAndProject(session, suite.cfg.MongoDB.Db, "tenants", query, projection, "users.api_key", &result)
-	fmt.Println("Prouts!")
-	suite.Equal(expected_result,result,"Unexpected result")
+	suite.Equal(expected_result, result, "Unexpected result")
 }
 
 func (suite *mongoTestSuite) TearDownSuite() {
