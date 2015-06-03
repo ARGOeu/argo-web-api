@@ -157,7 +157,7 @@ func (suite *AuthenticationProfileTestSuite) TestAuthentication() {
 
 	tenantdbconfig, err := AuthenticateTenant(request.Header, suite.cfg)
 	// Check that we must have a 200 ok code
-	suite.Equal(nil, err, "authetication probelm")
+	suite.Equal(nil, err, "authetication problem")
 
 	//Check the data is conveyed correctly
 	suite.Regexp(tenantdbconfig.Db, suite.tenantdb, "Database mismatch")
