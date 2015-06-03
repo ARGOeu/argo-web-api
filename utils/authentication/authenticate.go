@@ -27,8 +27,8 @@
 package authentication
 
 import (
-	"github.com/argoeu/ar-web-api/utils/config"
-	"github.com/argoeu/ar-web-api/utils/mongo"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
 )
@@ -46,7 +46,7 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 	}
 
 	results := []Auth{}
-	err = mongo.Find(session, "AR", "authentication", query, "apiKey", &results)
+	err = mongo.Find(session, cfg.MongoDB.Db, "authentication", query, "apiKey", &results)
 
 	if err != nil {
 		return false

@@ -1,7 +1,7 @@
-Name: ar-web-api
+Name: argo-web-api
 Summary: A/R API
-Version: 1.5.1
-Release: 4%{?dist}
+Version: 1.6.0
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -12,40 +12,45 @@ BuildRequires: git
 Requires: mongo-10gen
 Requires: mongo-10gen-server
 ExcludeArch: i386
+Obsoletes: ar-web-api
 
 %description
-Installs the A/R API.
+Installs the ARGO API.
 
 %prep
 %setup
 
 %build
 export GOPATH=$PWD
-cd src/github.com/argoeu/ar-web-api/
+cd src/github.com/argoeu/argo-web-api/
 go get
 go install
 
 %install
 %{__rm} -rf %{buildroot}
-install --directory %{buildroot}/var/www/ar-web-api
-install --mode 755 bin/ar-web-api %{buildroot}/var/www/ar-web-api/ar-web-api
+install --directory %{buildroot}/var/www/argo-web-api
+install --mode 755 bin/argo-web-api %{buildroot}/var/www/argo-web-api/argo-web-api
 
 install --directory %{buildroot}/etc/init
-install --mode 644 src/github.com/argoeu/ar-web-api/ar-web-api.conf %{buildroot}/etc/init/
+install --mode 644 src/github.com/argoeu/argo-web-api/argo-web-api.conf %{buildroot}/etc/init/
 
 %clean
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
-cd src/github.com/argoeu/ar-web-api/
+cd src/github.com/argoeu/argo-web-api/
 go clean
 
 %files
 %defattr(0644,root,root)
-%attr(0750,root,root) /var/www/ar-web-api
-%attr(0755,root,root) /var/www/ar-web-api/ar-web-api
-%attr(0644,root,root) /etc/init/ar-web-api.conf
+%attr(0750,root,root) /var/www/argo-web-api
+%attr(0755,root,root) /var/www/argo-web-api/argo-web-api
+%attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
+* Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.6.0-1%{?dist}
+- ARGO-104 Update github import urls to be consistent with the repo name changes
+* Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
+- Fix Av.profile update/delete responses. Add Check for valid object ids
 * Thu Jan 15 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-2%{?dist}
 - Add prev timestamp support at the beginning of status timelines
 * Fri Dec 19 2014 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-1%{?dist}

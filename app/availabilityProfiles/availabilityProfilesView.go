@@ -30,13 +30,23 @@ import "encoding/xml"
 
 func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 
+	poem_name := ""
+
 	docRoot := &ReadRoot{}
 	for _, row := range results {
+
+		// If poem array doesn't contain items add empty string to poem attribute
+		if len(row.Poems) > 0 {
+			poem_name = row.Poems[0]
+		} else {
+			poem_name = ""
+		}
+
 		profile := &Profile{
 			ID:        row.ID.Hex(),
 			Name:      row.Name,
 			Namespace: row.Namespace,
-			Poem:      row.Poems[0],
+			Poem:      poem_name,
 		}
 		and := &And{}
 		docRoot.Profile = append(docRoot.Profile, profile)
