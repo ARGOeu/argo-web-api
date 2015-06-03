@@ -74,19 +74,13 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 	query := bson.M{"users.api_key": h.Get("x-api-key")}
 	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1}
 
-	results := []bson.M{}
+	var results []map[string][]config.MongoConfig
 	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
 
 	if len(results) == 0 {
 		return config.MongoConfig{}, errors.New("Unauthorized")
 	}
 
-	mdb := results[0]["db_conf"].([]interface{})[0].(bson.M)
-	mongoConf := config.MongoConfig{
-		Db:   mdb["database"].(string),
-		Host: mdb["server"].(string),
-		Port: mdb["port"].(int),
-	}
-
+	mongoConf := results[0]["db_conf"][0]
 	return mongoConf, nil
 }

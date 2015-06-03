@@ -49,12 +49,12 @@ var flPrivKey = flag.String("privkey", "", "speficy path to the private key file
 
 // MongoConfig configuration to connect to a mongodb instance
 type MongoConfig struct {
-	Host     string
-	Port     int
-	Db       string
-	Username string
-	Password string
-	Store    string
+	Host     string `bson:"server"`
+	Port     int    `bson:"port"`
+	Db       string `bson:"database"`
+	Username string `bson:"username"`
+	Password string `bson:"password"`
+	Store    string `bson:"store"`
 }
 
 // Config configuration for the api

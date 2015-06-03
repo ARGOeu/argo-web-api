@@ -76,6 +76,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 	suite.clientkey = "mysecretcombination"
 	suite.tenantpassword = "h4shp4ss"
 	suite.tenantusername = "johndoe"
+	suite.tenantstorename = "ar"
 
 	// seed mongo
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)
@@ -120,7 +121,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 			"db_conf": []bson.M{
 
 				bson.M{
-					"store":    "ar",
+					"store":    suite.tenantstorename,
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantdb,
@@ -162,7 +163,7 @@ func (suite *AuthenticationProfileTestSuite) TestAuthentication() {
 	suite.Regexp(tenantdbconfig.Db, suite.tenantdb, "Database mismatch")
 	suite.Regexp(tenantdbconfig.Username, suite.tenantusername, "Username mismatch")
 	suite.Regexp(tenantdbconfig.Password, suite.tenantpassword, "Password mismatch")
-
+	suite.Regexp(tenantdbconfig.Store, suite.tenantstorename, "Store db mismatch")
 }
 
 //TearDownTest to tear down every test
