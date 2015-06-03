@@ -83,7 +83,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []StatusMsgOutput{}
 	poem_results := []PoemDetailOutput{}
 
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg.MongoDB)
 
 	c := session.DB("AR").C("status_metric")
 	pc := session.DB("AR").C("poem_details")

@@ -84,7 +84,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Mongo Session
 	results := []StatusSitesOutput{}
 
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg.MongoDB)
 
 	c := session.DB("AR").C("status_sites")
 	err = c.Find(prepQuery(input)).All(&results)

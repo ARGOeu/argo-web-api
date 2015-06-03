@@ -29,12 +29,13 @@ package availabilityProfiles
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -60,7 +61,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []AvailabilityProfileOutput{}
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg.MongoDB)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -111,7 +112,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//Authentication procedure
 	if authentication.Authenticate(r.Header, cfg) {
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := mongo.OpenSession(cfg.MongoDB)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -257,7 +258,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			return code, h, output, err
 		}
 
-		session, err := mongo.OpenSession(cfg)
+		session, err := mongo.OpenSession(cfg.MongoDB)
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -324,7 +325,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		//Extracting record id from url
 		urlValues := r.URL.Path
 		id := strings.Split(urlValues, "/")[4]
-		session, err := mongo.OpenSession(cfg)
+		session, err := mongo.OpenSession(cfg.MongoDB)
 
 		if err != nil {
 			code = http.StatusInternalServerError
