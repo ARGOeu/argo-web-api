@@ -44,6 +44,9 @@ type RecomputationsProfileTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
 	tenantdb                  string
+	tenantpassword            string
+	tenantusername            string
+	tenantstorename           string
 	clientkey                 string
 	respRecomputationsCreated string
 	respUnauthorized          string
@@ -88,10 +91,18 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
 		bson.M{"name": "Westeros",
-			"db_conf": bson.M{
-				"server":   "localhost",
-				"port":     27017,
-				"database": "argo_Westeros",
+			"db_conf": []bson.M{
+
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_Westeros1",
+				},
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_Westeros2",
+				},
 			},
 			"users": []bson.M{
 
@@ -108,10 +119,21 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			}})
 	c.Insert(
 		bson.M{"name": "EGI",
-			"db_conf": bson.M{
-				"server":   "localhost",
-				"port":     27017,
-				"database": suite.tenantdb,
+			"db_conf": []bson.M{
+
+				bson.M{
+					// "store":    "ar",
+					"server":   "localhost",
+					"port":     27017,
+					"database": suite.tenantdb,
+					"username": suite.tenantusername,
+					"password": suite.tenantpassword,
+				},
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_egi_metric_data",
+				},
 			},
 			"users": []bson.M{
 
@@ -126,7 +148,6 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
-
 	// Seed database with recomputations
 	c = session.DB(suite.tenantdb).C("recomputations")
 	c.Insert(
