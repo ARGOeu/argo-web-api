@@ -66,7 +66,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_Authentication"
+    db = "argo_core_test"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -147,10 +147,37 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
+	c = session.DB(suite.cfg.MongoDB.Db).C("authentication")
+	c.Insert(
+		bson.M{
+			"name" : "Igano Kabamaru",
+			"email" : "igano@kabamaru.io",
+			"api_key" : "makaronada",
+		},
+	)
+	c.Insert(
+		bson.M{
+			"name" : "Optimus Prime",
+			"email" : "prime@autobots.com",
+			"api_key" : "megatron_sucks",
+		},
+	)
+}
+
+// Test AuthenticateAdmin function
+func (suite *AuthenticationProfileTestSuite) TestAdminAuthentication() {
+
+	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
+	request.Header.Set("x-api-key", "megatron_is_a_fool")
+	suite.Equal(AuthenticateAdmin(request.Header, suite.cfg), false, "authetication problem")
+
+	request.Header.Set("x-api-key", "makaronada")
+	suite.Equal(AuthenticateAdmin(request.Header, suite.cfg), true, "authetication problem")
 
 }
 
-func (suite *AuthenticationProfileTestSuite) TestAuthentication() {
+// Test AuthenticateTenant function
+func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
