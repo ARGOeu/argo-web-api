@@ -35,7 +35,7 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 	docRoot := &ReadRoot{}
 	for _, row := range results {
 
-		// If poem array doesn't contain items add empty string to poem attribute
+		// If metricprofiles array doesn't contain items add empty string to metricprofiles attribute
 		if len(row.MetricProfiles) > 0 {
 			metricProfileName = row.MetricProfiles[0]
 		} else {
@@ -52,9 +52,10 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 		docRoot.Profile = append(docRoot.Profile, profile)
 		for _, group := range row.Groups {
 			or := &Or{}
-			for _, sf := range group {
+			for sf, op := range group.Services {
 				group := &Group{
 					ServiceFlavor: sf,
+          ServiceOperation: op,
 				}
 				or.Group = append(or.Group, group)
 			}
