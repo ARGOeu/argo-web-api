@@ -80,7 +80,6 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 	if len(results) == 0 {
 		return config.MongoConfig{}, errors.New("Unauthorized")
 	}
-
 	mongoConf := results[0]["db_conf"][0]
 	return mongoConf, nil
 }

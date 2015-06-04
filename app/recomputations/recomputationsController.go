@@ -36,6 +36,7 @@ import (
 	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
+// List all the current recomputation request from a specific tenantdb
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -46,18 +47,29 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	//TODO: change this to the actual tenantdb using a call
+	// tenantdb := get_tenant_db(r , cfg) where r is the http request
+	// that has the header x-api-key which needs to be checked
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	results := []RecomputationsInputOutput{}
-	err = mongo.Find(session, "AR", "recalculations", nil, "t", &results)
+	results := []MongoInterface{}
+	err = mongo.Find(session, tenantDbConfig.Db, "recomputations", nil, "timestamp", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -76,6 +88,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
+//Create handles new recomputation requests
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -89,64 +102,52 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
-	message := ""
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	//only authenticated requests triger the handling code
-	if authentication.Authenticate(r.Header, cfg) {
-
-		session, err := mongo.OpenSession(cfg.MongoDB)
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		err = r.ParseForm()
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		urlValues := r.Form
-		now := time.Now()
-
-		input := RecomputationsInputOutput{
-			urlValues.Get("start_time"),
-			urlValues.Get("end_time"),
-			urlValues.Get("reason"),
-			urlValues.Get("ngi_name"),
-			urlValues["exclude_site"],
-			"pending",
-			now.Format("2006-01-02 15:04:05"),
-			//urlValues["exclude_sf"],
-			//urlValues["exclude_end_point"],
-		}
-
-		query := insertQuery(input)
-		err = mongo.Insert(session, "AR", "recalculations", query)
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		mongo.CloseSession(session)
-		message = "A recalculation request has been filed"
-		output, err := messageXML(message) //Render the response into XML
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
-
-	} else {
+	if err != nil {
 		output = []byte(http.StatusText(http.StatusUnauthorized))
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	err = r.ParseForm()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	urlValues := r.Form
+	now := time.Now()
+	input := MongoInterface{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		urlValues.Get("reason"),
+		urlValues.Get("group"),
+		urlValues["exclude_site"],
+		"pending",
+		now.Format("2006-01-02 15:04:05"),
+	}
+
+	query := insertQuery(input)
+	err = mongo.Insert(session, tenantDbConfig.Db, "recomputations", query)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	message := "A recalculation request has been filed"
+	output, err = messageXML(message) //Render the response into XML
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+
 }
