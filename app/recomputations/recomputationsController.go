@@ -55,7 +55,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		code = http.StatusInternalServerError
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -66,7 +68,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	results := []InputOutput{}
+	results := []MongoInterface{}
 	err = mongo.Find(session, tenantDbConfig.Db, "recomputations", nil, "timestamp", &results)
 
 	if err != nil {
@@ -119,9 +121,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	urlValues := r.Form
-	fmt.Println(urlValues)
 	now := time.Now()
-	input := InputOutput{
+	input := MongoInterface{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("reason"),

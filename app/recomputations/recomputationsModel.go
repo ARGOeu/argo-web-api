@@ -32,8 +32,8 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// InputOutput struct used to retrieve recomputations from db
-type InputOutput struct {
+// MongoInterface struct used to retrieve recomputations from db
+type MongoInterface struct {
 	StartTime   string   `bson:"start_time"`
 	EndTime     string   `bson:"end_time"`
 	Reason      string   `bson:"reason"`
@@ -84,7 +84,7 @@ type Message struct {
 	Message string
 }
 
-func insertQuery(input InputOutput) bson.M {
+func insertQuery(input MongoInterface) bson.M {
 
 	query := bson.M{
 		"start_time": input.StartTime,

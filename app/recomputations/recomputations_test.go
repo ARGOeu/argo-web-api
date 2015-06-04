@@ -151,7 +151,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	// Seed database with recomputations
 	c = session.DB(suite.tenantdb).C("recomputations")
 	c.Insert(
-		InputOutput{
+		MongoInterface{
 			StartTime:   "2015-03-10T12:00:00Z",
 			EndTime:     "2015-03-30T23:00:00Z",
 			Reason:      "reasons",
@@ -162,7 +162,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 		},
 	)
 	c.Insert(
-		InputOutput{
+		MongoInterface{
 			StartTime:   "2015-01-10T12:00:00Z",
 			EndTime:     "2015-01-30T23:00:00Z",
 			Reason:      "power cuts",

@@ -31,7 +31,7 @@ import (
 	"encoding/xml"
 )
 
-func createView(results []InputOutput) ([]byte, error) {
+func createView(results []MongoInterface) ([]byte, error) {
 
 	docRoot := &Root{}
 
