@@ -50,6 +50,25 @@ type AvProfileTestSuite struct {
 	resp_bad_json       string
 }
 
+type ServiceIn struct {
+	ServiceSetIn map[string]string `bson:"services"`
+	Operator string                `bson:"operation"`
+}
+
+// Prepare maps for services and groups for ap1
+var apGroup1 = ServiceIn{ServiceSetIn: map[string]string{
+  "ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
+var apGroup2 = ServiceIn{ServiceSetIn: map[string]string{
+  "ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
+var profileGroup1 = map[string]ServiceIn{"compute": apGroup1, "storage": apGroup2}
+
+// Prepare maps for services and groups for ap2
+var apGroup3 = ServiceIn{ServiceSetIn: map[string]string{
+  "ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
+var apGroup4 = ServiceIn{ServiceSetIn: map[string]string{
+  "ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
+var profileGroup2 = map[string]ServiceIn{"compute": apGroup3, "storage": apGroup4}
+
 // Setup the Test Environment
 // This function runs before any test and setups the environment
 // A test configuration object is instantiated using a reference
@@ -106,17 +125,16 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	}
 	defer session.Close()
 
-	// Insert first seed profile
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	// Open DB session
+  c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+
+  // Insert first seed profile
 	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
-		"groups": [][]string{
-			[]string{"ap1-service1", "ap1-service2", "ap1-service3"},
-			[]string{"ap1-service4", "ap1-service5", "ap1-service6"}}})
-	// Insert first seed profile
+  "groups": profileGroup1})
+
+	// Insert second seed profile
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": [][]string{
-			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
-			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
+  "groups": profileGroup2})
 
 }
 
@@ -129,25 +147,32 @@ func (suite *AvProfileTestSuite) SetupTest() {
 func (suite *AvProfileTestSuite) TestCreateProfile() {
 
 	// create json input data for the request
-	post_data := `
-    {
-        "name": "fresh_test_profile",
-        "namespace": "test_namespace",
-        "metricprofiles": ["test_metricprofile"],
-        "groups": [
-            [
-               "service1",
-               "service2",
-               "service3"
-            ],
-            [
-                "service4",
-                "service5",
-                "service6"
-            ]
-        ]
-    }
-    `
+    post_data := `
+      {
+          "name": "fresh_test_profile",
+          "namespace": "test_namespace",
+          "metricprofiles": ["test_metricprofile"],
+          "groups" : {
+            "compute" : {
+              "services" : {
+                "service1" : "OR",
+                "service2" : "AND",
+                "service3" : "OR"
+                },
+                "operation" : "OR"
+                },
+                "storage" : {
+                  "services" : {
+                    "service4" : "AND",
+                    "service5" : "OR",
+                    "service6" : "AND"
+                    },
+                    "operation" : "OR"
+                  }
+                }
+
+      }
+      `
 	// Prepare the request object
 	request, _ := http.NewRequest("POST", "", strings.NewReader(post_data))
 	// add the content-type header to application/json
@@ -201,32 +226,32 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	id2 := (results.ID.Hex())
 	// Hold a string multiline literal including the two profile ids retrieved
-	profile_list_xml := ` <root>
+  profile_list_xml := ` <root>
    <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
      <AND>
        <OR>
-         <Group service_flavor="ap1-service1"></Group>
-         <Group service_flavor="ap1-service2"></Group>
-         <Group service_flavor="ap1-service3"></Group>
+         <Group service_flavor="ap1-service1" operation="OR"></Group>
+         <Group service_flavor="ap1-service2" operation="AND"></Group>
+         <Group service_flavor="ap1-service3" operation="AND"></Group>
        </OR>
        <OR>
-         <Group service_flavor="ap1-service4"></Group>
-         <Group service_flavor="ap1-service5"></Group>
-         <Group service_flavor="ap1-service6"></Group>
+         <Group service_flavor="ap1-service4" operation="AND"></Group>
+         <Group service_flavor="ap1-service5" operation="OR"></Group>
+         <Group service_flavor="ap1-service6" operation="AND"></Group>
        </OR>
      </AND>
    </profile>
    <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
      <AND>
        <OR>
-         <Group service_flavor="ap2-service1"></Group>
-         <Group service_flavor="ap2-service2"></Group>
-         <Group service_flavor="ap2-service3"></Group>
+         <Group service_flavor="ap2-service1" operation="OR"></Group>
+         <Group service_flavor="ap2-service2" operation="AND"></Group>
+         <Group service_flavor="ap2-service3" operation="AND"></Group>
        </OR>
        <OR>
-         <Group service_flavor="ap2-service4"></Group>
-         <Group service_flavor="ap2-service5"></Group>
-         <Group service_flavor="ap2-service6"></Group>
+         <Group service_flavor="ap2-service4" operation="AND"></Group>
+         <Group service_flavor="ap2-service5" operation="AND"></Group>
+         <Group service_flavor="ap2-service6" operation="OR"></Group>
        </OR>
      </AND>
    </profile>
@@ -239,6 +264,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
+
 	// Compare the expected and actual xml response
 	suite.Equal(profile_list_xml, string(output), "Response body mismatch")
 }
@@ -252,25 +278,30 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 	// We will make update to ap2 profile
-	put_data := `
-    {
-        "name": "updated-ap2",
-        "namespace": "updated-ap2-namespace",
-        "metricprofiles": ["updated-ap2-metricprofile"],
-        "groups": [
-            [
-               "updated-srv1",
-               "updated-srv2"
-            ],
-            [
-                "updated-srv3",
-                "updated-srv4",
-                "updated-srv5",
-                "updated-srv6"
-            ]
-        ]
-    }
-    `
+    put_data := `
+      {
+          "name": "updated-ap2",
+          "namespace": "updated-ap2-namespace",
+          "metricprofiles": ["updated-ap2-metricprofile"],
+          "groups" : {
+            "compute" : {
+              "services" : {
+                "updated-service1" : "OR",
+                "updated-service2" : "AND"
+                },
+                "operation" : "OR"
+                },
+                "storage" : {
+                  "services" : {
+                    "updated-service3" : "AND",
+                    "updated-service4" : "OR",
+                    "updated-service5" : "AND"
+                    },
+                    "operation" : "OR"
+                  }
+                }
+      }
+      `
 	// Read the id
 	// Open a session to mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -282,7 +313,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
-	// Query first seed profile - name:ap1
+	// Query first seed profile - name:ap2
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	// Grab from results ObjectId and convert it to string: Hex() method
 	id2 := (results.ID.Hex())
@@ -302,9 +333,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": [][]string{
-			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
-			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
+  "groups": profileGroup2})
 
 }
 
@@ -344,14 +373,14 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
    <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
      <AND>
        <OR>
-         <Group service_flavor="ap1-service1"></Group>
-         <Group service_flavor="ap1-service2"></Group>
-         <Group service_flavor="ap1-service3"></Group>
+         <Group service_flavor="ap1-service1" operation="OR"></Group>
+         <Group service_flavor="ap1-service2" operation="AND"></Group>
+         <Group service_flavor="ap1-service3" operation="AND"></Group>
        </OR>
        <OR>
-         <Group service_flavor="ap1-service4"></Group>
-         <Group service_flavor="ap1-service5"></Group>
-         <Group service_flavor="ap1-service6"></Group>
+         <Group service_flavor="ap1-service4" operation="AND"></Group>
+         <Group service_flavor="ap1-service5" operation="OR"></Group>
+         <Group service_flavor="ap1-service6" operation="AND"></Group>
        </OR>
      </AND>
    </profile>
@@ -378,13 +407,11 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(profile_list_xml, string(output), "Response body mismatch")
+	suite.Equal(profile_list_xml, string(output), "Response body not exptected")
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": [][]string{
-			[]string{"ap2-service1", "ap2-service2", "ap2-service3"},
-			[]string{"ap2-service4", "ap2-service5", "ap2-service6"}}})
+  "groups": profileGroup2})
 
 }
 
