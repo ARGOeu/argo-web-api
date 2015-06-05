@@ -24,13 +24,15 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package metricProfiles
 
 import (
 	"fmt"
+	"net/http"
+
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -46,15 +48,23 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	results := []PoemProfilesOutput{}
-	err = mongo.Find(session, "AR", "poem_list", nil, "p", &results)
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	results := []MongoInterface{}
+	err = mongo.Find(session, tenantDbConfig.Db, "metric_profiles", nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -68,7 +78,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	mongo.CloseSession(session)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }

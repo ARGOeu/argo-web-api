@@ -24,21 +24,17 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package metricProfiles
 
 import (
 	"encoding/xml"
 )
 
-func createView(results []PoemProfilesOutput) ([]byte, error) {
+func createView(results []MongoInterface) ([]byte, error) {
 
-	docRoot := &root{}
+	docRoot := &root{results}
 
-	for _, row := range results {
-		p := &Poem{}
-		p.Poem = row.Poem
-		docRoot.Poem = append(docRoot.Poem, p)
-	}
+	// docRoot.MetricProfiles = results
 
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err

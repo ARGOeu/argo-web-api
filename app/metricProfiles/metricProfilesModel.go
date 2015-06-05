@@ -24,16 +24,29 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
-
-type Poem struct {
-	Poem string `xml:"profile,attr"`
-}
+package metricProfiles
 
 type root struct {
-	Poem []*Poem
+	MetricProfiles []MongoInterface
 }
 
-type PoemProfilesOutput struct {
-	Poem string `bson:"p"`
+//MongoInterface to retrieve and insert metricProfiles in mongo
+type MongoInterface struct {
+	Name     string    `bson:"name" xml:"name,attr"`
+	Services []Service `bson:"services" xml:"services"`
+}
+
+//Service struct to represent services with their metrics
+type Service struct {
+	Service string   `bson:"service" xml:"service,attr"`
+	Metrics []string `bson:"metrics" xml:"metrics"`
+}
+
+//----------------------------
+type Metric struct {
+	Metric string `xml:"profile,attr"`
+}
+
+type MetricProfilesOutput struct {
+	Metric string `bson:"p"`
 }
