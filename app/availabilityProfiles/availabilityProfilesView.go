@@ -43,10 +43,10 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 		}
 
 		profile := &Profile{
-			ID:              row.ID.Hex(),
-			Name:            row.Name,
-			Namespace:       row.Namespace,
-			MetricProfile:   metricProfileName,
+			ID:            row.ID.Hex(),
+			Name:          row.Name,
+			Namespace:     row.Namespace,
+			MetricProfile: metricProfileName,
 		}
 		and := &And{}
 		docRoot.Profile = append(docRoot.Profile, profile)
@@ -54,8 +54,8 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 			or := &Or{}
 			for sf, op := range group.Services {
 				group := &Group{
-					ServiceFlavor: sf,
-                    ServiceOperation: op,
+					ServiceFlavor:    sf,
+					ServiceOperation: op,
 				}
 				or.Group = append(or.Group, group)
 			}

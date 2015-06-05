@@ -34,7 +34,7 @@ import (
 type Group struct {
 	XMLName          xml.Name
 	ServiceFlavor    string `xml:"service_flavor,attr"`
-    ServiceOperation string `xml:"operation,attr"`
+	ServiceOperation string `xml:"operation,attr"`
 }
 
 type Or struct {
@@ -48,12 +48,12 @@ type And struct {
 }
 
 type Profile struct {
-	XMLName            xml.Name `xml:"profile"`
-	ID                 string   `xml:"id,attr"`
-	Name               string   `xml:"name,attr"`
-	Namespace          string   `xml:"namespace,attr"`
-	MetricProfile      string   `xml:"metricprofiles,attr"`
-	And       *And
+	XMLName       xml.Name `xml:"profile"`
+	ID            string   `xml:"id,attr"`
+	Name          string   `xml:"name,attr"`
+	Namespace     string   `xml:"namespace,attr"`
+	MetricProfile string   `xml:"metricprofiles,attr"`
+	And           *And
 }
 
 type ReadRoot struct {
@@ -67,16 +67,16 @@ type Message struct {
 }
 
 type ServiceSetInput struct {
-    Services map[string]string `json:"services"`
-    Operation string           `json:"operation"`
+	Services  map[string]string `json:"services"`
+	Operation string            `json:"operation"`
 }
 
 //Struct for inserting data into DB
 type AvailabilityProfileInput struct {
-	Name               string                     `json:"name"`
-	Namespace          string                     `json:"namespace"`
-	Groups             map[string]ServiceSetInput `json:"groups"`
-	MetricProfiles     []string                   `json:"metricprofiles"`
+	Name           string                     `json:"name"`
+	Namespace      string                     `json:"namespace"`
+	Groups         map[string]ServiceSetInput `json:"groups"`
+	MetricProfiles []string                   `json:"metricprofiles"`
 }
 
 //Struct for searching based on name and namespace combination
@@ -86,17 +86,17 @@ type AvailabilityProfileSearch struct {
 }
 
 type ServiceSetOutput struct {
-    Services map[string]string `bson:"services"`
-    Operation string           `bson:"operation"`
+	Services  map[string]string `bson:"services"`
+	Operation string            `bson:"operation"`
 }
 
 //Struct for record retrieval
 type AvailabilityProfileOutput struct {
-	ID                 bson.ObjectId               `bson:"_id"`
-	Name               string                      `bson:"name"`
-	Namespace          string                      `bson:"namespace"`
-	Groups             map[string]ServiceSetOutput `bson:"groups"`
-	MetricProfiles     []string                    `bson:"metricprofiles"`
+	ID             bson.ObjectId               `bson:"_id"`
+	Name           string                      `bson:"name"`
+	Namespace      string                      `bson:"namespace"`
+	Groups         map[string]ServiceSetOutput `bson:"groups"`
+	MetricProfiles []string                    `bson:"metricprofiles"`
 }
 
 func prepareFilter(input AvailabilityProfileSearch) bson.M {
@@ -111,10 +111,10 @@ func prepareFilter(input AvailabilityProfileSearch) bson.M {
 
 func createOne(input AvailabilityProfileInput) bson.M {
 	query := bson.M{
-		"name":               input.Name,
-		"namespace":          input.Namespace,
-		"groups":             input.Groups,
-		"metricprofiles":     input.MetricProfiles,
+		"name":           input.Name,
+		"namespace":      input.Namespace,
+		"groups":         input.Groups,
+		"metricprofiles": input.MetricProfiles,
 	}
 	return query
 }

@@ -52,21 +52,21 @@ type AvProfileTestSuite struct {
 
 type ServiceIn struct {
 	ServiceSetIn map[string]string `bson:"services"`
-	Operator string                `bson:"operation"`
+	Operator     string            `bson:"operation"`
 }
 
 // Prepare maps for services and groups for ap1
 var apGroup1 = ServiceIn{ServiceSetIn: map[string]string{
-    "ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
+	"ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
 var apGroup2 = ServiceIn{ServiceSetIn: map[string]string{
-    "ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
+	"ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
 var profileGroup1 = map[string]ServiceIn{"compute": apGroup1, "storage": apGroup2}
 
 // Prepare maps for services and groups for ap2
 var apGroup3 = ServiceIn{ServiceSetIn: map[string]string{
-    "ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
+	"ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
 var apGroup4 = ServiceIn{ServiceSetIn: map[string]string{
-    "ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
+	"ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
 var profileGroup2 = map[string]ServiceIn{"compute": apGroup3, "storage": apGroup4}
 
 // Setup the Test Environment
@@ -126,15 +126,15 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	defer session.Close()
 
 	// Open DB session
-    c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
 
-    // Insert first seed profile
+	// Insert first seed profile
 	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
-    "groups": profileGroup1})
+		"groups": profileGroup1})
 
 	// Insert second seed profile
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-    "groups": profileGroup2})
+		"groups": profileGroup2})
 
 }
 
@@ -147,7 +147,7 @@ func (suite *AvProfileTestSuite) SetupTest() {
 func (suite *AvProfileTestSuite) TestCreateProfile() {
 
 	// create json input data for the request
-    post_data := `
+	post_data := `
       {
           "name": "fresh_test_profile",
           "namespace": "test_namespace",
@@ -226,7 +226,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	id2 := (results.ID.Hex())
 	// Hold a string multiline literal including the two profile ids retrieved
-    profile_list_xml := ` <root>
+	profile_list_xml := ` <root>
      <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
        <AND>
          <OR>
@@ -278,7 +278,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 	// We will make update to ap2 profile
-    put_data := `
+	put_data := `
       {
           "name": "updated-ap2",
           "namespace": "updated-ap2-namespace",
@@ -333,7 +333,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-    "groups": profileGroup2})
+		"groups": profileGroup2})
 
 }
 
@@ -411,7 +411,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-    "groups": profileGroup2})
+		"groups": profileGroup2})
 
 }
 
