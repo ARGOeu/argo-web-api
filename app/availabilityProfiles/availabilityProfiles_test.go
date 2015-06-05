@@ -41,13 +41,13 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type AvProfileTestSuite struct {
 	suite.Suite
-	cfg                 config.Config
-	resp_profileCreated string
-	resp_profileUpdated string
-	resp_profileDeleted string
-	resp_unauthorized   string
-	resp_no_id          string
-	resp_bad_json       string
+	cfg                config.Config
+	respProfileCreated string
+	respProfileUpdated string
+	respProfileDeleted string
+	respUnauthorized   string
+	respNoID           string
+	respBadJSON        string
 }
 
 type ServiceIn struct {
@@ -94,29 +94,29 @@ func (suite *AvProfileTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.resp_profileCreated = " <root>\n" +
+	suite.respProfileCreated = " <root>\n" +
 		"   <Message>Availability Profile record successfully created</Message>\n </root>"
 
-	suite.resp_profileUpdated = " <root>\n" +
+	suite.respProfileUpdated = " <root>\n" +
 		"   <Message>Availability Profile was successfully updated</Message>\n </root>"
 
-	suite.resp_profileDeleted = " <root>\n" +
+	suite.respProfileDeleted = " <root>\n" +
 		"   <Message>Availability Profile was successfully deleted</Message>\n </root>"
 
-	suite.resp_unauthorized = "Unauthorized"
+	suite.respUnauthorized = "Unauthorized"
 
-	suite.resp_no_id = " <root>\n" +
+	suite.respNoID = " <root>\n" +
 		"   <Message>No profile matching the requested id</Message>\n </root>"
 
-	suite.resp_bad_json = " <root>\n" +
+	suite.respBadJSON = " <root>\n" +
 		"   <Message>Malformated json input data</Message>\n </root>"
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg)
 
 	// Add authentication token to mongo testdb
-	seed_auth := bson.M{"apiKey": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seed_auth)
+	seedAuth := bson.M{"apiKey": "S3CR3T"}
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -147,7 +147,7 @@ func (suite *AvProfileTestSuite) SetupTest() {
 func (suite *AvProfileTestSuite) TestCreateProfile() {
 
 	// create json input data for the request
-	post_data := `
+	postData := `
       {
           "name": "fresh_test_profile",
           "namespace": "test_namespace",
@@ -174,7 +174,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
       }
       `
 	// Prepare the request object
-	request, _ := http.NewRequest("POST", "", strings.NewReader(post_data))
+	request, _ := http.NewRequest("POST", "", strings.NewReader(postData))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -184,7 +184,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 	code, _, output, _ := Create(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.resp_profileCreated, string(output), "Response body mismatch")
+	suite.Equal(suite.respProfileCreated, string(output), "Response body mismatch")
 
 	// Remove the profile not to contaminate other tests
 	// Open session to mongo
@@ -226,7 +226,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	id2 := (results.ID.Hex())
 	// Hold a string multiline literal including the two profile ids retrieved
-	profile_list_xml := ` <root>
+	profileListXML := ` <root>
      <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
        <AND>
          <OR>
@@ -266,7 +266,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	suite.Equal(200, code, "Internal Server Error")
 
 	// Compare the expected and actual xml response
-	suite.Equal(profile_list_xml, string(output), "Response body mismatch")
+	suite.Equal(profileListXML, string(output), "Response body mismatch")
 }
 
 // Testing update of a profile  using POST request.
@@ -278,7 +278,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 	// We will make update to ap2 profile
-	put_data := `
+	putData := `
       {
           "name": "updated-ap2",
           "namespace": "updated-ap2-namespace",
@@ -318,7 +318,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	// Grab from results ObjectId and convert it to string: Hex() method
 	id2 := (results.ID.Hex())
 	// Prepare the request object (use id2 for path)
-	request, _ := http.NewRequest("PUT", "/api/v1/AP/"+id2, strings.NewReader(put_data))
+	request, _ := http.NewRequest("PUT", "/api/v1/AP/"+id2, strings.NewReader(putData))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -328,7 +328,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.resp_profileUpdated, string(output), "Response body mismatch")
+	suite.Equal(suite.respProfileUpdated, string(output), "Response body mismatch")
 
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
@@ -369,7 +369,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	id2 := (results.ID.Hex())
 
 	// Prepare the expected xml response after deleting ap2
-	profile_list_xml := ` <root>
+	profileListXML := ` <root>
      <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
        <AND>
          <OR>
@@ -397,7 +397,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	code, _, output, _ := Delete(request, suite.cfg)
 	// Check proper response that the profile successfully deleted
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.resp_profileDeleted, string(output), "Response body mismatch")
+	suite.Equal(suite.respProfileDeleted, string(output), "Response body mismatch")
 
 	// Double-check that the profile is actually missing from the profile list
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
@@ -407,7 +407,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(profile_list_xml, string(output), "Response body not exptected")
+	suite.Equal(profileListXML, string(output), "Response body not exptected")
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
@@ -429,7 +429,7 @@ func (suite *AvProfileTestSuite) TestCreateUnauthorized() {
 	code, _, output, _ := Create(request, suite.cfg)
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.resp_unauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
 // This function tests calling the update profile request (PUT) and providing
@@ -446,7 +446,7 @@ func (suite *AvProfileTestSuite) TestUpdateUnauthorized() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.resp_unauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
 // This function tests calling the remove av.profile request (DELETE) and providing
@@ -463,7 +463,7 @@ func (suite *AvProfileTestSuite) TestDeleteUnauthorized() {
 	code, _, output, _ := Delete(request, suite.cfg)
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.resp_unauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
 // This function tests calling the update av.profile request (PUT) and providing
@@ -480,7 +480,7 @@ func (suite *AvProfileTestSuite) TestUpdateBadId() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.resp_no_id, string(output), "Response body mismatch")
+	suite.Equal(suite.respNoID, string(output), "Response body mismatch")
 }
 
 // This function tests calling the update av.profile request (DELETE) and providing
@@ -497,7 +497,7 @@ func (suite *AvProfileTestSuite) TestDeleteBadId() {
 	code, _, output, _ := Delete(request, suite.cfg)
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.resp_no_id, string(output), "Response body mismatch")
+	suite.Equal(suite.respNoID, string(output), "Response body mismatch")
 }
 
 // This function tests calling the create av.profile request (POST) and providing
@@ -530,7 +530,7 @@ func (suite *AvProfileTestSuite) TestCreateBadJson() {
 	code, _, output, _ := Create(request, suite.cfg)
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.resp_bad_json, string(output), "Response body mismatch")
+	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
 }
 
 // This function tests calling the update av.profile request (PUT) and providing
@@ -562,7 +562,7 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.resp_bad_json, string(output), "Response body mismatch")
+	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests

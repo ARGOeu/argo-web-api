@@ -31,22 +31,26 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+// Group struct to hold service flavor and operation xml attributes
 type Group struct {
 	XMLName          xml.Name
 	ServiceFlavor    string `xml:"service_flavor,attr"`
 	ServiceOperation string `xml:"operation,attr"`
 }
 
+// Or struct to represent operation based grouping
 type Or struct {
 	XMLName xml.Name `xml:"OR"`
 	Group   []*Group
 }
 
+// And struct to represent operation based grouping
 type And struct {
 	XMLName xml.Name `xml:"AND"`
 	Or      []*Or
 }
 
+// Profile struct to hold profile basic information
 type Profile struct {
 	XMLName       xml.Name `xml:"profile"`
 	ID            string   `xml:"id,attr"`
@@ -56,22 +60,25 @@ type Profile struct {
 	And           *And
 }
 
+// ReadRoot to wrap profiles
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
 	Profile []*Profile
 }
 
+// Message struct to hold the xml response
 type Message struct {
 	XMLName xml.Name `xml:"root"`
 	Message string
 }
 
+// ServiceSetInput struct to represent services hash map and operation inside groups
 type ServiceSetInput struct {
 	Services  map[string]string `json:"services"`
 	Operation string            `json:"operation"`
 }
 
-//Struct for inserting data into DB
+// AvailabilityProfileInput struct for inserting data into DB
 type AvailabilityProfileInput struct {
 	Name           string                     `json:"name"`
 	Namespace      string                     `json:"namespace"`
@@ -79,18 +86,19 @@ type AvailabilityProfileInput struct {
 	MetricProfiles []string                   `json:"metricprofiles"`
 }
 
-//Struct for searching based on name and namespace combination
+// AvailabilityProfileSearch struct for searching based on name and namespace combination
 type AvailabilityProfileSearch struct {
 	Name      []string
 	Namespace []string
 }
 
+// ServiceSetOutput struct to represent services hash map in MongoDB
 type ServiceSetOutput struct {
 	Services  map[string]string `bson:"services"`
 	Operation string            `bson:"operation"`
 }
 
-//Struct for record retrieval
+// AvailabilityProfileOutput struct for record retrieval
 type AvailabilityProfileOutput struct {
 	ID             bson.ObjectId               `bson:"_id"`
 	Name           string                      `bson:"name"`

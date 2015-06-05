@@ -37,6 +37,7 @@ import (
 	"strings"
 )
 
+// List an availability profile
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -93,6 +94,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
+// Create an availability profile
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -209,6 +211,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// Update an availability profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -304,6 +307,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// Delete an availability profile
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
