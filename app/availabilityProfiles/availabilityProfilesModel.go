@@ -34,7 +34,7 @@ import (
 type Group struct {
 	XMLName          xml.Name
 	ServiceFlavor    string `xml:"service_flavor,attr"`
-  ServiceOperation string `xml:"operation,attr"`
+    ServiceOperation string `xml:"operation,attr"`
 }
 
 type Or struct {
@@ -67,8 +67,8 @@ type Message struct {
 }
 
 type ServiceSetInput struct {
-  Services map[string]string `json:"services"`
-  Operation string           `json:"operation"`
+    Services map[string]string `json:"services"`
+    Operation string           `json:"operation"`
 }
 
 //Struct for inserting data into DB
@@ -86,8 +86,8 @@ type AvailabilityProfileSearch struct {
 }
 
 type ServiceSetOutput struct {
-  Services map[string]string `bson:"services"`
-  Operation string           `bson:"operation"`
+    Services map[string]string `bson:"services"`
+    Operation string           `bson:"operation"`
 }
 
 //Struct for record retrieval

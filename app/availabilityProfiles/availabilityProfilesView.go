@@ -55,7 +55,7 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 			for sf, op := range group.Services {
 				group := &Group{
 					ServiceFlavor: sf,
-          ServiceOperation: op,
+                    ServiceOperation: op,
 				}
 				or.Group = append(or.Group, group)
 			}

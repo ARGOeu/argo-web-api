@@ -57,16 +57,16 @@ type ServiceIn struct {
 
 // Prepare maps for services and groups for ap1
 var apGroup1 = ServiceIn{ServiceSetIn: map[string]string{
-  "ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
+    "ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
 var apGroup2 = ServiceIn{ServiceSetIn: map[string]string{
-  "ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
+    "ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
 var profileGroup1 = map[string]ServiceIn{"compute": apGroup1, "storage": apGroup2}
 
 // Prepare maps for services and groups for ap2
 var apGroup3 = ServiceIn{ServiceSetIn: map[string]string{
-  "ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
+    "ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
 var apGroup4 = ServiceIn{ServiceSetIn: map[string]string{
-  "ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
+    "ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
 var profileGroup2 = map[string]ServiceIn{"compute": apGroup3, "storage": apGroup4}
 
 // Setup the Test Environment
@@ -126,15 +126,15 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	defer session.Close()
 
 	// Open DB session
-  c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+    c := session.DB(suite.cfg.MongoDB.Db).C("aps")
 
-  // Insert first seed profile
+    // Insert first seed profile
 	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
-  "groups": profileGroup1})
+    "groups": profileGroup1})
 
 	// Insert second seed profile
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-  "groups": profileGroup2})
+    "groups": profileGroup2})
 
 }
 
@@ -226,35 +226,35 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	id2 := (results.ID.Hex())
 	// Hold a string multiline literal including the two profile ids retrieved
-  profile_list_xml := ` <root>
-   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
-     <AND>
-       <OR>
-         <Group service_flavor="ap1-service1" operation="OR"></Group>
-         <Group service_flavor="ap1-service2" operation="AND"></Group>
-         <Group service_flavor="ap1-service3" operation="AND"></Group>
-       </OR>
-       <OR>
-         <Group service_flavor="ap1-service4" operation="AND"></Group>
-         <Group service_flavor="ap1-service5" operation="OR"></Group>
-         <Group service_flavor="ap1-service6" operation="AND"></Group>
-       </OR>
-     </AND>
-   </profile>
-   <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
-     <AND>
-       <OR>
-         <Group service_flavor="ap2-service1" operation="OR"></Group>
-         <Group service_flavor="ap2-service2" operation="AND"></Group>
-         <Group service_flavor="ap2-service3" operation="AND"></Group>
-       </OR>
-       <OR>
-         <Group service_flavor="ap2-service4" operation="AND"></Group>
-         <Group service_flavor="ap2-service5" operation="AND"></Group>
-         <Group service_flavor="ap2-service6" operation="OR"></Group>
-       </OR>
-     </AND>
-   </profile>
+    profile_list_xml := ` <root>
+     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
+       <AND>
+         <OR>
+           <Group service_flavor="ap1-service1" operation="OR"></Group>
+           <Group service_flavor="ap1-service2" operation="AND"></Group>
+           <Group service_flavor="ap1-service3" operation="AND"></Group>
+         </OR>
+         <OR>
+           <Group service_flavor="ap1-service4" operation="AND"></Group>
+           <Group service_flavor="ap1-service5" operation="OR"></Group>
+           <Group service_flavor="ap1-service6" operation="AND"></Group>
+         </OR>
+       </AND>
+     </profile>
+     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
+       <AND>
+         <OR>
+           <Group service_flavor="ap2-service1" operation="OR"></Group>
+           <Group service_flavor="ap2-service2" operation="AND"></Group>
+           <Group service_flavor="ap2-service3" operation="AND"></Group>
+         </OR>
+         <OR>
+           <Group service_flavor="ap2-service4" operation="AND"></Group>
+           <Group service_flavor="ap2-service5" operation="AND"></Group>
+           <Group service_flavor="ap2-service6" operation="OR"></Group>
+         </OR>
+       </AND>
+     </profile>
  </root>`
 
 	// Prepare the request object
@@ -333,7 +333,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-  "groups": profileGroup2})
+    "groups": profileGroup2})
 
 }
 
@@ -370,20 +370,20 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Prepare the expected xml response after deleting ap2
 	profile_list_xml := ` <root>
-   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
-     <AND>
-       <OR>
-         <Group service_flavor="ap1-service1" operation="OR"></Group>
-         <Group service_flavor="ap1-service2" operation="AND"></Group>
-         <Group service_flavor="ap1-service3" operation="AND"></Group>
-       </OR>
-       <OR>
-         <Group service_flavor="ap1-service4" operation="AND"></Group>
-         <Group service_flavor="ap1-service5" operation="OR"></Group>
-         <Group service_flavor="ap1-service6" operation="AND"></Group>
-       </OR>
-     </AND>
-   </profile>
+     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
+       <AND>
+         <OR>
+           <Group service_flavor="ap1-service1" operation="OR"></Group>
+           <Group service_flavor="ap1-service2" operation="AND"></Group>
+           <Group service_flavor="ap1-service3" operation="AND"></Group>
+         </OR>
+         <OR>
+           <Group service_flavor="ap1-service4" operation="AND"></Group>
+           <Group service_flavor="ap1-service5" operation="OR"></Group>
+           <Group service_flavor="ap1-service6" operation="AND"></Group>
+         </OR>
+       </AND>
+     </profile>
  </root>`
 
 	// Prepare the request object (use id2 for path)
@@ -411,7 +411,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-  "groups": profileGroup2})
+    "groups": profileGroup2})
 
 }
 
