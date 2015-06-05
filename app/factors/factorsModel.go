@@ -36,6 +36,6 @@ type root struct {
 }
 
 type FactorsOutput struct {
-	Site   string  `bson:"s"`
-	Weight float64 `bson:"hs"`
+	Site   string  `bson:"name"`
+	Weight float64 `bson:"hepspec"`
 }
