@@ -44,7 +44,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	defer mongo.CloseSession(session)
 
 	results := []FactorsOutput{}
-	err = mongo.Find(session, tenantDbConfig.Db, "hepspec", nil, "s", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, "weights", nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError

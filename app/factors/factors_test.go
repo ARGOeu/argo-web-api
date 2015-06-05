@@ -98,10 +98,10 @@ func (suite *FactorsTestSuite) SetupTest() {
 	defer session.Close()
 
 	// Add a few factors in collection
-	c := session.DB(suite.tenantcfg.Db).C("hepspec")
-	c.Insert(bson.M{ "hs" : 14595, "s" : "CIEMAT-LCG2" })
-	c.Insert(bson.M{ "hs" : 1019, "s" : "CFP-IST" })
-	c.Insert(bson.M{ "hs" : 5406, "s" : "CETA-GRID" })
+	c := session.DB(suite.tenantcfg.Db).C("weights")
+	c.Insert(bson.M{ "hepspec" : 14595, "name" : "CIEMAT-LCG2" })
+	c.Insert(bson.M{ "hepspec" : 1019, "name" : "CFP-IST" })
+	c.Insert(bson.M{ "hepspec" : 5406, "name" : "CETA-GRID" })
 
 	mongo.CloseSession(session)
 
@@ -147,11 +147,11 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	}
 	defer session.Close()
 	// Open collection authentication
-	c = session.DB(suite.tenantcfg.Db).C("hepspec")
+	c = session.DB(suite.tenantcfg.Db).C("weights")
 	// Remove the specific entries inserted during this test
-	c.Remove(bson.M{"s": "CIEMAT-LCG2"})
-	c.Remove(bson.M{"s": "CFP-IST"})
-	c.Remove(bson.M{"s": "CETA-GRID"})
+	c.Remove(bson.M{"name": "CIEMAT-LCG2"})
+	c.Remove(bson.M{"name": "CFP-IST"})
+	c.Remove(bson.M{"name": "CETA-GRID"})
 }
 
 //TearDownTest to tear down every test
