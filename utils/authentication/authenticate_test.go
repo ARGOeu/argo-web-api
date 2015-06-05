@@ -66,7 +66,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argo_core_test"
+    db = "argo_core_test_authenticate"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)

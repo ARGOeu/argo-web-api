@@ -61,7 +61,7 @@ func (suite *FactorsTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argo_core_test"
+    db = "argo_core_test_factors"
 `
 	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
 	suite.resp_nokeyprovided = "404 page not found"
