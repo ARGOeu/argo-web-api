@@ -2,11 +2,14 @@ package factors
 
 import (
 	"fmt"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"net/http"
 )
 
+// List returns a list of factors (weights) per endpoint group (i.e. site)
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -20,15 +23,28 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	//TODO: change this to the actual tenantdb using a call
+	// tenantdb := get_tenant_db(r , cfg) where r is the http request
+	// that has the header x-api-key which needs to be checked
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer mongo.CloseSession(session)
 
 	results := []FactorsOutput{}
-	err = mongo.Find(session, "AR", "hepspec", nil, "p", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, "hepspec", nil, "s", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError

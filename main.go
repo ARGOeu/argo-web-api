@@ -87,7 +87,7 @@ func main() {
 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
 
-	getSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
+	authGetSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
 
 	//Status
 	getSubrouter.HandleFunc("/api/v1/status/metrics/timeline/{group}", Respond(statusDetail.List))

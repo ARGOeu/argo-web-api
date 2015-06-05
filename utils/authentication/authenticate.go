@@ -104,6 +104,7 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 
 	var results []map[string][]config.MongoConfig
 	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
+	mongo.CloseSession(session)
 
 	if len(results) == 0 {
 		return config.MongoConfig{}, errors.New("Unauthorized")
