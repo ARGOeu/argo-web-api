@@ -66,15 +66,10 @@ func (suite *FactorsTestSuite) SetupTest() {
 	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
 	suite.resp_nokeyprovided = "404 page not found"
 	suite.resp_unauthorized = "Unauthorized"
-	suite.resp_factorsList = `<root>
- <Factor site="CETA-GRID" weight="5406"></Factor>
- <Factor site="CFP-IST" weight="1019"></Factor>
- <Factor site="CIEMAT-LCG2" weight="14595"></Factor>
-</root>`
 
 	// Connect to mongo coredb
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	defer session.Close()
+	defer mongo.CloseSession(session)
 
 	// Add authentication token to mongo coredb
 	seed_auth := bson.M{"name" : "TEST",
@@ -95,7 +90,7 @@ func (suite *FactorsTestSuite) SetupTest() {
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	defer mongo.CloseSession(session)
 
 	// Add a few factors in collection
 	c := session.DB(suite.tenantcfg.Db).C("weights")
@@ -103,11 +98,15 @@ func (suite *FactorsTestSuite) SetupTest() {
 	c.Insert(bson.M{ "hepspec" : 1019, "name" : "CFP-IST" })
 	c.Insert(bson.M{ "hepspec" : 5406, "name" : "CETA-GRID" })
 
-	mongo.CloseSession(session)
-
 }
 
 func (suite *FactorsTestSuite) TestListFactors() {
+
+	suite.resp_factorsList = `<root>
+ <Factor site="CETA-GRID" weight="5406"></Factor>
+ <Factor site="CFP-IST" weight="1019"></Factor>
+ <Factor site="CIEMAT-LCG2" weight="14595"></Factor>
+</root>`
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "/api/v1/factors", strings.NewReader(""))
@@ -129,11 +128,11 @@ func (suite *FactorsTestSuite) TestListFactors() {
 
 	// Remove the test data from core db not to contaminate other tests
 	// Open session to core mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	defer mongo.CloseSession(session)
 	// Open collection authentication
 	c := session.DB(suite.cfg.MongoDB.Db).C("authentication")
 	// Remove the specific entries inserted during this test
@@ -145,7 +144,7 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	defer mongo.CloseSession(session)
 	// Open collection authentication
 	c = session.DB(suite.tenantcfg.Db).C("weights")
 	// Remove the specific entries inserted during this test

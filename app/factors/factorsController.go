@@ -23,9 +23,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	//TODO: change this to the actual tenantdb using a call
-	// tenantdb := get_tenant_db(r , cfg) where r is the http request
-	// that has the header x-api-key which needs to be checked
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
