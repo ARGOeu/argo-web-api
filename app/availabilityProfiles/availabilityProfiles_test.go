@@ -89,18 +89,42 @@ type ServiceIn struct {
 }
 
 // Prepare maps for services and groups for ap1
-var apGroup1 = ServiceIn{ServiceSetIn: map[string]string{
-	"ap1-service1": "OR", "ap1-service2": "AND", "ap1-service3": "AND"}, Operator: "OR"}
-var apGroup2 = ServiceIn{ServiceSetIn: map[string]string{
-	"ap1-service4": "AND", "ap1-service5": "OR", "ap1-service6": "AND"}, Operator: "AND"}
-var profileGroup1 = map[string]ServiceIn{"compute": apGroup1, "storage": apGroup2}
+var apGroup1 = ServiceIn{
+	ServiceSetIn: map[string]string{
+		"ap1-service1": "OR",
+		"ap1-service2": "AND",
+		"ap1-service3": "AND"},
+	Operator: "OR"}
+
+var apGroup2 = ServiceIn{
+	ServiceSetIn: map[string]string{
+		"ap1-service4": "AND",
+		"ap1-service5": "OR",
+		"ap1-service6": "AND"},
+	Operator: "AND"}
+
+var profileGroup1 = map[string]ServiceIn{
+	"compute": apGroup1,
+	"storage": apGroup2}
 
 // Prepare maps for services and groups for ap2
-var apGroup3 = ServiceIn{ServiceSetIn: map[string]string{
-	"ap2-service1": "OR", "ap2-service2": "AND", "ap2-service3": "AND"}, Operator: "OR"}
-var apGroup4 = ServiceIn{ServiceSetIn: map[string]string{
-	"ap2-service4": "AND", "ap2-service5": "AND", "ap2-service6": "OR"}, Operator: "OR"}
-var profileGroup2 = map[string]ServiceIn{"compute": apGroup3, "storage": apGroup4}
+var apGroup3 = ServiceIn{
+	ServiceSetIn: map[string]string{
+		"ap2-service1": "OR",
+		"ap2-service2": "AND",
+		"ap2-service3": "AND"},
+	Operator: "OR"}
+
+var apGroup4 = ServiceIn{
+	ServiceSetIn: map[string]string{
+		"ap2-service4": "AND",
+		"ap2-service5": "AND",
+		"ap2-service6": "OR"},
+	Operator: "OR"}
+
+var profileGroup2 = map[string]ServiceIn{
+	"compute": apGroup3,
+	"storage": apGroup4}
 
 // Setup the Test Environment
 // This function runs before any test and setups the environment
@@ -162,12 +186,24 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
 
 	// Insert first seed profile
-	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
-		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup1})
+	c.Insert(
+		bson.M{"name": "ap1",
+			"namespace":        "namespace1",
+			"metricprofiles":   []string{"metricprofile01"},
+			"endpointgroup":    "sites",
+			"metricoperation":  "AND",
+			"profileoperation": "AND",
+			"groups":           profileGroup1})
 
 	// Insert second seed profile
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
+	c.Insert(
+		bson.M{"name": "ap2",
+			"namespace":        "namespace2",
+			"metricprofiles":   []string{"metricprofile02"},
+			"endpointgroup":    "sites",
+			"metricoperation":  "AND",
+			"profileoperation": "AND",
+			"groups":           profileGroup2})
 
 }
 
@@ -383,8 +419,14 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
+	c.Insert(
+		bson.M{"name": "ap2",
+			"namespace":        "namespace2",
+			"metricprofiles":   []string{"metricprofile02"},
+			"endpointgroup":    "sites",
+			"metricoperation":  "AND",
+			"profileoperation": "AND",
+			"groups":           profileGroup2})
 
 }
 
@@ -476,8 +518,14 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	}
 
 	// Reestablish ap2 profile (reinsert)
-	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
+	c.Insert(
+		bson.M{"name": "ap2",
+			"namespace":        "namespace2",
+			"metricprofiles":   []string{"metricprofile02"},
+			"endpointgroup":    "sites",
+			"metricoperation":  "AND",
+			"profileoperation": "AND",
+			"groups":           profileGroup2})
 
 }
 
@@ -637,7 +685,6 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 func (suite *AvProfileTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
 	session.DB("AR_test").DropDatabase()
 
 }
