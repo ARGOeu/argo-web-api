@@ -43,10 +43,13 @@ func createView(results []AvailabilityProfileOutput) ([]byte, error) {
 		}
 
 		profile := &Profile{
-			ID:            row.ID.Hex(),
-			Name:          row.Name,
-			Namespace:     row.Namespace,
-			MetricProfile: metricProfileName,
+			ID:               row.ID.Hex(),
+			Name:             row.Name,
+			Namespace:        row.Namespace,
+			MetricProfile:    metricProfileName,
+			EndpointGroup:    row.EndpointGroup,
+			MetricOperation:  row.MetricOperation,
+			ProfileOperation: row.ProfileOperation,
 		}
 		and := &And{}
 		docRoot.Profile = append(docRoot.Profile, profile)

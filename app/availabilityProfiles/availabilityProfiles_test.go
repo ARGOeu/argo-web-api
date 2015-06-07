@@ -66,12 +66,15 @@ type Andtest struct {
 	Ors     []Ortest `xml:"OR"`
 }
 type Profiletest struct {
-	XMLName       xml.Name `xml:"profile"`
-	ID            string   `xml:"id,attr"`
-	Name          string   `xml:"name,attr"`
-	Namespace     string   `xml:"namespace,attr"`
-	MetricProfile string   `xml:"metricprofiles,attr"`
-	Ands          Andtest
+	XMLName          xml.Name `xml:"profile"`
+	ID               string   `xml:"id,attr"`
+	Name             string   `xml:"name,attr"`
+	Namespace        string   `xml:"namespace,attr"`
+	MetricProfile    string   `xml:"metricprofiles,attr"`
+	EndpointGroup    string   `xml:"endpointgroup,attr"`
+	MetricOperation  string   `xml:"metricoperation,attr"`
+	ProfileOperation string   `xml:"profileoperation,attr"`
+	Ands             Andtest
 }
 
 type Resulttest struct {
@@ -160,11 +163,11 @@ func (suite *AvProfileTestSuite) SetupTest() {
 
 	// Insert first seed profile
 	c.Insert(bson.M{"name": "ap1", "namespace": "namespace1", "metricprofiles": []string{"metricprofile01"},
-		"groups": profileGroup1})
+		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup1})
 
 	// Insert second seed profile
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": profileGroup2})
+		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
 
 }
 
@@ -182,6 +185,9 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
           "name": "fresh_test_profile",
           "namespace": "test_namespace",
           "metricprofiles": ["test_metricprofile"],
+          "endpointgroup": "sites",
+          "metricoperation": "AND",
+          "profileoperation": "AND",
           "groups" : {
             "compute" : {
               "services" : {
@@ -258,7 +264,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	// Hold a string multiline literal including the two profile ids retrieved.
 	// This would be the representation for the XML expected schema.
 	schema := ` <root>
-	     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
+	     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
 	       <AND>
 	         <OR>
 	           <Group></Group>
@@ -272,7 +278,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	         </OR>
 	       </AND>
 	     </profile>
-	     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
+	     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
 	       <AND>
 	         <OR>
 	           <Group></Group>
@@ -327,6 +333,9 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
           "name": "updated-ap2",
           "namespace": "updated-ap2-namespace",
           "metricprofiles": ["updated-ap2-metricprofile"],
+          "endpointgroup": "sites",
+          "metricoperation": "AND",
+          "profileoperation": "AND",
           "groups" : {
             "compute" : {
               "services" : {
@@ -375,7 +384,7 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	// Reestablish ap2 profile (remove and reinsert)
 	c.Remove(bson.M{"name": "ap2"})
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": profileGroup2})
+		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
 
 }
 
@@ -412,7 +421,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Prepare the expected xml response after deleting ap2
 	schema := ` <root>
-     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
+     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
        <AND>
          <OR>
            <Group></Group>
@@ -468,7 +477,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
-		"groups": profileGroup2})
+		"endpointgroup": "sites", "metricoperation": "AND", "profileoperation": "AND", "groups": profileGroup2})
 
 }
 
