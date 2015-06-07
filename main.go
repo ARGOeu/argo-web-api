@@ -28,6 +28,10 @@ package main
 
 import (
 	"crypto/tls"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
 	"github.com/argoeu/argo-web-api/app/factors"
 	"github.com/argoeu/argo-web-api/app/ngiAvailability"
@@ -42,9 +46,6 @@ import (
 	"github.com/argoeu/argo-web-api/app/statusSites"
 	"github.com/argoeu/argo-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 func main() {

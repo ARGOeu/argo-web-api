@@ -112,7 +112,7 @@ func (suite *AvProfileTestSuite) SetupTest() {
 		"   <Message>Malformated json input data</Message>\n </root>"
 
 	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg)
+	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"apiKey": "S3CR3T"}
@@ -570,7 +570,7 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 // Mainly it's purpose is to drop the testdb
 func (suite *AvProfileTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg)
+	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	session.DB("AR_test").DropDatabase()
 
