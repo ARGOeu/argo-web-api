@@ -28,12 +28,15 @@ package availabilityProfiles
 
 import (
 	"code.google.com/p/gcfg"
+	"encoding/xml"
+	"fmt"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -50,6 +53,33 @@ type AvProfileTestSuite struct {
 	respBadJSON        string
 }
 
+// Test structs to represent the expected XML schema
+type Grouptest struct {
+	XMLName xml.Name
+}
+type Ortest struct {
+	XMLName xml.Name    `xml:"OR"`
+	Groups  []Grouptest `xml:"Group"`
+}
+type Andtest struct {
+	XMLName xml.Name `xml:"AND"`
+	Ors     []Ortest `xml:"OR"`
+}
+type Profiletest struct {
+	XMLName       xml.Name `xml:"profile"`
+	ID            string   `xml:"id,attr"`
+	Name          string   `xml:"name,attr"`
+	Namespace     string   `xml:"namespace,attr"`
+	MetricProfile string   `xml:"metricprofiles,attr"`
+	Ands          Andtest
+}
+
+type Resulttest struct {
+	XMLName      xml.Name      `xml:"root"`
+	Profiletests []Profiletest `xml:"profile"`
+}
+
+//  ServiceIn struct to represent maps of sercices stored in MongoDB
 type ServiceIn struct {
 	ServiceSetIn map[string]string `bson:"services"`
 	Operator     string            `bson:"operation"`
@@ -225,48 +255,62 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	// Query second seed profile - name:ap2
 	c.Find(bson.M{"name": "ap2"}).One(&results)
 	id2 := (results.ID.Hex())
-	// Hold a string multiline literal including the two profile ids retrieved
-	profileListXML := ` <root>
-     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
-       <AND>
-         <OR>
-           <Group service_flavor="ap1-service1" operation="OR"></Group>
-           <Group service_flavor="ap1-service2" operation="AND"></Group>
-           <Group service_flavor="ap1-service3" operation="AND"></Group>
-         </OR>
-         <OR>
-           <Group service_flavor="ap1-service4" operation="AND"></Group>
-           <Group service_flavor="ap1-service5" operation="OR"></Group>
-           <Group service_flavor="ap1-service6" operation="AND"></Group>
-         </OR>
-       </AND>
-     </profile>
-     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
-       <AND>
-         <OR>
-           <Group service_flavor="ap2-service1" operation="OR"></Group>
-           <Group service_flavor="ap2-service2" operation="AND"></Group>
-           <Group service_flavor="ap2-service3" operation="AND"></Group>
-         </OR>
-         <OR>
-           <Group service_flavor="ap2-service4" operation="AND"></Group>
-           <Group service_flavor="ap2-service5" operation="AND"></Group>
-           <Group service_flavor="ap2-service6" operation="OR"></Group>
-         </OR>
-       </AND>
-     </profile>
- </root>`
+	// Hold a string multiline literal including the two profile ids retrieved.
+	// This would be the representation for the XML expected schema.
+	schema := ` <root>
+	     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
+	       <AND>
+	         <OR>
+	           <Group></Group>
+	           <Group></Group>
+	           <Group></Group>
+	         </OR>
+	         <OR>
+	           <Group></Group>
+	           <Group></Group>
+	           <Group></Group>
+	         </OR>
+	       </AND>
+	     </profile>
+	     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02">
+	       <AND>
+	         <OR>
+	           <Group></Group>
+	           <Group></Group>
+	           <Group></Group>
+	         </OR>
+	         <OR>
+	           <Group></Group>
+	           <Group></Group>
+	           <Group></Group>
+	         </OR>
+	       </AND>
+	     </profile>
+	<root>`
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
-
 	// Pass request to controller calling List() handler method
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
+	// Unmarshal the produced XML using the test structs
+	v := &Resulttest{}
+	xmlErr := xml.Unmarshal(output, v)
+	// Unmarshal the test schema that will be used in the comparison
+	d := &Resulttest{}
+	_ = xml.Unmarshal([]byte(schema), d)
 
-	// Compare the expected and actual xml response
-	suite.Equal(profileListXML, string(output), "Response body mismatch")
+	if xmlErr != nil {
+		fmt.Printf("error: %v", xmlErr)
+		suite.Fail("Unmarshal error: ", xmlErr.Error())
+	}
+
+	// Compare the expected and actual xml schema
+	cmp := reflect.DeepEqual(v, d)
+	if cmp != true {
+		suite.Fail("XML schema mismatch")
+	}
 }
 
 // Testing update of a profile  using POST request.
@@ -323,10 +367,8 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "S3CR3T")
-
 	// Execute the request in the controller
 	code, _, output, _ := Update(request, suite.cfg)
-
 	suite.Equal(200, code, "Internal Server Error")
 	suite.Equal(suite.respProfileUpdated, string(output), "Response body mismatch")
 
@@ -369,18 +411,18 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	id2 := (results.ID.Hex())
 
 	// Prepare the expected xml response after deleting ap2
-	profileListXML := ` <root>
+	schema := ` <root>
      <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01">
        <AND>
          <OR>
-           <Group service_flavor="ap1-service1" operation="OR"></Group>
-           <Group service_flavor="ap1-service2" operation="AND"></Group>
-           <Group service_flavor="ap1-service3" operation="AND"></Group>
+           <Group></Group>
+           <Group></Group>
+           <Group></Group>
          </OR>
          <OR>
-           <Group service_flavor="ap1-service4" operation="AND"></Group>
-           <Group service_flavor="ap1-service5" operation="OR"></Group>
-           <Group service_flavor="ap1-service6" operation="AND"></Group>
+           <Group></Group>
+           <Group></Group>
+           <Group></Group>
          </OR>
        </AND>
      </profile>
@@ -406,8 +448,23 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	code, _, output, _ = List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(profileListXML, string(output), "Response body not exptected")
+	// Unmarshal the produced XML using the test structs
+	v := &Resulttest{}
+	xmlErr := xml.Unmarshal(output, v)
+	// Unmarshal the test schema that will be used in the comparison
+	d := &Resulttest{}
+	_ = xml.Unmarshal([]byte(schema), d)
+
+	if xmlErr != nil {
+		fmt.Printf("error: %v", xmlErr)
+		suite.Fail("Unmarshal error: ", xmlErr.Error())
+	}
+
+	// Compare the expected and actual xml schema
+	cmp := reflect.DeepEqual(v, d)
+	if cmp != true {
+		suite.Fail("XML schema mismatch")
+	}
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(bson.M{"name": "ap2", "namespace": "namespace2", "metricprofiles": []string{"metricprofile02"},
