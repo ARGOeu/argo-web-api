@@ -65,7 +65,7 @@ func FindAndProject(session *mgo.Session, dbName string, collectionName string, 
 	return err
 }
 
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
+func Insert(session *mgo.Session, dbName string, collectionName string, query interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)
 	err := c.Insert(query)

@@ -27,7 +27,6 @@
 package metricProfiles
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -35,6 +34,8 @@ import (
 	"code.google.com/p/gcfg"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
@@ -43,6 +44,7 @@ import (
 type MetricProfilesTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
+	router                    mux.Router
 	tenantDbConf              config.MongoConfig
 	clientkey                 string
 	respRecomputationsCreated string
@@ -62,7 +64,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_metric_profiles"
+    db = "AR_test_core_metric_profiles"
     `
 
 	suite.respUnauthorized = "Unauthorized"
@@ -196,17 +198,16 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 
 }
 
+//TestListMetricProfiles tests the correct formatting when listing Metric Profiles
 func (suite *MetricProfilesTestSuite) TestListMetricProfiles() {
 
-	request, _ := http.NewRequest("POST", "/api/v1/recomputations", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 
 	code, _, output, _ := List(request, suite.cfg)
 
-	fmt.Println(string(output))
-
 	metricProfileRequestXML := `<root>
- <MetricProfiles name="ch.cern.SAM.ROC">
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
   <services service="CREAM-CE">
    <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
    <metrics>emi.wn.WN-Bi</metrics>
@@ -226,7 +227,7 @@ func (suite *MetricProfilesTestSuite) TestListMetricProfiles() {
    <metrics>org.sam.SRM-Put</metrics>
   </services>
  </MetricProfiles>
- <MetricProfiles name="ch.cern.SAM.ROC_CRITICAL">
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC_CRITICAL">
   <services service="CREAM-CE">
    <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
    <metrics>emi.wn.WN-Bi</metrics>
@@ -249,7 +250,234 @@ func (suite *MetricProfilesTestSuite) TestListMetricProfiles() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(metricProfileRequestXML, string(output), "Response body mismatch")
+	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+}
+
+func (suite *MetricProfilesTestSuite) TestCreateMetricProfiles() {
+
+	postData := `
+	{
+	"name" : "ch.cern.BOB.ROCK_AND_ROLL",
+	"services" : [
+		{ "service" : "CREAM-CE",
+		  "metrics" : ["emi.cream.CREAMCE-JobSubmit", "emi.wn.WN-Bi", "emi.wn.WN-Cs"]
+		},
+		{
+		  "service" : "SRMv2",
+		  "metrics" : ["org.sam.SRM-Del","org.sam.SRM-Get","org.sam.SRM-GetSURLs"]
+		}
+	]}`
+
+	request, _ := http.NewRequest("POST", "/api/v1/metric_profiles", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	code, _, output, _ := Create(request, suite.cfg)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal("Metric profile successfully inserted", string(output), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	code, _, output, _ = List(request, suite.cfg)
+
+	metricProfileRequestXML := `<root>
+ <MetricProfiles id=".*" name="ch.cern.BOB.ROCK_AND_ROLL">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Cs</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+  </services>
+ </MetricProfiles>
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Csh</metrics>
+   <metrics>hr.srce.CADist-Check</metrics>
+   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
+   <metrics>emi.wn.WN-SoftVer</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>hr.srce.SRM2-CertLifetime</metrics>
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+   <metrics>org.sam.SRM-GetTURLs</metrics>
+   <metrics>org.sam.SRM-Ls</metrics>
+   <metrics>org.sam.SRM-LsDir</metrics>
+   <metrics>org.sam.SRM-Put</metrics>
+  </services>
+ </MetricProfiles>
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC_CRITICAL">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Csh</metrics>
+   <metrics>emi.wn.WN-SoftVer</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>hr.srce.SRM2-CertLifetime</metrics>
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+   <metrics>org.sam.SRM-GetTURLs</metrics>
+   <metrics>org.sam.SRM-Ls</metrics>
+   <metrics>org.sam.SRM-LsDir</metrics>
+   <metrics>org.sam.SRM-Put</metrics>
+  </services>
+ </MetricProfiles>
+</root>`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdateMetricProfiles() {
+
+	putData := `
+	{
+	"name" : "ch.cern.BOB.ROCK_AND_ROLL",
+	"services" : [
+		{ "service" : "CREAM-CE",
+		  "metrics" : ["emi.cream.CREAMCE-JobSubmit", "emi.wn.WN-Bi", "emi.wn.WN-Cs"]
+		},
+		{
+		  "service" : "SRMv2",
+		  "metrics" : ["org.sam.SRM-Del","org.sam.SRM-Get","org.sam.SRM-GetSURLs"]
+		}
+	]}`
+
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+
+	if err != nil {
+		panic(err)
+	}
+	defer mongo.CloseSession(session)
+
+	result := MongoInterface{}
+	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.Find(bson.M{}).One(&result)
+
+	request, _ := http.NewRequest("PUT", "/api/v1/metric_profiles/"+result.ID.Hex(), strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	context.Set(request, "id", result.ID.Hex())
+	code, _, output, _ := Update(request, suite.cfg)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal("Metric profile successfully updated", string(output), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	code, _, output, _ = List(request, suite.cfg)
+
+	metricProfileRequestXML := `<root>
+ <MetricProfiles id=".*" name="ch.cern.BOB.ROCK_AND_ROLL">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Cs</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+  </services>
+ </MetricProfiles>
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Csh</metrics>
+   <metrics>hr.srce.CADist-Check</metrics>
+   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
+   <metrics>emi.wn.WN-SoftVer</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>hr.srce.SRM2-CertLifetime</metrics>
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+   <metrics>org.sam.SRM-GetTURLs</metrics>
+   <metrics>org.sam.SRM-Ls</metrics>
+   <metrics>org.sam.SRM-LsDir</metrics>
+   <metrics>org.sam.SRM-Put</metrics>
+  </services>
+ </MetricProfiles>
+</root>`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestDeleteMetricProfiles() {
+
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+
+	if err != nil {
+		panic(err)
+	}
+	defer mongo.CloseSession(session)
+
+	result := MongoInterface{}
+	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.Find(bson.M{}).One(&result)
+
+	request, _ := http.NewRequest("DELETE", "/api/v1/metric_profiles/"+result.ID.Hex(), strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	// context.Set(request, "id", result.ID.Hex())
+	code, _, output, _ := Delete(request, suite.cfg)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal("Metric profile successfully removed", string(output), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	code, _, output, _ = List(request, suite.cfg)
+
+	metricProfileRequestXML := `<root>
+ <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
+  <services service="CREAM-CE">
+   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
+   <metrics>emi.wn.WN-Bi</metrics>
+   <metrics>emi.wn.WN-Csh</metrics>
+   <metrics>hr.srce.CADist-Check</metrics>
+   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
+   <metrics>emi.wn.WN-SoftVer</metrics>
+  </services>
+  <services service="SRMv2">
+   <metrics>hr.srce.SRM2-CertLifetime</metrics>
+   <metrics>org.sam.SRM-Del</metrics>
+   <metrics>org.sam.SRM-Get</metrics>
+   <metrics>org.sam.SRM-GetSURLs</metrics>
+   <metrics>org.sam.SRM-GetTURLs</metrics>
+   <metrics>org.sam.SRM-Ls</metrics>
+   <metrics>org.sam.SRM-LsDir</metrics>
+   <metrics>org.sam.SRM-Put</metrics>
+  </services>
+ </MetricProfiles>
+</root>`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+
 }
 
 //TearDownTest to tear down every test

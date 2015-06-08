@@ -35,6 +35,9 @@ func createView(results []MongoInterface) ([]byte, error) {
 	docRoot := &root{results}
 
 	// docRoot.MetricProfiles = results
+	for i := range results {
+		results[i].OutID = results[i].ID.Hex()
+	}
 
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
