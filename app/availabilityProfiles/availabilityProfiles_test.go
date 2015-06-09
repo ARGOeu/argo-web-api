@@ -272,6 +272,15 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 
 }
 
+// TODO: The TestReadProfile function will be refactored in future releases.
+// The GO runtime randmonizes the map iteration order.
+// So when we try to compare the produced xml view
+// with a static one declared in unit test it always fails
+// because the xml attributes' order is random.
+// For now we use two tests. One to check if the XML structure is the desired one
+// and the XML can be unmarshaled using the test structs,
+// and a comparizon between the XMLs as strings using regex to match the actual attributes values.
+
 // Testing Reading of profile list using GET request.
 // During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
@@ -300,35 +309,35 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	// Hold a string multiline literal including the two profile ids retrieved.
 	// This would be the representation for the XML expected schema.
 	schema := ` <root>
-	     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
-	       <AND>
-	         <OR>
-	           <Group></Group>
-	           <Group></Group>
-	           <Group></Group>
-	         </OR>
-	         <OR>
-	           <Group></Group>
-	           <Group></Group>
-	           <Group></Group>
-	         </OR>
-	       </AND>
-	     </profile>
-	     <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
-	       <AND>
-	         <OR>
-	           <Group></Group>
-	           <Group></Group>
-	           <Group></Group>
-	         </OR>
-	         <OR>
-	           <Group></Group>
-	           <Group></Group>
-	           <Group></Group>
-	         </OR>
-	       </AND>
-	     </profile>
-	<root>`
+   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
+     <AND>
+       <OR>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+       <OR>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+     </AND>
+   </profile>
+   <profile id="` + id2 + `" name="ap2" namespace="namespace2" metricprofiles="metricprofile02" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
+     <AND>
+       <OR>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+       <OR>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap2-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+     </AND>
+   </profile>
+ </root>`
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -338,7 +347,9 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Unmarshal the produced XML using the test structs
 	v := &Resulttest{}
+
 	xmlErr := xml.Unmarshal(output, v)
+
 	// Unmarshal the test schema that will be used in the comparison
 	d := &Resulttest{}
 	_ = xml.Unmarshal([]byte(schema), d)
@@ -348,7 +359,10 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 		suite.Fail("Unmarshal error: ", xmlErr.Error())
 	}
 
-	// Compare the expected and actual xml schema
+	// Compare the expected and actual XML result
+	suite.Regexp(schema, string(output), "Response body mismatch")
+
+	// Compare only the structure of the XML
 	cmp := reflect.DeepEqual(v, d)
 	if cmp != true {
 		suite.Fail("XML schema mismatch")
@@ -430,6 +444,15 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
 
 }
 
+// TODO: The TestDeleteProfile function will be refactored in future releases.
+// The GO runtime randmonizes the map iteration order.
+// So when we try to compare the produced xml view
+// with a static one declared in unit test it always fails
+// because the xml attributes' order is random.
+// For now we use two tests. One to check if the XML structure is the desired one
+// and the XML can be unmarshaled using the test structs,
+// and a comparizon between the XMLs as strings using regex to match the actual attributes values.
+
 // Testing deletion of a profile  using DELETE request.
 // During Setup of the test environment the testdb is seeded with
 // two availability profiles ("ap1","ap2"). Mongo assigns
@@ -463,20 +486,20 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Prepare the expected xml response after deleting ap2
 	schema := ` <root>
-     <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
-       <AND>
-         <OR>
-           <Group></Group>
-           <Group></Group>
-           <Group></Group>
-         </OR>
-         <OR>
-           <Group></Group>
-           <Group></Group>
-           <Group></Group>
-         </OR>
-       </AND>
-     </profile>
+   <profile id="` + id1 + `" name="ap1" namespace="namespace1" metricprofiles="metricprofile01" endpointgroup="sites" metricoperation="AND" profileoperation="AND">
+     <AND>
+       <OR>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+       <OR>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+         <Group service_flavor="ap1-service([1-6]{1})" operation="(AND|OR)"></Group>
+       </OR>
+     </AND>
+   </profile>
  </root>`
 
 	// Prepare the request object (use id2 for path)
@@ -490,6 +513,8 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	code, _, output, _ := Delete(request, suite.cfg)
 	// Check proper response that the profile successfully deleted
 	suite.Equal(200, code, "Internal Server Error")
+
+	// Compare the expected and actual response
 	suite.Equal(suite.respProfileDeleted, string(output), "Response body mismatch")
 
 	// Double-check that the profile is actually missing from the profile list
@@ -499,23 +524,9 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	code, _, output, _ = List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
-	// Unmarshal the produced XML using the test structs
-	v := &Resulttest{}
-	xmlErr := xml.Unmarshal(output, v)
-	// Unmarshal the test schema that will be used in the comparison
-	d := &Resulttest{}
-	_ = xml.Unmarshal([]byte(schema), d)
 
-	if xmlErr != nil {
-		fmt.Printf("error: %v", xmlErr)
-		suite.Fail("Unmarshal error: ", xmlErr.Error())
-	}
-
-	// Compare the expected and actual xml schema
-	cmp := reflect.DeepEqual(v, d)
-	if cmp != true {
-		suite.Fail("XML schema mismatch")
-	}
+	// Compare the expected and actual XML
+	suite.Regexp(schema, string(output), "Response body mismatch")
 
 	// Reestablish ap2 profile (reinsert)
 	c.Insert(
