@@ -1,6 +1,10 @@
 package tenants
 
-import "labix.org/v2/mgo/bson"
+import (
+	"encoding/xml"
+
+	"labix.org/v2/mgo/bson"
+)
 
 // Tenant structure holds information about tenant information
 // including db conf and users
@@ -28,6 +32,12 @@ type TenantUser struct {
 	APIkey string `bson:"api_key" json:"api_key"`
 }
 
+// Message struct for xml message response
+type Message struct {
+	XMLName xml.Name `xml:"root"`
+	Message string
+}
+
 // createTenant is used to create a new
 func createTenant(input Tenant) bson.M {
 	query := bson.M{
@@ -38,8 +48,10 @@ func createTenant(input Tenant) bson.M {
 	return query
 }
 
-func searchName(name String) bson.M {
+func searchName(name string) bson.M {
 	query := bson.M{
 		"name": name,
 	}
+
+	return query
 }

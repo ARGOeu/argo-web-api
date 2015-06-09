@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
 // Create function used to implement create tenant request
@@ -74,7 +74,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		// If no name is found then add the new tenant
 		if len(results) <= 0 {
 			//If name-namespace combination is unique we insert the new record into mongo
-			query := createOne(input)
+			query := createTenant(input)
 			err = mongo.Insert(session, cfg.MongoDB.Db, "tenants", query)
 
 			if err != nil {
