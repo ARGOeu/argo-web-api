@@ -70,6 +70,9 @@ func (suite *FactorsTestSuite) SetupTest() {
 	// Connect to mongo coredb
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	defer mongo.CloseSession(session)
+	if err != nil {
+		panic(err)
+	}
 
 	// Add authentication token to mongo coredb
 	seed_auth := bson.M{"name" : "TEST",
@@ -77,20 +80,11 @@ func (suite *FactorsTestSuite) SetupTest() {
 		"users" : []bson.M{ bson.M{"name" : "Jack Doe", "email" : "jack.doe@example.com", "api_key" : "secret"} }}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seed_auth)
 
-	mongo.CloseSession(session)
-
 	// TODO: I don't like it here that I rewrite the test data. 
 	// However, this is a test for factors, not for AuthenticateTenant function. 
 	suite.tenantcfg.Host = "127.0.0.1"
 	suite.tenantcfg.Port = 27017
 	suite.tenantcfg.Db = "AR_test"
-
-	// seed tenantdb mongo
-	session, err = mgo.Dial(suite.tenantcfg.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
 
 	// Add a few factors in collection
 	c := session.DB(suite.tenantcfg.Db).C("weights")
