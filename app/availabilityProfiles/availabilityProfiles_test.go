@@ -45,6 +45,11 @@ import (
 type AvProfileTestSuite struct {
 	suite.Suite
 	cfg                config.Config
+	tenantDbConf       config.MongoConfig
+	tenantPassword     string
+	tenantUsername     string
+	tenantStorename    string
+	clientKey          string
 	respProfileCreated string
 	respProfileUpdated string
 	respProfileDeleted string
@@ -146,7 +151,7 @@ func (suite *AvProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test"
+    db = "ARGO_core_test_availabilityprofiles"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -168,12 +173,16 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	suite.respBadJSON = " <root>\n" +
 		"   <Message>Malformated json input data</Message>\n </root>"
 
+	suite.tenantDbConf.Db = "ARGO_northern_test_apavailabilityprofiles"
+	suite.tenantDbConf.Password = "h4shp4ss"
+	suite.tenantDbConf.Username = "dbuser"
+	suite.tenantDbConf.Store = "ar"
+	suite.clientKey = "secretkey"
+
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	// Add authentication token to mongo testdb
-	seedAuth := bson.M{"apiKey": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -182,8 +191,70 @@ func (suite *AvProfileTestSuite) SetupTest() {
 	}
 	defer session.Close()
 
+	// Seed database with tenants
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	c.Insert(
+		bson.M{"name": "Western",
+			"db_conf": []bson.M{
+
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_Western1",
+				},
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_Western2",
+				},
+			},
+			"users": []bson.M{
+
+				bson.M{
+					"name":    "John Snow",
+					"email":   "J.Snow@foo.bar",
+					"api_key": "wh1t3_w@lk3rs",
+				},
+				bson.M{
+					"name":    "King Joffrey",
+					"email":   "g0dk1ng@foo.bar",
+					"api_key": "sansa <3",
+				},
+			}})
+	c.Insert(
+		bson.M{"name": "Northern",
+			"db_conf": []bson.M{
+
+				bson.M{
+					// "store":    "ar",
+					"server":   "localhost",
+					"port":     27017,
+					"database": suite.tenantDbConf.Db,
+					"username": suite.tenantDbConf.Username,
+					"password": suite.tenantDbConf.Password,
+				},
+				bson.M{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_northern_test_db",
+				},
+			},
+			"users": []bson.M{
+
+				bson.M{
+					"name":    "Joe Complex",
+					"email":   "C.Joe@foo.bar",
+					"api_key": suite.clientKey,
+				},
+				bson.M{
+					"name":    "Josh Plain",
+					"email":   "P.Josh@foo.bar",
+					"api_key": "testsecretapikey",
+				},
+			}})
+
 	// Open DB session
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	c = session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 
 	// Insert first seed profile
 	c.Insert(
@@ -250,7 +321,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Create(request, suite.cfg)
@@ -266,7 +337,7 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 	}
 	defer session.Close()
 	// Open collection aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Remove the specific profile inserted during this test
 	c.Remove(bson.M{"name": "fresh_test_profile"})
 
@@ -290,13 +361,13 @@ func (suite *AvProfileTestSuite) TestCreateProfile() {
 func (suite *AvProfileTestSuite) TestReadProfile() {
 
 	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	// Open availability profile collection: aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	defer mongo.CloseSession(session)
+	// Open availability profile collection: aggregation_profiles
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
 	// Query first seed profile - name:ap1
@@ -341,6 +412,7 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientKey)
 	// Pass request to controller calling List() handler method
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
@@ -407,25 +479,25 @@ func (suite *AvProfileTestSuite) TestUpdateProfile() {
       `
 	// Read the id
 	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	// Open availability profile collection: aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	defer mongo.CloseSession(session)
+
+	// Open availability profile collection: aggregation_profiles
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
 	// Query first seed profile - name:ap2
 	c.Find(bson.M{"name": "ap2"}).One(&results)
-	// Grab from results ObjectId and convert it to string: Hex() method
-	id2 := (results.ID.Hex())
 	// Prepare the request object (use id2 for path)
-	request, _ := http.NewRequest("PUT", "/api/v1/AP/"+id2, strings.NewReader(putData))
+	request, _ := http.NewRequest("PUT", "/api/v1/AP/"+results.ID.Hex(), strings.NewReader(putData))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 	// Execute the request in the controller
 	code, _, output, _ := Update(request, suite.cfg)
 	suite.Equal(200, code, "Internal Server Error")
@@ -465,15 +537,16 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// We will delete ap2 profile so we expect to find only ap1 in list
 
-	// Grab the two _ids of profiles: ap1, ap2
 	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	// Open availability profile collection: aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	defer mongo.CloseSession(session)
+
+	// Open availability profile collection: aggregation_profiles
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
 	// Query first seed profile - name:ap1
@@ -507,7 +580,7 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Delete(request, suite.cfg)
@@ -519,12 +592,12 @@ func (suite *AvProfileTestSuite) TestDeleteProfile() {
 
 	// Double-check that the profile is actually missing from the profile list
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Pass request to controller calling List() handler method
 	code, _, output, _ = List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
-
 	// Compare the expected and actual XML
 	suite.Regexp(schema, string(output), "Response body mismatch")
 
@@ -551,10 +624,11 @@ func (suite *AvProfileTestSuite) TestCreateUnauthorized() {
 	request.Header.Set("x-api-key", "F00T0K3N")
 
 	// Execute the request in the controller
-	code, _, output, _ := Create(request, suite.cfg)
+	code, _, _, err := Create(request, suite.cfg)
 
+	// Check if the status code is one for authentication error.
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 
 // This function tests calling the update profile request (PUT) and providing
@@ -568,10 +642,9 @@ func (suite *AvProfileTestSuite) TestUpdateUnauthorized() {
 	request.Header.Set("x-api-key", "F00T0K3N")
 
 	// Execute the request in the controller
-	code, _, output, _ := Update(request, suite.cfg)
-
+	code, _, _, err := Update(request, suite.cfg)
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 
 // This function tests calling the remove av.profile request (DELETE) and providing
@@ -585,10 +658,10 @@ func (suite *AvProfileTestSuite) TestDeleteUnauthorized() {
 	request.Header.Set("x-api-key", "F00T0K3N")
 
 	// Execute the request in the controller
-	code, _, output, _ := Delete(request, suite.cfg)
+	code, _, _, err := Delete(request, suite.cfg)
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 
 // This function tests calling the update av.profile request (PUT) and providing
@@ -599,11 +672,10 @@ func (suite *AvProfileTestSuite) TestUpdateBadId() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Update(request, suite.cfg)
-
 	suite.Equal(400, code, "Internal Server Error")
 	suite.Equal(suite.respNoID, string(output), "Response body mismatch")
 }
@@ -616,7 +688,7 @@ func (suite *AvProfileTestSuite) TestDeleteBadId() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Delete(request, suite.cfg)
@@ -628,15 +700,16 @@ func (suite *AvProfileTestSuite) TestDeleteBadId() {
 // This function tests calling the create av.profile request (POST) and providing
 // bad json input. The response should be malformed json
 func (suite *AvProfileTestSuite) TestCreateBadJson() {
-	// Find an existing id
+
 	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	// Open availability profile collection: aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	defer mongo.CloseSession(session)
+
+	// Open availability profile collection: aggregation_profiles
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
 	// Query first seed profile - name:ap1
@@ -649,7 +722,7 @@ func (suite *AvProfileTestSuite) TestCreateBadJson() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Create(request, suite.cfg)
@@ -661,15 +734,16 @@ func (suite *AvProfileTestSuite) TestCreateBadJson() {
 // This function tests calling the update av.profile request (PUT) and providing
 // bad json input. The response should be malformed json
 func (suite *AvProfileTestSuite) TestUpdateBadJson() {
-	// Find an existing id
+
 	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
-	// Open availability profile collection: aps
-	c := session.DB(suite.cfg.MongoDB.Db).C("aps")
+	defer mongo.CloseSession(session)
+
+	// Open availability profile collection: aggregation_profiles
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	// Instantiate a AvProfile struct to hold bson results
 	results := AvailabilityProfileOutput{}
 	// Query first seed profile - name:ap1
@@ -681,7 +755,7 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientKey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Update(request, suite.cfg)
@@ -695,9 +769,13 @@ func (suite *AvProfileTestSuite) TestUpdateBadJson() {
 // Mainly it's purpose is to drop the testdb
 func (suite *AvProfileTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-	session.DB("AR_test").DropDatabase()
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
 
+	session.DB(suite.tenantDbConf.Db).DropDatabase()
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 }
 
 // This is the first function called when go test is issued

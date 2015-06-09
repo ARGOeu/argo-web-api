@@ -31,6 +31,9 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+// TODO: Merge duplicated structs into one with multiple annotations.
+// Leave it as it is for now since there would be more changes in the immediate future.
+
 // Group struct to hold service flavor and operation xml attributes
 type Group struct {
 	XMLName          xml.Name
