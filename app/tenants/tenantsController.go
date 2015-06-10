@@ -34,6 +34,7 @@ import (
 	"net/http"
 )
 
+// List returns a list of ARGO tenants
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

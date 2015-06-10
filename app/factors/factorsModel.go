@@ -35,6 +35,7 @@ type root struct {
 	Factor []*Factor
 }
 
+// FactorsOutput struct to represent Name/Factor pair
 type FactorsOutput struct {
 	Site   string  `bson:"name"`
 	Weight float64 `bson:"hepspec"`

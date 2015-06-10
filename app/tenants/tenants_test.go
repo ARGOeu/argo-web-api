@@ -38,7 +38,7 @@ import (
 	"testing"
 )
 
-// This is a util. suite struct used in tests (see pkg "testify")
+// TenantsTestSuite is a utility suite struct used in tests
 type TenantsTestSuite struct {
 	suite.Suite
 	cfg                 config.Config
@@ -46,6 +46,7 @@ type TenantsTestSuite struct {
 	resp_tenantsList    string
 }
 
+// SetupTest will bootstrap and provide the testing environment
 func (suite *TenantsTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -93,6 +94,7 @@ func (suite *TenantsTestSuite) SetupTest() {
 
 }
 
+// TestListTenants will run unit tests against the List function
 func (suite *TenantsTestSuite) TestListTenants() {
 
 	// Prepare the request object

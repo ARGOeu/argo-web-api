@@ -30,6 +30,7 @@ import (
 	"encoding/xml"
 )
 
+// createView returns an XML view of the results to the controller
 func createView(results []TenantsOutput) ([]byte, error) {
 
 	docRoot := &root{}

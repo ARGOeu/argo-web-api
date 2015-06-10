@@ -26,6 +26,7 @@
 
 package tenants
 
+// Tenant is an XML respresentation of an ARGO tenant
 type Tenant struct {
 	Name    string `xml:"name,attr"`
 }
@@ -34,6 +35,7 @@ type root struct {
 	Tenant []*Tenant
 }
 
+// TenantsOutput is a JSON respresentation of an ARGO tenant name
 type TenantsOutput struct {
 	Name    string `bson:"name"`
 }
