@@ -38,7 +38,7 @@ import (
 	"testing"
 )
 
-// This is a util. suite struct used in tests (see pkg "testify")
+// FactorsTestSuite is a utility suite struct used in tests
 type FactorsTestSuite struct {
 	suite.Suite
 	cfg                 config.Config
@@ -48,6 +48,7 @@ type FactorsTestSuite struct {
 	resp_factorsList    string
 }
 
+// SetupTest will bootstrap and provide the testing environment
 func (suite *FactorsTestSuite) SetupTest() {
 
 	const coreConfig = `
@@ -94,6 +95,7 @@ func (suite *FactorsTestSuite) SetupTest() {
 
 }
 
+// TestListFactors will run unit tests against the List function
 func (suite *FactorsTestSuite) TestListFactors() {
 
 	suite.resp_factorsList = `<root>

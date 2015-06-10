@@ -39,7 +39,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// This is a util. suite struct used in tests (see pkg "testify")
+// AuthenticationProfileTestSuite is a utility suite struct used in tests
 type AuthenticationProfileTestSuite struct {
 	suite.Suite
 	cfg              config.Config
@@ -51,8 +51,7 @@ type AuthenticationProfileTestSuite struct {
 	respUnauthorized string
 }
 
-// Setup the Test Environment
-// This function runs before any test and setups the environment
+// SetupTest will bootstrap and provide the testing environment
 func (suite *AuthenticationProfileTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -164,7 +163,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 	)
 }
 
-// Test AuthenticateAdmin function
+// TestAdminAuthentication performs unit tests against the AuthenticateAdmin function
 func (suite *AuthenticationProfileTestSuite) TestAdminAuthentication() {
 
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -176,7 +175,7 @@ func (suite *AuthenticationProfileTestSuite) TestAdminAuthentication() {
 
 }
 
-// Test AuthenticateTenant function
+// TestTenantAuthentication performs unit tests against the AuthenticateTenant function
 func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))

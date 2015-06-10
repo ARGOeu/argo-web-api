@@ -31,6 +31,7 @@ import (
 	"fmt"
 )
 
+// createView returns an XML view of the results to the controller
 func createView(results []FactorsOutput) ([]byte, error) {
 
 	docRoot := &root{}
