@@ -12,24 +12,22 @@ import (
 	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
-// Create function used to implement create tenant request
+// Create function is used to implement the create tenant request.
+// The request is an http POST request with the tenant description
+// provided as json structure in the request body
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-
 	code := http.StatusOK
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
-	message := ""
-
 	// if authentication procedure fails then
-	// return unauthorized
+	// return unauthorized http status
 	if authentication.Authenticate(r.Header, cfg) == false {
 
 		output = []byte(http.StatusText(http.StatusUnauthorized))
@@ -39,18 +37,17 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	//Reading the json input
+	//Reading the json input from the request body
 	reqBody, err := ioutil.ReadAll(r.Body)
-
 	input := Tenant{}
-	results := []Tenant{}
 	//Unmarshalling the json input into byte form
 	err = json.Unmarshal(reqBody, &input)
 
+	// Check if json body is malformed
 	if err != nil {
 		if err != nil {
-			message = "Malformated json input data" // User provided malformed json input data
-			output, err := messageXML(message)
+			// Msg in xml style, to notify for malformed json
+			output, err := messageXML("Malformated json input data")
 
 			if err != nil {
 				code = http.StatusInternalServerError
@@ -72,8 +69,10 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	//Making sure that no profile with the requested name and namespace combination already exists in the DB
+	// Prepare structure for storing query results
+	results := []Tenant{}
 
+	//Making sure that no profile with the requested name and namespace combination already exists in the DB
 	query := searchName(input.Name)
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
@@ -82,10 +81,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// If results are returned for the specific name
+	// then we already have an existing tenant and we must
+	// abort creation notifing the user
 	if len(results) > 0 {
-		// Name was found so print the error message
-		message = "Tenant with the same name already exists"
-		output, err = messageXML(message) //Render the response into XML
+		// Name was found so print the error message in xml
+		output, err = messageXML("Tenant with the same name already exists")
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -98,7 +99,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	}
 
-	//If name-namespace combination is unique we insert the new record into mongo
+	// If no tenant exists with this name create a new one
 	query = createTenant(input)
 	err = mongo.Insert(session, cfg.MongoDB.Db, "tenants", query)
 
@@ -107,9 +108,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	//Providing with the appropriate user response
-	message = "Tenant information successfully added"
-	output, err = messageXML(message) //Render the response into XML
+	// Notify user that the tenant has been created. In xml style
+	output, err = messageXML("Tenant information successfully added")
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -121,18 +121,17 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-// List function
+// List function that implements the http GET request that retrieves
+// all avaiable tenant information
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-
 	code := http.StatusOK
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
 	// Try to open the mongo session
@@ -144,15 +143,19 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	// Create structure for storing query results
 	results := []Tenant{}
+	// Query tenant collection for all available documents.
+	// nil query param == match everything
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
-	output, err = createView(results) //Render the results into XML format
+	// After successfully retrieving the db results
+	// call the createView function to render them into idented xml
+	output, err = createView(results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -163,21 +166,21 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-// ListOne function
+// ListOne function implement an http GET request that accepts
+// a name parameter urlvar and retrieves information only for the
+// specific tenant
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-
 	code := http.StatusOK
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
-	//Extracting record id from url
+	//Extracting urlvar "name" from url path
 	urlValues := r.URL.Path
 	nameFromURL := strings.Split(urlValues, "/")[4]
 
@@ -190,9 +193,12 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	query := searchName(nameFromURL)
-
+	// Create structure to hold query results
 	results := []Tenant{}
+
+	// Create a simple query object to query by name
+	query := searchName(nameFromURL)
+	// Query collection tenants for the specific tenant name
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
 	if err != nil {
@@ -200,9 +206,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
+	// If query returned zero result then no tenant matched this name,
+	// abort and notify user accordingly
 	if len(results) == 0 {
-		message := "Tenant not found!"
-		output, err := messageXML(message)
+
+		output, err := messageXML("Tenant not found!")
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -214,7 +222,9 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	output, err = createView(results) //Render the results into XML format
+	// After successfully retrieving the db results
+	// call the createView function to render them into idented xml
+	output, err = createView(results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -225,11 +235,14 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	return code, h, output, err
 }
 
-// Update function used to implement update tenant request
+// Update function used to implement update tenant request.
+// This is an http PUT request that gets a specific tenant's name
+// as a urlvar parameter input and a json structure in the request
+// body in order to update the datastore document for the specific
+// tenant
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-
 	code := http.StatusOK
 	h := http.Header{}
 	output := []byte("")
@@ -238,8 +251,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-
-	message := ""
 
 	// if authentication procedure fails then
 	// return unauthorized
@@ -265,8 +276,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	if err != nil {
 		if err != nil {
-			message = "Malformated json input data" // User provided malformed json input data
-			output, err := messageXML(message)
+			// User provided malformed json input data
+			output, err := messageXML("Malformated json input data")
 
 			if err != nil {
 				code = http.StatusInternalServerError
@@ -298,14 +309,13 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-
-		message = "Tenant not found"
+		//Render the response into XML
+		output, err = messageXML("Tenant not found")
 
 	} else {
-		message = "Tenant successfully updated"
+		//Render the response into XML
+		output, err = messageXML("Tenant successfully Added")
 	}
-
-	output, err = messageXML(message) //Render the response into XML
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -331,8 +341,6 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
-	message := ""
-
 	// if authentication procedure fails then
 	// return unauthorized
 	if authentication.Authenticate(r.Header, cfg) == false {
@@ -357,7 +365,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// We search by name and delete
+	// We search by name and delete the document in db
 	query := searchName(nameFromURL)
 	info, err := mongo.Remove(session, cfg.MongoDB.Db, "tenants", query)
 
@@ -366,14 +374,15 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	//Providing with the appropriate user response
+	// info.Removed > 0 means that many documents have been removed
+	// If deletion took place we notify user accordingly.
+	// Else we notify that no tenant matched the specific name
 	if info.Removed > 0 {
-		message = "Tenant information successfully deleted"
+		output, err = messageXML("Tenant information successfully deleted")
 	} else {
-		message = "Tenant not found"
+		output, err = messageXML("Tenant not found")
 	}
-	output, err = messageXML(message) //Render the response into XML
-
+	//Render the response into XML
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
