@@ -54,7 +54,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// if authentication procedure fails then
 	// return unauthorized http status
-	if authentication.Authenticate(r.Header, cfg) == false {
+	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
 		output = []byte(http.StatusText(http.StatusUnauthorized))
 		//If wrong api key is passed we return UNAUTHORIZED http status
@@ -160,6 +160,17 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	// if authentication procedure fails then
+	// return unauthorized http status
+	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
+
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		//If wrong api key is passed we return UNAUTHORIZED http status
+		code = http.StatusUnauthorized
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	defer session.Close()
@@ -205,6 +216,17 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
+
+	// if authentication procedure fails then
+	// return unauthorized http status
+	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
+
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		//If wrong api key is passed we return UNAUTHORIZED http status
+		code = http.StatusUnauthorized
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
 
 	//Extracting urlvar "name" from url path
 	urlValues := r.URL.Path
@@ -280,7 +302,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// if authentication procedure fails then
 	// return unauthorized
-	if authentication.Authenticate(r.Header, cfg) == false {
+	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
 		output = []byte(http.StatusText(http.StatusUnauthorized))
 		//If wrong api key is passed we return UNAUTHORIZED http status
@@ -369,7 +391,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// if authentication procedure fails then
 	// return unauthorized
-	if authentication.Authenticate(r.Header, cfg) == false {
+	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
 		output = []byte(http.StatusText(http.StatusUnauthorized))
 		//If wrong api key is passed we return UNAUTHORIZED http status

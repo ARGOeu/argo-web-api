@@ -97,7 +97,7 @@ func (suite *TenantTestSuite) SetupTest() {
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	// Add authentication token to mongo testdb
-	seedAuth := bson.M{"apiKey": "S3CR3T"}
+	seedAuth := bson.M{"api_key": "S3CR3T"}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
 
 	// seed mongo
@@ -240,7 +240,10 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	// Prepare the request object using tenant name as urlvar in url path
 	request, _ = http.NewRequest("GET", "/api/v1/tenants/MUTANTS", strings.NewReader(""))
-
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "S3CR3T")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ = ListOne(request, suite.cfg)
 	// Check that we must have a 200 ok code
@@ -325,7 +328,10 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 
 	// Prepare the request object using tenant name as urlvar in url path
 	request, _ = http.NewRequest("GET", "/api/v1/tenants/AVENGERS_modified", strings.NewReader(""))
-
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "S3CR3T")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ = ListOne(request, suite.cfg)
 	// Check that we must have a 200 ok code
@@ -357,7 +363,10 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 	// to retrieve it's information by name
 	// Prepare the request object using tenant name as urlvar in url path
 	request, _ = http.NewRequest("GET", "/api/v1/tenants/AVENGERS", strings.NewReader(""))
-
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "S3CR3T")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ = ListOne(request, suite.cfg)
 	// Check that we must have a 200 ok code
@@ -394,7 +403,10 @@ func (suite *TenantTestSuite) TestReadOneTenant() {
 
 	// Prepare the request object using tenant name as urlvar in url path
 	request, _ := http.NewRequest("GET", "/api/v1/tenants/GUARDIANS", strings.NewReader(""))
-
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "S3CR3T")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ := ListOne(request, suite.cfg)
 	// Check that we must have a 200 ok code
@@ -440,7 +452,10 @@ func (suite *TenantTestSuite) TestReadTenants() {
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
-
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "S3CR3T")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
