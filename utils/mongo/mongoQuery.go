@@ -65,6 +65,7 @@ func FindAndProject(session *mgo.Session, dbName string, collectionName string, 
 	return err
 }
 
+//Insert a document into the collection of a database that are specified in the arguements
 func Insert(session *mgo.Session, dbName string, collectionName string, query interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)

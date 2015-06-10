@@ -38,6 +38,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//List the existing metricProfiles for the tenant making the request
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -85,6 +86,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
+// Create a new metric profile for the tenant making the request
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 
@@ -134,6 +136,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// Update a metric profile for the tenant making the request
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -189,6 +192,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// Delete a metric profile for the tenant making the request
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

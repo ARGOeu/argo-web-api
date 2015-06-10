@@ -51,6 +51,8 @@ type MetricProfilesTestSuite struct {
 	respUnauthorized          string
 }
 
+// SetupTest adds the required entries in the database and
+// give the required values to the MetricProfilesTestSuite struct
 func (suite *MetricProfilesTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -253,6 +255,7 @@ func (suite *MetricProfilesTestSuite) TestListMetricProfiles() {
 	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
 }
 
+// TestCreateMetricProfiles tests the Create method of the metricProfiles package
 func (suite *MetricProfilesTestSuite) TestCreateMetricProfiles() {
 
 	postData := `
@@ -342,6 +345,7 @@ func (suite *MetricProfilesTestSuite) TestCreateMetricProfiles() {
 
 }
 
+// TestUpdateMetricProfiles test the Update function of the metricProfiles package
 func (suite *MetricProfilesTestSuite) TestUpdateMetricProfiles() {
 
 	putData := `
@@ -424,6 +428,7 @@ func (suite *MetricProfilesTestSuite) TestUpdateMetricProfiles() {
 
 }
 
+// TestDeleteMetricProfiles test the Delete function of the metricProfiles package
 func (suite *MetricProfilesTestSuite) TestDeleteMetricProfiles() {
 
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)

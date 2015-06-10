@@ -35,7 +35,7 @@ type root struct {
 //MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" xml:"-"`
-	OutID    string        `xml:"id,attr"`
+	OutID    string        `bson:"-" xml:"id,attr"`
 	Name     string        `bson:"name" xml:"name,attr" json:"name"`
 	Services []Service     `bson:"services" xml:"services" json:"services"`
 }
