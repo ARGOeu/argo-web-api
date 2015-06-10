@@ -80,6 +80,13 @@ func main() {
 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 
+	//tenants
+	postSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.Create))
+	putSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Update))
+	deleteSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Delete))
+	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
+	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
+
 	//Poem Profiles compatibility
 	getSubrouter.HandleFunc("/api/v1/poems", Respond(metricProfiles.ListPoems))
 
