@@ -38,6 +38,39 @@ type Message struct {
 	Message string
 }
 
+// TenantXML used for xml response
+type TenantXML struct {
+	XMLName xml.Name           `xml:"tenant" json:"-"`
+	Name    string             `xml:"name,attr" json:"name"`
+	DbConf  []*TenantDBConfXML `xml:"db_conf" json:"db_conf"`
+	Users   []*TenantUserXML   `xml:"users" json:"users"`
+}
+
+// TenantDBConfXML used for XML response
+type TenantDBConfXML struct {
+	XMLName  xml.Name `xml:"db_conf" json:"-"`
+	Store    string   `xml:"store,attr" json:"store"`
+	Server   string   `xml:"server,attr" json:"server"`
+	Port     int      `xml:"port,attr" json:"port"`
+	Database string   `xml:"database,attr" json:"database"`
+	Username string   `xml:"username,attr" json:"username"`
+	Password string   `xml:"password,attr" json:"password"`
+}
+
+// Root struct to represent the root of the xml/json document
+type Root struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Tenants []*TenantXML
+}
+
+// TenantUserXML used for XML response
+type TenantUserXML struct {
+	XMLName xml.Name `xml:"user" json:"-"`
+	Name    string   `xml:"name,attr" json:"name"`
+	Email   string   `xml:"email,attr" json:"email"`
+	APIkey  string   `xml:"api_key,attr" json:"api_key"`
+}
+
 // createTenant is used to create a new
 func createTenant(input Tenant) bson.M {
 	query := bson.M{
