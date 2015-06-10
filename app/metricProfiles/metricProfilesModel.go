@@ -24,23 +24,39 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package metricProfiles
 
 import (
 	"encoding/xml"
+
+	"labix.org/v2/mgo/bson"
 )
 
-func createView(results []PoemProfilesOutput) ([]byte, error) {
+type root struct {
+	MetricProfiles []MongoInterface
+}
 
-	docRoot := &root{}
+// MongoInterface to retrieve and insert metricProfiles in mongo
+type MongoInterface struct {
+	ID       bson.ObjectId `bson:"_id,omitempty" xml:"-"`
+	OutID    string        `bson:"-" xml:"id,attr"`
+	Name     string        `bson:"name" xml:"name,attr" json:"name"`
+	Services []Service     `bson:"services" xml:"services" json:"services"`
+}
 
-	for _, row := range results {
-		p := &Poem{}
-		p.Poem = row.Poem
-		docRoot.Poem = append(docRoot.Poem, p)
-	}
+// Service struct to represent services with their metrics
+type Service struct {
+	Service string   `bson:"service" xml:"service,attr" json:"service"`
+	Metrics []string `bson:"metrics" xml:"metrics" json:"metrics"`
+}
 
-	output, err := xml.MarshalIndent(docRoot, "", " ")
-	return output, err
+//Profiles to preserve compatibility with previous poem request
+type Profiles struct {
+	XMLName xml.Name `xml:"root"`
+	Poems   []Poem   `xml:"Poem"`
+}
 
+// Poem to preserve compatibility with previous poem request
+type Poem struct {
+	Profile string `xml:"profile,attr" bson:"name"`
 }

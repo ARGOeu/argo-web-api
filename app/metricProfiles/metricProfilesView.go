@@ -24,16 +24,34 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package poemProfiles
+package metricProfiles
 
-type Poem struct {
-	Poem string `xml:"profile,attr"`
+import (
+	"encoding/xml"
+)
+
+// CreateView marshals the mongodoc into an xml
+// in this case since the structs have very specific annotations
+// it only corrects the id of the document for the xml to be
+// Hex and not a binary string as mongo returns it.
+func createView(results []MongoInterface) ([]byte, error) {
+
+	docRoot := &root{results}
+
+	// docRoot.MetricProfiles = results
+	for i := range results {
+		results[i].OutID = results[i].ID.Hex()
+	}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
 }
 
-type root struct {
-	Poem []*Poem
-}
+// createPoemView for combatibility with poem profiles
+func createPoemView(results []Poem) ([]byte, error) {
 
-type PoemProfilesOutput struct {
-	Poem string `bson:"p"`
+	docRoot := &Profiles{Poems: results}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
 }
