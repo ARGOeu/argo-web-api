@@ -230,8 +230,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	query := searchName(nameFromURL)
 	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", query, input)
 
-	fmt.Println("Gone here ****************************")
-
 	if err != nil {
 
 		if err.Error() != "not found" {
