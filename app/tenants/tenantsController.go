@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS
+ * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * The views and conclusions contained in the software and
+ * documentation are those of the authors and should not be
+ * interpreted as representing official policies, either expressed
+ * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
+ * Centre
+ *
+ * The work represented by this source file is partially funded by
+ * the EGI-InSPIRE project through the European Commission's 7th
+ * Framework Programme (contract # INFSO-RI-261323)
+ */
+
 package tenants
 
 import (
@@ -109,7 +135,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Notify user that the tenant has been created. In xml style
-	output, err = messageXML("Tenant information successfully added")
+	output, err = messageXML("Tenant was successfully created")
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -210,7 +236,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// abort and notify user accordingly
 	if len(results) == 0 {
 
-		output, err := messageXML("Tenant not found!")
+		output, err := messageXML("Tenant not found")
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -314,7 +340,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	} else {
 		//Render the response into XML
-		output, err = messageXML("Tenant successfully Added")
+		output, err = messageXML("Tenant was successfully updated")
 	}
 
 	if err != nil {
@@ -378,7 +404,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// If deletion took place we notify user accordingly.
 	// Else we notify that no tenant matched the specific name
 	if info.Removed > 0 {
-		output, err = messageXML("Tenant information successfully deleted")
+		output, err = messageXML("Tenant was successfully deleted")
 	} else {
 		output, err = messageXML("Tenant not found")
 	}
