@@ -26,13 +26,17 @@
 
 package metricProfiles
 
-import "labix.org/v2/mgo/bson"
+import (
+	"encoding/xml"
+
+	"labix.org/v2/mgo/bson"
+)
 
 type root struct {
 	MetricProfiles []MongoInterface
 }
 
-//MongoInterface to retrieve and insert metricProfiles in mongo
+// MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" xml:"-"`
 	OutID    string        `bson:"-" xml:"id,attr"`
@@ -40,8 +44,19 @@ type MongoInterface struct {
 	Services []Service     `bson:"services" xml:"services" json:"services"`
 }
 
-//Service struct to represent services with their metrics
+// Service struct to represent services with their metrics
 type Service struct {
 	Service string   `bson:"service" xml:"service,attr" json:"service"`
 	Metrics []string `bson:"metrics" xml:"metrics" json:"metrics"`
+}
+
+//Profiles to preserve compatibility with previous poem request
+type Profiles struct {
+	XMLName xml.Name `xml:"root"`
+	Poems   []Poem   `xml:"Poem"`
+}
+
+// Poem to preserve compatibility with previous poem request
+type Poem struct {
+	Profile string `xml:"profile,attr" bson:"name"`
 }

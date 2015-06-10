@@ -78,6 +78,9 @@ func main() {
 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
 
+	//Poem Profiles compatibility
+	getSubrouter.HandleFunc("/api/v1/poems", Respond(metricProfiles.ListPoems))
+
 	//Metric Profiles
 	getSubrouter.HandleFunc("/api/v1/metric_profiles", Respond(metricProfiles.List))
 	postSubrouter.HandleFunc("/api/v1/metric_profiles", Respond(metricProfiles.Create))

@@ -85,8 +85,6 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 	}
 	defer mongo.CloseSession(session)
 
-	// Seed database with tenants
-	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
 		bson.M{"name": "Westeros",
@@ -198,6 +196,81 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			},
 		})
 
+}
+
+//TestListPoemProfiles tests the correct formatting when listing combatibility
+// poem profiles
+func (suite *MetricProfilesTestSuite) TestListPoemProfiles() {
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+
+	if err != nil {
+		panic(err)
+	}
+	defer mongo.CloseSession(session)
+
+	c := session.DB(suite.cfg.MongoDB.Db).C("poem_list")
+	c.Insert(
+		bson.M{
+			"name": "ch.cern.SAM.ROC_CRITICAL",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"name": "ch.cern.SAM.ROC",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"hr.srce.CADist-Check",
+						"hr.srce.CREAMCE-CertLifetime",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+
+	request, _ := http.NewRequest("GET", "/api/v1/poems", strings.NewReader(""))
+
+	code, _, output, _ := ListPoems(request, suite.cfg)
+
+	metricProfileRequestXML := `<root>
+ <Poem profile="ch.cern.SAM.ROC_CRITICAL"></Poem>
+ <Poem profile="ch.cern.SAM.ROC"></Poem>
+</root>`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(metricProfileRequestXML, string(output), "Response body mismatch")
 }
 
 //TestListMetricProfiles tests the correct formatting when listing Metric Profiles

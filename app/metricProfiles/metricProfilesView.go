@@ -30,7 +30,7 @@ import (
 	"encoding/xml"
 )
 
-// CreateView creates marshals the mongodoc into an xml
+// CreateView marshals the mongodoc into an xml
 // in this case since the structs have very specific annotations
 // it only corrects the id of the document for the xml to be
 // Hex and not a binary string as mongo returns it.
@@ -45,5 +45,13 @@ func createView(results []MongoInterface) ([]byte, error) {
 
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
+}
 
+// createPoemView for combatibility with poem profiles
+func createPoemView(results []Poem) ([]byte, error) {
+
+	docRoot := &Profiles{Poems: results}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
 }
