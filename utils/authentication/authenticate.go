@@ -36,7 +36,7 @@ import (
 )
 
 type Auth struct {
-	ApiKey string `bson:"apiKey"`
+	ApiKey string `bson:"api_key"`
 }
 
 func Authenticate(h http.Header, cfg config.Config) bool {
@@ -60,16 +60,44 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 	return false
 }
 
+// AuthenticateAdmin is used to authenticate and administrator of ARGO
+// and allow further CRUD ops wrt the argo_core database (i.e. add a new
+// tenant, modify another tenant's configuration etc)
+func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
+
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	if err != nil {
+		panic(err)
+	}
+	defer mongo.CloseSession(session)
+
+	query := bson.M{"api_key": h.Get("x-api-key")}
+	projection := bson.M{"_id":0, "name":0, "email":0 }
+
+	results := []Auth{}
+	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
+
+	if err != nil {
+		return false
+	}
+
+	if len(results) > 0 {
+		return true
+	}
+	return false
+}
+
 // AuthenticateTenant is used to find which tenant the user making the requests
 // belongs to and return the database configuration for that specific tenant.
 // If the api-key in the request is not found in any tenant an empty configuration is
 // returned along with an error
 func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, error) {
-	session, err := mongo.OpenSession(cfg.MongoDB)
 
+	session, err := mongo.OpenSession(cfg.MongoDB)
 	if err != nil {
 		return config.MongoConfig{}, err
 	}
+	defer mongo.CloseSession(session)
 
 	query := bson.M{"users.api_key": h.Get("x-api-key")}
 	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1}

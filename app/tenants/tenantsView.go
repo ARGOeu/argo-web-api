@@ -24,19 +24,24 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package factors
+package tenants
 
-type Factor struct {
-	Site   string `xml:"site,attr"`
-	Weight string `xml:"weight,attr"`
-}
+import (
+	"encoding/xml"
+)
 
-type root struct {
-	Factor []*Factor
-}
+// createView returns an XML view of the results to the controller
+func createView(results []TenantsOutput) ([]byte, error) {
 
-// FactorsOutput struct to represent Name/Factor pair
-type FactorsOutput struct {
-	Site   string  `bson:"name"`
-	Weight float64 `bson:"hepspec"`
+	docRoot := &root{}
+
+	for _, row := range results {
+		f := &Tenant{}
+		f.Name = row.Name
+		docRoot.Tenant = append(docRoot.Tenant, f)
+	}
+
+	output, err := xml.MarshalIndent(docRoot, "", " ")
+	return output, err
+
 }

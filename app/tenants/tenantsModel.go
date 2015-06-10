@@ -24,19 +24,18 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package factors
+package tenants
 
-type Factor struct {
-	Site   string `xml:"site,attr"`
-	Weight string `xml:"weight,attr"`
+// Tenant is an XML respresentation of an ARGO tenant
+type Tenant struct {
+	Name    string `xml:"name,attr"`
 }
 
 type root struct {
-	Factor []*Factor
+	Tenant []*Tenant
 }
 
-// FactorsOutput struct to represent Name/Factor pair
-type FactorsOutput struct {
-	Site   string  `bson:"name"`
-	Weight float64 `bson:"hepspec"`
+// TenantsOutput is a JSON respresentation of an ARGO tenant name
+type TenantsOutput struct {
+	Name    string `bson:"name"`
 }

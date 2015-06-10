@@ -44,6 +44,7 @@ import (
 	"github.com/argoeu/argo-web-api/app/statusMsg"
 	"github.com/argoeu/argo-web-api/app/statusServices"
 	"github.com/argoeu/argo-web-api/app/statusSites"
+	"github.com/argoeu/argo-web-api/app/tenants"
 	"github.com/argoeu/argo-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 )
@@ -53,7 +54,8 @@ func main() {
 	//Create the server router
 	mainRouter := mux.NewRouter()
 	//SUBROUTER DEFINITIONS
-	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes only GET requests
+	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes GET requests
+	authGetSubrouter := mainRouter.Methods("GET").Headers("x-api-key", "").Subrouter()   //Routes GET requests with auth
 	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
 	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
 	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
@@ -85,7 +87,7 @@ func main() {
 	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
 	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
 
-	getSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
+	authGetSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
 
 	//Status
 	getSubrouter.HandleFunc("/api/v1/status/metrics/timeline/{group}", Respond(statusDetail.List))
@@ -101,6 +103,9 @@ func main() {
 
 	//Status Sites
 	getSubrouter.HandleFunc("/api/v1/status/sites/timeline/{group}", Respond(statusSites.List))
+
+	//Tenants Operations
+	authGetSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
 
 	http.Handle("/", mainRouter)
 

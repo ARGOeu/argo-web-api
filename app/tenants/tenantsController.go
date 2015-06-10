@@ -24,18 +24,17 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package factors
+package tenants
 
 import (
 	"fmt"
-
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"net/http"
 )
 
-// List returns a list of factors (weights) per endpoint group (i.e. site)
+// List returns a list of ARGO tenants
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -48,40 +47,37 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
+	if authentication.AuthenticateAdmin(r.Header, cfg) {
+		session, err := mongo.OpenSession(cfg.MongoDB)
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
-	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		results := []TenantsOutput{}
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createView(results) //Render the results into XML format
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		mongo.CloseSession(session)
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	} else {
+		code = http.StatusUnauthorized
+		output = []byte(http.StatusText(http.StatusUnauthorized)) //If wrong api key is passed we return UNAUTHORIZED http status
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-	defer mongo.CloseSession(session)
-
-	results := []FactorsOutput{}
-	err = mongo.Find(session, tenantDbConfig.Db, "weights", nil, "name", &results)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	output, err = createView(results) //Render the results into XML format
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	mongo.CloseSession(session)
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	return code, h, output, err
 }

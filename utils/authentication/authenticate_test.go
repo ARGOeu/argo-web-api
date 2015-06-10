@@ -39,7 +39,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// This is a util. suite struct used in tests (see pkg "testify")
+// AuthenticationProfileTestSuite is a utility suite struct used in tests
 type AuthenticationProfileTestSuite struct {
 	suite.Suite
 	cfg              config.Config
@@ -51,8 +51,7 @@ type AuthenticationProfileTestSuite struct {
 	respUnauthorized string
 }
 
-// Setup the Test Environment
-// This function runs before any test and setups the environment
+// SetupTest will bootstrap and provide the testing environment
 func (suite *AuthenticationProfileTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -66,7 +65,7 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_Authentication"
+    db = "argo_core_test_authenticate"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -147,10 +146,37 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
+	c = session.DB(suite.cfg.MongoDB.Db).C("authentication")
+	c.Insert(
+		bson.M{
+			"name" : "Igano Kabamaru",
+			"email" : "igano@kabamaru.io",
+			"api_key" : "makaronada",
+		},
+	)
+	c.Insert(
+		bson.M{
+			"name" : "Optimus Prime",
+			"email" : "prime@autobots.com",
+			"api_key" : "megatron_sucks",
+		},
+	)
+}
+
+// TestAdminAuthentication performs unit tests against the AuthenticateAdmin function
+func (suite *AuthenticationProfileTestSuite) TestAdminAuthentication() {
+
+	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
+	request.Header.Set("x-api-key", "megatron_is_a_fool")
+	suite.Equal(AuthenticateAdmin(request.Header, suite.cfg), false, "authetication problem")
+
+	request.Header.Set("x-api-key", "makaronada")
+	suite.Equal(AuthenticateAdmin(request.Header, suite.cfg), true, "authetication problem")
 
 }
 
-func (suite *AuthenticationProfileTestSuite) TestAuthentication() {
+// TestTenantAuthentication performs unit tests against the AuthenticateTenant function
+func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
