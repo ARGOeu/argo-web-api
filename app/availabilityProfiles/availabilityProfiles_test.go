@@ -431,14 +431,13 @@ func (suite *AvProfileTestSuite) TestReadProfile() {
 		suite.Fail("Unmarshal error: ", xmlErr.Error())
 	}
 
-	// Compare the expected and actual XML result
-	suite.Regexp(schema, string(output), "Response body mismatch")
-
 	// Compare only the structure of the XML
 	cmp := reflect.DeepEqual(v, d)
 	if cmp != true {
 		suite.Fail("XML schema mismatch")
 	}
+	// Compare the expected and actual XML result
+	suite.Regexp(schema, string(output), "Response body mismatch")
 }
 
 // Testing update of a profile  using POST request.
