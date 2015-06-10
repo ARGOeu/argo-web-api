@@ -31,61 +31,92 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+// TODO: Merge duplicated structs into one with multiple annotations.
+// Leave it as it is for now since there would be more changes in the immediate future.
+
+// Group struct to hold service flavor and operation xml attributes
 type Group struct {
-	XMLName       xml.Name
-	ServiceFlavor string `xml:"service_flavor,attr"`
+	XMLName          xml.Name
+	ServiceFlavor    string `xml:"service_flavor,attr"`
+	ServiceOperation string `xml:"operation,attr"`
 }
 
+// Or struct to represent operation based grouping
 type Or struct {
 	XMLName xml.Name `xml:"OR"`
 	Group   []*Group
 }
 
+// And struct to represent operation based grouping
 type And struct {
 	XMLName xml.Name `xml:"AND"`
 	Or      []*Or
 }
 
+// Profile struct to hold profile basic information
 type Profile struct {
-	XMLName   xml.Name `xml:"profile"`
-	ID        string   `xml:"id,attr"`
-	Name      string   `xml:"name,attr"`
-	Namespace string   `xml:"namespace,attr"`
-	Poem      string   `xml:"poems,attr"`
-	And       *And
+	XMLName          xml.Name `xml:"profile"`
+	ID               string   `xml:"id,attr"`
+	Name             string   `xml:"name,attr"`
+	Namespace        string   `xml:"namespace,attr"`
+	MetricProfile    string   `xml:"metricprofiles,attr"`
+	EndpointGroup    string   `xml:"endpointgroup,attr"`
+	MetricOperation  string   `xml:"metricoperation,attr"`
+	ProfileOperation string   `xml:"profileoperation,attr"`
+	And              *And
 }
 
+// ReadRoot to wrap profiles
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
 	Profile []*Profile
 }
 
+// Message struct to hold the xml response
 type Message struct {
 	XMLName xml.Name `xml:"root"`
 	Message string
 }
 
-//Struct for inserting data into DB
-type AvailabilityProfileInput struct {
-	Name      string     `json:"name"`
-	Namespace string     `json:"namespace"`
-	Groups    [][]string `json:"groups"`
-	Poems     []string   `json:"poems"`
+// ServiceSetInput struct to represent services hash map and operation inside groups
+type ServiceSetInput struct {
+	Services  map[string]string `json:"services"`
+	Operation string            `json:"operation"`
 }
 
-//Struct for searching based on name and namespace combination
+// AvailabilityProfileInput struct for inserting data into DB
+type AvailabilityProfileInput struct {
+	Name             string                     `json:"name"`
+	Namespace        string                     `json:"namespace"`
+	Groups           map[string]ServiceSetInput `json:"groups"`
+	MetricProfiles   []string                   `json:"metricprofiles"`
+	EndpointGroup    string                     `json:"endpointgroup"`
+	MetricOperation  string                     `json:"metricoperation"`
+	ProfileOperation string                     `json:"profileoperation"`
+}
+
+// AvailabilityProfileSearch struct for searching based on name and namespace combination
 type AvailabilityProfileSearch struct {
 	Name      []string
 	Namespace []string
 }
 
-//Struct for record retrieval
+// ServiceSetOutput struct to represent services hash map in MongoDB
+type ServiceSetOutput struct {
+	Services  map[string]string `bson:"services"`
+	Operation string            `bson:"operation"`
+}
+
+// AvailabilityProfileOutput struct for record retrieval
 type AvailabilityProfileOutput struct {
-	ID        bson.ObjectId `bson:"_id"`
-	Name      string        `bson:"name"`
-	Namespace string        `bson:"namespace"`
-	Groups    [][]string    `bson:"groups"`
-	Poems     []string      `bson:"poems"`
+	ID               bson.ObjectId               `bson:"_id"`
+	Name             string                      `bson:"name"`
+	Namespace        string                      `bson:"namespace"`
+	Groups           map[string]ServiceSetOutput `bson:"groups"`
+	MetricProfiles   []string                    `bson:"metricprofiles"`
+	EndpointGroup    string                      `bson:"endpointgroup"`
+	MetricOperation  string                      `bson:"metricoperation"`
+	ProfileOperation string                      `bson:"profileoperation"`
 }
 
 func prepareFilter(input AvailabilityProfileSearch) bson.M {
@@ -100,10 +131,13 @@ func prepareFilter(input AvailabilityProfileSearch) bson.M {
 
 func createOne(input AvailabilityProfileInput) bson.M {
 	query := bson.M{
-		"name":      input.Name,
-		"namespace": input.Namespace,
-		"groups":    input.Groups,
-		"poems":     input.Poems,
+		"name":             input.Name,
+		"namespace":        input.Namespace,
+		"groups":           input.Groups,
+		"metricprofiles":   input.MetricProfiles,
+		"endpointgroup":    input.EndpointGroup,
+		"metricoperation":  input.MetricOperation,
+		"profileoperation": input.ProfileOperation,
 	}
 	return query
 }
