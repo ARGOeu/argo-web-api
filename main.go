@@ -84,6 +84,7 @@ func main() {
 	putSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Update))
 	deleteSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Delete))
 	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
+	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
 
 	//POEM Profiles
 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))

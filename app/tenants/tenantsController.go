@@ -145,10 +145,72 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []Tenant{}
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "_id", &results)
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createView(results) //Render the results into XML format
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
+// ListOne function
+func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/xml"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	//Extracting record id from url
+	urlValues := r.URL.Path
+	nameFromURL := strings.Split(urlValues, "/")[4]
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	query := searchName(nameFromURL)
+
+	results := []Tenant{}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		message := "Tenant not found!"
+		output, err := messageXML(message)
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		code = http.StatusBadRequest
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
