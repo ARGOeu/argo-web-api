@@ -100,3 +100,11 @@ func IdUpdate(session *mgo.Session, dbName string, collectionName string, id str
 	err := c.UpdateId(rid, update)
 	return err
 }
+
+// Update a specfic document in a collection based on a query
+func Update(session *mgo.Session, dbName string, collectionName string, query bson.M, update interface{}) error {
+	// Check if given id is proper ObjectId
+	c := openCollection(session, dbName, collectionName)
+	err := c.Update(query, update)
+	return err
+}

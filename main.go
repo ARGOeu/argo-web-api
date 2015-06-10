@@ -44,6 +44,7 @@ import (
 	"github.com/argoeu/argo-web-api/app/statusMsg"
 	"github.com/argoeu/argo-web-api/app/statusServices"
 	"github.com/argoeu/argo-web-api/app/statusSites"
+	"github.com/argoeu/argo-web-api/app/tenants"
 	"github.com/argoeu/argo-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
 )
@@ -77,6 +78,13 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
 	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
 	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
+
+	//tenants
+	postSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.Create))
+	putSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Update))
+	deleteSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Delete))
+	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
+	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
 
 	//POEM Profiles
 	getSubrouter.HandleFunc("/api/v1/poems", Respond(poemProfiles.List))
