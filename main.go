@@ -34,6 +34,7 @@ import (
 
 	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
 	"github.com/argoeu/argo-web-api/app/factors"
+	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 	"github.com/argoeu/argo-web-api/app/ngiAvailability"
 	"github.com/argoeu/argo-web-api/app/recomputations"
@@ -86,6 +87,13 @@ func main() {
 	deleteSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Delete))
 	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
 	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
+
+	//jobs
+	postSubrouter.HandleFunc("/api/v1/jobs", Respond(jobs.Create))
+	putSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.Update))
+	deleteSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.Delete))
+	getSubrouter.HandleFunc("/api/v1/jobs", Respond(jobs.List))
+	getSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.ListOne))
 
 	//Poem Profiles compatibility
 	getSubrouter.HandleFunc("/api/v1/poems", Respond(metricProfiles.ListPoems))
