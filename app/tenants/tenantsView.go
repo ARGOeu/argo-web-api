@@ -26,22 +26,19 @@
 
 package tenants
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
-// createView returns an XML view of the results to the controller
-func createView(results []TenantsOutput) ([]byte, error) {
+func messageXML(answer string) ([]byte, error) {
+	docRoot := &Message{}
+	docRoot.Message = answer
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	return output, err
+}
 
-	docRoot := &root{}
+func createView(results []Tenant) ([]byte, error) {
 
-	for _, row := range results {
-		f := &Tenant{}
-		f.Name = row.Name
-		docRoot.Tenant = append(docRoot.Tenant, f)
-	}
-
+	docRoot := &RootXML{}
+	docRoot.Tenants = &results
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
-
 }
