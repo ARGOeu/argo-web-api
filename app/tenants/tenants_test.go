@@ -380,13 +380,6 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 // about a specific tenant (using it's name as input)
 func (suite *TenantTestSuite) TestReadOneTenant() {
 
-	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
  <tenant name="GUARDIANS">
@@ -418,13 +411,6 @@ func (suite *TenantTestSuite) TestReadOneTenant() {
 // TestReadTeanants function implements the testing
 // of the get request which retrieves all tenant information
 func (suite *TenantTestSuite) TestReadTenants() {
-
-	// Open a session to mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
