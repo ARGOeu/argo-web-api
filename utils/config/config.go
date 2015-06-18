@@ -90,7 +90,7 @@ const defaultConfig = `
     db = "argo_core"
 `
 
-//Loads the configurations passed either by flags or by the configuration file
+//LoadConfiguration function loads the configurations passed either by flags or by the configuration file
 func LoadConfiguration() Config {
 	flag.Parse()
 	// var cfg Config
@@ -127,8 +127,11 @@ func LoadConfiguration() Config {
 	if *flMongoDatabase != "" {
 		cfg.MongoDB.Db = *flMongoDatabase
 	}
+
+	//Keep cache disabled even if the option is set to "yes" via the cmd line.
+	//TODO Enable multitenant support on cache util.
 	if *flCache == "yes" {
-		cfg.Server.Cache = true
+		cfg.Server.Cache = false
 	}
 	if *flGzip == "no" {
 		cfg.Server.Gzip = false
