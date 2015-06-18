@@ -29,15 +29,18 @@ package statusDetail
 import (
 	//"bytes"
 	"fmt"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
+	"labix.org/v2/mgo/bson"
 )
 
+// List the status metric details
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -59,7 +62,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 
-	input := StatusDetailInput{
+	input := InputParams{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("vo"),
@@ -73,29 +76,40 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		input.profile = "ch.cern.sam.ROC_CRITICAL"
 	}
 
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
+	if len(input.groupType) == 0 {
+		input.groupType = "site"
 	}
 
 	if len(input.vo) == 0 {
 		input.vo = "ops"
 	}
 
+	// Call authenticateTenant to check the api key and retrieve
+	// the correct tenant db conf
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
 	// Mongo Session
-	results := []StatusDetailOutput{}
-	poem_results := []PoemDetailOutput{}
+	results := []DataOutput{}
+	metricResults := []MetricDetailOutput{}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	session, err := mongo.OpenSession(tenantDbConfig)
 
-	c := session.DB("AR").C("status_metric")
+	c := session.DB(tenantDbConfig.Db).C("status_metric")
 	pc := session.DB("AR").C("poem_details")
 
-	err = pc.Find(bson.M{"p": input.profile}).All(&poem_results)
+	err = pc.Find(bson.M{"p": input.profile}).All(&metricResults)
 	err = c.Find(prepQuery(input)).All(&results)
 
 	mongo.CloseSession(session)
 
-	output, err = createView(results, input, poem_results) //Render the results into XML format
+	output, err = createView(results, input, metricResults) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}
@@ -106,45 +120,45 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input StatusDetailInput) bson.M {
+func prepQuery(input InputParams) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
+	ts, _ := time.Parse(zuluForm, input.startTime)
+	te, _ := time.Parse(zuluForm, input.endTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	//teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	// parse time as integer
-	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-	te_int := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
+	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
+	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.group_type == "site" {
+	if input.groupType == "site" {
 
 		query := bson.M{
 			"di":   tsYMD,
 			"site": input.group,
-			"ti":   bson.M{"$gte": ts_int, "$lte": te_int},
+			"ti":   bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 
-	} else if input.group_type == "ngi" {
+	} else if input.groupType == "ngi" {
 		query := bson.M{
 			"di":  tsYMD,
 			"roc": input.group,
-			"ti":  bson.M{"$gte": ts_int, "$lte": te_int},
+			"ti":  bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 
-	} else if input.group_type == "host" {
+	} else if input.groupType == "host" {
 		query := bson.M{
 			"di": tsYMD,
 			"h":  input.group,
-			"ti": bson.M{"$gte": ts_int, "$lte": te_int},
+			"ti": bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query

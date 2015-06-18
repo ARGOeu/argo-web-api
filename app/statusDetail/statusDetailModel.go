@@ -28,44 +28,51 @@ package statusDetail
 
 import "encoding/xml"
 
-type StatusDetailInput struct {
-	start_time string // UTC time in W3C format
-	end_time   string
-	vo         string
-	profile    string
-	group_type string
-	group      string
+// InputParams struct holds as input all the url params of the request
+type InputParams struct {
+	startTime string // UTC time in W3C format
+	endTime   string
+	vo        string
+	profile   string
+	groupType string
+	group     string
 }
 
-type StatusDetailOutput struct {
-	Timestamp   string `bson:"ts"`
-	Roc         string `bson:"roc"`
-	Site        string `bson:"site"`
-	Service     string `bson:"srv"`
-	Hostname    string `bson:"h"`
-	Metric      string `bson:"m"`
-	Status      string `bson:"s"`
-	Time_int    int    `bson:"ti"`
-	P_status    string `bson:"ps"`
-	P_timestamp string `bson:"pts"`
+// DataOutput struct holds the queried data from datastore
+type DataOutput struct {
+	Timestamp  string `bson:"ts"`
+	Roc        string `bson:"roc"`
+	Site       string `bson:"site"`
+	Service    string `bson:"srv"`
+	Hostname   string `bson:"h"`
+	Metric     string `bson:"m"`
+	Status     string `bson:"s"`
+	TimeInt    int    `bson:"ti"`
+	PStatus    string `bson:"ps"`
+	PTimestamp string `bson:"pts"`
 }
 
-type PoemDetailOutput struct {
+// MetricDetailOutput struct holds metric profile data
+// from secondary collection
+type MetricDetailOutput struct {
 	Service string `bson:"s"`
 	Metric  string `bson:"m"`
 }
 
+// ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
 	Profile *Profile
 }
 
+// Profile struct used as xml block
 type Profile struct {
 	XMLName xml.Name `xml:"profile"`
 	Name    string   `xml:"name,attr"`
 	Groups  []*Group
 }
 
+// Group struct used as xml block
 type Group struct {
 	XMLName xml.Name `xml:"group"`
 	Name    string   `xml:"name,attr"`
@@ -74,18 +81,21 @@ type Group struct {
 	Hosts   []*Host
 }
 
+// Host struct used as xml block
 type Host struct {
 	XMLName xml.Name `xml:"host"`
 	Name    string   `xml:"name,attr"`
 	Metrics []*Metric
 }
 
+// Metric struct used as xml block
 type Metric struct {
 	XMLName  xml.Name `xml:"metric"`
 	Name     string   `xml:"name,attr"`
 	Timeline []*Status
 }
 
+// Status struct used as xml block
 type Status struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
