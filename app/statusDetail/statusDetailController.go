@@ -102,7 +102,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	session, err := mongo.OpenSession(tenantDbConfig)
 
 	c := session.DB(tenantDbConfig.Db).C("status_metric")
-	pc := session.DB("AR").C("poem_details")
+	pc := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
 	err = pc.Find(bson.M{"p": input.profile}).All(&metricResults)
 	err = c.Find(prepQuery(input)).All(&results)
