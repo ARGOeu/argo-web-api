@@ -28,12 +28,13 @@ package voAvailability
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/caches"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
-	"strings"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
