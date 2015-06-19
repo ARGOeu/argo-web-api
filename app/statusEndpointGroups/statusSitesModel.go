@@ -28,6 +28,17 @@ package statusSites
 
 import "encoding/xml"
 
+type MongoInterface struct {
+	Profile        string `bson:"profile"         xml:"-" json:"-"`
+	Group          string `bson:"group"           xml:"-" json:"-"`
+	EndpointGroup  string `bson:"endpoint_group"  xml:"-" json:"-"`
+	Timestamp      string `bson:"timestamp"       xml:"-" json:"-"`
+	Status         string `bson:"status"          xml:"-" json:"-"`
+	PreviousStatus string `bson:"previous_status" xml:"-" json:"-"`
+	DateInteger    int    `bson:"date_integer"    xml:"-" json:"-"`
+	TimeInteger    int    `bson:"time_integer"    xml:"-" json:"-"`
+}
+
 type StatusSitesInput struct {
 	start_time string // UTC time in W3C format
 	end_time   string
