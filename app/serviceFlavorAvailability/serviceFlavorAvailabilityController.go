@@ -28,11 +28,13 @@ package serviceFlavorAvailability
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/caches"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
-	"strings"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -61,18 +63,33 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		urlValues["site"],
 	}
 
+	// Token based tenant authentication
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			output = []byte(http.StatusText(http.StatusUnauthorized))
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	if strings.ToLower(input.format) == "json" {
 		contentType = "application/json"
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	//TODO: Add multitenant support on cache util. Currently the cache functionality is disabled.
 	found, output := caches.HitCache("sf", input, cfg)
 
 	if found {
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -85,13 +102,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "sfreports", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, "AR", "sfreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "sfreports", query, &results)
 	}
 
 	if err != nil {
@@ -106,11 +123,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	//TODO: Add multitenant support on cache util. Currently the cache functionality is disabled.
 	if len(results) > 0 {
 		caches.WriteCache("sf", input, output, cfg)
 	}
-
-	mongo.CloseSession(session)
 
 	return code, h, output, err
 }
