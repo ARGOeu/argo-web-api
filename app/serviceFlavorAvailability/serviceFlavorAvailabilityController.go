@@ -67,7 +67,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
 		if err.Error() == "Unauthorized" {
-			output = []byte(http.StatusText(http.StatusUnauthorized))
 			code = http.StatusUnauthorized
 			return code, h, output, err
 		}

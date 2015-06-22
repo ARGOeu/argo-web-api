@@ -43,8 +43,6 @@ type serviceFlavorAvailabilityTestSuite struct {
 	suite.Suite
 	cfg                   config.Config
 	tenantcfg             config.MongoConfig
-	resp_nokeyprovided    string
-	resp_unauthorized     string
 	resp_sf_monthly       string
 	resp_sf_daily         string
 }
@@ -66,8 +64,6 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
     db = "ar_test_sf_avail"
 `
 	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
-	suite.resp_nokeyprovided = "404 page not found"
-	suite.resp_unauthorized = "Unauthorized"
 
 	// Connect to mongo coredb
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)
@@ -156,9 +152,8 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	// add the authentication token which is not seeded in testdb
 	request.Header.Set("x-api-key", "wr2ongkey")
 	// Execute the request in the controller
-	code, _, output, _ = List(request, suite.cfg)
+	code, _, _ , _ = List(request, suite.cfg)
 	suite.Equal(401, code, "Should have gotten return code 401 (Unauthorized)")
-	suite.Equal(suite.resp_unauthorized, string(output), "Should have gotten reply Unauthorized")
 
 	// Remove the test data from core db not to contaminate other tests
 	// Open session to core mongo
