@@ -40,6 +40,7 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
+//TODO Add multitenant support on cache util.
 func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) {
 	output := []byte(nil)
 	found := false
@@ -52,6 +53,7 @@ func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) 
 	return found, output
 }
 
+//TODO Add multitenant support on cache util.
 func WriteCache(name string, input interface{}, output interface{}, cfg config.Config) bool {
 
 	if cfg.Server.Cache == true {
