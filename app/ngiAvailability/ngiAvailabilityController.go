@@ -63,7 +63,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
-	input := ApiNgiAvailabilityInProfileInput{
+	input := ApiSuperGroupAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		//urlValues.Get("availability_profile"),
@@ -117,7 +117,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	results := []ApiNgiAvailabilityInProfileOutput{}
+	results := []ApiSuperGroupAvailabilityInProfileOutput{}
 
 	// Select the granularity of the search daily/monthly
 	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {

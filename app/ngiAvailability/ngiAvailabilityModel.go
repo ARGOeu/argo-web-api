@@ -124,8 +124,8 @@ func Daily(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 func Monthly(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
 	//PROBABLY THIS LEADS TO THE SAME BUG WE RAN INTO WITH SITES. MUST BE INVESTIGATED!!!!!!!!!!!!
-	filter["a"] = bson.M{"$gte": 0}
-	filter["r"] = bson.M{"$gte": 0}
+	filter["availability"] = bson.M{"$gte": 0}
+	filter["reliability"] = bson.M{"$gte": 0}
 
 	// Mongo aggregation pipeline
 	// Select all the records that match q
@@ -144,13 +144,13 @@ func Monthly(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	// Sort by namespace->profile->ngi->datetime
 
 	query := []bson.M{
-		{"$match": filter}, {"$project": bson.M{"dt": 1, "a": 1, "r": 1, "ap": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ap": "$ap"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}},
-			"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}},
-		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ap": "$_id.ap", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "n": "$n", "ap": "$ap"}, "a": bson.M{"$avg": "$a"},
-			"r": bson.M{"$avg": "$r"}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ap": "$_id.ap", "a": 1, "r": 1}},
-		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"dt", 1}}}}
+		{"$match": filter}, {"$project": bson.M{"date": 1, "availability": 1, "reliability": 1, "job": 1, "supergroup": 1, "weights": bson.M{"$add": list{"$weights", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"date": bson.D{{"$substr", list{"$date", 0, 8}}}, "supergroup": "$supergroup", "job": "$job"}, "availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weights"}}},
+			"reliability": bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weights"}}}, "weights": bson.M{"$sum": "$weights"}}}, {"$match": bson.M{"weights": bson.M{"$gt": 0}}},
+		{"$project": bson.M{"date": "$_id.date", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": bson.M{"$divide": list{"$availability", "$weights"}}, "reliability": bson.M{"$divide": list{"$reliability", "$weights"}}}},
+		{"$group": bson.M{"_id": bson.M{"date": bson.D{{"$substr", list{"$date", 0, 6}}}, "supergroup": "$supergroup", "job": "$job"}, "availability": bson.M{"$avg": "$availability"},
+			"reliability": bson.M{"$avg": "$reliability"}}}, {"$project": bson.M{"date": "$_id.date", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": 1, "reliability": 1}},
+		{"$sort": bson.D{{"job", 1}, {"supergroup", 1}, {"date", 1}}}}
 
 	return query
 }
