@@ -31,7 +31,7 @@ import (
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
-	"labix.org/v2/mgo"
+	//"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"testing"
 )
@@ -145,6 +145,66 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 					"api_key": "testsecretapikey",
 				},
 			}})
+
+	// Open DB session
+	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
+
+	// Insert seed data
+	c.Insert(
+		bson.M{"job": "Northern_job1",
+			"date":         "20150623",
+			"name":         "ST01",
+			"type":         "SITE",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 66.7,
+			"reliability":  54.6,
+			"weights": []bson.M{
+
+				bson.M{
+					"name":  "bench",
+					"value": 56644,
+				},
+			},
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		})
+	c.Insert(
+		bson.M{"job": "Northern_job2",
+			"date":         "20150623",
+			"name":         "ST02",
+			"type":         "SITE",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 100,
+			"reliability":  100,
+			"weights": []bson.M{
+
+				bson.M{
+					"name":  "bench",
+					"value": 56644,
+				},
+			},
+			"tags": []bson.M{
+
+				bson.M{
+					"name":  "foo2",
+					"value": "Y",
+				},
+				bson.M{
+					"name":  "bar3",
+					"value": "N",
+				},
+			},
+		})
 }
 
 func (suite *EgAvailabilityTestSuite) TestReadGroupAr() {
@@ -157,18 +217,43 @@ func (suite *EgAvailabilityTestSuite) TestReadGroupAr() {
 
 }
 
-// This function is actually called in the end of all tests
-// and clears the test environment.
-// Mainly it's purpose is to drop the testdb
-func (suite *EgAvailabilityTestSuite) TearDownTest() {
-
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+func (suite *EgAvailabilityTestSuite) TestReadGroupArDaily() {
+	// Open a session to mongo
+	session, err := mongo.OpenSession(suite.cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	defer mongo.CloseSession(session)
+
+	filter := prepareFilter(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "ap": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
+		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ap": "$ap"},
+			"a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}},
+		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ap": "$_id.ap", "a": bson.M{"$divide": list{"$a", "$hs"}},
+			"r": bson.M{"$divide": list{"$r", "$hs"}}}},
+		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+
+	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+
+	return query
+
 }
+
+// This function is actually called in the end of all tests
+// and clears the test environment.
+// Mainly it's purpose is to drop the testdb
+// func (suite *EgAvailabilityTestSuite) TearDownTest() {
+//
+// 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	session.DB(suite.tenantDbConf.Db).DropDatabase()
+// 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+// }
 
 // This is the first function called when go test is issued
 func TestEgAvailabilityTestSuite(t *testing.T) {

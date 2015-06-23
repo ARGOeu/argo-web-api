@@ -66,35 +66,36 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	input := ApiNgiAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("availability_profile"),
+		//urlValues.Get("availability_profile"),
+		urlValues.Get("jobid"),
 		urlValues.Get("granularity"),
-		urlValues.Get("infrastructure"),
-		urlValues.Get("production"),
-		urlValues.Get("monitored"),
-		urlValues.Get("certification"),
+		//urlValues.Get("infrastructure"),
+		//urlValues.Get("production"),
+		//urlValues.Get("monitored"),
+		//urlValues.Get("certification"),
 		urlValues.Get("format"),
 		urlValues["group_name"],
 	}
 
-	if len(input.Infrastructure) == 0 {
-		input.Infrastructure = "Production"
-	}
-
-	if len(input.Production) == 0 || input.Production == "true" {
-		input.Production = "Y"
-	} else {
-		input.Production = "N"
-	}
-
-	if len(input.Monitored) == 0 || input.Monitored == "true" {
-		input.Monitored = "Y"
-	} else {
-		input.Monitored = "N"
-	}
-
-	if len(input.Certification) == 0 {
-		input.Certification = "Certified"
-	}
+	// if len(input.Infrastructure) == 0 {
+	// 	input.Infrastructure = "Production"
+	// }
+	//
+	// if len(input.Production) == 0 || input.Production == "true" {
+	// 	input.Production = "Y"
+	// } else {
+	// 	input.Production = "N"
+	// }
+	//
+	// if len(input.Monitored) == 0 || input.Monitored == "true" {
+	// 	input.Monitored = "Y"
+	// } else {
+	// 	input.Monitored = "N"
+	// }
+	//
+	// if len(input.Certification) == 0 {
+	// 	input.Certification = "Certified"
+	// }
 
 	if strings.ToLower(input.format) == "json" {
 		contentType = "application/json"
@@ -123,13 +124,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		CustomForm[0] = "20060102"
 		CustomForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 
 	} else if strings.ToLower(input.Granularity) == "monthly" {
 		CustomForm[0] = "200601"
 		CustomForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 	}
 
 	if err != nil {

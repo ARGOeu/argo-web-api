@@ -34,39 +34,39 @@ import (
 	"time"
 )
 
-func createView(results []ApiNgiAvailabilityInProfileOutput, format string) ([]byte, error) {
+func createView(results []ApiSuperGroupAvailabilityInProfileOutput, format string) ([]byte, error) {
 
 	docRoot := &Root{}
 
-	prevProfile := ""
-	prevNgi := ""
-	ngi := &Ngi{}
-	profile := &Profile{}
+	prevJob := ""
+	prevSubGroup := ""
+	superGroup := &SuperGroup{}
+	job := &Job{}
 	// we iterate through the results struct array
 	// keeping only the value of each row
 	for _, row := range results {
 		timestamp, _ := time.Parse(CustomForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name: row.Profile,
+		if prevJob != row.Job {
+			prevJob = row.Job
+			job = &Job{
+				Name: row.Job,
 			}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevNgi = ""
+			docRoot.Job = append(docRoot.Job, job)
+			prevSubGroup = ""
 		}
 		//if new ngi does not match the previous ngi value
 		//we create a new ngi entry in the xml
-		if prevNgi != row.Ngi {
-			prevNgi = row.Ngi
-			ngi = &Ngi{
-				Ngi: row.Ngi,
+		if prevSubGroup != row.SuperGroup {
+			prevSubGroup = row.SuperGroup
+			superGroup = &SuperGroup{
+				SuperGroup: row.SuperGroup,
 			}
-			profile.Ngi = append(profile.Ngi, ngi)
+			job.SuperGroup = append(job.SuperGroup, superGroup)
 		}
 		//we append the new availability values
-		ngi.Availability = append(ngi.Availability,
+		superGroup.Availability = append(superGroup.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(CustomForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
