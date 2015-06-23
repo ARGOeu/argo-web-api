@@ -37,22 +37,19 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		return output, err
 	}
 
-	profile := &Profile{}
-	profile.Name = input.profile
-	vo := &Group{}
-	vo.Type = "vo"
-	vo.Name = input.vo
+	job := &Job{}
+	job.Name = input.job
 
 	prevHostname := ""
 	prevMetric := ""
-	prevSite := ""
-	prevRoc := ""
+	prevEndpointGroup := ""
+	prevGroup := ""
 	prevService := ""
 
 	var ppHost *Host
 	var ppMetric *Metric
-	var ppSite *Group
-	var ppRoc *Group
+	var ppEndpointGroup *Group
+	var ppGroup *Group
 	var ppService *Group
 
 	for _, row := range results {
@@ -61,29 +58,29 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 			continue
 		}
 
-		if row.Roc != prevRoc && row.Roc != "" {
-			roc := &Group{}
-			roc.Name = row.Roc
-			roc.Type = "ngi"
-			vo.Groups = append(vo.Groups, roc)
-			prevRoc = roc.Name
-			ppRoc = roc
+		if row.Group != prevGroup && row.Group != "" {
+			group := &Group{}
+			group.Name = row.Group
+			group.Type = row.GroupType
+			job.Groups = append(job.Groups, group)
+			prevGroup = group.Name
+			ppGroup = group
 		}
 
-		if row.Site != prevSite && row.Site != "" {
-			site := &Group{}
-			site.Name = row.Site
-			site.Type = "site"
-			ppRoc.Groups = append(ppRoc.Groups, site)
-			prevSite = row.Site
-			ppSite = site
+		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
+			endpointGroup := &Group{}
+			endpointGroup.Name = row.EndpointGroup
+			endpointGroup.Type = row.EndpointGroupType
+			ppGroup.Groups = append(ppGroup.Groups, endpointGroup)
+			prevEndpointGroup = row.EndpointGroup
+			ppEndpointGroup = endpointGroup
 		}
 
 		if row.Service != prevService && row.Service != "" {
 			service := &Group{}
 			service.Name = row.Service
 			service.Type = "service_type"
-			ppSite.Groups = append(ppSite.Groups, service)
+			ppEndpointGroup.Groups = append(ppEndpointGroup.Groups, service)
 
 			prevService = row.Service
 			ppService = service
@@ -108,8 +105,8 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 			ppMetric = metric
 
 			status := &Status{}
-			status.Timestamp = row.PTimestamp
-			status.Status = row.PStatus
+			status.Timestamp = row.PrevTimestamp
+			status.Status = row.PrevStatus
 			ppMetric.Timeline = append(ppMetric.Timeline, status)
 
 		} else {
@@ -121,8 +118,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 
 	}
 
-	profile.Groups = append(profile.Groups, vo)
-	docRoot.Profile = profile
+	docRoot.Job = job
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err

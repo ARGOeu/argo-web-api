@@ -65,23 +65,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	input := InputParams{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("vo"),
-		urlValues.Get("profile"),
+		urlValues.Get("job"),
 		urlValues.Get("group_type"),
 		group,
-	}
-
-	// Set default values
-	if len(input.profile) == 0 {
-		input.profile = "ch.cern.sam.ROC_CRITICAL"
-	}
-
-	if len(input.groupType) == 0 {
-		input.groupType = "site"
-	}
-
-	if len(input.vo) == 0 {
-		input.vo = "ops"
 	}
 
 	// Call authenticateTenant to check the api key and retrieve
@@ -104,7 +90,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	c := session.DB(tenantDbConfig.Db).C("status_metric")
 	pc := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
-	err = pc.Find(bson.M{"p": input.profile}).All(&metricResults)
+	err = pc.Find(bson.M{"p": input.job}).All(&metricResults)
 	err = c.Find(prepQuery(input)).All(&results)
 
 	mongo.CloseSession(session)

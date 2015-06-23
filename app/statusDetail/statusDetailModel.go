@@ -32,24 +32,26 @@ import "encoding/xml"
 type InputParams struct {
 	startTime string // UTC time in W3C format
 	endTime   string
-	vo        string
-	profile   string
+	job       string
 	groupType string
 	group     string
 }
 
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
-	Timestamp  string `bson:"ts"`
-	Roc        string `bson:"roc"`
-	Site       string `bson:"site"`
-	Service    string `bson:"srv"`
-	Hostname   string `bson:"h"`
-	Metric     string `bson:"m"`
-	Status     string `bson:"s"`
-	TimeInt    int    `bson:"ti"`
-	PStatus    string `bson:"ps"`
-	PTimestamp string `bson:"pts"`
+	Job               string `bson:"job"`
+	Timestamp         string `bson:"timestamp"`
+	Group             string `bson:"group"`
+	EndpointGroup     string `bson:"endpoint_group"`
+	GroupType         string `bson:"group_type"`
+	EndpointGroupType string `bson:"endpoint_group_type"`
+	Service           string `bson:"service"`
+	Hostname          string `bson:"hostname"`
+	Metric            string `bson:"metric"`
+	Status            string `bson:"status"`
+	TimeInt           int    `bson:"time_int"`
+	PrevStatus        string `bson:"prev_status"`
+	PrevTimestamp     string `bson:"prev_timestamp"`
 }
 
 // MetricDetailOutput struct holds metric profile data
@@ -62,12 +64,12 @@ type MetricDetailOutput struct {
 // ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Profile *Profile
+	Job     *Job
 }
 
-// Profile struct used as xml block
-type Profile struct {
-	XMLName xml.Name `xml:"profile"`
+// Job struct used as xml block
+type Job struct {
+	XMLName xml.Name `xml:"job"`
 	Name    string   `xml:"name,attr"`
 	Groups  []*Group
 }
