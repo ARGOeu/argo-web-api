@@ -16,12 +16,12 @@ type Availability struct {
 
 type SuperGroup struct {
 	XMLName      xml.Name `xml:"SuperGroup" json:"-"`
-	SuperGroup   string   `xml:"SuperGroup,attr" json:"SuperGroup"`
+	SuperGroup   string   `xml:"name,attr" json:"name"`
 	Availability []*Availability
 }
 
 type Job struct {
-	XMLName    xml.Name `xml:"Profile" json:"-"`
+	XMLName    xml.Name `xml:"Job" json:"-"`
 	Name       string   `xml:"name,attr" json:"name"`
 	SuperGroup []*SuperGroup
 }
@@ -98,15 +98,15 @@ func Daily(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
 	// Mongo aggregation pipeline
 	// Select all the records that match q
-	// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
+	// Project the results to add 1 to every weights to avoid having 0 as a weights
 	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
-	// a = sum(a*hs)
-	// r = sum(r*hs)
-	// hs = sum(hs)
+	// availability = sum(availability*weights)
+	// reliability = sum(reliability*weights)
+	// weights = sum(weights)
 	// Project to a better format and do these computations
-	// a = a/hs
-	// r = r/hs
-	// Sort by profile->ngi->site->datetime
+	// availability = availability/weights
+	// reliability = reliability/weights
+	// Sort by job->supergroup->name->datetime
 	query := []bson.M{
 		{"$match": filter},
 		{"$project": bson.M{"date": 1, "availability": 1, "reliability": 1, "job": 1, "supergroup": 1, "weights": bson.M{"$add": list{"$weights", 1}}}},
@@ -114,10 +114,9 @@ func Daily(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weights"}}}, "reliability": bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weights"}}}, "weights": bson.M{"$sum": "$weights"}}},
 		{"$project": bson.M{"date": "$_id.date", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": bson.M{"$divide": list{"$availability", "$weights"}},
 			"reliability": bson.M{"$divide": list{"$reliability", "$weights"}}}},
-		{"$sort": bson.D{{"job", 1}, {"supergroup", 1}, {"site", 1}, {"date", 1}}}}
+		{"$sort": bson.D{{"job", 1}, {"supergroup", 1}, {"name", 1}, {"date", 1}}}}
 
 	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
-
 	return query
 }
 
@@ -129,19 +128,19 @@ func Monthly(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 
 	// Mongo aggregation pipeline
 	// Select all the records that match q
-	// Project the results to add 1 to every hepspec(hs) to avoid having 0 as a hepspec
+	// Project the results to add 1 to every weights to avoid having 0 as a weights
 	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
-	// a = sum(a*hs)
-	// r = sum(r*hs)
-	// hs = sum(hs)
+	// availability = sum(availability*weights)
+	// reliability = sum(reliability*weights)
+	// weights = sum(weights)
 	// Project to a better format and do these computations
-	// a = a/hs
-	// r = r/hs
+	// availability = availability/weights
+	// reliability = reliability/weights
 	// Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
-	// a = average(a)
-	// r = average(r)
+	// availability = average(availability)
+	// reliability = average(reliability)
 	// Project the results to a better format
-	// Sort by namespace->profile->ngi->datetime
+	// Sort by namespace->job->supergroup->datetime
 
 	query := []bson.M{
 		{"$match": filter}, {"$project": bson.M{"date": 1, "availability": 1, "reliability": 1, "job": 1, "supergroup": 1, "weights": bson.M{"$add": list{"$weights", 1}}}},

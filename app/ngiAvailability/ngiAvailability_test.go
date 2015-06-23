@@ -31,8 +31,10 @@ import (
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
-	//"labix.org/v2/mgo"
+	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
+	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -45,6 +47,10 @@ type EgAvailabilityTestSuite struct {
 	tenantStorename  string
 	clientKey        string
 	respUnauthorized string
+	responseDaily    string
+	responseMonthly  string
+	dailyApiCall     string
+	monthlyApiCall   string
 }
 
 // Setup the Test Environment
@@ -74,6 +80,25 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
 	suite.clientKey = "secretkey"
+	suite.responseDaily = ` <root>
+   <Job name="Job_A">
+     <SuperGroup name="GROUP_A">
+       <Availability timestamp="2015-06-22" availability="68.13896116893515" reliability="50.413931144915935"></Availability>
+       <Availability timestamp="2015-06-23" availability="75.36324059247399" reliability="80.8138510808647"></Availability>
+     </SuperGroup>
+   </Job>
+ </root>`
+
+	suite.responseMonthly = ` <root>
+   <Job name="Job_A">
+     <SuperGroup name="GROUP_A">
+       <Availability timestamp="2015-06" availability="71.75110088070457" reliability="65.61389111289031"></Availability>
+     </SuperGroup>
+   </Job>
+ </root>`
+
+	suite.dailyApiCall = "/api/v1/group_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&group_type=ngi&granularity=daily"
+	suite.monthlyApiCall = "/api/v1/group_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&group_type=ngi&granularity=monthly"
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -151,8 +176,8 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 
 	// Insert seed data
 	c.Insert(
-		bson.M{"job": "Northern_job1",
-			"date":         "20150623",
+		bson.M{"job": "Job_A",
+			"date":         20150622,
 			"name":         "ST01",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
@@ -161,13 +186,7 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
-			"weights": []bson.M{
-
-				bson.M{
-					"name":  "bench",
-					"value": 56644,
-				},
-			},
+			"weights":      5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -176,9 +195,28 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 			},
 		})
 	c.Insert(
-		bson.M{"job": "Northern_job2",
-			"date":         "20150623",
+		bson.M{"job": "Job_A",
+			"date":         20150622,
 			"name":         "ST02",
+			"type":         "SITE",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 70,
+			"reliability":  45,
+			"weights":      4356,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		})
+	c.Insert(
+		bson.M{"job": "Job_A",
+			"date":         20150623,
+			"name":         "ST01",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
 			"up":           1,
@@ -186,74 +224,88 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
-			"weights": []bson.M{
-
+			"weights":      5634,
+			"tags": []bson.M{
 				bson.M{
-					"name":  "bench",
-					"value": 56644,
+					"name":  "",
+					"value": "",
 				},
 			},
+		})
+	c.Insert(
+		bson.M{"job": "Job_A",
+			"date":         20150623,
+			"name":         "ST02",
+			"type":         "SITE",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 43.5,
+			"reliability":  56,
+			"weights":      4356,
 			"tags": []bson.M{
-
 				bson.M{
-					"name":  "foo2",
-					"value": "Y",
-				},
-				bson.M{
-					"name":  "bar3",
-					"value": "N",
+					"name":  "",
+					"value": "",
 				},
 			},
 		})
 }
 
-func (suite *EgAvailabilityTestSuite) TestReadGroupAr() {
-	// Open a session to mongo
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
+func (suite *EgAvailabilityTestSuite) TestReadGroupArDaily() {
+
+	request, _ := http.NewRequest("GET", suite.dailyApiCall, strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientKey)
+	code, _, output, _ := List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(suite.responseDaily, string(output), "Response body mismatch")
+}
+
+func (suite *EgAvailabilityTestSuite) TestReadGroupArMonthly() {
+
+	request, _ := http.NewRequest("GET", suite.monthlyApiCall, strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientKey)
+	code, _, output, _ := List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(suite.responseMonthly, string(output), "Response body mismatch")
 
 }
 
-func (suite *EgAvailabilityTestSuite) TestReadGroupArDaily() {
-	// Open a session to mongo
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
+func (suite *EgAvailabilityTestSuite) TestReadDailyUnauthorized() {
 
-	filter := prepareFilter(input)
+	request, _ := http.NewRequest("GET", suite.dailyApiCall, strings.NewReader(""))
+	request.Header.Set("x-api-key", "clientKey")
+	code, _, _, err := List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, code, "Internal Server Error")
+	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
+}
 
-	query := []bson.M{
-		{"$match": filter},
-		{"$project": bson.M{"dt": 1, "a": 1, "r": 1, "ap": 1, "n": 1, "hs": bson.M{"$add": list{"$hs", 1}}}},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ap": "$ap"},
-			"a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, "r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ap": "$_id.ap", "a": bson.M{"$divide": list{"$a", "$hs"}},
-			"r": bson.M{"$divide": list{"$r", "$hs"}}}},
-		{"$sort": bson.D{{"ap", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+func (suite *EgAvailabilityTestSuite) TestReadMonthlyUnauthorized() {
 
-	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
-
-	return query
-
+	request, _ := http.NewRequest("GET", suite.monthlyApiCall, strings.NewReader(""))
+	request.Header.Set("x-api-key", "clientKey")
+	code, _, _, err := List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, code, "Internal Server Error")
+	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-// func (suite *EgAvailabilityTestSuite) TearDownTest() {
-//
-// 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	session.DB(suite.tenantDbConf.Db).DropDatabase()
-// 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-// }
+func (suite *EgAvailabilityTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+	session.DB(suite.tenantDbConf.Db).DropDatabase()
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+}
 
 // This is the first function called when go test is issued
 func TestEgAvailabilityTestSuite(t *testing.T) {

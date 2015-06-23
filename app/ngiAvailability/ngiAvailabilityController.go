@@ -67,7 +67,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		//urlValues.Get("availability_profile"),
-		urlValues.Get("jobid"),
+		urlValues.Get("job"),
 		urlValues.Get("granularity"),
 		//urlValues.Get("infrastructure"),
 		//urlValues.Get("production"),
