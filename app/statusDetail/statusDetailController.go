@@ -112,6 +112,9 @@ func prepQuery(input InputParams) bson.M {
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
+	selectGroup := false
+	selectEndpointGroup := false
+
 	ts, _ := time.Parse(zuluForm, input.startTime)
 	te, _ := time.Parse(zuluForm, input.endTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
@@ -121,35 +124,35 @@ func prepQuery(input InputParams) bson.M {
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.groupType == "site" {
+	if selectEndpointGroup == true {
 
 		query := bson.M{
-			"di":   tsYMD,
-			"site": input.group,
-			"ti":   bson.M{"$gte": tsInt, "$lte": teInt},
+			"date_int":       tsYMD,
+			"endpoint_group": input.group,
+			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 
-	} else if input.groupType == "ngi" {
+	} else if selectGroup == true {
 		query := bson.M{
-			"di":  tsYMD,
-			"roc": input.group,
-			"ti":  bson.M{"$gte": tsInt, "$lte": teInt},
+			"date_int": tsYMD,
+			"group":    input.group,
+			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 
 	} else if input.groupType == "host" {
 		query := bson.M{
-			"di": tsYMD,
-			"h":  input.group,
-			"ti": bson.M{"$gte": tsInt, "$lte": teInt},
+			"date_int": tsYMD,
+			"host":     input.group,
+			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 	}
 
-	return bson.M{"di": 0}
+	return bson.M{"date_int": 0}
 
 }
