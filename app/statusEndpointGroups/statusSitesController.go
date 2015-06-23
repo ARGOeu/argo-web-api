@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusSites
+package statusEndpointGroup
 
 import (
 	//"bytes"
@@ -76,7 +76,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 
-	input := StatusSitesInput{
+	input := StatusEndpointGroupInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("vo"),
@@ -100,7 +100,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Mongo Session
-	results := []StatusSitesOutput{}
+	results := []StatusEndpointGroupOutput{}
 
 	session, err = mongo.OpenSession(tenantDbConfig)
 
@@ -120,7 +120,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input StatusSitesInput) bson.M {
+func prepQuery(input StatusEndpointGroupInput) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -166,7 +166,6 @@ func prepQuery(input StatusSitesInput) bson.M {
 
 	if input.group != "" {
 		query["group"] = input.Group
-		query["group_type"] = input.GroupType
 	}
 
 	return query

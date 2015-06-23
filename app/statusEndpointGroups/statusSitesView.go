@@ -24,11 +24,11 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusSites
+package statusEndpointGroup
 
 import "encoding/xml"
 
-func createView(results []StatusSitesOutput, input StatusSitesInput) ([]byte, error) {
+func createView(results []StatusEndpointGroupOutput, input StatusEndpointGroupInput) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 

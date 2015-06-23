@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusSites
+package statusEndpointGroup
 
 import "encoding/xml"
 
@@ -39,7 +39,7 @@ type MongoInterface struct {
 	TimeInteger    int    `bson:"time_integer"    xml:"-" json:"-"`
 }
 
-type StatusSitesInput struct {
+type StatusEndpointGroupInput struct {
 	start_time string // UTC time in W3C format
 	end_time   string
 	vo         string
@@ -48,7 +48,7 @@ type StatusSitesInput struct {
 	group      string
 }
 
-type StatusSitesOutput struct {
+type StatusEndpointGroupOutput struct {
 	Timestamp string `bson:"ts"`
 	Roc       string `bson:"roc"`
 	Site      string `bson:"site"`

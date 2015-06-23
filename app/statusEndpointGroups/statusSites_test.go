@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusSites
+package statusEndpointGroup
 
 import (
 	"net/http"
@@ -41,7 +41,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-type StatusSitesTestSuite struct {
+type StatusEndpointGroupTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
 	router                    mux.Router
@@ -52,8 +52,8 @@ type StatusSitesTestSuite struct {
 }
 
 // SetupTest adds the required entries in the database and
-// give the required values to the StatusSitesTestSuite struct
-func (suite *StatusSitesTestSuite) SetupTest() {
+// give the required values to the StatusEndpointGroupTestSuite struct
+func (suite *StatusEndpointGroupTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -184,10 +184,11 @@ func (suite *StatusSitesTestSuite) SetupTest() {
 			"date_integer":    20150106,
 			"time_integer":    1200,
 		})
+	c = session.DB(suite.tenantDbConf.Db).C("status_sites")
 }
 
-//TestListStatusSites tests the correct formatting when listing Sites' statuses
-func (suite *StatusSitesTestSuite) TestListStatusSites() {
+//TestListStatusEndpointGroup tests the correct formatting when listing Sites' statuses
+func (suite *StatusEndpointGroupTestSuite) TestListStatusEndpointGroup() {
 
 	request, _ := http.NewRequest("GET", "/api/v1/status/sites/timeline/NGI_GRNET", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -210,7 +211,7 @@ func (suite *StatusSitesTestSuite) TestListStatusSites() {
 }
 
 //TearDownTest to tear down every test
-func (suite *StatusSitesTestSuite) TearDownTest() {
+func (suite *StatusEndpointGroupTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
@@ -222,5 +223,5 @@ func (suite *StatusSitesTestSuite) TearDownTest() {
 }
 
 func TestRecompuptationsTestSuite(t *testing.T) {
-	suite.Run(t, new(StatusSitesTestSuite))
+	suite.Run(t, new(StatusEndpointGroupTestSuite))
 }

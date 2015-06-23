@@ -44,7 +44,7 @@ import (
 	"github.com/argoeu/argo-web-api/app/statusEndpoints"
 	"github.com/argoeu/argo-web-api/app/statusMsg"
 	"github.com/argoeu/argo-web-api/app/statusServices"
-	"github.com/argoeu/argo-web-api/app/statusSites"
+	"github.com/argoeu/argo-web-api/app/statusEndpointGroup"
 	"github.com/argoeu/argo-web-api/app/tenants"
 	"github.com/argoeu/argo-web-api/app/voAvailability"
 	"github.com/gorilla/mux"
@@ -123,7 +123,7 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/status/services/timeline/{group}", Respond(statusServices.List))
 
 	//Status Sites
-	getSubrouter.HandleFunc("/api/v1/status/sites/timeline/{group}", Respond(statusSites.List))
+	getSubrouter.HandleFunc("/api/v1/status/sites/timeline/{group}", Respond(statusEndpointGroup.List))
 
 	//Tenants Operations
 	authGetSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
