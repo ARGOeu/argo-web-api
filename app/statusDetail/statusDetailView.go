@@ -26,9 +26,13 @@
 
 package statusDetail
 
-import "encoding/xml"
+import (
+	"encoding/xml"
 
-func createView(results []DataOutput, input InputParams, metricDetail []MetricDetailOutput) ([]byte, error) {
+	"github.com/argoeu/argo-web-api/app/metricProfiles"
+)
+
+func createView(results []DataOutput, input InputParams, metricDetail metricProfiles.MongoInterface) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 
@@ -37,7 +41,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		return output, err
 	}
 
-	job := &Job{}
+	job := &JobXML{}
 	job.Name = input.job
 
 	prevHostname := ""
@@ -46,11 +50,11 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 	prevGroup := ""
 	prevService := ""
 
-	var ppHost *Host
-	var ppMetric *Metric
-	var ppEndpointGroup *Group
-	var ppGroup *Group
-	var ppService *Group
+	var ppHost *HostXML
+	var ppMetric *MetricXML
+	var ppEndpointGroup *GroupXML
+	var ppGroup *GroupXML
+	var ppService *GroupXML
 
 	for _, row := range results {
 
@@ -59,7 +63,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		}
 
 		if row.Group != prevGroup && row.Group != "" {
-			group := &Group{}
+			group := &GroupXML{}
 			group.Name = row.Group
 			group.Type = row.GroupType
 			job.Groups = append(job.Groups, group)
@@ -68,7 +72,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		}
 
 		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
-			endpointGroup := &Group{}
+			endpointGroup := &GroupXML{}
 			endpointGroup.Name = row.EndpointGroup
 			endpointGroup.Type = row.EndpointGroupType
 			ppGroup.Groups = append(ppGroup.Groups, endpointGroup)
@@ -77,7 +81,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		}
 
 		if row.Service != prevService && row.Service != "" {
-			service := &Group{}
+			service := &GroupXML{}
 			service.Name = row.Service
 			service.Type = "service_type"
 			ppEndpointGroup.Groups = append(ppEndpointGroup.Groups, service)
@@ -87,7 +91,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 		}
 
 		if row.Hostname != prevHostname && row.Hostname != "" {
-			host := &Host{} //create new host
+			host := &HostXML{} //create new host
 			host.Name = row.Hostname
 			ppService.Hosts = append(ppService.Hosts, host)
 			prevHostname = row.Hostname
@@ -96,7 +100,7 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 
 		if row.Metric != prevMetric {
 
-			metric := &Metric{}
+			metric := &MetricXML{}
 			//Add the prev status as the firstone
 
 			metric.Name = row.Metric
@@ -104,13 +108,13 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 			prevMetric = row.Metric
 			ppMetric = metric
 
-			status := &Status{}
+			status := &StatusXML{}
 			status.Timestamp = row.PrevTimestamp
 			status.Status = row.PrevStatus
 			ppMetric.Timeline = append(ppMetric.Timeline, status)
 
 		} else {
-			status := &Status{}
+			status := &StatusXML{}
 			status.Timestamp = row.Timestamp
 			status.Status = row.Status
 			ppMetric.Timeline = append(ppMetric.Timeline, status)
@@ -125,16 +129,16 @@ func createView(results []DataOutput, input InputParams, metricDetail []MetricDe
 
 }
 
-func filterByProfile(stype string, metric string, metricDetail []MetricDetailOutput) int {
+func filterByProfile(stype string, metric string, metricDetail metricProfiles.MongoInterface) int {
 
-	for _, item := range metricDetail {
-
-		if item.Metric == metric {
-			if item.Service == stype {
-				return 0
-			}
-		}
-	}
+	// for _, item := range metricDetail {
+	//
+	// 	if item.Metric == metric {
+	// 		if item.Service == stype {
+	// 			return 0
+	// 		}
+	// 	}
+	// }
 
 	return 1
 

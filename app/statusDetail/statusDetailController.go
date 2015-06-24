@@ -34,9 +34,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/argoeu/argo-web-api/app/jobs"
+	"github.com/argoeu/argo-web-api/app/metricProfiles"
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
+
 	"labix.org/v2/mgo/bson"
 )
 
@@ -81,21 +84,25 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	// Structure to hold job information
+	jobResult := jobs.Job{}
+	metricProfileResults := metricProfiles.MongoInterface{}
+
 	// Mongo Session
 	results := []DataOutput{}
-	metricResults := []MetricDetailOutput{}
 
+	selectedGroupType := ""
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
-	c := session.DB(tenantDbConfig.Db).C("status_metric")
-	pc := session.DB(tenantDbConfig.Db).C("metric_profiles")
+	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
+	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
 
-	err = pc.Find(bson.M{"p": input.job}).All(&metricResults)
-	err = c.Find(prepQuery(input)).All(&results)
+	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
 
-	mongo.CloseSession(session)
+	err = metricCol.Find(prepQuery(input, selectedGroupType)).All(&results)
 
-	output, err = createView(results, input, metricResults) //Render the results into XML format
+	output, err = createView(results, input, metricProfileResults) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}
@@ -106,14 +113,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input InputParams) bson.M {
+func prepQuery(input InputParams, selectedGroupType string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
-
-	selectGroup := false
-	selectEndpointGroup := false
 
 	ts, _ := time.Parse(zuluForm, input.startTime)
 	te, _ := time.Parse(zuluForm, input.endTime)
@@ -124,7 +128,7 @@ func prepQuery(input InputParams) bson.M {
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if selectEndpointGroup == true {
+	if selectedGroupType == "endpoint" {
 
 		query := bson.M{
 			"date_int":       tsYMD,
@@ -134,7 +138,7 @@ func prepQuery(input InputParams) bson.M {
 
 		return query
 
-	} else if selectGroup == true {
+	} else if selectedGroupType == "group" {
 		query := bson.M{
 			"date_int": tsYMD,
 			"group":    input.group,

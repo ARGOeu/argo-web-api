@@ -64,41 +64,41 @@ type MetricDetailOutput struct {
 // ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Job     *Job
+	Job     *JobXML
 }
 
-// Job struct used as xml block
-type Job struct {
+// JobXML struct used as xml block
+type JobXML struct {
 	XMLName xml.Name `xml:"job"`
 	Name    string   `xml:"name,attr"`
-	Groups  []*Group
+	Groups  []*GroupXML
 }
 
-// Group struct used as xml block
-type Group struct {
+// GroupXML struct used as xml block
+type GroupXML struct {
 	XMLName xml.Name `xml:"group"`
 	Name    string   `xml:"name,attr"`
 	Type    string   `xml:"type,attr"`
-	Groups  []*Group
-	Hosts   []*Host
+	Groups  []*GroupXML
+	Hosts   []*HostXML
 }
 
-// Host struct used as xml block
-type Host struct {
+// HostXML struct used as xml block
+type HostXML struct {
 	XMLName xml.Name `xml:"host"`
 	Name    string   `xml:"name,attr"`
-	Metrics []*Metric
+	Metrics []*MetricXML
 }
 
-// Metric struct used as xml block
-type Metric struct {
+// MetricXML struct used as xml block
+type MetricXML struct {
 	XMLName  xml.Name `xml:"metric"`
 	Name     string   `xml:"name,attr"`
-	Timeline []*Status
+	Timeline []*StatusXML
 }
 
-// Status struct used as xml block
-type Status struct {
+// StatusXML struct used as xml block
+type StatusXML struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
 	Status    string   `xml:"status,attr"`
