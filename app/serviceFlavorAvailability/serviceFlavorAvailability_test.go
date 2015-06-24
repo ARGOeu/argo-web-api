@@ -143,7 +143,6 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
  </root>`
 
 	// Prepare the request object
-//	request, _ := http.NewRequest("GET", "/api/v1/service_flavor_availability?start_time=2015-06-01T00:00:00Z&end_time=2015-06-03T00:00:00Z&profile=ch.cern.sam.ROC_CRITICAL&granularity=monthly&flavor=Site-BDII", nil)
 	request, _ := http.NewRequest("GET", "/api/v1/service_flavor_availability?start_time=2015-06-01T00:00:00Z&end_time=2015-06-02T23:59:59Z&job=EGI_Critical&granularity=daily", nil)
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "elmL5K")
@@ -153,7 +152,6 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.Equal(suite.resp_sf_daily, string(output), "Response body mismatch")
 
 	// Prepare the request object
-//	request, _ = http.NewRequest("GET", "/api/v1/service_flavor_availability?start_time=2015-06-01T00:00:00Z&end_time=2015-06-03T00:00:00Z&profile=ch.cern.sam.ROC_CRITICAL&granularity=daily&flavor=Site-BDII", nil)
 	request, _ = http.NewRequest("GET", "/api/v1/service_flavor_availability?start_time=2015-06-01T00:00:00Z&end_time=2015-06-03T00:00:00Z&job=EGI_Critical&granularity=monthly", nil)
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "elmL5K")

@@ -48,23 +48,11 @@ type SF struct {
 	Availability []*Availability
 }
 
-//type Site struct {
-//	XMLName xml.Name `xml:"Site" json:"-"`
-//	Site    string   `xml:"Site,attr" json:"Site"`
-//	SF      []*SF
-//}
-
 type SuperGroup struct {
 	XMLName    xml.Name `xml:"SuperGroup" json:"-"`
 	SuperGroup string   `xml:"name,attr"  json:"name"`
 	SF         []*SF
 }
-
-//type Profile struct {
-//	XMLName xml.Name `xml:"Profile" json:"-"`
-//	Name    string   `xml:"name,attr" json:"name"`
-//	Site    []*Site
-//}
 
 type Job struct{
 	XMLName     xml.Name `xml:"Job" json:"-"`
@@ -81,21 +69,17 @@ type ApiSFAvailabilityInProfileInput struct {
 	// mandatory values
 	start_time     string // UTC time in W3C format
 	end_time       string // UTC time in W3C format
-	//profile        string
 	job            string
 	granularity    string // availability period; possible values: `DAILY`, `MONTHLY`
 	format         string
 	flavor         []string // sf name; may appear more than once
 	supergroup     []string // name of group
-	//site       []string // EGI site
 }
 
 type ApiSFAvailabilityInProfileOutput struct {
 	Date         string  `bson:"date"`
 	SF           string  `bson:"name"`
-	//Site         string  `bson:"s"`
 	SuperGroup   string  `bson:"supergroup"`
-	//Profile      string  `bson:"p"`
 	Job          string  `bson:"job"`
 	Availability float64 `bson:"availability"`
 	Reliability  float64 `bson:"reliability"`

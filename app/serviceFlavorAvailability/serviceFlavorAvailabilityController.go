@@ -67,12 +67,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	input := ApiSFAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		//urlValues.Get("profile"),
 		urlValues.Get("job"),
 		urlValues.Get("granularity"),
 		urlValues.Get("format"),
 		urlValues["flavor"],
-		//urlValues["site"],
 		urlValues["supergroup"],
 	}
 
