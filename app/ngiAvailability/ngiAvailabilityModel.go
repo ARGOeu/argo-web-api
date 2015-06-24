@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Availability struct to represent the availability-reliability results
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability" json:"-"`
 	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
@@ -14,39 +15,39 @@ type Availability struct {
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
+// SuperGroup struct to hold the availability-reliability results for each group
 type SuperGroup struct {
 	XMLName      xml.Name `xml:"SuperGroup" json:"-"`
 	SuperGroup   string   `xml:"name,attr" json:"name"`
 	Availability []*Availability
 }
 
+// Job struct to hold all SuperGroups related with this job
 type Job struct {
 	XMLName    xml.Name `xml:"Job" json:"-"`
 	Name       string   `xml:"name,attr" json:"name"`
 	SuperGroup []*SuperGroup
 }
 
+// Root struct to represent the root of the XML document
 type Root struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Job     []*Job
 }
 
+// ApiSuperGroupAvailabilityInProfileInput struct to represent the api call input parameters
 type ApiSuperGroupAvailabilityInProfileInput struct {
 	// mandatory values
-	Start_time string // UTC time in W3C format
-	End_time   string // UTC time in W3C format
-	//Availability_profile string //availability profile
-	Job string //unique id that represents the current job which produces the ar result.
+	StartTime string // UTC time in W3C format
+	EndTime   string // UTC time in W3C format
+	Job       string //unique id that represents the current job which produces the ar result.
 	// optional values
-	Granularity string //availability period; possible values: `DAILY`, MONTHLY`
-	//Infrastructure string   //infrastructure name
-	//Production     string   //production or not
-	//Monitored      string   //yes or no
-	//Certification  string   //certification status
-	format     string   // default XML; possible values are: XML, JSON
-	Group_name []string // site name; may appear more than once
+	Granularity string   //availability period; possible values: `DAILY`, MONTHLY`
+	format      string   // default XML; possible values are: XML, JSON
+	GroupName   []string // site name; may appear more than once
 }
 
+// ApiSuperGroupAvailabilityInProfileOutput to represent db data retrieval
 type ApiSuperGroupAvailabilityInProfileOutput struct {
 	Date         string  `bson:"date"`
 	Job          string  `bson:"job"`
@@ -68,32 +69,24 @@ const ymdForm = "20060102"
 
 func prepareFilter(input ApiSuperGroupAvailabilityInProfileInput) bson.M {
 
-	ts, _ := time.Parse(zuluForm, input.Start_time)
-	te, _ := time.Parse(zuluForm, input.End_time)
+	ts, _ := time.Parse(zuluForm, input.StartTime)
+	te, _ := time.Parse(zuluForm, input.EndTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
 		"date": bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"job":  input.Job,
-		//"ap": input.Availability_profile,
 	}
 
-	if len(input.Group_name) > 0 {
-		filter["supergroup"] = bson.M{"$in": input.Group_name}
+	if len(input.GroupName) > 0 {
+		filter["supergroup"] = bson.M{"$in": input.GroupName}
 	}
-
-	// filter["i"] = input.Infrastructure
-	// filter["cs"] = input.Certification
-	// filter["pr"] = input.Production
-	// filter["m"] = input.Monitored
-	//
-	// filter["sc"] = "EGI"
-	// filter["ss"] = "EGI"
 
 	return filter
 }
 
+// Daily function to build the MongoDB aggregation query for daily calculations
 func Daily(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
 	// Mongo aggregation pipeline
@@ -120,6 +113,7 @@ func Daily(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	return query
 }
 
+// Monthly function to build the MongoDB aggregation query for monthly calculations
 func Monthly(input ApiSuperGroupAvailabilityInProfileInput) []bson.M {
 	filter := prepareFilter(input)
 	//PROBABLY THIS LEADS TO THE SAME BUG WE RAN INTO WITH SITES. MUST BE INVESTIGATED!!!!!!!!!!!!

@@ -253,6 +253,7 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
 		})
 }
 
+// Check if the Daily calculation returns correct data.
 func (suite *EgAvailabilityTestSuite) TestReadGroupArDaily() {
 
 	request, _ := http.NewRequest("GET", suite.dailyApiCall, strings.NewReader(""))
@@ -260,9 +261,11 @@ func (suite *EgAvailabilityTestSuite) TestReadGroupArDaily() {
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
+	// Compare the actual with the expected results
 	suite.Equal(suite.responseDaily, string(output), "Response body mismatch")
 }
 
+// Check if the Monthly calculation returns correct data.
 func (suite *EgAvailabilityTestSuite) TestReadGroupArMonthly() {
 
 	request, _ := http.NewRequest("GET", suite.monthlyApiCall, strings.NewReader(""))
@@ -270,20 +273,24 @@ func (suite *EgAvailabilityTestSuite) TestReadGroupArMonthly() {
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
+	// Compare the actual with the expected results
 	suite.Equal(suite.responseMonthly, string(output), "Response body mismatch")
 
 }
 
+// Use the API call for Daily results to check if the authentication mechanism works as expected.
 func (suite *EgAvailabilityTestSuite) TestReadDailyUnauthorized() {
 
 	request, _ := http.NewRequest("GET", suite.dailyApiCall, strings.NewReader(""))
 	request.Header.Set("x-api-key", "clientKey")
 	code, _, _, err := List(request, suite.cfg)
-	// Check that we must have a 200 ok code
+	// Check that we must have a 200 ok code.
 	suite.Equal(401, code, "Internal Server Error")
+	// Check if the error message is the expected one.
 	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 
+// Use the API call for Monthly results to check if the authentication mechanism works as expected.
 func (suite *EgAvailabilityTestSuite) TestReadMonthlyUnauthorized() {
 
 	request, _ := http.NewRequest("GET", suite.monthlyApiCall, strings.NewReader(""))
@@ -291,6 +298,7 @@ func (suite *EgAvailabilityTestSuite) TestReadMonthlyUnauthorized() {
 	code, _, _, err := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(401, code, "Internal Server Error")
+	// Check if the error message is the expected one.
 	suite.Equal(suite.respUnauthorized, err.Error(), "Response body mismatch")
 }
 

@@ -39,27 +39,27 @@ func createView(results []ApiSuperGroupAvailabilityInProfileOutput, format strin
 	docRoot := &Root{}
 
 	prevJob := ""
-	prevSubGroup := ""
+	prevSuperGroup := ""
 	superGroup := &SuperGroup{}
 	job := &Job{}
 	// we iterate through the results struct array
 	// keeping only the value of each row
 	for _, row := range results {
 		timestamp, _ := time.Parse(CustomForm[0], row.Date)
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
+		//if new job value does not match the previous job value
+		//we create a new job in the xml
 		if prevJob != row.Job {
 			prevJob = row.Job
 			job = &Job{
 				Name: row.Job,
 			}
 			docRoot.Job = append(docRoot.Job, job)
-			prevSubGroup = ""
+			prevSuperGroup = ""
 		}
-		//if new ngi does not match the previous ngi value
+		//if new superGroup does not match the previous superGroup value
 		//we create a new ngi entry in the xml
-		if prevSubGroup != row.SuperGroup {
-			prevSubGroup = row.SuperGroup
+		if prevSuperGroup != row.SuperGroup {
+			prevSuperGroup = row.SuperGroup
 			superGroup = &SuperGroup{
 				SuperGroup: row.SuperGroup,
 			}
