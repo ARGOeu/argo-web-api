@@ -48,41 +48,57 @@ type SF struct {
 	Availability []*Availability
 }
 
-type Site struct {
-	XMLName xml.Name `xml:"Site" json:"-"`
-	Site    string   `xml:"Site,attr" json:"Site"`
-	SF      []*SF
+//type Site struct {
+//	XMLName xml.Name `xml:"Site" json:"-"`
+//	Site    string   `xml:"Site,attr" json:"Site"`
+//	SF      []*SF
+//}
+
+type SuperGroup struct {
+	XMLName    xml.Name `xml:"SuperGroup" json:"-"`
+	SuperGroup string   `xml:"name,attr"  json:"name"`
+	SF         []*SF
 }
 
-type Profile struct {
-	XMLName xml.Name `xml:"Profile" json:"-"`
-	Name    string   `xml:"name,attr" json:"name"`
-	Site    []*Site
+//type Profile struct {
+//	XMLName xml.Name `xml:"Profile" json:"-"`
+//	Name    string   `xml:"name,attr" json:"name"`
+//	Site    []*Site
+//}
+
+type Job struct{
+	XMLName     xml.Name `xml:"Job" json:"-"`
+	Name        string   `xml:"name,attr" json:"name"`
+	SuperGroup  []*SuperGroup
 }
 
 type Root struct {
 	XMLName xml.Name `xml:"root" json:"-"`
-	Profile []*Profile
+	Job     []*Job
 }
 
 type ApiSFAvailabilityInProfileInput struct {
 	// mandatory values
-	start_time  string // UTC time in W3C format
-	end_time    string // UTC time in W3C format
-	profile     string
-	granularity string // availability period; possible values: `HOURLY`, `DAILY`, `WEEKLY`, `MONTHLY`
-	format      string
-	flavor      []string // sf name; may appear more than once
-	site        []string // egi site
+	start_time     string // UTC time in W3C format
+	end_time       string // UTC time in W3C format
+	//profile        string
+	job            string
+	granularity    string // availability period; possible values: `DAILY`, `MONTHLY`
+	format         string
+	flavor         []string // sf name; may appear more than once
+	supergroup     []string // name of group
+	//site       []string // EGI site
 }
 
 type ApiSFAvailabilityInProfileOutput struct {
-	Date         string  `bson:"dt"`
-	SF           string  `bson:"sf"`
-	Site         string  `bson:"s"`
-	Profile      string  `bson:"p"`
-	Availability float64 `bson:"a"`
-	Reliability  float64 `bson:"r"`
+	Date         string  `bson:"date"`
+	SF           string  `bson:"name"`
+	//Site         string  `bson:"s"`
+	SuperGroup   string  `bson:"supergroup"`
+	//Profile      string  `bson:"p"`
+	Job          string  `bson:"job"`
+	Availability float64 `bson:"availability"`
+	Reliability  float64 `bson:"reliability"`
 }
 
 type list []interface{}
@@ -104,16 +120,16 @@ func prepareFilter(input ApiSFAvailabilityInProfileInput) bson.M {
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	filter := bson.M{
-		"p":  input.profile,
-		"dt": bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"job":  input.job,
+		"date": bson.M{"$gte": tsYMD, "$lte": teYMD},
 	}
 
 	if len(input.flavor) > 0 {
-		filter["sf"] = bson.M{"$in": input.flavor}
+		filter["name"] = bson.M{"$in": input.flavor}
 	}
 
-	if len(input.site) > 0 {
-		filter["s"] = bson.M{"$in": input.site}
+	if len(input.supergroup) > 0 {
+		filter["supergroup"] = bson.M{"$in": input.supergroup}
 	}
 
 	return filter
@@ -125,9 +141,9 @@ func Daily(input ApiSFAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "sf": "$sf", "s": "$s", "a": "$a", "r": "$r", "p": "$p"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "a": "$_id.a", "r": "$_id.r", "s": "$_id.s", "p": "$_id.p"}},
-		{"$sort": bson.D{{"s", 1}, {"sf", 1}, {"dt", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"date": bson.D{{"$substr", list{"$date", 0, 8}}}, "name": "$name", "supergroup": "$supergroup", "availability": "$availability", "reliability": "$reliability", "job": "$job"}}},
+		{"$project": bson.M{"date": "$_id.date", "name": "$_id.name", "availability": "$_id.availability", "reliability": "$_id.reliability", "supergroup": "$_id.supergroup", "job": "$_id.job"}},
+		{"$sort": bson.D{{"supergroup", 1}, {"name", 1}, {"date", 1}}}}
 
 	return query
 }
@@ -138,10 +154,10 @@ func Monthly(input ApiSFAvailabilityInProfileInput) []bson.M {
 
 	query := []bson.M{
 		{"$match": filter},
-		{"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 6}}}, "s": "$s", "p": "$p", "sf": "$sf"}, "avgup": bson.M{"$avg": "$up"}, "avgu": bson.M{"$avg": "$u"}, "avgd": bson.M{"$avg": "$d"}}},
-		{"$project": bson.M{"dt": "$_id.dt", "sf": "$_id.sf", "s": "$_id.s", "p": "$_id.p", "a": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgu"}}}}, 100}},
-			"r": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgu"}}, "$avgd"}}}}, 100}}}},
-		{"$sort": bson.D{{"s", 1}, {"sf", 1}, {"dt", 1}}}}
+		{"$group": bson.M{"_id": bson.M{"date": bson.D{{"$substr", list{"$date", 0, 6}}}, "name": "$name", "supergroup": "$supergroup", "job": "$job"}, "avgup": bson.M{"$avg": "$up"}, "avgunknown": bson.M{"$avg": "$unknown"}, "avgdown": bson.M{"$avg": "$down"}}},
+		{"$project": bson.M{"date": "$_id.date", "name": "$_id.name", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}}, 100.0}},
+			"reliability": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}}, 100}}}},
+		{"$sort": bson.D{{"supergroup", 1}, {"name", 1}, {"date", 1}}}}
 
 	return query
 }

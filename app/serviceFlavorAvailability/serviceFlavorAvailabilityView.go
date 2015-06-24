@@ -38,32 +38,32 @@ func createView(results []ApiSFAvailabilityInProfileOutput, format string) ([]by
 
 	docRoot := &Root{}
 
-	prevProfile := ""
-	prevSite := ""
+	prevJob := ""
+	prevSuperGroup := ""
 	prevSF := ""
 	sf := &SF{}
-	site := &Site{}
-	profile := &Profile{}
+	superGroup := &SuperGroup{}
+	job := &Job{}
 	// we iterate through the results struct array
 	// keeping only the value of each row
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], row.Date)
 		//if new profile value does not match the previous profile value
 		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name: row.Profile,
+		if prevJob != row.Job {
+			prevJob = row.Job
+			job = &Job{
+				Name: row.Job,
 			}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevSite = ""
+			docRoot.Job = append(docRoot.Job, job)
+			prevSuperGroup = ""
 		}
-		if prevSite != row.Site {
-			prevSite = row.Site
-			site = &Site{
-				Site: row.Site,
+		if prevSuperGroup != row.SuperGroup {
+			prevSuperGroup = row.SuperGroup
+			superGroup = &SuperGroup{
+				SuperGroup: row.SuperGroup,
 			}
-			profile.Site = append(profile.Site, site)
+			job.SuperGroup = append(job.SuperGroup, superGroup)
 			prevSF = ""
 		}
 		if prevSF != row.SF {
@@ -71,7 +71,7 @@ func createView(results []ApiSFAvailabilityInProfileOutput, format string) ([]by
 			sf = &SF{
 				SF: row.SF,
 			}
-			site.SF = append(site.SF, sf)
+			superGroup.SF = append(superGroup.SF, sf)
 		}
 		//we append the new availability values
 		sf.Availability = append(sf.Availability,

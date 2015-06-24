@@ -50,19 +50,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	// This is the input we will receive from the API
-	urlValues := r.URL.Query()
-
-	input := ApiSFAvailabilityInProfileInput{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
-		urlValues.Get("profile"),
-		urlValues.Get("granularity"),
-		urlValues.Get("format"),
-		urlValues["flavor"],
-		urlValues["site"],
-	}
-
 	// Token based tenant authentication
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
@@ -72,6 +59,21 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	// This is the input we will receive from the API
+	urlValues := r.URL.Query()
+
+	input := ApiSFAvailabilityInProfileInput{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		//urlValues.Get("profile"),
+		urlValues.Get("job"),
+		urlValues.Get("granularity"),
+		urlValues.Get("format"),
+		urlValues["flavor"],
+		//urlValues["site"],
+		urlValues["supergroup"],
 	}
 
 	if strings.ToLower(input.format) == "json" {
@@ -101,13 +103,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "sfreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "service_ar", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "sfreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "service_ar", query, &results)
 	}
 
 	if err != nil {
