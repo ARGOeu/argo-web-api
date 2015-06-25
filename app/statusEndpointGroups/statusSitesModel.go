@@ -24,14 +24,14 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusEndpointGroup
+package statusEndpointGroups
 
 import "encoding/xml"
 
 type MongoInterface struct {
-	Profile        string `bson:"profile"         xml:"-" json:"-"`
-	Group          string `bson:"group"           xml:"-" json:"-"`
-	EndpointGroup  string `bson:"endpoint_group"  xml:"-" json:"-"`
+	Job            string `bson:"job"         xml:"-" json:"-"`
+	SuperGroup     string `bson:"supergroup"           xml:"-" json:"-"`
+	EndpointGroup  string `bson:"name"  xml:"-" json:"-"`
 	Timestamp      string `bson:"timestamp"       xml:"-" json:"-"`
 	Status         string `bson:"status"          xml:"-" json:"-"`
 	PreviousStatus string `bson:"previous_status" xml:"-" json:"-"`
@@ -40,51 +40,75 @@ type MongoInterface struct {
 }
 
 type StatusEndpointGroupInput struct {
-	start_time string // UTC time in W3C format
-	end_time   string
-	vo         string
-	profile    string
-	group_type string
-	group      string
+	Start      string // UTC time in W3C format
+	End        string
+	Job        string
+	Type       string
+	Name       string
+	SuperGroup string
 }
-
-type StatusEndpointGroupOutput struct {
-	Timestamp string `bson:"ts"`
-	Roc       string `bson:"roc"`
-	Site      string `bson:"site"`
-	Status    string `bson:"s"`
-	Time_int  int    `bson:"ti"`
-	P_status  string `bson:"ps"`
-	Profile   string `bson:"p"`
-}
-
-type ReadRoot struct {
+type Root struct {
 	XMLName xml.Name `xml:"root"`
-	Profile *Profile
+	Jobs    []Job
 }
 
-type Profile struct {
-	XMLName xml.Name `xml:"profile"`
-	Name    string   `xml:"name,attr"`
-	Groups  []*Group
+type Job struct {
+	XMLName       xml.Name        `xml:"Job" json:"-"`
+	Name          string          `xml:"name,attr" json:"name" bson:"job"`
+	EndpointGroup []EndpointGroup `bson:"endpointgroup"`
 }
 
-type Group struct {
-	XMLName xml.Name `xml:"group"`
-	Name    string   `xml:"name,attr"`
-	Type    string   `xml:"type,attr"`
-	Groups  []*Group
-	Sites   []*Site
-}
-
-type Site struct {
-	XMLName  xml.Name `xml:"endpoint"`
-	Name     string   `xml:"name,attr"`
-	Timeline []*Status
+type EndpointGroup struct {
+	XMLName xml.Name `xml:"EndpointGroup"`
+	Name    string   `xml:"name,attr" bson:"name"`
+	Status  []Status `bson:"statuses"`
 }
 
 type Status struct {
-	XMLName   xml.Name `xml:"status"`
-	Timestamp string   `xml:"timestamp,attr"`
-	Status    string   `xml:"status,attr"`
+	XMLName        xml.Name `xml:"Status"`
+	Timestamp      string   `xml:"timestamp,attr" bson:"timestamp"`
+	Status         string   `xml:"Status,attr" bson:"status"`
+	PreviousStatus string   `xml:"PreviousStatus,attr" bson:"previous_status"`
 }
+
+//
+// type StatusEndpointGroupOutput struct {
+// 	Timestamp string `bson:"ts"`
+// 	Roc       string `bson:"roc"`
+// 	Site      string `bson:"site"`
+// 	Status    string `bson:"s"`
+// 	Time_int  int    `bson:"ti"`
+// 	P_status  string `bson:"ps"`
+// 	Profile   string `bson:"p"`
+// }
+//
+// type ReadRoot struct {
+// 	XMLName xml.Name `xml:"root"`
+// 	Profile *Profile
+// }
+//
+// type Profile struct {
+// 	XMLName xml.Name `xml:"profile"`
+// 	Name    string   `xml:"name,attr"`
+// 	Groups  []*Group
+// }
+//
+// type Group struct {
+// 	XMLName xml.Name `xml:"group"`
+// 	Name    string   `xml:"name,attr"`
+// 	Type    string   `xml:"type,attr"`
+// 	Groups  []*Group
+// 	Sites   []*Site
+// }
+//
+// type Site struct {
+// 	XMLName  xml.Name `xml:"endpoint"`
+// 	Name     string   `xml:"name,attr"`
+// 	Timeline []*Status
+// }
+//
+// type Status struct {
+// 	XMLName   xml.Name `xml:"status"`
+// 	Timestamp string   `xml:"timestamp,attr"`
+// 	Status    string   `xml:"status,attr"`
+// }

@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusEndpointGroup
+package statusEndpointGroups
 
 import (
 	//"bytes"
@@ -34,7 +34,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
@@ -77,37 +77,40 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	urlValues := r.URL.Query()
 
 	input := StatusEndpointGroupInput{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
-		urlValues.Get("vo"),
-		urlValues.Get("profile"),
-		urlValues.Get("group_type"),
-		group,
+		Start:      urlValues.Get("start_time"),
+		End:        urlValues.Get("end_time"),
+		Job:        urlValues.Get("job"),
+		SuperGroup: urlValues.Get("supergroup_name"),
+		Name:       group,
+		// Profile: urlValues.Get("profile"),
+		// Type:  urlValues.Get("group_type"),
+		// urlValues.Get("vo"),
 	}
 
-	fmt.Println(group)
 	// Set default values
-	if len(input.profile) == 0 {
-		input.profile = "ch.cern.sam.ROC_CRITICAL"
-	}
-
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
-	}
-
-	if len(input.vo) == 0 {
-		input.vo = "ops"
-	}
+	// if len(input.profile) == 0 {
+	// 	input.profile = "ch.cern.sam.ROC_CRITICAL"
+	// }
+	//
+	// if len(input.group_type) == 0 {
+	// 	input.group_type = "site"
+	// }
+	//
+	// if len(input.vo) == 0 {
+	// 	input.vo = "ops"
+	// }
 
 	// Mongo Session
-	results := []StatusEndpointGroupOutput{}
+	results := []Job{}
 
 	session, err = mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
-	c := session.DB(tenantDbConfig.Db).C("status_sites")
-	err = c.Find(prepQuery(input)).All(&results)
+	c := session.DB(tenantDbConfig.Db).C("status_endpointgroups")
+	// err = c.Find(prepQuery(input)).All(&results)
 
-	mongo.CloseSession(session)
+	query := aggregateQuery(input)
+	err = c.Pipe(query).All(&results)
 
 	output, err = createView(results, input) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
@@ -120,14 +123,61 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
+func aggregateQuery(input StatusEndpointGroupInput) []bson.M {
+
+	filter := prepQuery(input)
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"job":        "$job",
+				"supergroup": "$supergroup",
+				"name":       "$name"},
+			"name": bson.M{
+				"$first": "$name",
+			},
+			"statuses": bson.M{
+				"$push": "$$ROOT",
+			}}},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"job": "$_id.job",
+			},
+			"endpointgroup": bson.M{
+				"$push": "$$ROOT",
+			}}},
+		{"$project": bson.M{
+			"job":           "$_id.job",
+			"endpointgroup": "$endpointgroup",
+			// "name":            "$_id.name",
+			// "supergroup":      "$statuses.supergroup",
+			// "status":          "$statuses.status",
+			// "previous_status": "$statuses.previous_status",
+			// "timestamp":       "$statuses.timestamp",
+		}},
+		// {"$sort": bson.D{
+		// 	{"job", 1},
+		// 	{"supergroup", 1},
+		// 	{"name", 1},
+		// 	{"timestamp", 1},
+		// 	// {"date_integer", 1},
+		// 	// {"time_integer", 1},
+		// }},
+	}
+
+	return query
+
+}
+
 func prepQuery(input StatusEndpointGroupInput) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	// timeStart, _ := time.Parse(zuluForm, input.start_time)
-	// timeEnd, _ := time.Parse(zuluForm, input.end_time)
+	// timeStart, _ := time.Parse(zuluForm, input.Start)
+	// timeEnd, _ := time.Parse(zuluForm, input.End)
 	// timeStartYMD, _ := strconv.Atoi(timeStart.Format(ymdForm))
 	// //timeEndYMD, _ := strconv.Atoi(timeEnd.Format(ymdForm))
 	// // parse time as integer
@@ -141,51 +191,30 @@ func prepQuery(input StatusEndpointGroupInput) bson.M {
 	timeEndInt := 0
 	timeStartYMD := 0
 
-	if input.start_time != "" {
-		timeStart, _ := time.Parse(zuluForm, input.start_time)
+	if input.Start != "" {
+		timeStart, _ := time.Parse(zuluForm, input.Start)
 		timeStartYMD, _ = strconv.Atoi(timeStart.Format(ymdForm))
 		timeStartInt = (timeStart.Hour() * 10000) + (timeStart.Minute() * 100) + timeStart.Second()
 		query["date_integer"] = timeStartYMD
 	}
 
-	if input.end_time != "" {
-		timeEnd, _ := time.Parse(zuluForm, input.end_time)
+	if input.End != "" {
+		timeEnd, _ := time.Parse(zuluForm, input.End)
 		timeEndInt = (timeEnd.Hour() * 10000) + (timeEnd.Minute() * 100) + timeEnd.Second()
-
 	}
-
-	if input.end_time != "" && input.start_time != "" {
+	if input.End != "" && input.Start != "" {
 		query["time_integer"] = bson.M{"$gte": timeStartInt, "$lte": timeEndInt}
 
 	}
 
-	if input.endpointGroup != "" {
-		query["endpoint_group"] = input.endpointGroup
-		query["endpoint_group_type"] = input.endpointGroupType
+	if input.Name != "" {
+		query["name"] = input.Name
 	}
 
-	if input.group != "" {
-		query["group"] = input.Group
+	if input.SuperGroup != "" {
+		query["supergroup"] = input.SuperGroup
 	}
 
 	return query
-	// if input.group_type == "site" {
-	//
-	// 	query := bson.M{
-	// 		"date_integer":   timeStartYMD,
-	// 		"endpoint_group": input.group,
-	// 		"time_integer":   bson.M{"$gte": timeStart_int, "$lte": timeEnd_int},
-	// 	}
-	// 	return query
-	//
-	// } else if input.group_type == "ngi" {
-	// 	query := bson.M{
-	// 		"date_integer": timeStartYMD,
-	// 		"group":        input.group,
-	// 		"time_integer": bson.M{"$gte": timeStart_int, "$lte": timeEnd_int},
-	// 	}
-	// 	return query
-	// }
-	// return bson.M{"di": 0}
 
 }

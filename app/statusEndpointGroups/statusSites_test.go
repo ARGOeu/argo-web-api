@@ -24,11 +24,11 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusEndpointGroup
+package statusEndpointGroups
 
 import (
+	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"testing"
 
@@ -150,12 +150,12 @@ func (suite *StatusEndpointGroupTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.tenantDbConf.Db).C("status_sites")
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpointgroups")
 	c.Insert(
 		bson.M{
-			"profile":         "ch.cern.sam.ROC-CRITICAL",
-			"group":           "NGI_GRNET",
-			"endpoint_group":  "GR-01-AUTH",
+			"job":             "JOB_A",
+			"supergroup":      "NGI_GRNET",
+			"name":            "GR-01-AUTH",
 			"timestamp":       "2015-01-06T00:00:41Z",
 			"status":          "OK",
 			"previous_status": "OK",
@@ -164,9 +164,9 @@ func (suite *StatusEndpointGroupTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"profile":         "ch.cern.sam.ROC-CRITICAL",
-			"group":           "NGI_GRNET",
-			"endpoint_group":  "GR-01-AUTH",
+			"job":             "JOB_A",
+			"supergroup":      "NGI_GRNET",
+			"name":            "GR-01-AUTH",
 			"timestamp":       "2015-01-06T00:05:00Z",
 			"status":          "CRITICAL",
 			"previous_status": "OK",
@@ -175,39 +175,51 @@ func (suite *StatusEndpointGroupTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"profile":         "ch.cern.sam.ROC-CRITICAL",
-			"group":           "NGI_GRNET",
-			"endpoint_group":  "GR-01-AUTH",
+			"job":             "JOB_A",
+			"supergroup":      "NGI_GRNET",
+			"name":            "GR-01-AUTH",
 			"timestamp":       "2015-01-06T00:12:00Z",
 			"status":          "OK",
 			"previous_status": "CRITICAL",
 			"date_integer":    20150106,
 			"time_integer":    1200,
 		})
-	c = session.DB(suite.tenantDbConf.Db).C("status_sites")
+	// result := []bson.M{}
+	// c.Find(bson.M{}).All(&result)
+	// fmt.Println(result)
 }
 
 //TestListStatusEndpointGroup tests the correct formatting when listing Sites' statuses
 func (suite *StatusEndpointGroupTestSuite) TestListStatusEndpointGroup() {
-
-	request, _ := http.NewRequest("GET", "/api/v1/status/sites/timeline/NGI_GRNET", strings.NewReader(""))
+	query := "?start_time=2015-01-06T00:00:00Z&end_time=2015-01-06T23:59:59Z&job=JOB_A&supergroup_name=NGI_GRNET"
+	request, _ := http.NewRequest("GET", "/api/v1/status/sites/timeline/GR-01-AUTH"+query, strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 
-	urlValues := url.Values{}
-	urlValues.Add("start_time", "2015-04-10T12:00:00Z")
-	urlValues.Add("end_time", "2015-04-30T23:00:00Z")
-	urlValues.Add("group_type", "site")
-
-	request.Form = urlValues
+	// urlValues := url.Values{}
+	// urlValues.Add("start_time", "2015-04-10T12:00:00Z")
+	// urlValues.Add("end_time", "2015-04-30T23:00:00Z")
+	// urlValues.Add("job", "JOB_A")
+	//
+	// // urlValues.Add("group_type", "site")
+	//
+	// request.Form = urlValues
 
 	code, _, output, _ := List(request, suite.cfg)
-
-	metricProfileRequestXML := `aa`
+	fmt.Println(string(output))
+	statusEndpointGroupRequestXML := ` <root>
+   <Job name="JOB_A">
+     <EndpointGroup name="GR-01-AUTH">
+       <Status timestamp="2015-01-06T00:00:41Z" Status="OK" PreviousStatus="OK"></Status>
+       <Status timestamp="2015-01-06T00:05:00Z" Status="CRITICAL" PreviousStatus="OK"></Status>
+       <Status timestamp="2015-01-06T00:12:00Z" Status="OK" PreviousStatus="CRITICAL"></Status>
+     </EndpointGroup>
+   </Job>
+ </root>`
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+	suite.Regexp(statusEndpointGroupRequestXML, string(output), "Response body mismatch")
 }
 
 //TearDownTest to tear down every test
