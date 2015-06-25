@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngiAvailability
+package groupGroupsAvailability
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package ngiAvailability
+package groupGroupsAvailability
 
 import (
 	"encoding/xml"
