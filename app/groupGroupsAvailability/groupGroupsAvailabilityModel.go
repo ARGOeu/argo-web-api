@@ -44,7 +44,7 @@ type ApiSuperGroupAvailabilityInProfileInput struct {
 	// optional values
 	Granularity string   //availability period; possible values: `DAILY`, MONTHLY`
 	format      string   // default XML; possible values are: XML, JSON
-	GroupName   []string // site name; may appear more than once
+	GroupName   []string // endpoint group name; may appear more than once
 }
 
 // ApiSuperGroupAvailabilityInProfileOutput to represent db data retrieval

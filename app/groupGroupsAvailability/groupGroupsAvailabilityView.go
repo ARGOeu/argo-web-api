@@ -57,7 +57,7 @@ func createView(results []ApiSuperGroupAvailabilityInProfileOutput, format strin
 			prevSuperGroup = ""
 		}
 		//if new superGroup does not match the previous superGroup value
-		//we create a new ngi entry in the xml
+		//we create a new superGroup entry in the xml
 		if prevSuperGroup != row.SuperGroup {
 			prevSuperGroup = row.SuperGroup
 			superGroup = &SuperGroup{
