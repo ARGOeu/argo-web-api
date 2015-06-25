@@ -98,15 +98,46 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
 	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
 	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
+
 	// Get Job details
 	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
-	// Search for metric profile
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Search job for used metric profile
 	metricProfileName := ""
 	metricProfileName, err = jobs.GetMetricProfile(jobResult)
 
+	// Query details for the metric profile used
 	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
-	err = metricCol.Find(prepQuery(input, selectedGroupType)).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+	// Find if the selected group type is endpoint group
+	// or group of groups. If is not found in the job
+	if jobResult.GroupOfGroups == input.groupType {
+		selectedGroupType = "group"
+	} else if jobResult.EndpointGroup == input.groupType {
+		selectedGroupType = "endpoint"
+	} else {
+		message := "the specific group type is not supported in this job"
+		output, err := messageXML(message) //Render the response into XML
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
 
+	}
+
+	// Query the detailed metric results
+	err = metricCol.Find(prepQuery(input, selectedGroupType)).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create the view
 	output, err = createView(results, input, metricProfileResult) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
@@ -136,6 +167,7 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 	if selectedGroupType == "endpoint" {
 
 		query := bson.M{
+			"job":            input.job,
 			"date_int":       tsYMD,
 			"endpoint_group": input.group,
 			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
@@ -144,16 +176,19 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 		return query
 
 	} else if selectedGroupType == "group" {
+
 		query := bson.M{
-			"date_int": tsYMD,
-			"group":    input.group,
-			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},
+			"job":        input.job,
+			"date_int":   tsYMD,
+			"supergroup": input.group,
+			"time_int":   bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 
 	} else if input.groupType == "host" {
 		query := bson.M{
+			"job":      input.job,
 			"date_int": tsYMD,
 			"host":     input.group,
 			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},

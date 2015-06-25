@@ -60,6 +60,7 @@ func createView(results []DataOutput, input InputParams, metricDetail metricProf
 	for _, row := range results {
 
 		if filterByProfile(row.Service, row.Metric, metricDetail) == 1 {
+			fmt.Println("skipped", row.Service, row.Metric)
 			continue
 		}
 
@@ -130,14 +131,21 @@ func createView(results []DataOutput, input InputParams, metricDetail metricProf
 
 }
 
+func messageXML(answer string) ([]byte, error) {
+	docRoot := &Message{}
+	docRoot.Message = answer
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	return output, err
+}
+
 func filterByProfile(service string, metric string, metricDetail metricProfiles.MongoInterface) int {
-	fmt.Println(metricDetail.Services)
+
 	for _, serviceItem := range metricDetail.Services {
-		fmt.Println(serviceItem)
+
 		if serviceItem.Service == service {
 
 			for _, metricItem := range serviceItem.Metrics {
-				fmt.Println(serviceItem, "", metricItem)
+
 				if metricItem == metric {
 					return 0
 				}

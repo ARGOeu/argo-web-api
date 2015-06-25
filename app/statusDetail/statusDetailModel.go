@@ -41,7 +41,7 @@ type InputParams struct {
 type DataOutput struct {
 	Job               string `bson:"job"`
 	Timestamp         string `bson:"timestamp"`
-	Group             string `bson:"group"`
+	Group             string `bson:"supergroup"`
 	EndpointGroup     string `bson:"endpoint_group"`
 	GroupType         string `bson:"group_type"`
 	EndpointGroupType string `bson:"endpoint_group_type"`
@@ -102,4 +102,10 @@ type StatusXML struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
 	Status    string   `xml:"status,attr"`
+}
+
+// Message struct to hold the xml response
+type Message struct {
+	XMLName xml.Name `xml:"root"`
+	Message string
 }
