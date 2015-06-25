@@ -246,16 +246,17 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	endpointGrouAvailabitiyXML := ` <root>
    <Job name="Job_A">
-     <EndpointGroup name="ST01">
+     <EndpointGroup name="ST01" SuperGroup="GROUP_A">
        <Availability timestamp="2015-06-22" availability="66.7" reliability="54.6"></Availability>
        <Availability timestamp="2015-06-23" availability="100" reliability="100"></Availability>
      </EndpointGroup>
-     <EndpointGroup name="ST02">
+     <EndpointGroup name="ST02" SuperGroup="GROUP_A">
        <Availability timestamp="2015-06-22" availability="70" reliability="45"></Availability>
        <Availability timestamp="2015-06-23" availability="43.5" reliability="56"></Availability>
      </EndpointGroup>
    </Job>
  </root>`
+	//fmt.Println(string(output))
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")

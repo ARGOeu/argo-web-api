@@ -63,7 +63,9 @@ func createView(results []MongoInterface, format string) ([]byte, error) {
 		if prevEndpointGroup != row.Name {
 			prevEndpointGroup = row.Name
 			endpointGroup = &EndpointGroup{
-				Name: row.Name}
+				Name:       row.Name,
+				SuperGroup: row.SuperGroup,
+			}
 			job.EndpointGroup = append(job.EndpointGroup, endpointGroup)
 		}
 		//we append the new availability values

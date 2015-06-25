@@ -68,13 +68,14 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		Format:      urlValues.Get("format"),
 		Job:         urlValues.Get("job"),
 		GroupName:   urlValues["group_name"],
+		SuperGroup:  urlValues["supergroup_name"],
 		// urlValues.Get("availability_profile"),
 		// urlValues.Get("infrastructure"),
 		// urlValues.Get("production"),
 		// urlValues.Get("monitored"),
 		// urlValues.Get("certification"),
-
 	}
+
 	//
 	// if len(input.infrastructure) == 0 {
 	// 	input.infrastructure = "Production"

@@ -58,11 +58,12 @@ type Availability struct {
 type EndpointGroup struct {
 	XMLName      xml.Name `xml:"EndpointGroup" json:"-"`
 	Name         string   `xml:"name,attr" json:"name"`
+	SuperGroup   string   `xml:"SuperGroup,attr" json:"supergroup"`
 	Availability []*Availability
 }
 
 type Job struct {
-	XMLName       xml.Name `xml json:"-"`
+	XMLName       xml.Name `xml:"Job" json:"-"`
 	Name          string   `xml:"name,attr" json:"name"`
 	EndpointGroup []*EndpointGroup
 }
@@ -85,6 +86,7 @@ type EndpointGroupAvailabilityInput struct {
 	Certification  string   //certification status
 	Format         string   // default XML; possible values are: XML, JSON
 	GroupName      []string // endpointGroup name; may appear more than once
+	SuperGroup     []string
 }
 
 type list []interface{}
@@ -112,6 +114,10 @@ func prepareFilter(input EndpointGroupAvailabilityInput) bson.M {
 
 	if len(input.GroupName) > 0 {
 		filter["name"] = bson.M{"$in": input.GroupName}
+	}
+
+	if len(input.SuperGroup) > 0 {
+		filter["supergroup"] = bson.M{"$in": input.SuperGroup}
 	}
 
 	// filter["i"] = input.Infrastructure
