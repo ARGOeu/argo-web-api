@@ -102,6 +102,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Get Job details
 	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
 	if err != nil {
+		output = []byte("Error on retrieving job information")
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
@@ -113,6 +114,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Query details for the metric profile used
 	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
 	if err != nil {
+
+		output = []byte("Error on retrieving metric profile information")
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}

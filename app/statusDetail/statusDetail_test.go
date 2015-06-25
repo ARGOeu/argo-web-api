@@ -150,7 +150,7 @@ func (suite *StatusDetailTestSuite) SetupTest() {
 		"profiles": []bson.M{
 			bson.M{
 				"name":  "metric",
-				"value": "ch.cern.sam.ROC_CRITICAL"},
+				"value": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -342,7 +342,25 @@ func (suite *StatusDetailTestSuite) SetupTest() {
 }
 
 func (suite *StatusDetailTestSuite) TestReadStatusDetail() {
-	respXML := ` <root>
+	respXML1 := ` <root>
+   <job name="ROC_CRITICAL">
+     <group name="NGI_GRNET" type="NGI">
+       <group name="HG-03-AUTH" type="SITES">
+         <group name="CREAM-CE" type="service_type">
+           <host name="cream01.afroditi.gr">
+             <metric name="emi.cream.CREAMCE-JobSubmit">
+               <status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+               <status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+               <status timestamp="2015-05-01T05:00:00Z" status="OK"></status>
+             </metric>
+           </host>
+         </group>
+       </group>
+     </group>
+   </job>
+ </root>`
+
+	respXML2 := ` <root>
    <job name="EUDAT_CRITICAL">
      <group name="EUDAT_EL" type="EUDAT_GROUP">
        <group name="EL-01-AUTH" type="EUDAT_SITE">
@@ -359,20 +377,38 @@ func (suite *StatusDetailTestSuite) TestReadStatusDetail() {
      </group>
    </job>
  </root>`
-	fullurl := "/api/v1/status/metrics/timeline/EUDAT_EL?" +
+
+	fullurl1 := "/api/v1/status/metrics/timeline/NGI_GRNET?" +
+		"group_type=NGI&start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&job=ROC_CRITICAL"
+
+	fullurl2 := "/api/v1/status/metrics/timeline/EUDAT_EL?" +
 		"group_type=EUDAT_GROUP&start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&job=EUDAT_CRITICAL"
-	// Prepare the request object
-	request, _ := http.NewRequest("GET", fullurl, strings.NewReader(""))
+
+	// Prepare the request object for fist tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY2")
+	request.Header.Set("x-api-key", "KEY1")
 	// Pass request to controller calling List() handler method
 	code, _, output, _ := List(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	suite.Equal(respXML1, string(output), "Response body mismatch")
+
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Pass request to controller calling List() handler method
+	code, _, output, _ = List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respXML2, string(output), "Response body mismatch")
 
 }
 
