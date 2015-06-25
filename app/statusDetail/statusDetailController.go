@@ -86,7 +86,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// Structure to hold job information
 	jobResult := jobs.Job{}
-	metricProfileResults := metricProfiles.MongoInterface{}
+	metricProfileResult := metricProfiles.MongoInterface{}
 
 	// Mongo Session
 	results := []DataOutput{}
@@ -97,12 +97,17 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
 	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
-
+	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
+	// Get Job details
 	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
+	// Search for metric profile
+	metricProfileName := ""
+	metricProfileName, err = jobs.GetMetricProfile(jobResult)
 
+	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
 	err = metricCol.Find(prepQuery(input, selectedGroupType)).All(&results)
 
-	output, err = createView(results, input, metricProfileResults) //Render the results into XML format
+	output, err = createView(results, input, metricProfileResult) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}

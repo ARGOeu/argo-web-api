@@ -28,6 +28,7 @@ package jobs
 
 import (
 	"encoding/xml"
+	"errors"
 
 	"labix.org/v2/mgo/bson"
 )
@@ -80,6 +81,18 @@ func createJob(input Job) bson.M {
 		"filter_tags":     input.FilterTags,
 	}
 	return query
+}
+
+// GetMetricProfile is a function that takes a job struc element
+// and returns the name of the metric profile (if exists)
+func GetMetricProfile(input Job) (string, error) {
+	for _, element := range input.Profiles {
+		if element.Name == "metric" {
+			return element.Value, nil
+		}
+	}
+
+	return "", errors.New("Unable to find metric profile with specified name")
 }
 
 // searchName is used to create a simple query object based on name

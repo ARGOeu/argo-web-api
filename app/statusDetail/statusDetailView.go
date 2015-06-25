@@ -28,6 +28,7 @@ package statusDetail
 
 import (
 	"encoding/xml"
+	"fmt"
 
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 )
@@ -129,16 +130,20 @@ func createView(results []DataOutput, input InputParams, metricDetail metricProf
 
 }
 
-func filterByProfile(stype string, metric string, metricDetail metricProfiles.MongoInterface) int {
+func filterByProfile(service string, metric string, metricDetail metricProfiles.MongoInterface) int {
+	fmt.Println(metricDetail.Services)
+	for _, serviceItem := range metricDetail.Services {
+		fmt.Println(serviceItem)
+		if serviceItem.Service == service {
 
-	// for _, item := range metricDetail {
-	//
-	// 	if item.Metric == metric {
-	// 		if item.Service == stype {
-	// 			return 0
-	// 		}
-	// 	}
-	// }
+			for _, metricItem := range serviceItem.Metrics {
+				fmt.Println(serviceItem, "", metricItem)
+				if metricItem == metric {
+					return 0
+				}
+			}
+		}
+	}
 
 	return 1
 
