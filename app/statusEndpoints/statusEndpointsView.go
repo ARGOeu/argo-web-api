@@ -37,85 +37,31 @@ func createView(results []StatusEndpointsOutput, input StatusEndpointsInput) ([]
 		return output, err
 	}
 
-	profile := &Profile{}
-	profile.Name = input.profile
-	vo := &Group{}
-	vo.Type = "vo"
-	vo.Name = input.vo
+	job := &JobXML{}
+	job.Name = input.job
 
-	prevHostname := ""
-	prevSite := ""
-	prevRoc := ""
-	prevService := ""
-
-	var pp_Endpoint *Endpoint
-	var pp_Site *Group
-	var pp_Roc *Group
-	var pp_Service *Group
+	endpoint := &EndpointXML{}
+	endpoint.Hostname = input.hostname
+	endpoint.Service = input.service_type
+	job.Endpoints = append(job.Endpoints, endpoint)
 
 	for _, row := range results {
-
-		// filter by profile
-		if row.Profile != input.profile {
+		if row.Job != input.job {
 			continue
 		}
-
-		if row.Roc != prevRoc && row.Roc != "" {
-			roc := &Group{}
-			roc.Name = row.Roc
-			roc.Type = "ngi"
-			vo.Groups = append(vo.Groups, roc)
-			prevRoc = roc.Name
-			pp_Roc = roc
+		if row.Hostname != input.hostname {
+			continue
 		}
-
-		if row.Site != prevSite && row.Site != "" {
-			site := &Group{}
-			site.Name = row.Site
-			site.Type = "site"
-			pp_Roc.Groups = append(pp_Roc.Groups, site)
-			prevSite = row.Site
-			pp_Site = site
+		if row.Service != input.service_type {
+			continue
 		}
-
-		if row.Service != prevService && row.Service != "" {
-			service := &Group{}
-			service.Name = row.Service
-			service.Type = "service_type"
-			pp_Site.Groups = append(pp_Site.Groups, service)
-
-			prevService = row.Service
-			pp_Service = service
-		}
-
-		if row.Hostname != prevHostname {
-
-			endpoint := &Endpoint{}
-			//Add the prev status as the firstone
-
-			endpoint.Hostname = row.Hostname
-			endpoint.Service = row.Service
-
-			pp_Service.Endpoints = append(pp_Service.Endpoints, endpoint)
-			prevHostname = row.Hostname
-			pp_Endpoint = endpoint
-
-			status := &Status{}
-			status.Timestamp = input.start_time
-			status.Status = row.P_status
-			pp_Endpoint.Timeline = append(pp_Endpoint.Timeline, status)
-
-		} else {
-			status := &Status{}
-			status.Timestamp = row.Timestamp
-			status.Status = row.Status
-			pp_Endpoint.Timeline = append(pp_Endpoint.Timeline, status)
-		}
-
+		status := &StatusXML{}
+		status.Timestamp = row.Timestamp
+		status.Status = row.Status
+		endpoint.Timeline = append(endpoint.Timeline, status)
 	}
 
-	profile.Groups = append(profile.Groups, vo)
-	docRoot.Profile = profile
+	docRoot.Job = job
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err

@@ -33,6 +33,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
@@ -72,7 +73,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// URL PATH_VALUES
 	urlPath := r.URL.Path
-	group := strings.Split(urlPath, "/")[6]
+	hostname := strings.Split(urlPath, "/")[6]
+	service_type := strings.Split(urlPath, "/")[7]
 
 	urlValues := r.URL.Query()
 
@@ -80,29 +82,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
 		urlValues.Get("job"),
-		urlValues.Get("group_type"),
-		group,
-	}
-
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
+		hostname,
+		service_type,
 	}
 
 	// Mongo Session
 	results := []StatusEndpointsOutput{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
 	c := session.DB(tenantDbConfig.Db).C("status_endpoints")
 	err = c.Find(prepQuery(input)).All(&results)
 
 	output, err = createView(results, input) //Render the results into XML format
-	//if strings.ToLower(input.format) == "json" {
-	//	contentType = "application/json"
-	//}
-	//buffer.WriteString(strconv.Itoa(len(results)))
-	//output = []byte(buffer.String())
+
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	return code, h, output, err
@@ -121,38 +112,14 @@ func prepQuery(input StatusEndpointsInput) bson.M {
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.group_type == "endpoint" {
-		query := bson.M{
-			"job":            input.job,
-			"date_int":       tsYMD,
-			"endpoint_group": input.group,
-			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
-		}
-
-		return query
-
-	} else if input.group_type == "group" {
-		query := bson.M{
-			"job":            input.job,
-			"date_int":       tsYMD,
-			"supergroup":     input.group,
-			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
-		}
-
-		return query
-
-	} else if input.group_type == "host" {
-		query := bson.M{
-			"job":            input.job,
-			"date_int":       tsYMD,
-			"host":           input.group,
-			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
-		}
-
-		return query
-
+	query := bson.M{
+		"job":            input.job,
+		"date_int":       tsYMD,
+		"hostname":       input.hostname,
+		"service":        input.service_type,
+		"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
 	}
 
-	return bson.M{"date_int": 0}
+	return query
 
 }
