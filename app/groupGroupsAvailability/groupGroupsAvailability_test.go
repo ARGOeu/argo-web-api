@@ -97,8 +97,8 @@ func (suite *EgAvailabilityTestSuite) SetupTest() {
    </Job>
  </root>`
 
-	suite.dailyApiCall = "/api/v1/group_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&group_type=ngi&granularity=daily"
-	suite.monthlyApiCall = "/api/v1/group_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&group_type=ngi&granularity=monthly"
+	suite.dailyApiCall = "/api/v1/group_groups_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&granularity=daily"
+	suite.monthlyApiCall = "/api/v1/group_groups_availability?start_time=2015-06-21T00:00:00Z&end_time=2015-06-24T00:00:00Z&job=Job_A&granularity=monthly"
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -275,7 +275,6 @@ func (suite *EgAvailabilityTestSuite) TestReadGroupArMonthly() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the actual with the expected results
 	suite.Equal(suite.responseMonthly, string(output), "Response body mismatch")
-
 }
 
 // Use the API call for Daily results to check if the authentication mechanism works as expected.
