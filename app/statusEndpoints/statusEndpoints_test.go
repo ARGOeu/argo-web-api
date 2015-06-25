@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusDetail
+package statusEndpoints
 
 import (
 	"net/http"
@@ -45,8 +45,6 @@ type StatusEndpointsTestSuite struct {
 	suite.Suite
 	cfg              config.Config
 	tenantDbConf     config.MongoConfig
-	respUnauthorized string
-	respBadJSON      string
 }
 
 // Setup the Test Environment
@@ -73,11 +71,6 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.respBadJSON = " <root>\n" +
-		"   <Message>Malformated json input data</Message>\n </root>"
-
-	suite.respUnauthorized = "Unauthorized"
-
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
@@ -101,7 +94,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"store":    "ar",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argo_core_test_endpoints_db1",
+				"database": "argo_tenant1_endpoints_db1",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
 			bson.M{
@@ -122,6 +115,34 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"email":   "thor@email.com",
 				"api_key": "TH0RK3Y"},
 		}})
+		c.Insert(bson.M{
+			"name": "THEOTHERS",
+			"db_conf": []bson.M{
+				bson.M{
+					"store":    "ar",
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_tenant2_endpoints_db1",
+					"username": "admin",
+					"password": "UN3NCRYPT3D"},
+				bson.M{
+					"store":    "status",
+					"server":   "c.mongodb.org",
+					"port":     27017,
+					"database": "status_db",
+					"username": "admin",
+					"password": "UN3NCRYPT3D"},
+			},
+			"users": []bson.M{
+				bson.M{
+					"name":    "chapie",
+					"email":   "chapie@email.com",
+					"api_key": "C3POK3Y"},
+				bson.M{
+					"name":    "saul",
+					"email":   "saul@email.com",
+					"api_key": "SAULK3Y"},
+			}})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -136,59 +157,183 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// Now seed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
-		"job":                 "jobA",
+		"job":                 "JOB_A",
+		"date_int":            20150501,
 		"timestamp":           "2015-05-01T00:00:00Z",
-		"group":               "NGI_GRNET",
+		"supergroup":          "NGI_GRNET",
 		"endpoint_group":      "HG-03-AUTH",
 		"group_type":          "NGI",
-		"endpoint_group_type": "SITE",
+		"endpoint_group_type": "SITES",
 		"service":             "CREAM-CE",
 		"hostname":            "cream.afroditi.hellasgrid.gr",
 		"status":              "OK",
-		"time_int":            "0",
+		"time_int":            0,
 	})
 	c.Insert(bson.M{
-		"job":                 "jobA",
+		"job":                 "JOB_A",
+		"date_int":            20150501,
 		"timestamp":           "2015-05-01T01:00:00Z",
-		"group":               "NGI_GRNET",
+		"supergroup":          "NGI_GRNET",
 		"endpoint_group":      "HG-03-AUTH",
 		"group_type":          "NGI",
-		"endpoint_group_type": "SITE",
+		"endpoint_group_type": "SITES",
 		"service":             "CREAM-CE",
 		"hostname":            "cream.afroditi.hellasgrid.gr",
 		"status":              "CRITICAL",
-		"time_int":            "10000",
+		"time_int":            10000,
 	})
 	c.Insert(bson.M{
-		"job":                 "jobA",
+		"job":                 "JOB_A",
+		"date_int":            20150501,
 		"timestamp":           "2015-05-01T05:00:00Z",
-		"group":               "NGI_GRNET",
+		"supergroup":          "NGI_GRNET",
 		"endpoint_group":      "HG-03-AUTH",
 		"group_type":          "NGI",
-		"endpoint_group_type": "SITE",
+		"endpoint_group_type": "SITES",
 		"service":             "CREAM-CE",
 		"hostname":            "cream.afroditi.hellasgrid.gr",
 		"status":              "OK",
-		"time_int":            "50000",
+		"time_int":            50000,
+	})
+	c.Insert(bson.M{
+		"job":                 "JOB_A",
+		"date_int":            20150501,
+		"timestamp":           "2015-05-01T06:00:00Z",
+		"supergroup":          "NGI_GRNET",
+		"endpoint_group":      "HG-03-AUTH",
+		"group_type":          "NGI",
+		"endpoint_group_type": "SITES",
+		"service":             "Site-BDII",
+		"hostname":            "cream.afroditi.hellasgrid.gr",
+		"status":              "OK",
+		"time_int":            60000,
+	})
+	
+	// add now anothee authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C3POK3Y")
+	// authenticate user's api key and find corresponding tenant
+	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
+	c.Insert(bson.M{
+		"job":                 "JOB_A",
+		"date_int":            20150501,
+		"timestamp":           "2015-05-01T00:00:10Z",
+		"supergroup":          "NORTH",
+		"endpoint_group":      "JUELICH",
+		"group_type":          "REGION",
+		"endpoint_group_type": "SITES",
+		"service":             "iRods",
+		"hostname":            "irods01.juelich.de",
+		"status":              "OK",
+		"time_int":            10,
+	})
+	c.Insert(bson.M{
+		"job":                 "JOB_A",
+		"date_int":            20150501,
+		"timestamp":           "2015-05-01T01:01:00Z",
+		"supergroup":          "NORTH",
+		"endpoint_group":      "JUELICH",
+		"group_type":          "REGION",
+		"endpoint_group_type": "SITES",
+		"service":             "iRods",
+		"hostname":            "irods01.juelich.de",
+		"status":              "CRITICAL",
+		"time_int":            10100,
+	})
+	c.Insert(bson.M{
+		"job":                 "JOB_A",
+		"date_int":            20150511,
+		"timestamp":           "2015-05-11T01:01:00Z",
+		"supergroup":          "NORTH",
+		"endpoint_group":      "JUELICH",
+		"group_type":          "REGION",
+		"endpoint_group_type": "SITES",
+		"service":             "iRods",
+		"hostname":            "irods01.juelich.de",
+		"status":              "CRITICAL",
+		"time_int":            10100,
 	})
 }
 
-func (suite *StatusEndpointsTestSuite) TestListStatusDetail() {
+func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 
+	respXML1 := ` <root>
+   <job name="JOB_A">
+     <endpoint hostname="cream.afroditi.hellasgrid.gr" service="CREAM-CE">
+       <status timestamp="2015-05-01T00:00:00Z" status="OK"></status>
+       <status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+       <status timestamp="2015-05-01T05:00:00Z" status="OK"></status>
+     </endpoint>
+   </job>
+ </root>`
+
+	respXML2 := ` <root>
+   <job name="JOB_A">
+     <endpoint hostname="irods01.juelich.de" service="iRods">
+       <status timestamp="2015-05-01T00:00:10Z" status="OK"></status>
+       <status timestamp="2015-05-01T01:01:00Z" status="CRITICAL"></status>
+     </endpoint>
+   </job>
+ </root>`
+
+	fullurl1 := "/api/v1/status/endpoints/timeline/cream.afroditi.hellasgrid.gr/CREAM-CE?" +
+		"job=JOB_A&start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z"
+
+	fullurl2 := "/api/v1/status/endpoints/timeline/irods01.juelich.de/iRods?" +
+		"job=JOB_A&start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z"
+
+	// Prepare the request object for fist tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+	// Pass request to controller calling List() handler method
+	code, _, output, _ := List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respXML1, string(output), "Response body mismatch")
+
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C3POK3Y")
+	// Pass request to controller calling List() handler method
+	code, _, output, _ = List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respXML2, string(output), "Response body mismatch")
+
+	// Prepare the request object for accessing a tenant without proper authorization
+	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "WRONGKEY")
+	// Pass request to controller calling List() handler method
+	code, _, _ , _ = List(request, suite.cfg)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, code, "Should have gotten return code 401 (Unauthorized)")
 }
+
 
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-func (suite *StatusDetailTestSuite) TearDownTest() {
+func (suite *StatusEndpointsTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	session.DB("argo_core_test_endpoints").DropDatabase()
-	session.DB("argo_core_test_endpoints_db1").DropDatabase()
+	session.DB("argo_tenant1_endpoints_db1").DropDatabase()
+	session.DB("argo_tenant2_endpoints_db1").DropDatabase()
 }
 
 // This is the first function called when go test is issued
 func TestJobsSuite(t *testing.T) {
-	suite.Run(t, new(StatusDetailTestSuite))
+	suite.Run(t, new(StatusEndpointsTestSuite))
 }
