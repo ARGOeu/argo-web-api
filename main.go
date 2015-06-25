@@ -117,7 +117,7 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/status/metrics/msg/{hostname}/{service}/{metric}", Respond(statusMsg.List))
 
 	//Status Endpoints
-	getSubrouter.HandleFunc("/api/v1/status/endpoints/timeline/{group}", Respond(statusEndpoints.List))
+	getSubrouter.HandleFunc("/api/v1/status/endpoints/timeline/{hostname}/{service_type}", Respond(statusEndpoints.List))
 
 	//Status Services
 	getSubrouter.HandleFunc("/api/v1/status/services/timeline/{group}", Respond(statusServices.List))
