@@ -86,7 +86,6 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 	// Add a few data in collection voreports
 	c := session.DB(suite.tenantcfg.Db).C("service_ar")
-	// TODO: Modify test *key* entries to match new Data Architecture Specification
 	c.Insert(bson.M{ "job": "EGI_Critical", "date" : 20150601, "name" : "CREAM-CE",  "up" : 1,       "down" : 0, "unknown" : 0, "availability" : 100,      "reliability" : 100,      "supergroup" : "BIFI",        "tags": []bson.M{ bson.M{ "production" : "Y" , "monitored" : "Y" } } })
 	c.Insert(bson.M{ "job": "EGI_Critical", "date" : 20150601, "name" : "Site-BDII", "up" : 0.99306, "down" : 0, "unknown" : 0, "availability" : 99.30556, "reliability" : 99.30556, "supergroup" : "CIEMAT-LCG2", "tags": []bson.M{ bson.M{ "production" : "Y" , "monitored" : "Y" } } })
 	c.Insert(bson.M{ "job": "EGI_Critical", "date" : 20150601, "name" : "CREAM-CE",  "up" : 0.88889, "down" : 0, "unknown" : 0, "availability" : 88.88889, "reliability" : 88.88889, "supergroup" : "CIEMAT-LCG2", "tags": []bson.M{ bson.M{ "production" : "Y" , "monitored" : "Y" } } })
