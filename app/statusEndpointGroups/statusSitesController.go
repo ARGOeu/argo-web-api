@@ -82,23 +82,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		Job:        urlValues.Get("job"),
 		SuperGroup: urlValues.Get("supergroup_name"),
 		Name:       group,
-		// Profile: urlValues.Get("profile"),
-		// Type:  urlValues.Get("group_type"),
-		// urlValues.Get("vo"),
 	}
-
-	// Set default values
-	// if len(input.profile) == 0 {
-	// 	input.profile = "ch.cern.sam.ROC_CRITICAL"
-	// }
-	//
-	// if len(input.group_type) == 0 {
-	// 	input.group_type = "site"
-	// }
-	//
-	// if len(input.vo) == 0 {
-	// 	input.vo = "ops"
-	// }
 
 	// Mongo Session
 	results := []Job{}
@@ -113,11 +97,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	err = c.Pipe(query).All(&results)
 
 	output, err = createView(results, input) //Render the results into XML format
-	//if strings.ToLower(input.format) == "json" {
-	//	contentType = "application/json"
-	//}
-	//buffer.WriteString(strconv.Itoa(len(results)))
-	//output = []byte(buffer.String())
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	return code, h, output, err
@@ -183,8 +162,6 @@ func prepQuery(input StatusEndpointGroupInput) bson.M {
 	// // parse time as integer
 	// timeStart_int := (timeStart.Hour() * 10000) + (timeStart.Minute() * 100) + timeStart.Second()
 	// timeEnd_int := (timeEnd.Hour() * 10000) + (timeEnd.Minute() * 100) + timeEnd.Second()
-	//
-	// fmt.Println(timeStart, timeEnd, timeStartYMD, timeStart_int, timeEnd_int)
 
 	query := bson.M{}
 	timeStartInt := 0

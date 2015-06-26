@@ -31,70 +31,7 @@ import "encoding/xml"
 func createView(results []Job, input StatusEndpointGroupInput) ([]byte, error) {
 
 	docRoot := &Root{}
-
 	docRoot.Jobs = results
-
-	// if len(results) == 0 {
-	// 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
-	// 	return output, err
-	// }
-	//
-	// job := &Job{}
-	// job.Name = input.Job
-	// vo := &Group{}
-	// vo.Type = "vo"
-	// vo.Name = input.vo
-	//
-	// prevSite := ""
-	// prevSuperGroup := ""
-	//
-	// var pp_Site *Site
-	// var pp_SuperGroup *Group
-	//
-	// for _, row := range results {
-	//
-	// 	// filter by job
-	// 	if row.Job != input.Job {
-	// 		continue
-	// 	}
-	//
-	// 	if row.SuperGroup != prevSuperGroup && row.SuperGroup != "" {
-	// 		superGroup := &Group{}
-	// 		superGroup.Name = row.SuperGroup
-	// 		superGroup.Type = "ngi"
-	// 		vo.Groups = append(vo.Groups, superGroup)
-	// 		prevSuperGroup = superGroup.Name
-	// 		pp_SuperGroup = superGroup
-	// 	}
-	//
-	// 	if row.Site != prevSite {
-	//
-	// 		site := &Site{}
-	// 		//Add the prev status as the firstone
-	//
-	// 		site.Name = row.Site
-	//
-	// 		pp_SuperGroup.Sites = append(pp_SuperGroup.Sites, site)
-	// 		prevSite = row.Site
-	// 		pp_Site = site
-	//
-	// 		status := &Status{}
-	// 		status.Timestamp = input.start_time
-	// 		status.Status = row.P_status
-	// 		pp_Site.Timeline = append(pp_Site.Timeline, status)
-	//
-	// 	} else {
-	// 		status := &Status{}
-	// 		status.Timestamp = row.Timestamp
-	// 		status.Status = row.Status
-	// 		pp_Site.Timeline = append(pp_Site.Timeline, status)
-	// 	}
-	//
-	// }
-	//
-	// job.Groups = append(job.Groups, vo)
-	// docRoot.Job = job
-
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
 
