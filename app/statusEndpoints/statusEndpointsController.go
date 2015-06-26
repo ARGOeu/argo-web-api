@@ -39,6 +39,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+// List the endpoint status details
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

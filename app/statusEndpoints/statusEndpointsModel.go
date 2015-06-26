@@ -28,6 +28,7 @@ package statusEndpoints
 
 import "encoding/xml"
 
+// StatusEndpointsInput struct holds as input all the url params of the request
 type StatusEndpointsInput struct {
 	start_time   string // UTC time in W3C format
 	end_time     string
@@ -36,6 +37,7 @@ type StatusEndpointsInput struct {
 	service_type string
 }
 
+// StatusEndpointsOutput struct holds the queried data from datastore
 type StatusEndpointsOutput struct {
 	Timestamp          string `bson:"timestamp"`
 	Service            string `bson:"service"`
@@ -45,17 +47,20 @@ type StatusEndpointsOutput struct {
 	Job                string `bson:"job"`
 }
 
+// ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
 	Job     *JobXML
 }
 
+// JobXML struct used as xml block
 type JobXML struct {
 	XMLName   xml.Name `xml:"job"`
 	Name      string   `xml:"name,attr"`
 	Endpoints []*EndpointXML
 }
 
+// EndpointXML struct used as xml block
 type EndpointXML struct {
 	XMLName  xml.Name `xml:"endpoint"`
 	Hostname string   `xml:"hostname,attr"`
@@ -63,6 +68,7 @@ type EndpointXML struct {
 	Timeline []*StatusXML
 }
 
+// StatusXML struct used as xml block
 type StatusXML struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
