@@ -120,16 +120,6 @@ func prepareFilter(input EndpointGroupAvailabilityInput) bson.M {
 		filter["supergroup"] = bson.M{"$in": input.SuperGroup}
 	}
 
-	// filter["i"] = input.Infrastructure
-	// filter["cs"] = input.Certification
-	// filter["pr"] = input.Production
-	// filter["m"] = input.Monitored
-
-	//TODO: Remove hardcoded filtering and add this
-	// as a parameter
-	// filter["sc"] = "EGI"
-	// filter["ss"] = "EGI"
-
 	return filter
 }
 

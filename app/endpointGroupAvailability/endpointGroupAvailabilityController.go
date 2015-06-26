@@ -69,33 +69,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		Job:         urlValues.Get("job"),
 		GroupName:   urlValues["group_name"],
 		SuperGroup:  urlValues["supergroup_name"],
-		// urlValues.Get("availability_profile"),
-		// urlValues.Get("infrastructure"),
-		// urlValues.Get("production"),
-		// urlValues.Get("monitored"),
-		// urlValues.Get("certification"),
 	}
-
-	//
-	// if len(input.infrastructure) == 0 {
-	// 	input.infrastructure = "Production"
-	// }
-	//
-	// if len(input.production) == 0 || input.production == "true" {
-	// 	input.production = "Y"
-	// } else {
-	// 	input.production = "N"
-	// }
-	//
-	// if len(input.monitored) == 0 || input.monitored == "true" {
-	// 	input.monitored = "Y"
-	// } else {
-	// 	input.monitored = "N"
-	// }
-	//
-	// if len(input.certification) == 0 {
-	// 	input.certification = "Certified"
-	// }
 
 	if strings.ToLower(input.Format) == "json" {
 		contentType = "application/json"

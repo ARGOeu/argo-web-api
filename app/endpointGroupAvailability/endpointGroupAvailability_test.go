@@ -234,14 +234,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=daily&group_name=ST01&group_name=ST02", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
-	// urlValues := url.Values{}
-	// urlValues.Add("start_time", "2015-06-21T12:00:00Z")
-	// urlValues.Add("end_time", "2015-06-23T23:00:00Z")
-	// urlValues.Add("job", "Job_A")
-	// urlValues.Add("group_name", "GROUP_A")
-	// urlValues.Add("granularity", "daily")
-	// request.Form = urlValues
-
 	code, _, output, _ := List(request, suite.cfg)
 
 	endpointGrouAvailabitiyXML := ` <root>
@@ -256,7 +248,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
      </EndpointGroup>
    </Job>
  </root>`
-	//fmt.Println(string(output))
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
