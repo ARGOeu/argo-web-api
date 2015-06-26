@@ -29,15 +29,21 @@ package statusDetail
 import (
 	//"bytes"
 	"fmt"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/argoeu/argo-web-api/app/jobs"
+	"github.com/argoeu/argo-web-api/app/metricProfiles"
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
+
+	"labix.org/v2/mgo/bson"
 )
 
+// List the status metric details
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -59,43 +65,83 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 
-	input := StatusDetailInput{
+	input := InputParams{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("vo"),
-		urlValues.Get("profile"),
+		urlValues.Get("job"),
 		urlValues.Get("group_type"),
 		group,
 	}
 
-	// Set default values
-	if len(input.profile) == 0 {
-		input.profile = "ch.cern.sam.ROC_CRITICAL"
+	// Call authenticateTenant to check the api key and retrieve
+	// the correct tenant db conf
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
 	}
 
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
-	}
-
-	if len(input.vo) == 0 {
-		input.vo = "ops"
-	}
+	// Structure to hold job information
+	jobResult := jobs.Job{}
+	metricProfileResult := metricProfiles.MongoInterface{}
 
 	// Mongo Session
-	results := []StatusDetailOutput{}
-	poem_results := []PoemDetailOutput{}
+	results := []DataOutput{}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	selectedGroupType := ""
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
-	c := session.DB("AR").C("status_metric")
-	pc := session.DB("AR").C("poem_details")
+	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
+	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
+	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
-	err = pc.Find(bson.M{"p": input.profile}).All(&poem_results)
-	err = c.Find(prepQuery(input)).All(&results)
+	// Get Job details
+	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
+	if err != nil {
+		output = []byte("Error on retrieving job information")
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
-	mongo.CloseSession(session)
+	// Search job for used metric profile
+	metricProfileName := ""
+	metricProfileName, err = jobs.GetMetricProfile(jobResult)
 
-	output, err = createView(results, input, poem_results) //Render the results into XML format
+	// Query details for the metric profile used
+	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
+	if err != nil {
+
+		output = []byte("Error on retrieving metric profile information")
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+	// Find if the selected group type is endpoint group
+	// or group of groups. If is not found in the job
+	if jobResult.GroupOfGroups == input.groupType {
+		selectedGroupType = "group"
+	} else if jobResult.EndpointGroup == input.groupType {
+		selectedGroupType = "endpoint"
+	} else {
+		message := "the specific group type is not supported in this job"
+		output, err := messageXML(message) //Render the response into XML
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+
+	}
+
+	// Query the detailed metric results
+	err = metricCol.Find(prepQuery(input, selectedGroupType)).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create the view
+	output, err = createView(results, input, metricProfileResult) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}
@@ -106,50 +152,56 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input StatusDetailInput) bson.M {
+func prepQuery(input InputParams, selectedGroupType string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
+	ts, _ := time.Parse(zuluForm, input.startTime)
+	te, _ := time.Parse(zuluForm, input.endTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	//teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	// parse time as integer
-	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-	te_int := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
+	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
+	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.group_type == "site" {
+	if selectedGroupType == "endpoint" {
 
 		query := bson.M{
-			"di":   tsYMD,
-			"site": input.group,
-			"ti":   bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
-	} else if input.group_type == "ngi" {
-		query := bson.M{
-			"di":  tsYMD,
-			"roc": input.group,
-			"ti":  bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
-	} else if input.group_type == "host" {
-		query := bson.M{
-			"di": tsYMD,
-			"h":  input.group,
-			"ti": bson.M{"$gte": ts_int, "$lte": te_int},
+			"job":            input.job,
+			"date_int":       tsYMD,
+			"endpoint_group": input.group,
+			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
 		return query
 	}
 
-	return bson.M{"di": 0}
+	if selectedGroupType == "group" {
+
+		query := bson.M{
+			"job":        input.job,
+			"date_int":   tsYMD,
+			"supergroup": input.group,
+			"time_int":   bson.M{"$gte": tsInt, "$lte": teInt},
+		}
+
+		return query
+	}
+
+	if input.groupType == "host" {
+		query := bson.M{
+			"job":      input.job,
+			"date_int": tsYMD,
+			"host":     input.group,
+			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},
+		}
+
+		return query
+	}
+
+	return bson.M{"date_int": 0}
 
 }
