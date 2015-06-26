@@ -48,8 +48,8 @@ func createView(results []ApiSFAvailabilityInProfileOutput, format string) ([]by
 	// keeping only the value of each row
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], row.Date)
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
+		//if new job value does not match the previous job value
+		//we create a new job in the xml
 		if prevJob != row.Job {
 			prevJob = row.Job
 			job = &Job{

@@ -139,7 +139,7 @@ func Monthly(input ApiSFAvailabilityInProfileInput) []bson.M {
 	query := []bson.M{
 		{"$match": filter},
 		{"$group": bson.M{"_id": bson.M{"date": bson.D{{"$substr", list{"$date", 0, 6}}}, "name": "$name", "supergroup": "$supergroup", "job": "$job"}, "avgup": bson.M{"$avg": "$up"}, "avgunknown": bson.M{"$avg": "$unknown"}, "avgdown": bson.M{"$avg": "$down"}}},
-		{"$project": bson.M{"date": "$_id.date", "name": "$_id.name", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}}, 100.0}},
+		{"$project": bson.M{"date": "$_id.date", "name": "$_id.name", "supergroup": "$_id.supergroup", "job": "$_id.job", "availability": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}}, 100}},
 			"reliability": bson.M{"$multiply": list{bson.M{"$divide": list{"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}}, 100}}}},
 		{"$sort": bson.D{{"supergroup", 1}, {"name", 1}, {"date", 1}}}}
 
