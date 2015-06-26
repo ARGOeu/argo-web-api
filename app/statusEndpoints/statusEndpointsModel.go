@@ -28,54 +28,48 @@ package statusEndpoints
 
 import "encoding/xml"
 
+// StatusEndpointsInput struct holds as input all the url params of the request
 type StatusEndpointsInput struct {
-	start_time string // UTC time in W3C format
-	end_time   string
-	vo         string
-	profile    string
-	group_type string
-	group      string
+	start_time   string // UTC time in W3C format
+	end_time     string
+	job          string
+	hostname     string
+	service_type string
 }
 
+// StatusEndpointsOutput struct holds the queried data from datastore
 type StatusEndpointsOutput struct {
-	Timestamp string `bson:"ts"`
-	Roc       string `bson:"roc"`
-	Site      string `bson:"site"`
-	Service   string `bson:"srv"`
-	Hostname  string `bson:"h"`
-	Status    string `bson:"s"`
-	Time_int  int    `bson:"ti"`
-	P_status  string `bson:"ps"`
-	Profile   string `bson:"p"`
+	Timestamp          string `bson:"timestamp"`
+	Service            string `bson:"service"`
+	Hostname           string `bson:"hostname"`
+	Status             string `bson:"status"`
+	Time_int           int    `bson:"time_int"`
+	Job                string `bson:"job"`
 }
 
+// ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Profile *Profile
+	Job     *JobXML
 }
 
-type Profile struct {
-	XMLName xml.Name `xml:"profile"`
-	Name    string   `xml:"name,attr"`
-	Groups  []*Group
-}
-
-type Group struct {
-	XMLName   xml.Name `xml:"group"`
+// JobXML struct used as xml block
+type JobXML struct {
+	XMLName   xml.Name `xml:"job"`
 	Name      string   `xml:"name,attr"`
-	Type      string   `xml:"type,attr"`
-	Groups    []*Group
-	Endpoints []*Endpoint
+	Endpoints []*EndpointXML
 }
 
-type Endpoint struct {
+// EndpointXML struct used as xml block
+type EndpointXML struct {
 	XMLName  xml.Name `xml:"endpoint"`
 	Hostname string   `xml:"hostname,attr"`
 	Service  string   `xml:"service,attr"`
-	Timeline []*Status
+	Timeline []*StatusXML
 }
 
-type Status struct {
+// StatusXML struct used as xml block
+type StatusXML struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
 	Status    string   `xml:"status,attr"`

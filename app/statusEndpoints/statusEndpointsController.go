@@ -27,17 +27,19 @@
 package statusEndpoints
 
 import (
-	//"bytes"
 	"fmt"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/argo-web-api/utils/mongo"
+	"labix.org/v2/mgo/bson"
 )
 
+// List the endpoint status details
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -49,54 +51,50 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	contentType := "text/xml"
 	charset := "utf-8"
 
-	//var buffer bytes.Buffer
-
 	//STANDARD DECLARATIONS END
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// URL PATH_VALUES
 	urlPath := r.URL.Path
-	group := strings.Split(urlPath, "/")[6]
+	hostname := strings.Split(urlPath, "/")[6]
+	service_type := strings.Split(urlPath, "/")[7]
 
 	urlValues := r.URL.Query()
 
 	input := StatusEndpointsInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("vo"),
-		urlValues.Get("profile"),
-		urlValues.Get("group_type"),
-		group,
-	}
-
-	// Set default values
-	if len(input.profile) == 0 {
-		input.profile = "ch.cern.sam.ROC_CRITICAL"
-	}
-
-	if len(input.group_type) == 0 {
-		input.group_type = "site"
-	}
-
-	if len(input.vo) == 0 {
-		input.vo = "ops"
+		urlValues.Get("job"),
+		hostname,
+		service_type,
 	}
 
 	// Mongo Session
 	results := []StatusEndpointsOutput{}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
-
-	c := session.DB("AR").C("status_endpoints")
+	c := session.DB(tenantDbConfig.Db).C("status_endpoints")
 	err = c.Find(prepQuery(input)).All(&results)
 
-	mongo.CloseSession(session)
-
 	output, err = createView(results, input) //Render the results into XML format
-	//if strings.ToLower(input.format) == "json" {
-	//	contentType = "application/json"
-	//}
-	//buffer.WriteString(strconv.Itoa(len(results)))
-	//output = []byte(buffer.String())
+
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	return code, h, output, err
@@ -111,33 +109,18 @@ func prepQuery(input StatusEndpointsInput) bson.M {
 	ts, _ := time.Parse(zuluForm, input.start_time)
 	te, _ := time.Parse(zuluForm, input.end_time)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	//teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	// parse time as integer
-	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-	te_int := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
+	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
+	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
 
-	if input.group_type == "site" {
-
-		query := bson.M{
-			"di":   tsYMD,
-			"site": input.group,
-			"ti":   bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
-	} else if input.group_type == "ngi" {
-		query := bson.M{
-			"di":  tsYMD,
-			"roc": input.group,
-			"ti":  bson.M{"$gte": ts_int, "$lte": te_int},
-		}
-
-		return query
-
+	query := bson.M{
+		"job":            input.job,
+		"date_int":       tsYMD,
+		"hostname":       input.hostname,
+		"service":        input.service_type,
+		"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
 	}
 
-	return bson.M{"di": 0}
+	return query
 
 }
