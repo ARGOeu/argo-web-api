@@ -24,56 +24,15 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package statusSites
+package statusEndpointGroups
 
 import "encoding/xml"
 
-type StatusSitesInput struct {
-	start_time string // UTC time in W3C format
-	end_time   string
-	vo         string
-	profile    string
-	group_type string
-	group      string
-}
+func createView(results []job, input StatusEndpointGroupInput) ([]byte, error) {
 
-type StatusSitesOutput struct {
-	Timestamp string `bson:"ts"`
-	Roc       string `bson:"roc"`
-	Site      string `bson:"site"`
-	Status    string `bson:"s"`
-	Time_int  int    `bson:"ti"`
-	P_status  string `bson:"ps"`
-	Profile   string `bson:"p"`
-}
+	docRoot := &root{}
+	docRoot.Jobs = results
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	return output, err
 
-type ReadRoot struct {
-	XMLName xml.Name `xml:"root"`
-	Profile *Profile
-}
-
-type Profile struct {
-	XMLName xml.Name `xml:"profile"`
-	Name    string   `xml:"name,attr"`
-	Groups  []*Group
-}
-
-type Group struct {
-	XMLName xml.Name `xml:"group"`
-	Name    string   `xml:"name,attr"`
-	Type    string   `xml:"type,attr"`
-	Groups  []*Group
-	Sites   []*Site
-}
-
-type Site struct {
-	XMLName  xml.Name `xml:"endpoint"`
-	Name     string   `xml:"name,attr"`
-	Timeline []*Status
-}
-
-type Status struct {
-	XMLName   xml.Name `xml:"status"`
-	Timestamp string   `xml:"timestamp,attr"`
-	Status    string   `xml:"status,attr"`
 }
