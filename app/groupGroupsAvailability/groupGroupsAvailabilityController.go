@@ -24,10 +24,11 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package ngiAvailability
+package groupGroupsAvailability
 
 import (
 	"fmt"
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/caches"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
@@ -35,6 +36,7 @@ import (
 	"strings"
 )
 
+// List returns the results from Daily and Monthly availability-reliability calculations for each job
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -48,46 +50,34 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
+	// Token based tenant authentication
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
 
-	input := ApiNgiAvailabilityInProfileInput{
+	input := ApiSuperGroupAvailabilityInProfileInput{
 		urlValues.Get("start_time"),
 		urlValues.Get("end_time"),
-		urlValues.Get("availability_profile"),
+		urlValues.Get("job"),
 		urlValues.Get("granularity"),
-		urlValues.Get("infrastructure"),
-		urlValues.Get("production"),
-		urlValues.Get("monitored"),
-		urlValues.Get("certification"),
 		urlValues.Get("format"),
 		urlValues["group_name"],
-	}
-
-	if len(input.Infrastructure) == 0 {
-		input.Infrastructure = "Production"
-	}
-
-	if len(input.Production) == 0 || input.Production == "true" {
-		input.Production = "Y"
-	} else {
-		input.Production = "N"
-	}
-
-	if len(input.Monitored) == 0 || input.Monitored == "true" {
-		input.Monitored = "Y"
-	} else {
-		input.Monitored = "N"
-	}
-
-	if len(input.Certification) == 0 {
-		input.Certification = "Certified"
 	}
 
 	if strings.ToLower(input.format) == "json" {
 		contentType = "application/json"
 	}
 
+	//TODO: Add multitenant support on cache util. Currently the cache functionality is disabled.
 	found, output := caches.HitCache("ngis", input, cfg)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
@@ -95,27 +85,28 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	results := []ApiNgiAvailabilityInProfileOutput{}
+	results := []ApiSuperGroupAvailabilityInProfileOutput{}
 
 	// Select the granularity of the search daily/monthly
 	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
 		CustomForm[0] = "20060102"
 		CustomForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 
 	} else if strings.ToLower(input.Granularity) == "monthly" {
 		CustomForm[0] = "200601"
 		CustomForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 	}
 
 	if err != nil {
@@ -130,11 +121,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	//TODO: Add multitenant support on cache util. Currently the cache functionality is disabled.
 	if len(results) > 0 {
 		caches.WriteCache("ngis", input, output, cfg)
 	}
-
-	mongo.CloseSession(session)
 
 	return code, h, output, err
 }

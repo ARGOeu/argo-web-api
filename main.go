@@ -34,9 +34,9 @@ import (
 
 	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
 	"github.com/argoeu/argo-web-api/app/factors"
+	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
-	"github.com/argoeu/argo-web-api/app/ngiAvailability"
 	"github.com/argoeu/argo-web-api/app/recomputations"
 	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/argo-web-api/app/siteAvailability"
@@ -69,8 +69,9 @@ func main() {
 		Queries("group_type", "vo")
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
 		Queries("group_type", "site")
-	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(ngiAvailability.List)).
-		Queries("group_type", "ngi")
+
+	// Group of Groups availability
+	getSubrouter.HandleFunc("/api/v1/group_groups_availability", Respond(groupGroupsAvailability.List))
 
 	// Service Flavor Availability
 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
