@@ -127,8 +127,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	fmt.Println(results)
-
 	output, err = createView(results, input, metricProfileResult) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
@@ -152,12 +150,6 @@ func prepQuery(input MsgInput) bson.M {
 
 	// parse time as integer
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-
-	fmt.Println(input.job)
-	fmt.Println(tsYMD)
-	fmt.Println(input.host)
-	fmt.Println(input.service)
-	fmt.Println(tsInt)
 
 	query := bson.M{
 		"job":      input.job,
