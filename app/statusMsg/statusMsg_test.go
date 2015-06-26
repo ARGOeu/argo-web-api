@@ -68,7 +68,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argotest_detail"
+    db = "argotest_msg"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
