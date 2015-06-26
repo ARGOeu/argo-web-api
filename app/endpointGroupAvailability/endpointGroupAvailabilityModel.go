@@ -34,6 +34,8 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+// MongoInterface is responsible to retrieve or insert endpoint group availabilities
+// into mongodb
 type MongoInterface struct {
 	Name         string  `bson:"name"`
 	Job          string  `bson:"job"`
@@ -48,6 +50,7 @@ type MongoInterface struct {
 	SuperGroup   string  `bson:"supergroup"`
 }
 
+//Availability struct for formating xml/json
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability" json:"-"`
 	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
@@ -55,6 +58,7 @@ type Availability struct {
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
+//EndpointGroup struct for formating xml/json
 type EndpointGroup struct {
 	XMLName      xml.Name `xml:"EndpointGroup" json:"-"`
 	Name         string   `xml:"name,attr" json:"name"`
@@ -62,31 +66,30 @@ type EndpointGroup struct {
 	Availability []*Availability
 }
 
+//Job struct for formating xml/json
 type Job struct {
 	XMLName       xml.Name `xml:"Job" json:"-"`
 	Name          string   `xml:"name,attr" json:"name"`
 	EndpointGroup []*EndpointGroup
 }
 
-type Root struct {
+type root struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Job     []*Job
 }
 
+// EndpointGroupAvailabilityInput to retrieve query data and use it to filter
+// mongodb results
 type EndpointGroupAvailabilityInput struct {
 	// mandatory values
 	StartTime string // UTC time in W3C format
 	EndTime   string // UTC time in W3C format
 	Job       string //Job name
 	// optional values
-	Granularity    string   //availability period; possible values: `DAILY`, MONTHLY`
-	Infrastructure string   //infrastructure name
-	Production     string   //production or not
-	Monitored      string   //yes or no
-	Certification  string   //certification status
-	Format         string   // default XML; possible values are: XML, JSON
-	GroupName      []string // endpointGroup name; may appear more than once
-	SuperGroup     []string
+	Granularity string   //availability period; possible values: `DAILY`, MONTHLY`
+	Format      string   // default XML; possible values are: XML, JSON
+	GroupName   []string // endpointGroup name; may appear more than once
+	SuperGroup  []string
 }
 
 type list []interface{}
@@ -123,6 +126,7 @@ func prepareFilter(input EndpointGroupAvailabilityInput) bson.M {
 	return filter
 }
 
+// Daily query to aggregate daily results from mongodb
 func Daily(input EndpointGroupAvailabilityInput) []bson.M {
 	filter := prepareFilter(input)
 
@@ -148,6 +152,7 @@ func Daily(input EndpointGroupAvailabilityInput) []bson.M {
 	return query
 }
 
+// Monthly query to aggregate monthly results from mongodb
 func Monthly(input EndpointGroupAvailabilityInput) []bson.M {
 
 	filter := prepareFilter(input)

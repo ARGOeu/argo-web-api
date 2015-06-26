@@ -37,6 +37,7 @@ import (
 	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
+// List endpoint group availabilities according to the http request
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

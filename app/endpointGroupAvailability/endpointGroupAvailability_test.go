@@ -230,6 +230,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 		})
 }
 
+// TestListEndpointGroupAvailability test if daily results are returned correctly
 func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailability() {
 
 	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=daily&group_name=ST01&group_name=ST02", strings.NewReader(""))
@@ -270,6 +271,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 
 }
 
+// TestRecompuptationsTestSuite is responsible for calling the tests
 func TestRecompuptationsTestSuite(t *testing.T) {
 	suite.Run(t, new(endpointGroupAvailabilityTestSuite))
 }

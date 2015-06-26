@@ -36,7 +36,7 @@ import (
 
 func createView(results []MongoInterface, format string) ([]byte, error) {
 
-	docRoot := &Root{}
+	docRoot := &root{}
 
 	prevJob := ""
 	prevEndpointGroup := ""
