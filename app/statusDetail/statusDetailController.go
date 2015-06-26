@@ -177,8 +177,9 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 		}
 
 		return query
+	}
 
-	} else if selectedGroupType == "group" {
+	if selectedGroupType == "group" {
 
 		query := bson.M{
 			"job":        input.job,
@@ -188,8 +189,9 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 		}
 
 		return query
+	}
 
-	} else if input.groupType == "host" {
+	if input.groupType == "host" {
 		query := bson.M{
 			"job":      input.job,
 			"date_int": tsYMD,
