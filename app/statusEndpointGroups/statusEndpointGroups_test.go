@@ -27,7 +27,6 @@
 package statusEndpointGroups
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -193,7 +192,6 @@ func (suite *StatusEndpointGroupTestSuite) TestListStatusEndpointGroup() {
 	request.Header.Set("x-api-key", suite.clientkey)
 
 	code, _, output, _ := List(request, suite.cfg)
-	fmt.Println(string(output))
 	statusEndpointGroupRequestXML := ` <root>
    <Job name="JOB_A">
      <EndpointGroup name="GR-01-AUTH">
