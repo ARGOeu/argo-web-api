@@ -24,17 +24,20 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package siteAvailability
+package endpointGroupAvailability
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/caches"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
-	"strings"
 )
 
+// List endpoint group availabilities according to the http request
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -46,83 +49,71 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 
-	input := SiteAvailabilityInput{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
-		urlValues.Get("availability_profile"),
-		urlValues.Get("granularity"),
-		urlValues.Get("infrastructure"),
-		urlValues.Get("production"),
-		urlValues.Get("monitored"),
-		urlValues.Get("certification"),
-		urlValues.Get("format"),
-		urlValues["group_name"],
+	input := EndpointGroupAvailabilityInput{
+		StartTime:   urlValues.Get("start_time"),
+		EndTime:     urlValues.Get("end_time"),
+		Granularity: urlValues.Get("granularity"),
+		Format:      urlValues.Get("format"),
+		Job:         urlValues.Get("job"),
+		GroupName:   urlValues["group_name"],
+		SuperGroup:  urlValues["supergroup_name"],
 	}
 
-	if len(input.infrastructure) == 0 {
-		input.infrastructure = "Production"
-	}
-
-	if len(input.production) == 0 || input.production == "true" {
-		input.production = "Y"
-	} else {
-		input.production = "N"
-	}
-
-	if len(input.monitored) == 0 || input.monitored == "true" {
-		input.monitored = "Y"
-	} else {
-		input.monitored = "N"
-	}
-
-	if len(input.certification) == 0 {
-		input.certification = "Certified"
-	}
-
-	if strings.ToLower(input.format) == "json" {
+	if strings.ToLower(input.Format) == "json" {
 		contentType = "application/json"
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	found, output := caches.HitCache("sites", input, cfg)
+	found, output := caches.HitCache("endpoint_group_ar", input, cfg)
 
 	if found {
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	results := []SiteAvailabilityOutput{}
+	results := []MongoInterface{}
 
 	// Select the granularity of the search daily/monthly
-	if len(input.granularity) == 0 || strings.ToLower(input.granularity) == "daily" {
+	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 
-	} else if strings.ToLower(input.granularity) == "monthly" {
+	} else if strings.ToLower(input.Granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, "AR", "sites", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 	}
+	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	output, err = createView(results, input.format)
+	output, err = createView(results, input.Format)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -130,9 +121,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	if len(results) > 0 {
-		caches.WriteCache("sites", input, output, cfg)
+		caches.WriteCache("endpointGroup", input, output, cfg)
 	}
 
-	mongo.CloseSession(session)
 	return code, h, output, err
 }

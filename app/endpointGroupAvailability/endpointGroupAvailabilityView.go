@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package siteAvailability
+package endpointGroupAvailability
 
 import (
 	"encoding/json"
@@ -34,47 +34,42 @@ import (
 	"time"
 )
 
-func createView(results []SiteAvailabilityOutput, format string) ([]byte, error) {
+func createView(results []MongoInterface, format string) ([]byte, error) {
 
-	docRoot := &Root{}
+	docRoot := &root{}
 
-	prevProfile := ""
-	prevSite := ""
-	site := &Site{}
-	profile := &Profile{}
+	prevJob := ""
+	prevEndpointGroup := ""
+	endpointGroup := &EndpointGroup{}
+	job := &Job{}
 
 	// we iterate through the results struct array
 	// keeping only the value of each row
 
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
-		//if new profile value does not match the previous profile value
-		//we create a new profile in the xml
-		if prevProfile != row.Profile {
-			prevProfile = row.Profile
-			profile = &Profile{
-				Name: row.Profile,
+		//if new job value does not match the previous job value
+		//we create a new job in the xml
+		if prevJob != row.Job {
+			prevJob = row.Job
+			job = &Job{
+				Name: row.Job,
 			}
-			docRoot.Profile = append(docRoot.Profile, profile)
-			prevSite = ""
+			docRoot.Job = append(docRoot.Job, job)
+			prevEndpointGroup = ""
 		}
-		//if new site does not match the previous service value
-		//we create a new site entry in the xml
-		if prevSite != row.Site {
-			prevSite = row.Site
-			site = &Site{
-				Site:          row.Site,
-				Ngi:           row.Ngi,
-				Infastructure: row.Infastructure,
-				Scope:         row.Scope,
-				SiteScope:     row.SiteScope,
-				Production:    row.Production,
-				Monitored:     row.Monitored,
-				CertStatus:    row.CertStatus}
-			profile.Site = append(profile.Site, site)
+		//if new endpointGroup does not match the previous service value
+		//we create a new endpointGroup entry in the xml
+		if prevEndpointGroup != row.Name {
+			prevEndpointGroup = row.Name
+			endpointGroup = &EndpointGroup{
+				Name:       row.Name,
+				SuperGroup: row.SuperGroup,
+			}
+			job.EndpointGroup = append(job.EndpointGroup, endpointGroup)
 		}
 		//we append the new availability values
-		site.Availability = append(site.Availability,
+		endpointGroup.Availability = append(endpointGroup.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),

@@ -33,13 +33,13 @@ import (
 	"strconv"
 
 	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
+	"github.com/argoeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/argoeu/argo-web-api/app/factors"
 	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 	"github.com/argoeu/argo-web-api/app/recomputations"
 	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
-	"github.com/argoeu/argo-web-api/app/siteAvailability"
 	"github.com/argoeu/argo-web-api/app/statusDetail"
 	"github.com/argoeu/argo-web-api/app/statusEndpoints"
 	"github.com/argoeu/argo-web-api/app/statusMsg"
@@ -67,11 +67,10 @@ func main() {
 	// 2) Provide with a default call informing the user of an invalid parameter
 	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
 		Queries("group_type", "vo")
-	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(siteAvailability.List)).
-		Queries("group_type", "site")
 
 	// Group of Groups availability
 	getSubrouter.HandleFunc("/api/v1/group_groups_availability", Respond(groupGroupsAvailability.List))
+	getSubrouter.HandleFunc("/api/v1/endpoint_group_availability", Respond(endpointGroupAvailability.List))
 
 	// Service Flavor Availability
 	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
