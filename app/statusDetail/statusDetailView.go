@@ -28,7 +28,6 @@ package statusDetail
 
 import (
 	"encoding/xml"
-	"fmt"
 
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 )
@@ -59,8 +58,8 @@ func createView(results []DataOutput, input InputParams, metricDetail metricProf
 
 	for _, row := range results {
 
+		// Filter row of metric result based on metric profile (check metric name and service type)
 		if filterByProfile(row.Service, row.Metric, metricDetail) == 1 {
-			fmt.Println("skipped", row.Service, row.Metric)
 			continue
 		}
 
