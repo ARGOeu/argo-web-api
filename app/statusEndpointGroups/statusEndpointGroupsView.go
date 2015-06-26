@@ -28,9 +28,9 @@ package statusEndpointGroups
 
 import "encoding/xml"
 
-func createView(results []Job, input StatusEndpointGroupInput) ([]byte, error) {
+func createView(results []job, input StatusEndpointGroupInput) ([]byte, error) {
 
-	docRoot := &Root{}
+	docRoot := &root{}
 	docRoot.Jobs = results
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err

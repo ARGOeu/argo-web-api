@@ -28,6 +28,7 @@ package statusEndpointGroups
 
 import "encoding/xml"
 
+// MongoInterface struct to import and export data from mongodb
 type MongoInterface struct {
 	Job            string `bson:"job"         xml:"-" json:"-"`
 	SuperGroup     string `bson:"supergroup"           xml:"-" json:"-"`
@@ -39,6 +40,7 @@ type MongoInterface struct {
 	TimeInteger    int    `bson:"time_integer"    xml:"-" json:"-"`
 }
 
+// StatusEndpointGroupInput used for mongo queries
 type StatusEndpointGroupInput struct {
 	Start      string // UTC time in W3C format
 	End        string
@@ -47,24 +49,25 @@ type StatusEndpointGroupInput struct {
 	Name       string
 	SuperGroup string
 }
-type Root struct {
+
+type root struct {
 	XMLName xml.Name `xml:"root"`
-	Jobs    []Job
+	Jobs    []job
 }
 
-type Job struct {
+type job struct {
 	XMLName       xml.Name        `xml:"Job" json:"-"`
 	Name          string          `xml:"name,attr" json:"name" bson:"job"`
-	EndpointGroup []EndpointGroup `bson:"endpointgroup"`
+	EndpointGroup []endpointGroup `bson:"endpointgroup"`
 }
 
-type EndpointGroup struct {
+type endpointGroup struct {
 	XMLName xml.Name `xml:"EndpointGroup"`
 	Name    string   `xml:"name,attr" bson:"name"`
-	Status  []Status `bson:"statuses"`
+	Status  []status `bson:"statuses"`
 }
 
-type Status struct {
+type status struct {
 	XMLName        xml.Name `xml:"Status"`
 	Timestamp      string   `xml:"timestamp,attr" bson:"timestamp"`
 	Status         string   `xml:"Status,attr" bson:"status"`

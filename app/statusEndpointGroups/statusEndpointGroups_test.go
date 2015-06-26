@@ -184,9 +184,6 @@ func (suite *StatusEndpointGroupTestSuite) SetupTest() {
 			"date_integer":    20150106,
 			"time_integer":    1200,
 		})
-	// result := []bson.M{}
-	// c.Find(bson.M{}).All(&result)
-	// fmt.Println(result)
 }
 
 //TestListStatusEndpointGroup tests the correct formatting when listing Sites' statuses
@@ -194,15 +191,6 @@ func (suite *StatusEndpointGroupTestSuite) TestListStatusEndpointGroup() {
 	query := "?start_time=2015-01-06T00:00:00Z&end_time=2015-01-06T23:59:59Z&job=JOB_A&supergroup_name=NGI_GRNET"
 	request, _ := http.NewRequest("GET", "/api/v1/status/sites/timeline/GR-01-AUTH"+query, strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
-
-	// urlValues := url.Values{}
-	// urlValues.Add("start_time", "2015-04-10T12:00:00Z")
-	// urlValues.Add("end_time", "2015-04-30T23:00:00Z")
-	// urlValues.Add("job", "JOB_A")
-	//
-	// // urlValues.Add("group_type", "site")
-	//
-	// request.Form = urlValues
 
 	code, _, output, _ := List(request, suite.cfg)
 	fmt.Println(string(output))

@@ -40,6 +40,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+//List of endpoint group statuses
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -50,8 +51,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
-	//var buffer bytes.Buffer
 
 	//STANDARD DECLARATIONS END
 
@@ -85,14 +84,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Mongo Session
-	results := []Job{}
+	results := []job{}
 
 	session, err = mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
 	c := session.DB(tenantDbConfig.Db).C("status_endpointgroups")
-	// err = c.Find(prepQuery(input)).All(&results)
-
 	query := aggregateQuery(input)
 	err = c.Pipe(query).All(&results)
 
@@ -154,14 +151,6 @@ func prepQuery(input StatusEndpointGroupInput) bson.M {
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
-
-	// timeStart, _ := time.Parse(zuluForm, input.Start)
-	// timeEnd, _ := time.Parse(zuluForm, input.End)
-	// timeStartYMD, _ := strconv.Atoi(timeStart.Format(ymdForm))
-	// //timeEndYMD, _ := strconv.Atoi(timeEnd.Format(ymdForm))
-	// // parse time as integer
-	// timeStart_int := (timeStart.Hour() * 10000) + (timeStart.Minute() * 100) + timeStart.Second()
-	// timeEnd_int := (timeEnd.Hour() * 10000) + (timeEnd.Minute() * 100) + timeEnd.Second()
 
 	query := bson.M{}
 	timeStartInt := 0
