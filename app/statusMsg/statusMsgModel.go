@@ -28,69 +28,79 @@ package statusMsg
 
 import "encoding/xml"
 
-type StatusMsgInput struct {
-	exec_time string // UTC time in W3C format
-	vo        string
-	profile   string
-	host      string
-	service   string
-	metric    string
+// MsgInput structure holds url input params
+type MsgInput struct {
+	execTime string // UTC time in W3C format
+	job      string
+	host     string
+	service  string
+	metric   string
 }
 
-type StatusMsgOutput struct {
-	Timestamp string `bson:"ts"`
-	Roc       string `bson:"roc"`
-	Site      string `bson:"site"`
-	Service   string `bson:"srv"`
-	Hostname  string `bson:"h"`
-	Metric    string `bson:"m"`
-	Status    string `bson:"s"`
-	Time_int  int    `bson:"ti"`
-	P_status  string `bson:"ps"`
-	Summary   string `bson:"sum"`
-	Message   string `bson:"msg"`
+// MsgOutput structure holds mongo results
+type MsgOutput struct {
+	Timestamp         string `bson:"timestamp"`
+	Group             string `bson:"supergroup"`
+	EndpointGroup     string `bson:"endpoint_group"`
+	GroupType         string `bson:"group_type"`
+	EndpointGroupType string `bson:"endpoint_group_type"`
+	Service           string `bson:"service"`
+	Hostname          string `bson:"hostname"`
+	Metric            string `bson:"metric"`
+	Status            string `bson:"status"`
+	TimeInt           int    `bson:"time_int"`
+	PrevStatus        string `bson:"prev_status"`
+	Summary           string `bson:"summary"`
+	Message           string `bson:"message"`
 }
 
-type PoemDetailOutput struct {
-	Service string `bson:"s"`
-	Metric  string `bson:"m"`
-}
-
+// ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Profile *Profile
+	Job     *JobXML
 }
 
-type Profile struct {
-	XMLName xml.Name `xml:"profile"`
+// JobXML struct used as xml block
+type JobXML struct {
+	XMLName xml.Name `xml:"job"`
 	Name    string   `xml:"name,attr"`
-	Groups  []*Group
+	Groups  []*GroupXML
 }
 
-type Group struct {
+// GroupXML struct used as xml block
+type GroupXML struct {
 	XMLName xml.Name `xml:"group"`
 	Name    string   `xml:"name,attr"`
 	Type    string   `xml:"type,attr"`
-	Groups  []*Group
-	Hosts   []*Host
+	Groups  []*GroupXML
+	Hosts   []*HostXML
 }
 
-type Host struct {
+// HostXML struct used as xml block
+type HostXML struct {
 	XMLName xml.Name `xml:"host"`
 	Name    string   `xml:"name,attr"`
-	Metrics []*Metric
+	Metrics []*MetricXML
 }
 
-type Metric struct {
+// MetricXML struct used as xml block
+type MetricXML struct {
 	XMLName  xml.Name `xml:"metric"`
 	Name     string   `xml:"name,attr"`
-	Timeline []*Status
+	Timeline []*StatusXML
 }
 
-type Status struct {
+// StatusXML struct used as xml block
+type StatusXML struct {
 	XMLName   xml.Name `xml:"status"`
 	Timestamp string   `xml:"timestamp,attr"`
 	Status    string   `xml:"status,attr"`
 	Summary   string   `xml:"summary"`
 	Message   string   `xml:"message"`
+}
+
+// Message struct to hold the xml response
+type Message struct {
+	XMLName xml.Name `xml:"root"`
+	Message string
 }

@@ -195,7 +195,7 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 		query := bson.M{
 			"job":      input.job,
 			"date_int": tsYMD,
-			"host":     input.group,
+			"hostname": input.group,
 			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},
 		}
 
