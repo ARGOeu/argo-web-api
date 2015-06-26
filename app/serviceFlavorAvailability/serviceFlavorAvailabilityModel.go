@@ -33,8 +33,7 @@ import (
 	"time"
 )
 
-// a series of auxiliary structs that will
-// help us form the xml response
+// Availability struct to represent the availability-reliability results
 type Availability struct {
 	XMLName      xml.Name `xml:"Availability" json:"-"`
 	Timestamp    string   `xml:"timestamp,attr", json:"timestamp"`
@@ -42,31 +41,35 @@ type Availability struct {
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
 }
 
+// SF struct to represent the availability-reliability results for each Service Flavor
 type SF struct {
 	XMLName      xml.Name `xml:"Flavor" json:"-"`
 	SF           string   `xml:"Flavor,attr" json:"Flavor"`
 	Availability []*Availability
 }
 
+// SuperGroup struct to hold the availability-reliability results for each group
 type SuperGroup struct {
 	XMLName    xml.Name `xml:"SuperGroup" json:"-"`
 	SuperGroup string   `xml:"name,attr"  json:"name"`
 	SF         []*SF
 }
 
+// Job struct to hold all SuperGroups related with this job
 type Job struct{
 	XMLName     xml.Name `xml:"Job" json:"-"`
 	Name        string   `xml:"name,attr" json:"name"`
 	SuperGroup  []*SuperGroup
 }
 
+// Root struct to represent the root of the XML document
 type Root struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Job     []*Job
 }
 
+// ApiSFAvailabilityInProfileInput struct to represent the api call input parameters
 type ApiSFAvailabilityInProfileInput struct {
-	// mandatory values
 	start_time     string // UTC time in W3C format
 	end_time       string // UTC time in W3C format
 	job            string
@@ -76,6 +79,7 @@ type ApiSFAvailabilityInProfileInput struct {
 	supergroup     []string // name of group
 }
 
+// ApiSFAvailabilityInProfileOutput to represent db data retrieval
 type ApiSFAvailabilityInProfileOutput struct {
 	Date         string  `bson:"date"`
 	SF           string  `bson:"name"`
@@ -119,6 +123,7 @@ func prepareFilter(input ApiSFAvailabilityInProfileInput) bson.M {
 	return filter
 }
 
+// Daily function to build the MongoDB aggregation query for daily calculations
 func Daily(input ApiSFAvailabilityInProfileInput) []bson.M {
 
 	filter := prepareFilter(input)
@@ -132,6 +137,7 @@ func Daily(input ApiSFAvailabilityInProfileInput) []bson.M {
 	return query
 }
 
+// Monthly function to build the MongoDB aggregation query for monthly calculations
 func Monthly(input ApiSFAvailabilityInProfileInput) []bson.M {
 
 	filter := prepareFilter(input)
