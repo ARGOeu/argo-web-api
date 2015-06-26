@@ -37,6 +37,7 @@ import (
 	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
+// List returns the results for Daily and Monthly availability-reliability calculations for each service flavor
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
