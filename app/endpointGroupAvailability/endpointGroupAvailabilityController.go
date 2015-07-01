@@ -70,6 +70,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		Job:         urlValues.Get("job"),
 		GroupName:   urlValues["group_name"],
 		SuperGroup:  urlValues["supergroup_name"],
+		Type:        urlValues.Get("type"),
 	}
 
 	if strings.ToLower(input.Format) == "json" {

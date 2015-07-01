@@ -65,6 +65,7 @@ func createView(results []MongoInterface, format string) ([]byte, error) {
 			endpointGroup = &EndpointGroup{
 				Name:       row.Name,
 				SuperGroup: row.SuperGroup,
+				Type:       row.Type,
 			}
 			job.EndpointGroup = append(job.EndpointGroup, endpointGroup)
 		}
