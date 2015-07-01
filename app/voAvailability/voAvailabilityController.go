@@ -28,11 +28,13 @@ package voAvailability
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/caches"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
-	"net/http"
-	"strings"
 )
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -47,6 +49,19 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
+
+	// Authenticate user's api key and find corresponding tenant
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	// if authentication procedure fails then
+	// return unauthorized http status
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		//If wrong api key is passed we return UNAUTHORIZED http status
+		code = http.StatusUnauthorized
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
 
 	// This is the input we will receive from the API
 	urlValues := r.URL.Query()
@@ -71,7 +86,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -84,13 +101,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := Daily(input)
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "voreports", query, &results)
 
 	} else if strings.ToLower(input.granularity) == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := Monthly(input)
-		err = mongo.Pipe(session, "AR", "voreports", query, &results)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "voreports", query, &results)
 	}
 
 	if err != nil {
@@ -109,6 +126,5 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		caches.WriteCache("vos", input, output, cfg)
 	}
 
-	mongo.CloseSession(session)
 	return code, h, output, err
 }
