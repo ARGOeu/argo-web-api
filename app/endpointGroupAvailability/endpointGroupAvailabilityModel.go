@@ -63,7 +63,6 @@ type EndpointGroup struct {
 	XMLName      xml.Name `xml:"EndpointGroup" json:"-"`
 	Name         string   `xml:"name,attr" json:"name"`
 	SuperGroup   string   `xml:"SuperGroup,attr" json:"supergroup"`
-	Type         string   `xml:"type,attr"`
 	Availability []*Availability
 }
 
@@ -91,7 +90,6 @@ type EndpointGroupAvailabilityInput struct {
 	Format      string   // default XML; possible values are: XML, JSON
 	GroupName   []string // endpointGroup name; may appear more than once
 	SuperGroup  []string
-	Type        string
 }
 
 type list []interface{}
@@ -125,10 +123,6 @@ func prepareFilter(input EndpointGroupAvailabilityInput) bson.M {
 		filter["supergroup"] = bson.M{"$in": input.SuperGroup}
 	}
 
-	if input.Type != "" {
-		filter["type"] = input.Type
-	}
-
 	return filter
 }
 
@@ -148,8 +142,7 @@ func Daily(input EndpointGroupAvailabilityInput) []bson.M {
 			"reliability":  1,
 			"job":          1,
 			"supergroup":   1,
-			"name":         1,
-			"type":         1}},
+			"name":         1}},
 		{"$sort": bson.D{
 			{"job", 1},
 			{"supergroup", 1},
@@ -181,9 +174,6 @@ func Monthly(input EndpointGroupAvailabilityInput) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"job":        "$job"},
-			"type": bson.M{
-				"$first": "$type",
-			},
 			"avguptime": bson.M{"$avg": "$uptime"},
 			"avgunkown": bson.M{"$avg": "$unknown"},
 			"avgdown":   bson.M{"$avg": "$downtime"}}},
@@ -192,7 +182,6 @@ func Monthly(input EndpointGroupAvailabilityInput) []bson.M {
 			"name":       "$_id.name",
 			"job":        "$_id.job",
 			"supergroup": "$_id.supergroup",
-			"type":       "$type",
 			"avguptime":  1,
 			"avgunkown":  1,
 			"avgdown":    1,

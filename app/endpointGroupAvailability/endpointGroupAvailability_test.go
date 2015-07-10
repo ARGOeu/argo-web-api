@@ -155,8 +155,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"name":         "ST01",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
@@ -175,8 +175,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"name":         "ST02",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 70,
 			"reliability":  45,
@@ -195,8 +195,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"name":         "ST01",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
@@ -215,8 +215,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"name":         "ST02",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 43.5,
 			"reliability":  56,
@@ -228,139 +228,24 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.Insert(
-		bson.M{
-			"job":          "Job_A",
-			"date":         20150623,
-			"name":         "VO01",
-			"type":         "VO",
-			"supergroup":   "GROUP_C",
-			"uptime":       1,
-			"downtime":     0,
-			"unknown":      0,
-			"availability": 43.5,
-			"reliability":  56,
-			"weights":      4356,
-			"tags": []bson.M{
-				bson.M{
-					"name":  "",
-					"value": "",
-				},
-			},
-		})
-	c.Insert(
-		bson.M{
-			"job":          "Job_A",
-			"date":         20150623,
-			"name":         "VO02",
-			"type":         "VO",
-			"supergroup":   "GROUP_C",
-			"uptime":       1,
-			"downtime":     0,
-			"unknown":      0,
-			"availability": 43.5,
-			"reliability":  56,
-			"weights":      4987,
-			"tags": []bson.M{
-				bson.M{
-					"name":  "",
-					"value": "",
-				},
-			},
-		})
-	c.Insert(
-		bson.M{
-			"job":          "Job_A",
-			"date":         20150623,
-			"name":         "VO03",
-			"type":         "VO",
-			"supergroup":   "GROUP_C",
-			"uptime":       0,
-			"downtime":     1,
-			"unknown":      0,
-			"availability": 73.5,
-			"reliability":  59,
-			"weights":      2345,
-			"tags": []bson.M{
-				bson.M{
-					"name":  "",
-					"value": "",
-				},
-			},
-		})
-
 }
 
 // TestListEndpointGroupAvailability test if daily results are returned correctly
-func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupTypeSiteAvailability() {
+func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailability() {
 
-	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=daily&type=SITE", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=daily&group_name=ST01&group_name=ST02", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	code, _, output, _ := List(request, suite.cfg)
 
 	endpointGrouAvailabitiyXML := ` <root>
    <Job name="Job_A">
-     <EndpointGroup name="ST01" SuperGroup="GROUP_A" type="SITE">
+     <EndpointGroup name="ST01" SuperGroup="GROUP_A">
        <Availability timestamp="2015-06-22" availability="66.7" reliability="54.6"></Availability>
        <Availability timestamp="2015-06-23" availability="100" reliability="100"></Availability>
      </EndpointGroup>
-     <EndpointGroup name="ST02" SuperGroup="GROUP_A" type="SITE">
+     <EndpointGroup name="ST02" SuperGroup="GROUP_A">
        <Availability timestamp="2015-06-22" availability="70" reliability="45"></Availability>
        <Availability timestamp="2015-06-23" availability="43.5" reliability="56"></Availability>
-     </EndpointGroup>
-   </Job>
- </root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(endpointGrouAvailabitiyXML, string(output), "Response body mismatch")
-
-}
-
-func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupTypeVOAvailability() {
-
-	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=daily&type=VO", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	code, _, output, _ := List(request, suite.cfg)
-
-	endpointGrouAvailabitiyXML := ` <root>
-   <Job name="Job_A">
-     <EndpointGroup name="VO01" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06-23" availability="43.5" reliability="56"></Availability>
-     </EndpointGroup>
-     <EndpointGroup name="VO02" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06-23" availability="43.5" reliability="56"></Availability>
-     </EndpointGroup>
-     <EndpointGroup name="VO03" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06-23" availability="73.5" reliability="59"></Availability>
-     </EndpointGroup>
-   </Job>
- </root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(endpointGrouAvailabitiyXML, string(output), "Response body mismatch")
-
-}
-
-func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupTypeVOMonthlyAvailability() {
-
-	request, _ := http.NewRequest("GET", "/api/v1/endpoint_group_availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&job=Job_A&granularity=monthly&type=VO", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	code, _, output, _ := List(request, suite.cfg)
-
-	endpointGrouAvailabitiyXML := ` <root>
-   <Job name="Job_A">
-     <EndpointGroup name="VO01" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06" availability="99.99999900000002" reliability="99.99999900000002"></Availability>
-     </EndpointGroup>
-     <EndpointGroup name="VO02" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06" availability="99.99999900000002" reliability="99.99999900000002"></Availability>
-     </EndpointGroup>
-     <EndpointGroup name="VO03" SuperGroup="GROUP_C" type="VO">
-       <Availability timestamp="2015-06" availability="0" reliability="0"></Availability>
      </EndpointGroup>
    </Job>
  </root>`

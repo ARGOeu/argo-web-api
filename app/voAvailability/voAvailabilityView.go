@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package endpointGroupAvailability
+package voAvailability
 
 import (
 	"encoding/json"
@@ -34,51 +34,48 @@ import (
 	"time"
 )
 
-func createView(results []MongoInterface, format string) ([]byte, error) {
+func createView(results []ApiVoAvailabilityInProfileOutput, format string) ([]byte, error) {
+	docRoot := &Root{}
 
-	docRoot := &root{}
-
-	prevJob := ""
-	prevEndpointGroup := ""
-	endpointGroup := &EndpointGroup{}
-	job := &Job{}
-
+	prevProfile := ""
+	prevVo := ""
+	vo := &Vo{}
+	profile := &Profile{}
 	// we iterate through the results struct array
 	// keeping only the value of each row
-
 	for _, row := range results {
-		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
-		//if new job value does not match the previous job value
-		//we create a new job in the xml
-		if prevJob != row.Job {
-			prevJob = row.Job
-			job = &Job{
-				Name: row.Job,
+		timestamp, _ := time.Parse(customForm[0], row.Date)
+		//if new profile value does not match the previous profile value
+		//we create a new profile in the xml
+		if prevProfile != row.Profile {
+			prevProfile = row.Profile
+			profile = &Profile{
+				Name: row.Profile,
 			}
-			docRoot.Job = append(docRoot.Job, job)
-			prevEndpointGroup = ""
+			docRoot.Profile = append(docRoot.Profile, profile)
+			prevVo = ""
 		}
-		//if new endpointGroup does not match the previous service value
-		//we create a new endpointGroup entry in the xml
-		if prevEndpointGroup != row.Name {
-			prevEndpointGroup = row.Name
-			endpointGroup = &EndpointGroup{
-				Name:       row.Name,
-				SuperGroup: row.SuperGroup,
+		//if new ngi does not match the previous ngi value
+		//we create a new ngi entry in the xml
+		if prevVo != row.Vo {
+			prevVo = row.Vo
+			vo = &Vo{
+				Vo: row.Vo,
 			}
-			job.EndpointGroup = append(job.EndpointGroup, endpointGroup)
+			profile.Vo = append(profile.Vo, vo)
 		}
 		//we append the new availability values
-		endpointGroup.Availability = append(endpointGroup.Availability,
+		vo.Availability = append(vo.Availability,
 			&Availability{
 				Timestamp:    timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}
+	//we create the xml response and record the output and any possible errors
+	//in the appropriate variables
 	if strings.ToLower(format) == "json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
 	} else {
 		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
-
 }
