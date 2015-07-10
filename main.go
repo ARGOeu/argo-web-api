@@ -46,7 +46,7 @@ import (
 	"github.com/argoeu/argo-web-api/app/statusMsg"
 	"github.com/argoeu/argo-web-api/app/statusServices"
 	"github.com/argoeu/argo-web-api/app/tenants"
-	"github.com/argoeu/argo-web-api/app/voAvailability"
+
 	"github.com/gorilla/mux"
 )
 
@@ -65,7 +65,7 @@ func main() {
 	// Grouping calls.
 	// Groups are routed depending on the value of the parameter group type.
 	// 2) Provide with a default call informing the user of an invalid parameter
-	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(voAvailability.List)).
+	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(endpointGroupAvailability.List)).
 		Queries("group_type", "vo")
 
 	// Group of Groups availability
