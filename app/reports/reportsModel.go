@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package jobs
+package reports
 
 import (
 	"encoding/xml"
@@ -33,26 +33,26 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// Job structure holds information for a defined computational job
-type Job struct {
-	XMLName       xml.Name     `bson:",omitempty"      json:"-"               xml:"job"`
-	Name          string       `bson:"name"            json:"name"            xml:"name,attr"`
-	Tenant        string       `bson:"tenant"          json:"tenant"          xml:"tenant,attr"`
-	EndpointGroup string       `bson:"endpoint_group"  json:"endpoint_group"  xml:"endpoint_group,attr"`
-	GroupOfGroups string       `bson:"group_of_groups" json:"group_of_groups" xml:"group_of_groups,attr"`
-	Profiles      []JobProfile `bson:"profiles"        json:"profiles"        xml:"profiles>profile"`
-	FilterTags    []JobTag     `bson:"filter_tags"     json:"filter_tags"     xml:"filter_tags>tag"`
+// Report structure holds information for a defined computational job
+type Report struct {
+	XMLName       xml.Name        `bson:",omitempty"      json:"-"               xml:"report"`
+	Name          string          `bson:"name"            json:"name"            xml:"name,attr"`
+	Tenant        string          `bson:"tenant"          json:"tenant"          xml:"tenant,attr"`
+	EndpointGroup string          `bson:"endpoint_group"  json:"endpoint_group"  xml:"endpoint_group,attr"`
+	GroupOfGroups string          `bson:"group_of_groups" json:"group_of_groups" xml:"group_of_groups,attr"`
+	Profiles      []ReportProfile `bson:"profiles"        json:"profiles"        xml:"profiles>profile"`
+	FilterTags    []ReportTag     `bson:"filter_tags"     json:"filter_tags"     xml:"filter_tags>tag"`
 }
 
-// JobProfile holds info about the profiles included in a job definition
-type JobProfile struct {
+// ReportProfile holds info about the profiles included in a report definition
+type ReportProfile struct {
 	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"profile"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Value   string   `bson:"value"      json:"value" xml:"value,attr"`
 }
 
-// JobTag holds info about the tags used in filtering in a job definition
-type JobTag struct {
+// ReportTag holds info about the tags used in filtering in a report definition
+type ReportTag struct {
 	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"tag"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Value   string   `bson:"value"      json:"value" xml:"value,attr"`
@@ -67,11 +67,11 @@ type Message struct {
 // RootXML struct to represent the root of the xml document
 type RootXML struct {
 	XMLName xml.Name `xml:"root" json:"-"`
-	Jobs    *[]Job
+	Reports *[]Report
 }
 
-// createJob is used to create a new job definition
-func createJob(input Job) bson.M {
+// createReport is used to create a new job definition
+func createReport(input Report) bson.M {
 	query := bson.M{
 		"name":            input.Name,
 		"tenant":          input.Tenant,
@@ -83,9 +83,9 @@ func createJob(input Job) bson.M {
 	return query
 }
 
-// GetMetricProfile is a function that takes a job struc element
+// GetMetricProfile is a function that takes a report struc element
 // and returns the name of the metric profile (if exists)
-func GetMetricProfile(input Job) (string, error) {
+func GetMetricProfile(input Report) (string, error) {
 	for _, element := range input.Profiles {
 		if element.Name == "metric" {
 			return element.Value, nil

@@ -32,7 +32,7 @@ import "encoding/xml"
 type InputParams struct {
 	startTime string // UTC time in W3C format
 	endTime   string
-	job       string
+	report    string
 	groupType string
 	group     string
 }
@@ -64,12 +64,12 @@ type MetricDetailOutput struct {
 // ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Job     *JobXML
+	Report  *ReportXML
 }
 
-// JobXML struct used as xml block
-type JobXML struct {
-	XMLName xml.Name `xml:"job"`
+// ReportXML struct used as xml block
+type ReportXML struct {
+	XMLName xml.Name `xml:"report"`
 	Name    string   `xml:"name,attr"`
 	Groups  []*GroupXML
 }

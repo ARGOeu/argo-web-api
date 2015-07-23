@@ -36,9 +36,9 @@ import (
 	"github.com/argoeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/argoeu/argo-web-api/app/factors"
 	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
-	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 	"github.com/argoeu/argo-web-api/app/recomputations"
+	"github.com/argoeu/argo-web-api/app/reports"
 	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/argo-web-api/app/statusDetail"
 	"github.com/argoeu/argo-web-api/app/statusEndpointGroups"
@@ -88,12 +88,12 @@ func main() {
 	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
 	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
 
-	//jobs
-	postSubrouter.HandleFunc("/api/v1/jobs", Respond(jobs.Create))
-	putSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.Update))
-	deleteSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.Delete))
-	getSubrouter.HandleFunc("/api/v1/jobs", Respond(jobs.List))
-	getSubrouter.HandleFunc("/api/v1/jobs/{name}", Respond(jobs.ListOne))
+	//reports
+	postSubrouter.HandleFunc("/api/v1/reports", Respond(reports.Create))
+	putSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.Update))
+	deleteSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.Delete))
+	getSubrouter.HandleFunc("/api/v1/reports", Respond(reports.List))
+	getSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.ListOne))
 
 	//Poem Profiles compatibility
 	getSubrouter.HandleFunc("/api/v1/poems", Respond(metricProfiles.ListPoems))

@@ -54,7 +54,7 @@ type StatusMsgTestSuite struct {
 // A test configuration object is instantiated using a reference
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with tenants,jobs,metric_profiles and status_metrics
+// Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *StatusMsgTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -140,8 +140,8 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 	// authenticate user's api key and find corresponding tenant
 	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
-	// Now seed the job DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("jobs")
+	// Now seed the reports DEFINITIONS
+	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
 		"name":            "ROC_CRITICAL",
 		"tenant":          "EGI",
@@ -190,7 +190,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
-		"job":                 "ROC_CRITICAL",
+		"report":              "ROC_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T00:00:00Z",
 		"supergroup":          "NGI_GRNET",
@@ -208,7 +208,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 		"message":             "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"job":                 "ROC_CRITICAL",
+		"report":              "ROC_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T01:00:00Z",
 		"supergroup":          "NGI_GRNET",
@@ -226,7 +226,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 		"message":             "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"job":                 "ROC_CRITICAL",
+		"report":              "ROC_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T05:00:00Z",
 		"supergroup":          "NGI_GRNET",
@@ -254,8 +254,8 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 	// authenticate user's api key and find corresponding tenant
 	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
-	// Now seed the job DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("jobs")
+	// Now seed the reports DEFINITIONS
+	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
 		"name":            "EUDAT_CRITICAL",
 		"tenant":          "EUDAT",
@@ -297,7 +297,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
-		"job":                 "EUDAT_CRITICAL",
+		"report":              "EUDAT_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T00:00:00Z",
 		"supergroup":          "EUDAT_EL",
@@ -315,7 +315,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 		"message":             "memory is ok",
 	})
 	c.Insert(bson.M{
-		"job":                 "EUDAT_CRITICAL",
+		"report":              "EUDAT_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T01:00:00Z",
 		"supergroup":          "EUDAT_EL",
@@ -333,7 +333,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 		"message":             "memory error: Out of memory ",
 	})
 	c.Insert(bson.M{
-		"job":                 "EUDAT_CRITICAL",
+		"report":              "EUDAT_CRITICAL",
 		"date_int":            20150501,
 		"timestamp":           "2015-05-01T05:00:00Z",
 		"supergroup":          "EUDAT_EL",
@@ -356,7 +356,7 @@ func (suite *StatusMsgTestSuite) SetupTest() {
 func (suite *StatusMsgTestSuite) TestReadStatusDetail() {
 
 	respXML2 := ` <root>
-   <job name="EUDAT_CRITICAL">
+   <report name="EUDAT_CRITICAL">
      <group name="EUDAT_EL" type="EUDAT_GROUP">
        <group name="EL-01-AUTH" type="EUDAT_SITE">
          <group name="srv.typeA" type="service_type">
@@ -371,11 +371,11 @@ func (suite *StatusMsgTestSuite) TestReadStatusDetail() {
          </group>
        </group>
      </group>
-   </job>
+   </report>
  </root>`
 
 	respXML1 := ` <root>
-   <job name="ROC_CRITICAL">
+   <report name="ROC_CRITICAL">
      <group name="NGI_GRNET" type="NGI">
        <group name="HG-03-AUTH" type="SITES">
          <group name="CREAM-CE" type="service_type">
@@ -390,7 +390,7 @@ func (suite *StatusMsgTestSuite) TestReadStatusDetail() {
          </group>
        </group>
      </group>
-   </job>
+   </report>
  </root>`
 
 	fullurl1 := "/api/v1/status/metrics/msg/cream01.afroditi.gr/" +
@@ -440,6 +440,6 @@ func (suite *StatusMsgTestSuite) TearDownTest() {
 }
 
 // This is the first function called when go test is issued
-func TestJobsSuite(t *testing.T) {
+func TestStatusMsgSuite(t *testing.T) {
 	suite.Run(t, new(StatusMsgTestSuite))
 }

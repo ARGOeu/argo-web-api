@@ -34,8 +34,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
+	"github.com/argoeu/argo-web-api/app/reports"
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
@@ -85,7 +85,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Structure to hold job information
-	jobResult := jobs.Job{}
+	reportResult := reports.Report{}
 	metricProfileResult := metricProfiles.MongoInterface{}
 
 	// Mongo Session
@@ -96,11 +96,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	defer mongo.CloseSession(session)
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
-	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
+	reportCol := session.DB(tenantDbConfig.Db).C("reports")
 	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
-	// Get Job details
-	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
+	// Get Report details
+	err = reportCol.Find(bson.M{"name": input.report}).One(&reportResult)
 	if err != nil {
 		output = []byte("Error on retrieving job information")
 		code = http.StatusInternalServerError
@@ -109,7 +109,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// Search job for used metric profile
 	metricProfileName := ""
-	metricProfileName, err = jobs.GetMetricProfile(jobResult)
+	metricProfileName, err = reports.GetMetricProfile(reportResult)
 
 	// Query details for the metric profile used
 	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
@@ -121,9 +121,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 	// Find if the selected group type is endpoint group
 	// or group of groups. If is not found in the job
-	if jobResult.GroupOfGroups == input.groupType {
+	if reportResult.GroupOfGroups == input.groupType {
 		selectedGroupType = "group"
-	} else if jobResult.EndpointGroup == input.groupType {
+	} else if reportResult.EndpointGroup == input.groupType {
 		selectedGroupType = "endpoint"
 	} else {
 		message := "the specific group type is not supported in this job"
@@ -170,7 +170,7 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 	if selectedGroupType == "endpoint" {
 
 		query := bson.M{
-			"job":            input.job,
+			"report":         input.report,
 			"date_int":       tsYMD,
 			"endpoint_group": input.group,
 			"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
@@ -182,7 +182,7 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 	if selectedGroupType == "group" {
 
 		query := bson.M{
-			"job":        input.job,
+			"report":     input.report,
 			"date_int":   tsYMD,
 			"supergroup": input.group,
 			"time_int":   bson.M{"$gte": tsInt, "$lte": teInt},
@@ -193,7 +193,7 @@ func prepQuery(input InputParams, selectedGroupType string) bson.M {
 
 	if input.groupType == "host" {
 		query := bson.M{
-			"job":      input.job,
+			"report":   input.report,
 			"date_int": tsYMD,
 			"hostname": input.group,
 			"time_int": bson.M{"$gte": tsInt, "$lte": teInt},

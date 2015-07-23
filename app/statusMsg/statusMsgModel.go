@@ -31,7 +31,7 @@ import "encoding/xml"
 // MsgInput structure holds url input params
 type MsgInput struct {
 	execTime string // UTC time in W3C format
-	job      string
+	report   string
 	host     string
 	service  string
 	metric   string
@@ -57,12 +57,12 @@ type MsgOutput struct {
 // ReadRoot struct used as xml block
 type ReadRoot struct {
 	XMLName xml.Name `xml:"root"`
-	Job     *JobXML
+	Report  *ReportXML
 }
 
-// JobXML struct used as xml block
-type JobXML struct {
-	XMLName xml.Name `xml:"job"`
+// ReportXML struct used as xml block
+type ReportXML struct {
+	XMLName xml.Name `xml:"report"`
 	Name    string   `xml:"name,attr"`
 	Groups  []*GroupXML
 }
