@@ -63,12 +63,12 @@ var routes = []Route{
 	{"tenant list", "GET", "/tenants", tenants.List},
 	{"tenant list one", "GET", "/tenants/{name}", tenants.ListOne},
 
-	//reports
-	{"reports create", "POST", "/reports", reports.Create},
-	{"job update", "PUT", "/reports/{name}", reports.Update},
-	{"job delete", "DELETE", "/reports/{name}", reports.Delete},
-	{"job list", "GET", "/reports", reports.List},
-	{"job list one", "GET", "/reports/{name}", reports.ListOne},
+	//jobs
+	{"reports create", "POST", "/jobs", reports.Create},
+	{"reports update", "PUT", "/jobs/{name}", reports.Update},
+	{"reports delete", "DELETE", "/jobs/{name}", reports.Delete},
+	{"reports list", "GET", "/jobs", reports.List},
+	{"reports list one", "GET", "/jobs/{name}", reports.ListOne},
 
 	//Poem Profiles compatibility
 	{"List poems", "GET", "/poems", metricProfiles.ListPoems},
