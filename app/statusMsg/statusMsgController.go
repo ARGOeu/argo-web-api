@@ -34,8 +34,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
+	"github.com/argoeu/argo-web-api/app/reports"
 	"github.com/argoeu/argo-web-api/utils/authentication"
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/argo-web-api/utils/mongo"
@@ -86,7 +86,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Structure to hold job information
-	jobResult := jobs.Job{}
+	reportResult := reports.Report{}
 	metricProfileResult := metricProfiles.MongoInterface{}
 
 	// Mongo Session
@@ -96,20 +96,20 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	defer mongo.CloseSession(session)
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
-	jobCol := session.DB(tenantDbConfig.Db).C("jobs")
+	reportCol := session.DB(tenantDbConfig.Db).C("reports")
 	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
-	// Get Job details
-	err = jobCol.Find(bson.M{"name": input.job}).One(&jobResult)
+	// Get report details
+	err = reportCol.Find(bson.M{"name": input.report}).One(&reportResult)
 	if err != nil {
-		output = []byte("Error on retrieving job information")
+		output = []byte("Error on retrieving Report information")
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Search job for used metric profile
+	// Search report for used metric profile
 	metricProfileName := ""
-	metricProfileName, err = jobs.GetMetricProfile(jobResult)
+	metricProfileName, err = reports.GetMetricProfile(reportResult)
 
 	// Query details for the metric profile used
 	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
@@ -152,7 +152,7 @@ func prepQuery(input MsgInput) bson.M {
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 
 	query := bson.M{
-		"job":      input.job,
+		"report":   input.report,
 		"date_int": tsYMD,
 		"hostname": input.host,
 		"service":  input.service,

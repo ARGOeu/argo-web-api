@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package jobs
+package reports
 
 import "encoding/xml"
 
@@ -35,9 +35,9 @@ func messageXML(answer string) ([]byte, error) {
 	return output, err
 }
 
-func createView(results []Job) ([]byte, error) {
+func createView(results []Report) ([]byte, error) {
 	docRoot := &RootXML{}
-	docRoot.Jobs = &results
+	docRoot.Reports = &results
 	output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
 }

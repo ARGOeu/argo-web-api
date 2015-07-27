@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package jobs
+package reports
 
 import (
 	"encoding/json"
@@ -38,8 +38,8 @@ import (
 	"github.com/argoeu/argo-web-api/utils/mongo"
 )
 
-// Create function is used to implement the create job request.
-// The request is an http POST request with the job description
+// Create function is used to implement the create report request.
+// The request is an http POST request with the report description
 // provided as json structure in the request body
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -68,7 +68,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//Reading the json input from the request body
 	reqBody, err := ioutil.ReadAll(r.Body)
-	input := Job{}
+	input := Report{}
 	//Unmarshalling the json input into byte form
 	err = json.Unmarshal(reqBody, &input)
 
@@ -99,11 +99,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Prepare structure for storing query results
-	results := []Job{}
+	results := []Report{}
 
-	// Check if job with the same name exists in datastore
+	// Check if report with the same name exists in datastore
 	query := searchName(input.Name)
-	err = mongo.Find(session, tenantDbConf.Db, "jobs", query, "name", &results)
+	err = mongo.Find(session, tenantDbConf.Db, "reports", query, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -111,11 +111,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// If results are returned for the specific name
-	// then we already have an existing job and we must
+	// then we already have an existing report and we must
 	// abort creation notifing the user
 	if len(results) > 0 {
 		// Name was found so print the error message in xml
-		output, err = messageXML("Job with the same name already exists")
+		output, err = messageXML("Report with the same name already exists")
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -128,17 +128,17 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	}
 
-	// If no job exists with this name create a new one
-	query = createJob(input)
-	err = mongo.Insert(session, tenantDbConf.Db, "jobs", query)
+	// If no report exists with this name create a new one
+	query = createReport(input)
+	err = mongo.Insert(session, tenantDbConf.Db, "reports", query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Notify user that the job has been created. In xml style
-	output, err = messageXML("Job was successfully created")
+	// Notify user that the report has been created. In xml style
+	output, err = messageXML("Report was successfully created")
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -151,7 +151,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 }
 
 // List function that implements the http GET request that retrieves
-// all avaiable job information
+// all avaiable report information
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -187,10 +187,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Create structure for storing query results
-	results := []Job{}
+	results := []Report{}
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
-	err = mongo.Find(session, tenantDbConf.Db, "jobs", nil, "name", &results)
+	err = mongo.Find(session, tenantDbConf.Db, "reports", nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -211,7 +211,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 }
 
 // ListOne function that implements the http GET request that retrieves
-// all avaiable job information
+// all avaiable report information
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -251,11 +251,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 
 	// Create structure for storing query results
-	results := []Job{}
+	results := []Report{}
 	// Create a simple query object to query by name
 	query := searchName(nameFromURL)
 	// Query collection tenants for the specific tenant name
-	err = mongo.Find(session, tenantDbConf.Db, "jobs", query, "name", &results)
+	err = mongo.Find(session, tenantDbConf.Db, "reports", query, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -266,7 +266,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// abort and notify user accordingly
 	if len(results) == 0 {
 
-		output, err := messageXML("Job not found")
+		output, err := messageXML("Report not found")
 
 		if err != nil {
 			code = http.StatusInternalServerError
@@ -291,11 +291,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	return code, h, output, err
 }
 
-// Update function used to implement update job request.
-// This is an http PUT request that gets a specific job's name
+// Update function used to implement update report request.
+// This is an http PUT request that gets a specific report's name
 // as a urlvar parameter input and a json structure in the request
 // body in order to update the datastore document for the specific
-// job
+// report
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -322,14 +322,14 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	//Extracting job name from url
+	//Extracting report name from url
 	urlValues := r.URL.Path
 	nameFromURL := strings.Split(urlValues, "/")[4]
 
 	//Reading the json input
 	reqBody, err := ioutil.ReadAll(r.Body)
 
-	input := Job{}
+	input := Report{}
 	//Unmarshalling the json input into byte form
 	err = json.Unmarshal(reqBody, &input)
 
@@ -360,7 +360,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// We search by name and update
 	query := searchName(nameFromURL)
-	err = mongo.Update(session, tenantDbConf.Db, "jobs", query, input)
+	err = mongo.Update(session, tenantDbConf.Db, "reports", query, input)
 
 	if err != nil {
 
@@ -369,11 +369,11 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			return code, h, output, err
 		}
 		//Render the response into XML
-		output, err = messageXML("Job not found")
+		output, err = messageXML("Report not found")
 
 	} else {
 		//Render the response into XML
-		output, err = messageXML("Job was successfully updated")
+		output, err = messageXML("Report was successfully updated")
 	}
 
 	if err != nil {
@@ -386,7 +386,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-// Delete function used to implement remove job request
+// Delete function used to implement remove report request
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -429,7 +429,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// We search by name and delete the document in db
 	query := searchName(nameFromURL)
-	info, err := mongo.Remove(session, tenantDbConf.Db, "jobs", query)
+	info, err := mongo.Remove(session, tenantDbConf.Db, "reports", query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -440,9 +440,9 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// If deletion took place we notify user accordingly.
 	// Else we notify that no tenant matched the specific name
 	if info.Removed > 0 {
-		output, err = messageXML("Job was successfully deleted")
+		output, err = messageXML("Report was successfully deleted")
 	} else {
-		output, err = messageXML("Job not found")
+		output, err = messageXML("Report not found")
 	}
 	//Render the response into XML
 	if err != nil {

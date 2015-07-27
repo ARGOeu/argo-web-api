@@ -41,8 +41,8 @@ func createView(results []MsgOutput, input MsgInput, metricDetail metricProfiles
 		return output, err
 	}
 
-	job := &JobXML{}
-	job.Name = input.job
+	report := &ReportXML{}
+	report.Name = input.report
 
 	prevHostname := ""
 	prevMetric := ""
@@ -68,7 +68,7 @@ func createView(results []MsgOutput, input MsgInput, metricDetail metricProfiles
 			group := &GroupXML{}
 			group.Name = row.Group
 			group.Type = row.GroupType
-			job.Groups = append(job.Groups, group)
+			report.Groups = append(report.Groups, group)
 			prevGroup = group.Name
 			ppGroup = group
 		}
@@ -126,7 +126,7 @@ func createView(results []MsgOutput, input MsgInput, metricDetail metricProfiles
 
 	}
 
-	docRoot.Job = job
+	docRoot.Report = report
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err

@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package jobs
+package reports
 
 import (
 	"net/http"
@@ -41,25 +41,25 @@ import (
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
-type JobTestSuite struct {
+type ReportTestSuite struct {
 	suite.Suite
-	cfg              config.Config
-	tenantDbConf     config.MongoConfig
-	respJobCreated   string
-	respJobUpdated   string
-	respJobDeleted   string
-	respJobNotFound  string
-	respUnauthorized string
-	respBadJSON      string
+	cfg                config.Config
+	tenantDbConf       config.MongoConfig
+	respReportCreated  string
+	respReportUpdated  string
+	respReportDeleted  string
+	respReportNotFound string
+	respUnauthorized   string
+	respBadJSON        string
 }
 
 // Setup the Test Environment
 // This function runs before any test and setups the environment
 // A test configuration object is instantiated using a reference
-// to testdb: argo_test_jobs. Also here is are instantiated some expected
+// to testdb: argo_test_reports. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with two jobs
-func (suite *JobTestSuite) SetupTest() {
+// Also the testdb is seeded with two reports
+func (suite *ReportTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -72,22 +72,22 @@ func (suite *JobTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argo_test_jobs"
+    db = "argo_test_reports"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.respJobCreated = " <root>\n" +
-		"   <Message>Job was successfully created</Message>\n </root>"
+	suite.respReportCreated = " <root>\n" +
+		"   <Message>Report was successfully created</Message>\n </root>"
 
-	suite.respJobUpdated = " <root>\n" +
-		"   <Message>Job was successfully updated</Message>\n </root>"
+	suite.respReportUpdated = " <root>\n" +
+		"   <Message>Report was successfully updated</Message>\n </root>"
 
-	suite.respJobDeleted = " <root>\n" +
-		"   <Message>Job was successfully deleted</Message>\n </root>"
+	suite.respReportDeleted = " <root>\n" +
+		"   <Message>Report was successfully deleted</Message>\n </root>"
 
-	suite.respJobNotFound = " <root>\n" +
-		"   <Message>Job not found</Message>\n </root>"
+	suite.respReportNotFound = " <root>\n" +
+		"   <Message>Report not found</Message>\n </root>"
 
 	suite.respBadJSON = " <root>\n" +
 		"   <Message>Malformated json input data</Message>\n </root>"
@@ -117,7 +117,7 @@ func (suite *JobTestSuite) SetupTest() {
 				"store":    "ar",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argo_test_jobs_db1",
+				"database": "argo_test_reports_db1",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
 			bson.M{
@@ -149,10 +149,10 @@ func (suite *JobTestSuite) SetupTest() {
 	// authenticate user's api key and find corresponding tenant
 	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
-	// Now seed the job DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("jobs")
+	// Now seed the report DEFINITIONS
+	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "Job_A",
+		"name":            "Report_A",
 		"tenant":          "AVENGERS",
 		"endpoint_group":  "SITES",
 		"group_of_groups": "NGI",
@@ -174,7 +174,7 @@ func (suite *JobTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"name":            "Job_B",
+		"name":            "Report_B",
 		"tenant":          "AVENGERS",
 		"endpoint_group":  "SITES",
 		"group_of_groups": "NGI",
@@ -196,17 +196,17 @@ func (suite *JobTestSuite) SetupTest() {
 		}})
 }
 
-// TestCreateJob function implements testing the http POST create job request.
+// TestCreateReport function implements testing the http POST create report request.
 // Request requires admin authentication and gets as input a json body containing
 // all the available information to be added to the datastore
 // After the operation succeeds is double-checked
-// that the newly created job is correctly retrieved
-func (suite *JobTestSuite) TestCreateJob() {
+// that the newly created report is correctly retrieved
+func (suite *ReportTestSuite) TestCreateReport() {
 
 	// create json input data for the request
 	postData := `
   {
-    "name":"Foo_Job",
+    "name":"Foo_Report",
     "tenant":"AVENGERS",
     "profiles":[
       { "name":"metric","value":"profA"},
@@ -231,12 +231,12 @@ func (suite *JobTestSuite) TestCreateJob() {
 	code, _, output, _ := Create(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respJobCreated, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportCreated, string(output), "Response body mismatch")
 
 	// Double check that you read the newly inserted profile
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
- <job name="Foo_Job" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
+ <report name="Foo_Report" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
   <profiles>
    <profile name="metric" value="profA"></profile>
    <profile name="ap" value="profB"></profile>
@@ -245,11 +245,11 @@ func (suite *JobTestSuite) TestCreateJob() {
    <tag name="production" value="Y"></tag>
    <tag name="monitored" value="Y"></tag>
   </filter_tags>
- </job>
+ </report>
 </root>`
 
-	// Prepare the request object using job name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/jobs/Foo_Job", strings.NewReader(""))
+	// Prepare the request object using report name as urlvar in url path
+	request, _ = http.NewRequest("GET", "/api/v1/reports/Foo_Report", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -262,17 +262,17 @@ func (suite *JobTestSuite) TestCreateJob() {
 	suite.Equal(respXML, string(output), "Response body mismatch")
 }
 
-// TestUpdateJob function implements testing the http PUT update job request.
+// TestUpdateReport function implements testing the http PUT update report request.
 // Request requires admin authentication and gets as input the name of the
-// job to be updated and a json body with the update.
+// report to be updated and a json body with the update.
 // After the operation succeeds is double-checked
-// that the specific job has been updated
-func (suite *JobTestSuite) TestUpdateJob() {
+// that the specific report has been updated
+func (suite *ReportTestSuite) TestUpdateReport() {
 
 	// create json input data for the request
 	postData := `
   {
-    "name":"Job_A_modified",
+    "name":"Report_A_modified",
     "tenant":"AVENGERS",
     "profiles":[
       { "name":"metric","value":"profA_mod"},
@@ -287,7 +287,7 @@ func (suite *JobTestSuite) TestUpdateJob() {
   }
     `
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/jobs/Job_A", strings.NewReader(postData))
+	request, _ := http.NewRequest("PUT", "/api/v1/reports/Report_A", strings.NewReader(postData))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -297,12 +297,12 @@ func (suite *JobTestSuite) TestUpdateJob() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respJobUpdated, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportUpdated, string(output), "Response body mismatch")
 
 	// Double check that you read the newly inserted profile
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
- <job name="Job_A_modified" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
+ <report name="Report_A_modified" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
   <profiles>
    <profile name="metric" value="profA_mod"></profile>
    <profile name="ap" value="profB_mod"></profile>
@@ -311,11 +311,11 @@ func (suite *JobTestSuite) TestUpdateJob() {
    <tag name="production" value="Y"></tag>
    <tag name="monitored" value="Y"></tag>
   </filter_tags>
- </job>
+ </report>
 </root>`
 
-	// Prepare the request object using job name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/jobs/Job_A_modified", strings.NewReader(""))
+	// Prepare the request object using report name as urlvar in url path
+	request, _ = http.NewRequest("GET", "/api/v1/reports/Report_A_modified", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -328,14 +328,14 @@ func (suite *JobTestSuite) TestUpdateJob() {
 	suite.Equal(respXML, string(output), "Response body mismatch")
 }
 
-// TestDeleteJob function implements testing the http DELETE job request.
+// TestDeleteReport function implements testing the http DELETE report request.
 // Request requires admin authentication and gets as input the name of the
-// job to be deleted. After the operation succeeds is double-checked
-// that the deleted job is actually missing from the datastore
-func (suite *JobTestSuite) TestDeleteJob() {
+// report to be deleted. After the operation succeeds is double-checked
+// that the deleted report is actually missing from the datastore
+func (suite *ReportTestSuite) TestDeleteReport() {
 
 	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/job/Job_B", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v1/reports/Report_B", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -345,12 +345,12 @@ func (suite *JobTestSuite) TestDeleteJob() {
 	code, _, output, _ := Delete(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respJobDeleted, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportDeleted, string(output), "Response body mismatch")
 
-	// Double check that the job is actually removed when you try
+	// Double check that the report is actually removed when you try
 	// to retrieve it's information by name
-	// Prepare the request object using job name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/job/Job_B", strings.NewReader(""))
+	// Prepare the request object using report name as urlvar in url path
+	request, _ = http.NewRequest("GET", "/api/v1/reports/Report_B", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -360,17 +360,17 @@ func (suite *JobTestSuite) TestDeleteJob() {
 	// Check that we must have a 200 ok code
 	suite.Equal(400, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(suite.respJobNotFound, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportNotFound, string(output), "Response body mismatch")
 }
 
-// TestReadOneJob function implements the testing
+// TestReadOneReport function implements the testing
 // of the get request which retrieves information
-// about a specific job (using it's name as input)
-func (suite *JobTestSuite) TestReadOneJob() {
+// about a specific report (using it's name as input)
+func (suite *ReportTestSuite) TestReadOneReport() {
 
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
- <job name="Job_A" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
+ <report name="Report_A" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
   <profiles>
    <profile name="metric" value="profile1"></profile>
    <profile name="ops" value="profile2"></profile>
@@ -379,11 +379,11 @@ func (suite *JobTestSuite) TestReadOneJob() {
    <tag name="name1" value="value1"></tag>
    <tag name="name2" value="value2"></tag>
   </filter_tags>
- </job>
+ </report>
 </root>`
 
-	// Prepare the request object using job name as urlvar in url path
-	request, _ := http.NewRequest("GET", "/api/v1/jobs/Job_A", strings.NewReader(""))
+	// Prepare the request object using report name as urlvar in url path
+	request, _ := http.NewRequest("GET", "/api/v1/reports/Report_A", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -392,18 +392,19 @@ func (suite *JobTestSuite) TestReadOneJob() {
 	code, _, output, _ := ListOne(request, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
+
 	// Compare the expected and actual xml response
 	suite.Equal(respXML, string(output), "Response body mismatch")
 }
 
-// TestReadJobs function implements the testing
+// TestReadReport function implements the testing
 // of the get request which retrieves information
-// about all available jobs
-func (suite *JobTestSuite) TestReadJobs() {
+// about all available reports
+func (suite *ReportTestSuite) TestReadReports() {
 
 	// Create a string literal of the expected xml Response
 	respXML := `<root>
- <job name="Job_A" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
+ <report name="Report_A" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
   <profiles>
    <profile name="metric" value="profile1"></profile>
    <profile name="ops" value="profile2"></profile>
@@ -412,8 +413,8 @@ func (suite *JobTestSuite) TestReadJobs() {
    <tag name="name1" value="value1"></tag>
    <tag name="name2" value="value2"></tag>
   </filter_tags>
- </job>
- <job name="Job_B" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
+ </report>
+ <report name="Report_B" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
   <profiles>
    <profile name="metric" value="profile1"></profile>
    <profile name="ops" value="profile2"></profile>
@@ -422,7 +423,7 @@ func (suite *JobTestSuite) TestReadJobs() {
    <tag name="name1" value="value1"></tag>
    <tag name="name2" value="value2"></tag>
   </filter_tags>
- </job>
+ </report>
 </root>`
 
 	// Prepare the request object
@@ -439,9 +440,9 @@ func (suite *JobTestSuite) TestReadJobs() {
 	suite.Equal(respXML, string(output), "Response body mismatch")
 }
 
-// TestCreateUnauthorized function tests calling the create job request (POST) and
+// TestCreateUnauthorized function tests calling the create report request (POST) and
 // providing a wrong api-key. The response should be unauthorized
-func (suite *JobTestSuite) TestCreateUnauthorized() {
+func (suite *ReportTestSuite) TestCreateUnauthorized() {
 	// Prepare the request object (use id2 for path)
 	request, _ := http.NewRequest("POST", "", strings.NewReader(""))
 	// add the content-type header to application/json
@@ -456,9 +457,9 @@ func (suite *JobTestSuite) TestCreateUnauthorized() {
 	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
-// TestUpdateUnauthorized function tests calling the update job request (PUT)
+// TestUpdateUnauthorized function tests calling the update report request (PUT)
 // and providing  a wrong api-key. The response should be unauthorized
-func (suite *JobTestSuite) TestUpdateUnauthorized() {
+func (suite *ReportTestSuite) TestUpdateUnauthorized() {
 	// Prepare the request object
 	request, _ := http.NewRequest("PUT", "", strings.NewReader("{}"))
 	// add the content-type header to application/json
@@ -473,9 +474,9 @@ func (suite *JobTestSuite) TestUpdateUnauthorized() {
 	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
-// TestDeleteUnauthorized function tests calling the remove job request (DELETE)
+// TestDeleteUnauthorized function tests calling the remove report request (DELETE)
 // and providing a wrong api-key. The response should be unauthorized
-func (suite *JobTestSuite) TestDeleteUnauthorized() {
+func (suite *ReportTestSuite) TestDeleteUnauthorized() {
 	// Prepare the request object
 	request, _ := http.NewRequest("DELETE", "", strings.NewReader("{}"))
 	// add the content-type header to application/json
@@ -490,11 +491,11 @@ func (suite *JobTestSuite) TestDeleteUnauthorized() {
 	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 }
 
-// TestCreateBadJson tests calling the create job request (POST) and providing
+// TestCreateBadJson tests calling the create report request (POST) and providing
 // bad json input. The response should be malformed json
-func (suite *JobTestSuite) TestCreateBadJson() {
+func (suite *ReportTestSuite) TestCreateBadJson() {
 	// Prepare the request object
-	request, _ := http.NewRequest("POST", "/api/v1/jobs/Job_A", strings.NewReader("{ bad json"))
+	request, _ := http.NewRequest("POST", "/api/v1/reports/Report_A", strings.NewReader("{ bad json"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -507,11 +508,11 @@ func (suite *JobTestSuite) TestCreateBadJson() {
 	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
 }
 
-// TestUpdateBadJson tests calling the update job request (PUT) and providing
+// TestUpdateBadJson tests calling the update report request (PUT) and providing
 // bad json input. The response should be malformed json
-func (suite *JobTestSuite) TestUpdateBadJson() {
+func (suite *ReportTestSuite) TestUpdateBadJson() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/jobs/Job_A", strings.NewReader("{ bad json"))
+	request, _ := http.NewRequest("PUT", "/api/v1/reports/Re[prt_A", strings.NewReader("{ bad json"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -524,11 +525,11 @@ func (suite *JobTestSuite) TestUpdateBadJson() {
 	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
 }
 
-// TestListOneNotFound tests calling the http (GET) job info request
-// and provide a non-existing job name. The response should be job not found
-func (suite *JobTestSuite) TestListOneNotFound() {
+// TestListOneNotFound tests calling the http (GET) report info request
+// and provide a non-existing report name. The response should be report not found
+func (suite *ReportTestSuite) TestListOneNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("GET", "/api/v1/jobs/BADNAME", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v1/reports/BADNAME", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -538,14 +539,14 @@ func (suite *JobTestSuite) TestListOneNotFound() {
 	code, _, output, _ := ListOne(request, suite.cfg)
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.respJobNotFound, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportNotFound, string(output), "Response body mismatch")
 }
 
-// TestUpdateNotFound tests calling the http (PUT) update job request
-// and provide a non-existing job name. The response should be job not found
-func (suite *JobTestSuite) TestUpdateNotFound() {
+// TestUpdateNotFound tests calling the http (PUT) update report equest
+// and provide a non-existing report name. The response should be report not found
+func (suite *ReportTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/jobs/BADNAME", strings.NewReader("{}"))
+	request, _ := http.NewRequest("PUT", "/api/v1/reports/BADNAME", strings.NewReader("{}"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -555,14 +556,14 @@ func (suite *JobTestSuite) TestUpdateNotFound() {
 	code, _, output, _ := Update(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respJobNotFound, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportNotFound, string(output), "Response body mismatch")
 }
 
-// TestDeleteNotFound tests calling the http (PUT) update job request
-// and provide a non-existing job name. The response should be job not found
-func (suite *JobTestSuite) TestDeleteNotFound() {
+// TestDeleteNotFound tests calling the http (PUT) update report request
+// and provide a non-existing report name. The response should be report not found
+func (suite *ReportTestSuite) TestDeleteNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/jobs/BADNAME", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v1/reports/BADNAME", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -572,21 +573,21 @@ func (suite *JobTestSuite) TestDeleteNotFound() {
 	code, _, output, _ := Delete(request, suite.cfg)
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respJobNotFound, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportNotFound, string(output), "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-func (suite *JobTestSuite) TearDownTest() {
+func (suite *ReportTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
-	session.DB("argo_test_jobs").DropDatabase()
-	session.DB("argo_test_jobs_db1").DropDatabase()
+	session.DB("argo_test_reports").DropDatabase()
+	session.DB("argo_test_reports_db1").DropDatabase()
 }
 
 // This is the first function called when go test is issued
-func TestJobsSuite(t *testing.T) {
-	suite.Run(t, new(JobTestSuite))
+func TestReportSuite(t *testing.T) {
+	suite.Run(t, new(ReportTestSuite))
 }
