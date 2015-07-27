@@ -28,6 +28,7 @@ package caches
 
 import (
 	"fmt"
+
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/go-lru-cache"
 )
@@ -60,4 +61,8 @@ func WriteCache(name string, input interface{}, output interface{}, cfg config.C
 		httpcache.Set(name+fmt.Sprint(input), output.(mystring))
 	}
 	return true
+}
+
+func ResetCache() {
+	httpcache.Clear()
 }

@@ -51,9 +51,21 @@ func Pipe(session *mgo.Session, dbName string, collectionName string, query []bs
 }
 
 func Find(session *mgo.Session, dbName string, collectionName string, query interface{}, sorter string, results interface{}) error {
-
 	c := openCollection(session, dbName, collectionName)
-	err := c.Find(query).Sort(sorter).All(results)
+	var err error
+	if sorter != "" {
+		err = c.Find(query).Sort(sorter).All(results)
+	} else {
+		err = c.Find(query).All(results)
+	}
+	return err
+}
+
+func FindOne(session *mgo.Session, dbName string, collectionName string, query interface{}, result interface{}) error {
+	c := openCollection(session, dbName, collectionName)
+	var err error
+	err = c.Find(query).One(result)
+
 	return err
 }
 

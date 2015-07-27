@@ -27,13 +27,14 @@
 package main
 
 import (
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/go-lru-cache"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/argoeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache
