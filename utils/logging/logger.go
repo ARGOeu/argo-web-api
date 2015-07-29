@@ -3,7 +3,6 @@ package logging
 import (
 	"log"
 	"net/http"
-	"time"
 )
 
 type RequestError struct {
@@ -13,22 +12,7 @@ type RequestError struct {
 	err    error
 }
 
-func Logger(inner http.Handler, name string) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		inner.ServeHTTP(w, r)
-
-		log.Printf(
-			"%s\t%s\t%s\t%s",
-			r.Method,
-			r.RequestURI,
-			name,
-			time.Since(start),
-		)
-	})
-}
-
+// HandleError accepts errors and logs the appropriate information
 func HandleError(reqErr interface{}) {
-
+	log.Printf("%s", reqErr.(error).Error())
 }

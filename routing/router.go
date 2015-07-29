@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -36,6 +36,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Route represents the old style routes
 type Route struct {
 	Name        string
 	Method      string
@@ -43,14 +44,12 @@ type Route struct {
 	HandlerFunc func(*http.Request, config.Config) (int, http.Header, []byte, error)
 }
 
+// Subrouter represents the new style of routes that are handled by each package respectively
 type SubRouter struct {
 	Name             string
 	Pattern          string
 	SubrouterHandler func(*mux.Router, *respond.ConfHandler)
 }
-
-type Routes []Route
-type SubRouters []SubRouter
 
 // NewRouter creates the main router that will be used by the api
 func NewRouter(cfg config.Config) *mux.Router {

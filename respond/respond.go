@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -61,25 +61,6 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 		if code == http.StatusInternalServerError {
 			log.Panic("Internal Server Error:", err)
 		}
-
-		// TODO: Remove this after testing the gorilla handlers.CompressHandler middleware
-		// encoding := strings.Split(r.Header.Get("Accept-Encoding"), ",")[0] //get the first accepted encoding
-		// if (confhandler.Cfg.Server.Gzip) == true && r.Header.Get("Accept-Encoding") != "" {
-		// 	var b bytes.Buffer
-		// 	if encoding == "gzip" {
-		// 		writer := gzip.NewWriter(&b)
-		// 		writer.Write(output)
-		// 		writer.Close()
-		// 		w.Header().Set("Content-Encoding", "gzip")
-		//
-		// 	} else if encoding == "deflate" {
-		// 		writer := zlib.NewWriter(&b)
-		// 		writer.Write(output)
-		// 		writer.Close()
-		// 		w.Header().Set("Content-Encoding", "deflate")
-		// 	}
-		// 	output = b.Bytes()
-		// }
 
 		//Add headers
 		header.Set("Content-Length", fmt.Sprintf("%d", len(output)))

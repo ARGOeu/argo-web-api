@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -31,10 +31,9 @@ import (
 	"github.com/argoeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/argoeu/argo-web-api/app/factors"
 	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
-	"github.com/argoeu/argo-web-api/app/jobs"
 	"github.com/argoeu/argo-web-api/app/metricProfiles"
 	"github.com/argoeu/argo-web-api/app/recomputations"
-	"github.com/argoeu/argo-web-api/app/results"
+	"github.com/argoeu/argo-web-api/app/reports"
 	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/argoeu/argo-web-api/app/statusDetail"
 	"github.com/argoeu/argo-web-api/app/statusEndpointGroups"
@@ -44,34 +43,32 @@ import (
 	"github.com/argoeu/argo-web-api/app/tenants"
 )
 
-var subroutes = SubRouters{
-	{"results", "/results", results.HandleSubrouter},
-}
+var subroutes = []SubRouter{}
 
-var routes = Routes{
+var routes = []Route{
 
 	//-----------------------------------Old requests for here on down -------------------------------------------------
-	{"group_availability", "GET", "/group_availability", endpointGroupAvailability.List},
-	{"group_groups_availability", "GET", "/group_groups_availability", groupGroupsAvailability.List},
-	{"endpoint_group_availability", "GET", "/endpoint_group_availability", endpointGroupAvailability.List},
-	{"service_flavor_availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
+	{"Group Availability", "GET", "/group_availability", endpointGroupAvailability.List},
+	{"Group Groups Availability", "GET", "/group_groups_availability", groupGroupsAvailability.List},
+	{"Endpoint Group Availability", "GET", "/endpoint_group_availability", endpointGroupAvailability.List},
+	{"Service flavor Availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
 	{"AP List", "GET", "/AP", availabilityProfiles.List},
 	{"AP Create", "POST", "/AP", availabilityProfiles.Create},
 	{"AP update", "PUT", "/AP/{id}", availabilityProfiles.Update},
 	{"AP delete", "DELETE", "/AP/{id}", availabilityProfiles.Delete},
-	{"PLACEHOLDER", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
-	{"tenant create", "GET", "/tenants", tenants.Create},
+	{"Service Falvor Availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
+	{"tenant create", "POST", "/tenants", tenants.Create},
 	{"tenant update", "PUT", "/tenants/{name}", tenants.Update},
 	{"tenant delete", "DELETE", "/tenants/{name}", tenants.Delete},
 	{"tenant list", "GET", "/tenants", tenants.List},
 	{"tenant list one", "GET", "/tenants/{name}", tenants.ListOne},
 
-	//jobs
-	{"jobs create", "POST", "/jobs", jobs.Create},
-	{"job update", "PUT", "/jobs/{name}", jobs.Update},
-	{"job delete", "DELETE", "/jobs/{name}", jobs.Delete},
-	{"job list", "GET", "/jobs", jobs.List},
-	{"job list one", "GET", "/jobs/{name}", jobs.ListOne},
+	//reports
+	{"reports create", "POST", "/reports", reports.Create},
+	{"job update", "PUT", "/reports/{name}", reports.Update},
+	{"job delete", "DELETE", "/reports/{name}", reports.Delete},
+	{"job list", "GET", "/reports", reports.List},
+	{"job list one", "GET", "/reports/{name}", reports.ListOne},
 
 	//Poem Profiles compatibility
 	{"List poems", "GET", "/poems", metricProfiles.ListPoems},
