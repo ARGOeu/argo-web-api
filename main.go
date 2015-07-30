@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -30,103 +30,20 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
-	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
-	"github.com/argoeu/argo-web-api/app/endpointGroupAvailability"
-	"github.com/argoeu/argo-web-api/app/factors"
-	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
-	"github.com/argoeu/argo-web-api/app/metricProfiles"
-	"github.com/argoeu/argo-web-api/app/recomputations"
-	"github.com/argoeu/argo-web-api/app/reports"
-	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
-	"github.com/argoeu/argo-web-api/app/statusDetail"
-	"github.com/argoeu/argo-web-api/app/statusEndpointGroups"
-	"github.com/argoeu/argo-web-api/app/statusEndpoints"
-	"github.com/argoeu/argo-web-api/app/statusMsg"
-	"github.com/argoeu/argo-web-api/app/statusServices"
-	"github.com/argoeu/argo-web-api/app/tenants"
-
-	"github.com/gorilla/mux"
+	"github.com/argoeu/argo-web-api/routing"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
 
-	//Create the server router
-	mainRouter := mux.NewRouter()
-	//SUBROUTER DEFINITIONS
-	getSubrouter := mainRouter.Methods("GET").Subrouter()                                //Routes GET requests
-	authGetSubrouter := mainRouter.Methods("GET").Headers("x-api-key", "").Subrouter()   //Routes GET requests with auth
-	postSubrouter := mainRouter.Methods("POST").Headers("x-api-key", "").Subrouter()     //Routes only POST requests
-	deleteSubrouter := mainRouter.Methods("DELETE").Headers("x-api-key", "").Subrouter() //Routes only DELETE requests
-	putSubrouter := mainRouter.Methods("PUT").Headers("x-api-key", "").Subrouter()       //Routes only PUT requests
-	//All requests that modify data must provide with authentication credentials
-
-	// Grouping calls.
-	// Groups are routed depending on the value of the parameter group type.
-	// 2) Provide with a default call informing the user of an invalid parameter
-	getSubrouter.HandleFunc("/api/v1/group_availability", Respond(endpointGroupAvailability.List)).
-		Queries("group_type", "vo")
-
-	// Group of Groups availability
-	getSubrouter.HandleFunc("/api/v1/group_groups_availability", Respond(groupGroupsAvailability.List))
-	getSubrouter.HandleFunc("/api/v1/endpoint_group_availability", Respond(endpointGroupAvailability.List))
-
-	// Service Flavor Availability
-	getSubrouter.HandleFunc("/api/v1/service_flavor_availability", Respond(serviceFlavorAvailability.List))
-
-	//Availability Profiles
-	postSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.Create))
-	getSubrouter.HandleFunc("/api/v1/AP", Respond(availabilityProfiles.List))
-	putSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Update))
-	deleteSubrouter.HandleFunc("/api/v1/AP/{id}", Respond(availabilityProfiles.Delete))
-
-	//tenants
-	postSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.Create))
-	putSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Update))
-	deleteSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.Delete))
-	getSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
-	getSubrouter.HandleFunc("/api/v1/tenants/{name}", Respond(tenants.ListOne))
-
-	//reports
-	postSubrouter.HandleFunc("/api/v1/reports", Respond(reports.Create))
-	putSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.Update))
-	deleteSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.Delete))
-	getSubrouter.HandleFunc("/api/v1/reports", Respond(reports.List))
-	getSubrouter.HandleFunc("/api/v1/reports/{name}", Respond(reports.ListOne))
-
-	//Poem Profiles compatibility
-	getSubrouter.HandleFunc("/api/v1/poems", Respond(metricProfiles.ListPoems))
-
-	//Metric Profiles
-	getSubrouter.HandleFunc("/api/v1/metric_profiles", Respond(metricProfiles.List))
-	postSubrouter.HandleFunc("/api/v1/metric_profiles", Respond(metricProfiles.Create))
-	deleteSubrouter.HandleFunc("/api/v1/metric_profiles/{id}", Respond(metricProfiles.Delete))
-	putSubrouter.HandleFunc("/api/v1/metric_profiles/{id}", Respond(metricProfiles.Update))
-
-	//Recalculations
-	postSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.Create))
-	getSubrouter.HandleFunc("/api/v1/recomputations", Respond(recomputations.List))
-
-	authGetSubrouter.HandleFunc("/api/v1/factors", Respond(factors.List))
-
-	//Status
-	getSubrouter.HandleFunc("/api/v1/status/metrics/timeline/{group}", Respond(statusDetail.List))
-
-	//Status Raw Msg
-	getSubrouter.HandleFunc("/api/v1/status/metrics/msg/{hostname}/{service}/{metric}", Respond(statusMsg.List))
-
-	//Status Endpoints
-	getSubrouter.HandleFunc("/api/v1/status/endpoints/timeline/{hostname}/{service_type}", Respond(statusEndpoints.List))
-
-	//Status Services
-	getSubrouter.HandleFunc("/api/v1/status/services/timeline/{group}", Respond(statusServices.List))
-
-	//Status Sites
-	getSubrouter.HandleFunc("/api/v1/status/sites/timeline/{group}", Respond(statusEndpointGroups.List))
-
-	//Tenants Operations
-	authGetSubrouter.HandleFunc("/api/v1/tenants", Respond(tenants.List))
+	//Create the server router and add the middleware
+	var mainRouter http.Handler
+	mainRouter = routing.NewRouter(cfg)
+	mainRouter = handlers.CombinedLoggingHandler(os.Stdout, mainRouter)
+	// mainRouter = handlers.CompressHandler(mainRouter)
 
 	http.Handle("/", mainRouter)
 

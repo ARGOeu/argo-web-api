@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -28,6 +28,7 @@ package caches
 
 import (
 	"fmt"
+
 	"github.com/argoeu/argo-web-api/utils/config"
 	"github.com/argoeu/go-lru-cache"
 )
@@ -60,4 +61,8 @@ func WriteCache(name string, input interface{}, output interface{}, cfg config.C
 		httpcache.Set(name+fmt.Sprint(input), output.(mystring))
 	}
 	return true
+}
+
+func ResetCache() {
+	httpcache.Clear()
 }
