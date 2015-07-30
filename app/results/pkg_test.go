@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -27,6 +27,7 @@
 package results
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -82,7 +83,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 
 	// Create router and confhandler for test
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().PathPrefix("/api/v2/results").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed mongo
@@ -177,8 +178,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		})
-	c.Insert(
+		},
 		bson.M{
 			"report":       "Report_A",
 			"date":         20150622,
@@ -197,8 +197,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		})
-	c.Insert(
+		},
 		bson.M{
 			"report":       "Report_A",
 			"date":         20150623,
@@ -217,8 +216,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		})
-	c.Insert(
+		},
 		bson.M{
 			"report":       "Report_A",
 			"date":         20150623,
@@ -278,6 +276,36 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
      </group>
    </group>
  </root>`
+	fmt.Println(response.Body.String())
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
+
+}
+
+// TestListAllEndpointGroupAvailability test if daily results are returned correctly
+func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailability() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	endpointGrouAvailabitiyXML := ` <root>
+   <group name="GROUP_A" type="GROUP">
+     <group name="ST01" type="SITE">
+       <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
+       <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
+     </group>
+     <group name="ST02" type="SITE">
+       <results timestamp="2015-06-22" availability="70" reliability="45" unknown="0" uptime="1" downtime="0"></results>
+       <results timestamp="2015-06-23" availability="43.5" reliability="56" unknown="0" uptime="1" downtime="0"></results>
+     </group>
+   </group>
+ </root>`
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Internal Server Error")
@@ -288,6 +316,27 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 //TearDownTest to tear down every test
 func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	cols, err := session.DB(suite.tenantDbConf.Db).CollectionNames()
+	for _, col := range cols {
+		session.DB(suite.tenantDbConf.Db).C(col).RemoveAll(bson.M{})
+	}
+	cols, err = session.DB(suite.cfg.MongoDB.Db).CollectionNames()
+	for _, col := range cols {
+		session.DB(suite.cfg.MongoDB.Db).C(col).RemoveAll(bson.M{})
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -65,11 +65,17 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 	// Route for request "api/v2/results/{report_name}/{group_type}/{group_name}"
 	// matches only endpoint groups
-	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}/{group_name}").Subrouter()
+	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
+	groupSubrouter.
+		Path("/{group_name}").
+		Methods("GET").
+		Name("Group name").
+		Handler(confhandler.Respond(routeGroup))
 	groupSubrouter.
 		Methods("GET").
-		Name("Group Name").
+		Name("Group Type").
 		Handler(confhandler.Respond(routeGroup))
+
 	// groupSubrouter.
 	// 	Methods("GET").
 	// 	Name("Group Name").
