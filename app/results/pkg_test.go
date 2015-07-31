@@ -16,26 +16,21 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package results
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"code.google.com/p/gcfg"
-	"github.com/argoeu/argo-web-api/respond"
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
@@ -129,7 +124,6 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"db_conf": []bson.M{
 
 				bson.M{
-					// "store":    "ar",
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
@@ -276,11 +270,57 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
      </group>
    </group>
  </root>`
-	fmt.Println(response.Body.String())
+
 	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	endpointGrouAvailabitiyJSON := `{
+   "root": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "endpoints": [
+         {
+           "name": "ST01",
+           "type": "SITE",
+           "results": [
+             {
+               "timestamp": "2015-06-22",
+               "availability": "66.7",
+               "reliability": "54.6",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             },
+             {
+               "timestamp": "2015-06-23",
+               "availability": "100",
+               "reliability": "100",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointGrouAvailabitiyJSON, response.Body.String(), "Response body mismatch")
 
 }
 
@@ -289,7 +329,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
-
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
@@ -308,7 +347,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
  </root>`
 
 	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
 

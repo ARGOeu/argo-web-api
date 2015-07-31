@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package results
@@ -81,7 +77,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 				Downtime:     fmt.Sprintf("%g", row.Down),
 			})
 	}
-	if strings.ToLower(format) == "json" {
+	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
 	} else {
 		return xml.MarshalIndent(docRoot, " ", "  ")

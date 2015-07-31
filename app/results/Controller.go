@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package results
@@ -33,16 +29,12 @@ import (
 	"strings"
 	"time"
 
-	"labix.org/v2/mgo/bson"
-
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
+	"labix.org/v2/mgo/bson"
 )
-
-// THIS CONTROLLER IS JUST A DEMO AND IS NOT SOMETHING THAT WORKS.
-// TODO: WRITE AN ACTUAL CONTROLLER FOR AVAILABILITY
 
 // ListEndpointGroupResults endpoint group availabilities according to the http request
 func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -52,7 +44,7 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
+	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
@@ -72,13 +64,19 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	input := endpointGroupResultQuery{
 		Name:        vars["lgroup_name"],
 		Granularity: urlValues.Get("granularity"),
-		Format:      strings.ToLower(urlValues.Get("format")),
+		Format:      r.Header.Get("Accept"),
 		StartTime:   urlValues.Get("start_time"),
 		EndTime:     urlValues.Get("end_time"),
 		Report:      vars["report_name"],
 	}
 
-	if r.Header.Get("format") == "json" {
+	if input.Granularity == "" {
+		input.Granularity = "daily"
+	}
+
+	if input.Format == "application/xml" {
+		contentType = "application/xml"
+	} else if input.Format == "application/json" {
 		contentType = "application/json"
 	}
 
@@ -144,26 +142,6 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	return code, h, output, err
-}
-
-func prepareFilter(input endpointGroupResultQuery) bson.M {
-	ts, _ := time.Parse(zuluForm, input.StartTime)
-	te, _ := time.Parse(zuluForm, input.EndTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-
-	// Construct the query to mongodb based on the input
-	filter := bson.M{
-		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report": input.Report,
-	}
-
-	if len(input.Name) > 0 {
-		// filter["name"] = bson.M{"$in": input.Name}
-		filter["name"] = input.Name
-	}
-
-	return filter
 }
 
 // DailyEndpointGroup query to aggregate daily results from mongodb

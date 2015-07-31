@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package results
@@ -49,6 +45,7 @@ type endpointGroupResultQuery struct {
 	Group       string `bson:"supergroup"`
 }
 
+// ReportInterface for mongodb object exchanging
 type ReportInterface struct {
 	Name              string `bson:"name"`
 	Tenant            string `bson:"tenant"`
@@ -56,6 +53,7 @@ type ReportInterface struct {
 	SuperGroupType    string `bson:"group_of_groups"`
 }
 
+// EndpointGroupInterface for mongodb object exchanging
 type EndpointGroupInterface struct {
 	Name         string  `bson:"name"`
 	Report       string  `bson:"report"`
@@ -81,31 +79,23 @@ type Availability struct {
 	Downtime     string   `xml:"downtime,attr" json:"downtime"`
 }
 
-//EndpointGroup struct for formating xml/json
+// EndpointGroup struct for formating xml/json
 type EndpointGroup struct {
-	XMLName xml.Name `xml:"group" json:"-"`
-	Name    string   `xml:"name,attr" json:"name"`
-	Type    string   `xml:"type,attr" json:"type"`
-	// SuperGroup   string   `xml:"group,attr" json:"group"`
-	Availability []interface{}
+	XMLName      xml.Name      `xml:"group" json:"-"`
+	Name         string        `xml:"name,attr" json:"name"`
+	Type         string        `xml:"type,attr" json:"type"`
+	Availability []interface{} `json:"results"`
 }
 
+// SuperGroup struct for formating xml/json
 type SuperGroup struct {
-	XMLName xml.Name `xml:"group" json:"-"`
-	Name    string   `xml:"name,attr" json:"name"`
-	// SuperGroup    string   `xml:"group,attr" json:"group"`
-	Type          string `xml:"type,attr" json:"type"`
-	EndpointGroup []interface{}
+	XMLName       xml.Name      `xml:"group" json:"-"`
+	Name          string        `xml:"name,attr" json:"name"`
+	Type          string        `xml:"type,attr" json:"type"`
+	EndpointGroup []interface{} `json:"endpoints"`
 }
-
-//Report struct for formating xml/json
-// type Report struct {
-// 	XMLName       xml.Name `xml:"Report" json:"-"`
-// 	Name          string   `xml:"name,attr" json:"name"`
-// 	EndpointGroup []interface{}
-// }
 
 type root struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Result  []interface{}
+	XMLName xml.Name      `xml:"root" json:"-"`
+	Result  []interface{} `json:"root"`
 }
