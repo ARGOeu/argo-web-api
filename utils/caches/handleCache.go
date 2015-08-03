@@ -30,7 +30,7 @@ import (
 	"fmt"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/argoeu/go-lru-cache"
+	"github.com/ARGOeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache
