@@ -1,0 +1,4 @@
+language: go
+services: mongodb
+script: go test -v ./...
+
