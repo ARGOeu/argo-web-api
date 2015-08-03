@@ -38,6 +38,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
+	
 )
 
 type StatusEndpointGroupTestSuite struct {
