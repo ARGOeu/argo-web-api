@@ -33,7 +33,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/argoeu/go-lru-cache"
 )
 

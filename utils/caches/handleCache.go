@@ -29,7 +29,7 @@ package caches
 import (
 	"fmt"
 
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/argoeu/go-lru-cache"
 )
 

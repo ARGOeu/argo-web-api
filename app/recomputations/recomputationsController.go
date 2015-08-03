@@ -31,9 +31,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 )
 
 // List all the current recomputation request from a specific tenantdb

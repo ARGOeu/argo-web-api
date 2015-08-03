@@ -34,9 +34,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
 )
 
