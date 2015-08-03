@@ -1,12 +1,17 @@
 language: go
 services: mongodb
 install:
- - go get github.com/argoeu/argo-web-api
- - go get github.com/argoeu/argo-web-api/routing
+ 
  - go get github.com/gorilla/handlers
  - go get github.com/gorilla/mux
  - go get github.com/gorilla/context
  - go get github.com/stretchr/testify
+ - go get labix.org/v2/mgo
+ - go get labix.org/v2/mgo/bson
+ - go get github.com/argoeu/go-lru-cache
+ - go get code.google.com/p/gcfg
 script:
+ - go get github.com/argoeu/argo-web-api
+ - go install
  - go test -v ./...
 
