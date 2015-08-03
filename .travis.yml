@@ -1,0 +1,8 @@
+language: go
+services: mongodb
+install:
+ - go get github.com/argoeu/argo-web-api
+ - go get github.com/stretchr/testify
+script:
+ - go test -v ./...
+
