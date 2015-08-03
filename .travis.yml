@@ -1,0 +1,12 @@
+language: go
+services: mongodb
+install:
+ - go get github.com/argoeu/argo-web-api
+ - go get github.com/argoeu/argo-web-api/routing
+ - go get github.com/gorilla/handlers
+ - go get github.com/gorilla/mux
+ - go get github.com/gorilla/context
+ - go get github.com/stretchr/testify
+script:
+ - go test -v ./...
+
