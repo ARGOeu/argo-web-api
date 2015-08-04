@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package routing
@@ -65,10 +61,10 @@ var routes = []Route{
 
 	//reports
 	{"reports create", "POST", "/reports", reports.Create},
-	{"job update", "PUT", "/reports/{name}", reports.Update},
-	{"job delete", "DELETE", "/reports/{name}", reports.Delete},
-	{"job list", "GET", "/reports", reports.List},
-	{"job list one", "GET", "/reports/{name}", reports.ListOne},
+	{"reports update", "PUT", "/reports/{name}", reports.Update},
+	{"reports delete", "DELETE", "/reports/{name}", reports.Delete},
+	{"reports list", "GET", "/reports", reports.List},
+	{"reports list one", "GET", "/reports/{name}", reports.ListOne},
 
 	//Poem Profiles compatibility
 	{"List poems", "GET", "/poems", metricProfiles.ListPoems},
