@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/ARGOeu/argo-web-api.svg?branch=devel)](https://travis-ci.org/ARGOeu/argo-web-api)
 # EGI Availability & Reliability API
 
 ## Development

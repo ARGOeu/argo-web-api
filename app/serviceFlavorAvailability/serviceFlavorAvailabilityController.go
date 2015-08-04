@@ -31,10 +31,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/caches"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/caches"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 )
 
 // List returns the results for Daily and Monthly availability-reliability calculations for each service flavor

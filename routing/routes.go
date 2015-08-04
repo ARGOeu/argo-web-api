@@ -27,20 +27,20 @@
 package routing
 
 import (
-	"github.com/argoeu/argo-web-api/app/availabilityProfiles"
-	"github.com/argoeu/argo-web-api/app/endpointGroupAvailability"
-	"github.com/argoeu/argo-web-api/app/factors"
-	"github.com/argoeu/argo-web-api/app/groupGroupsAvailability"
-	"github.com/argoeu/argo-web-api/app/metricProfiles"
-	"github.com/argoeu/argo-web-api/app/recomputations"
-	"github.com/argoeu/argo-web-api/app/reports"
-	"github.com/argoeu/argo-web-api/app/serviceFlavorAvailability"
-	"github.com/argoeu/argo-web-api/app/statusDetail"
-	"github.com/argoeu/argo-web-api/app/statusEndpointGroups"
-	"github.com/argoeu/argo-web-api/app/statusEndpoints"
-	"github.com/argoeu/argo-web-api/app/statusMsg"
-	"github.com/argoeu/argo-web-api/app/statusServices"
-	"github.com/argoeu/argo-web-api/app/tenants"
+	"github.com/ARGOeu/argo-web-api/app/availabilityProfiles"
+	"github.com/ARGOeu/argo-web-api/app/endpointGroupAvailability"
+	"github.com/ARGOeu/argo-web-api/app/factors"
+	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
+	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
+	"github.com/ARGOeu/argo-web-api/app/recomputations"
+	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
+	"github.com/ARGOeu/argo-web-api/app/statusDetail"
+	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
+	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
+	"github.com/ARGOeu/argo-web-api/app/statusMsg"
+	"github.com/ARGOeu/argo-web-api/app/statusServices"
+	"github.com/ARGOeu/argo-web-api/app/tenants"
 )
 
 var subroutes = []SubRouter{}

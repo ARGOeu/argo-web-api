@@ -29,7 +29,7 @@ package statusMsg
 import (
 	"encoding/xml"
 
-	"github.com/argoeu/argo-web-api/app/metricProfiles"
+	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 )
 
 func createView(results []MsgOutput, input MsgInput, metricDetail metricProfiles.MongoInterface) ([]byte, error) {
