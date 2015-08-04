@@ -41,7 +41,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
 		Methods("GET").
 		Name("metric name").
-		Handler(confhandler.Respond(ListMetricTimeline))
+		Handler(confhandler.Respond(ListMetricTimelines))
 
 }
 
