@@ -33,9 +33,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 )
 
 // Create function is used to implement the create tenant request.
