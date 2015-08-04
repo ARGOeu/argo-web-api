@@ -33,7 +33,7 @@ import (
 	"testing"
 
 	"code.google.com/p/gcfg"
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"

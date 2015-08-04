@@ -31,9 +31,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/argoeu/argo-web-api/utils/caches"
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/logging"
+	"github.com/ARGOeu/argo-web-api/utils/caches"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/logging"
 	"github.com/gorilla/mux"
 )
 
