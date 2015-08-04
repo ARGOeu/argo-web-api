@@ -28,7 +28,7 @@ package mongo
 
 import (
 	"fmt"
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"labix.org/v2/mgo"
 )
 
