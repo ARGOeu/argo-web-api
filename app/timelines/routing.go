@@ -25,8 +25,8 @@ package results
 import (
 	"net/http"
 
-	"github.com/argoeu/argo-web-api/respond"
-	"github.com/argoeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
 )
 
