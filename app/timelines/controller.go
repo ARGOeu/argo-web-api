@@ -1,3 +1,5 @@
+package timelines
+
 // ListMetricTimelines returns a list of metric timelines
 import (
 	"net/http"
@@ -12,8 +14,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
-	charset := "utf-8"
+	
 
 	return code, h, output, err
 }

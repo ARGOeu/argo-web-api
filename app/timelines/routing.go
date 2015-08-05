@@ -20,7 +20,7 @@
  *
  */
 
-package results
+package timelines
 
 import (
 	"net/http"
