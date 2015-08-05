@@ -35,6 +35,16 @@ func init() {
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
+type serviceResultQuery struct {
+	Name          string `bson:"name"`
+	Granularity   string `bson:"-"`
+	Format        string `bson:"-"`
+	StartTime     string `bson:"start_time"` // UTC time in W3C format
+	EndTime       string `bson:"end_time"`   // UTC time in W3C format
+	Report        string `bson:"report"`
+	EndpointGroup string `bson:"endpoint_group"`
+}
+
 type endpointGroupResultQuery struct {
 	Name        string `bson:"name"`
 	Granularity string `bson:"-"`
@@ -51,6 +61,19 @@ type ReportInterface struct {
 	Tenant            string `bson:"tenant"`
 	EndpointGroupType string `bson:"endpoints_group"`
 	SuperGroupType    string `bson:"group_of_groups"`
+}
+
+type ServiceInterface struct {
+	Name          string  `bson:"name"`
+	Report        string  `bson:"report"`
+	Date          string  `bson:"date"`
+	Type          string  `bson:"type"`
+	Up            float64 `bson:"uptime"`
+	Down          float64 `bson:"downtime"`
+	Unknown       float64 `bson:"unknown"`
+	Availability  float64 `bson:"availability"`
+	Reliability   float64 `bson:"reliability"`
+	EndpointGroup string  `bson:"endpoint_group"`
 }
 
 // EndpointGroupInterface for mongodb object exchanging
