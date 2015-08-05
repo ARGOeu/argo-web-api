@@ -36,6 +36,88 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+func ListServiceResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "application/xml"
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	input := serviceResultQuery{
+		EndpointGroup: vars["lgroup_name"],
+		Granularity:   urlValues.Get("granularity"),
+		Format:        r.Header.Get("Accept"),
+		StartTime:     urlValues.Get("start_time"),
+		EndTime:       urlValues.Get("end_time"),
+		Report:        vars["report_name"],
+	}
+
+	if input.Granularity == "" {
+		input.Granularity = "daily"
+	}
+
+	if input.Format == "application/xml" {
+		contentType = "application/xml"
+	} else if input.Format == "application/json" {
+		contentType = "application/json"
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	report := ReportInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	results := []ServiceInterface{}
+
+	ts, _ := time.Parse(zuluForm, input.StartTime)
+	te, _ := time.Parse(zuluForm, input.EndTime)
+	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+
+	// Construct the query to mongodb based on the input
+	filter := bson.M{
+		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"report": input.Report,
+	}
+
+	if len(input.EndpointGroup) > 0 {
+		filter["endpoint_group"] = input.Name
+	}
+
+	return code, h, output, err
+
+}
+
 // ListEndpointGroupResults endpoint group availabilities according to the http request
 func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
