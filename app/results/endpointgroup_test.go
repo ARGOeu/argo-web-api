@@ -47,7 +47,6 @@ type endpointGroupAvailabilityTestSuite struct {
 	tenantusername            string
 	tenantstorename           string
 	clientkey                 string
-	respRecomputationsCreated string
 }
 
 // Setup the Test Environment
@@ -262,7 +261,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGrouAvailabitiyXML := ` <root>
+	endpointGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
      <group name="ST01" type="SITE">
        <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
@@ -274,7 +273,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(endpointGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -333,7 +332,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGrouAvailabitiyXML := ` <root>
+	endpointGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
      <group name="ST01" type="SITE">
        <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
@@ -349,7 +348,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(endpointGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
 
 }
 
