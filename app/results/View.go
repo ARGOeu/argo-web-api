@@ -34,36 +34,35 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report Repo
 
 	docRoot := &root{}
 
-	prevSuperGroup := ""
+	prevServiceFlavorGroup := ""
 	prevServiceFlavor := ""
 	serviceFlavor := &ServiceFlavor{}
-	superGroup := &SuperGroup{}
+	serviceFlavorGroup := &ServiceFlavorGroup{}
 
 	// we iterate through the results struct array
 	// keeping only the value of each row
-
 	for _, row := range results {
 		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
 		//if new superGroup value does not match the previous superGroup value
 		//we create a new superGroup in the xml
-		if prevSuperGroup != row.SuperGroup {
-			prevSuperGroup = row.SuperGroup
-			superGroup = &SuperGroup{
+		if prevServiceFlavorGroup != row.SuperGroup {
+			prevServiceFlavorGroup = row.SuperGroup
+			serviceFlavorGroup = &ServiceFlavorGroup{
 				Name: row.SuperGroup,
 				Type: report.EndpointGroupType, // Endpoint groups are parents of SFs
 			}
-			docRoot.Result = append(docRoot.Result, superGroup)
+			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
 			prevServiceFlavor = ""
 		}
-		//if new endpointGroup does not match the previous service value
-		//we create a new endpointGroup entry in the xml
+		//if new service flavor does not match the previous service value
+		//we create a new service flavor entry in the xml/json output
 		if prevServiceFlavor != row.Name {
 			prevServiceFlavor = row.Name
 			serviceFlavor = &ServiceFlavor{
 				Name: row.Name,
 				Type: fmt.Sprintf("service"),
 			}
-			superGroup.ServiceFlavor = append(superGroup.ServiceFlavor, serviceFlavor)
+			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceFlavor)
 		}
 		//we append the new availability values
 		serviceFlavor.Availability = append(serviceFlavor.Availability,
@@ -76,6 +75,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report Repo
 				Downtime:     fmt.Sprintf("%g", row.Down),
 			})
 	}
+
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
 	} else {

@@ -36,7 +36,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-func ListServiceResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
@@ -60,7 +60,8 @@ func ListServiceResults(r *http.Request, cfg config.Config) (int, http.Header, [
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	input := serviceResultQuery{
+	input := serviceFlavorResultQuery{
+		Name:          vars["service_type"],
 		EndpointGroup: vars["lgroup_name"],
 		Granularity:   urlValues.Get("granularity"),
 		Format:        r.Header.Get("Accept"),
@@ -97,7 +98,7 @@ func ListServiceResults(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	results := []ServiceInterface{}
+	results := []ServiceFlavorInterface{}
 
 	ts, _ := time.Parse(zuluForm, input.StartTime)
 	te, _ := time.Parse(zuluForm, input.EndTime)
@@ -110,8 +111,34 @@ func ListServiceResults(r *http.Request, cfg config.Config) (int, http.Header, [
 		"report": input.Report,
 	}
 
-	if len(input.EndpointGroup) > 0 {
-		filter["endpoint_group"] = input.Name
+	if len(input.Name) > 0 {
+		filter["name"] = input.Name
+	}
+
+	// Select the granularity of the search daily/monthly
+	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+		query := DailyServiceFlavor(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "service_ar", query, &results)
+	} else if strings.ToLower(input.Granularity) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := MonthlyServiceFlavor(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "service_ar", query, &results)
+	}
+
+	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createServiceFlavorResultView(results, report, input.Format)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	return code, h, output, err
@@ -224,6 +251,77 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	return code, h, output, err
+}
+
+// DailyServiceFlavor query to aggregate daily SF results from mongoDB
+func DailyServiceFlavor(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+				"name":         "$name",
+				"supergroup":   "$supergroup",
+				"availability": "$availability",
+				"reliability":  "$reliability",
+				"unknown":      "$unknown",
+				"uptime":       "$uptime",
+				"downtime":     "$downtime",
+				"report":       "$report"}}},
+		{"$project": bson.M{
+			"date":         "$_id.date",
+			"name":         "$_id.name",
+			"availability": "$_id.availability",
+			"reliability":  "$_id.reliability",
+			"unknown":      "$_id.unknown",
+			"uptime":       "$_id.uptime",
+			"downtime":     "$_id.downtime",
+			"supergroup":   "$_id.supergroup",
+			"report":       "$_id.report"}},
+		{"$sort": bson.D{
+			{"supergroup", 1},
+			{"name", 1},
+			{"date", 1}}}}
+
+	return query
+}
+
+// MonthlyServiceFlavor query to aggregate daily SF results from mongoDB
+func MonthlyServiceFlavor(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"report":     "$report"},
+			"avguptime":    bson.M{"$avg": "$uptime"},
+			"avgunknown":   bson.M{"$avg": "$unknown"},
+			"avgdown":      bson.M{"$avg": "$downtime"}}},
+		{"$project": bson.M{
+			"date":         "$_id.date",
+			"name":         "$_id.name",
+			"supergroup":   "$_id.supergroup",
+			"report":       "$_id.report",
+			"unknown":      "$avgunkown",
+			"uptime":       "$avguptime",
+			"downtime":     "$avgdown",
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avguptime", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avguptime", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+		{"$sort": bson.D{
+			{"supergroup", 1},
+			{"name", 1},
+			{"date", 1}}}}
+	return query
 }
 
 // DailyEndpointGroup query to aggregate daily results from mongodb

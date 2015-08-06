@@ -35,14 +35,14 @@ func init() {
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-type serviceResultQuery struct {
+type serviceFlavorResultQuery struct {
 	Name          string `bson:"name"`
 	Granularity   string `bson:"-"`
 	Format        string `bson:"-"`
 	StartTime     string `bson:"start_time"` // UTC time in W3C format
 	EndTime       string `bson:"end_time"`   // UTC time in W3C format
 	Report        string `bson:"report"`
-	EndpointGroup string `bson:"endpoint_group"`
+	EndpointGroup string `bson:"supergroup"`
 }
 
 type endpointGroupResultQuery struct {
@@ -63,7 +63,8 @@ type ReportInterface struct {
 	SuperGroupType    string `bson:"group_of_groups"`
 }
 
-type ServiceInterface struct {
+// ServiceFlavorInterface for mongodb object exchanging
+type ServiceFlavorInterface struct {
 	Name          string  `bson:"name"`
 	Report        string  `bson:"report"`
 	Date          string  `bson:"date"`
@@ -73,7 +74,7 @@ type ServiceInterface struct {
 	Unknown       float64 `bson:"unknown"`
 	Availability  float64 `bson:"availability"`
 	Reliability   float64 `bson:"reliability"`
-	EndpointGroup string  `bson:"endpoint_group"`
+	SuperGroup    string  `bson:"supergroup"`
 }
 
 // EndpointGroupInterface for mongodb object exchanging
@@ -102,12 +103,28 @@ type Availability struct {
 	Downtime     string   `xml:"downtime,attr" json:"downtime"`
 }
 
+// ServiceFlavor struct for formating xml/json
+type ServiceFlavor struct {
+	XMLName      xml.Name      `xml:"group" json:"-"`
+	Name         string        `xml:"name,attr" json:"name"`
+	Type         string        `xml:"type,attr" json:"type"`
+	Availability []interface{} `json:"results"`
+}
+
 // EndpointGroup struct for formating xml/json
 type EndpointGroup struct {
 	XMLName      xml.Name      `xml:"group" json:"-"`
 	Name         string        `xml:"name,attr" json:"name"`
 	Type         string        `xml:"type,attr" json:"type"`
 	Availability []interface{} `json:"results"`
+}
+
+// ServiceFlavorGroup struct for formating xml/json
+type ServiceFlavorGroup struct {
+	XMLName       xml.Name      `xml:"group" json:"-"`
+	Name          string        `xml:"name,attr" json:"name"`
+	Type          string        `xml:"type,attr" json:"type"`
+	ServiceFlavor []interface{} `json:"serviceflavors"`
 }
 
 // SuperGroup struct for formating xml/json
