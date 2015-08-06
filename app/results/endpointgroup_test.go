@@ -283,7 +283,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGrouAvailabitiyJSON := `{
+	endpointGroupAvailabilityJSON := `{
    "root": [
      {
        "name": "GROUP_A",
@@ -319,7 +319,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGrouAvailabitiyJSON, response.Body.String(), "Response body mismatch")
+	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
 }
 
