@@ -253,6 +253,112 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	return code, h, output, err
 }
 
+// ListSuperGroupResults supergroup availabilities according to the http request
+func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "application/xml"
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	input := endpointGroupResultQuery{
+		Name:        vars["group_name"],
+		Granularity: urlValues.Get("granularity"),
+		Format:      r.Header.Get("Accept"),
+		StartTime:   urlValues.Get("start_time"),
+		EndTime:     urlValues.Get("end_time"),
+		Report:      vars["report_name"],
+	}
+
+	if input.Granularity == "" {
+		input.Granularity = "daily"
+	}
+
+	if input.Format == "application/xml" {
+		contentType = "application/xml"
+	} else if input.Format == "application/json" {
+		contentType = "application/json"
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	report := ReportInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	results := []SuperGroupInterface{}
+
+	ts, _ := time.Parse(zuluForm, input.StartTime)
+	te, _ := time.Parse(zuluForm, input.EndTime)
+	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+
+	// Construct the query to mongodb based on the input
+	filter := bson.M{
+		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"report": input.Report,
+	}
+
+	if len(input.Name) > 0 {
+		filter["supergroup"] = input.Name
+	}
+
+	// Select the granularity of the search daily/monthly
+	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+		query := DailySuperGroup(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
+	} else if strings.ToLower(input.Granularity) == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := MonthlySuperGroup(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
+	}
+	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+	output, err = createSuperGroupView(results, report, input.Format)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+}
+
 // DailyServiceFlavor query to aggregate daily SF results from mongoDB
 func DailyServiceFlavor(filter bson.M) []bson.M {
 	query := []bson.M{
@@ -296,17 +402,17 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"avguptime":    bson.M{"$avg": "$uptime"},
-			"avgunknown":   bson.M{"$avg": "$unknown"},
-			"avgdown":      bson.M{"$avg": "$downtime"}}},
+			"avguptime":  bson.M{"$avg": "$uptime"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$downtime"}}},
 		{"$project": bson.M{
-			"date":         "$_id.date",
-			"name":         "$_id.name",
-			"supergroup":   "$_id.supergroup",
-			"report":       "$_id.report",
-			"unknown":      "$avgunkown",
-			"uptime":       "$avguptime",
-			"downtime":     "$avgdown",
+			"date":       "$_id.date",
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"report":     "$_id.report",
+			"unknown":    "$avgunkown",
+			"uptime":     "$avguptime",
+			"downtime":   "$avgdown",
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
@@ -405,6 +511,136 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 			{"type", 1},
 			{"name", 1},
 			{"date", 1}}}}
+
+	return query
+}
+
+// DailySuperGroup function to build the MongoDB aggregation query for daily calculations
+func DailySuperGroup(filter bson.M) []bson.M {
+	// Mongo aggregation pipeline
+	// Select all the records that match q
+	// Project the results to add 1 to every weights to avoid having 0 as a weights
+	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
+	// availability = sum(availability*weights)
+	// reliability = sum(reliability*weights)
+	// weights = sum(weights)
+	// Project to a better format and do these computations
+	// availability = availability/weights
+	// reliability = reliability/weights
+	// Sort by report->supergroup->name->datetime
+	query := []bson.M{
+		{"$match": filter},
+		{"$project": bson.M{
+			"date":         1,
+			"availability": 1,
+			"reliability":  1,
+			"report":       1,
+			"supergroup":   1,
+			"weights": bson.M{
+				"$add": list{"$weights", 1}}},
+		},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
+				"supergroup": "$supergroup",
+				"report":     "$report"},
+			"availability": bson.M{
+				"$sum": bson.M{
+					"$multiply": list{"$availability", "$weights"}}},
+			"reliability": bson.M{
+				"$sum": bson.M{
+					"$multiply": list{"$reliability", "$weights"}}},
+			"weights": bson.M{"$sum": "$weights"}},
+		},
+		{"$project": bson.M{
+			"date":       "$_id.date",
+			"supergroup": "$_id.supergroup",
+			"report":     "$_id.report",
+			"availability": bson.M{
+				"$divide": list{"$availability", "$weights"}},
+			"reliability": bson.M{
+				"$divide": list{"$reliability", "$weights"}}},
+		},
+		{"$sort": bson.D{
+			{"report", 1},
+			{"supergroup", 1},
+			{"date", 1}},
+		}}
+
+	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
+	return query
+}
+
+// MonthlySuperGroup function to build the MongoDB aggregation query for monthly calculations
+func MonthlySuperGroup(filter bson.M) []bson.M {
+	//PROBABLY THIS LEADS TO THE SAME BUG WE RAN INTO WITH SITES. MUST BE INVESTIGATED!!!!!!!!!!!!
+	filter["availability"] = bson.M{"$gte": 0}
+	filter["reliability"] = bson.M{"$gte": 0}
+	// Mongo aggregation pipeline
+	// Select all the records that match q
+	// Project the results to add 1 to every weights to avoid having 0 as a weights
+	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
+	// availability = sum(availability*weights)
+	// reliability = sum(reliability*weights)
+	// weights = sum(weights)
+	// Project to a better format and do these computations
+	// availability = availability/weights
+	// reliability = reliability/weights
+	// Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
+	// availability = average(availability)
+	// reliability = average(reliability)
+	// Project the results to a better format
+	// Sort by namespace->report->supergroup->datetime
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$project": bson.M{
+			"date":         1,
+			"availability": 1,
+			"reliability":  1,
+			"report":       1,
+			"supergroup":   1,
+			"weights": bson.M{
+				"$add": list{"$weights", 1}}},
+		},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
+				"supergroup": "$supergroup",
+				"report":     "$report"},
+			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weights"}}},
+			"reliability":  bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weights"}}},
+			"weights":      bson.M{"$sum": "$weights"}},
+		},
+		{"$match": bson.M{
+			"weights": bson.M{"$gt": 0}},
+		},
+		{"$project": bson.M{
+			"date":         "$_id.date",
+			"supergroup":   "$_id.supergroup",
+			"report":       "$_id.report",
+			"availability": bson.M{"$divide": list{"$availability", "$weights"}},
+			"reliability":  bson.M{"$divide": list{"$reliability", "$weights"}}},
+		},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"supergroup": "$supergroup", "report": "$report"},
+			"availability": bson.M{"$avg": "$availability"},
+			"reliability":  bson.M{"$avg": "$reliability"}},
+		},
+		{"$project": bson.M{
+			"date":         "$_id.date",
+			"supergroup":   "$_id.supergroup",
+			"report":       "$_id.report",
+			"availability": 1,
+			"reliability":  1},
+		},
+		{"$sort": bson.D{
+			{"report", 1},
+			{"supergroup", 1},
+			{"date", 1}},
+		}}
 
 	return query
 }

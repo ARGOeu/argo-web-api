@@ -90,7 +90,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 
 	prevSuperGroup := ""
 	prevEndpointGroup := ""
-	endpointGroup := &EndpointGroup{}
+	endpointGroup := &Group{}
 	superGroup := &SuperGroup{}
 
 	// we iterate through the results struct array
@@ -113,12 +113,11 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 		//we create a new endpointGroup entry in the xml
 		if prevEndpointGroup != row.Name {
 			prevEndpointGroup = row.Name
-			endpointGroup = &EndpointGroup{
+			endpointGroup = &Group{
 				Name: row.Name,
-				// SuperGroup: row.SuperGroup,
 				Type: report.EndpointGroupType,
 			}
-			superGroup.EndpointGroup = append(superGroup.EndpointGroup, endpointGroup)
+			superGroup.Results = append(superGroup.Results, endpointGroup)
 		}
 		//we append the new availability values
 		endpointGroup.Availability = append(endpointGroup.Availability,
@@ -137,4 +136,41 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
 
+}
+
+func createSuperGroupView(results []SuperGroupInterface, report ReportInterface, format string) ([]byte, error) {
+
+	docRoot := &root{}
+
+	prevSuperGroup := ""
+	superGroup := &SuperGroup{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], row.Date)
+
+		//if new superGroup does not match the previous superGroup value
+		//we create a new superGroup entry in the xml
+		if prevSuperGroup != row.SuperGroup {
+			prevSuperGroup = row.SuperGroup
+			superGroup = &SuperGroup{
+				Name: row.SuperGroup,
+				Type: report.SuperGroupType,
+			}
+			docRoot.Result = append(docRoot.Result, superGroup)
+		}
+		//we append the new availability values
+		superGroup.Results = append(superGroup.Results,
+			&Availability{
+				Timestamp:    timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability)})
+	}
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
+	}
 }
