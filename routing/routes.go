@@ -31,6 +31,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
+	"github.com/ARGOeu/argo-web-api/app/metric_result"
 	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/ARGOeu/argo-web-api/app/statusDetail"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
@@ -42,6 +43,7 @@ import (
 
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
+	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
 }
 
 var routes = []Route{
