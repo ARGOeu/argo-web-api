@@ -23,8 +23,6 @@
 package metric_result
 
 import (
-	"net/http"
-
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/gorilla/mux"
 )
@@ -33,7 +31,7 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	metricSubrouter := s.Path("/{endpoint_name}/{metric_name}").
+	s.Path("/{endpoint_name}/{metric_name}").
 		Methods("GET").
 		Name("Metric Result").
 		Handler(confhandler.Respond(GetMetricResult))

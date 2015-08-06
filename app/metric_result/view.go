@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2015 GRNET S.A.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS
+ * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * The views and conclusions contained in the software and
+ * documentation are those of the authors and should not be
+ * interpreted as representing official policies, either expressed
+ * or implied, of GRNET S.A.
+ *
+ */
+
+package metric_result
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"strings"
+)
+
+func createMetricResultView(result []metricResultOutput, format string) ([]byte, error) {
+
+	docRoot := &root{}
+
+	// Exit here in case result is empty
+	if len(result) == 0 {
+		output, err := xml.MarshalIndent(docRoot, "", "")
+		return output, err
+	}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range result {
+
+		hostname := &HostXML{
+			Name: row.Hostname,
+		}
+		docRoot.Result = append(docRoot.Result, hostname)
+
+		metric := &MetricXML{
+			Name: row.Metric,
+		}
+		hostname.Metrics = append(hostname.Metrics, metric)
+
+		// we append the detailed results
+		metric.Details = append(metric.Details,
+			&StatusXML{
+				Timestamp:    fmt.Sprintf("%s", row.Timestamp),
+				Value:        fmt.Sprintf("%s", row.Status),
+				Summary:      fmt.Sprintf("%s", row.Summary),
+				Message:      fmt.Sprintf("%s", row.Message),
+			})
+	}
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
+	}
+
+}
+
+
