@@ -158,11 +158,11 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			"date":             20150622,
 			"name":             "SF01",
 			"supergroup":       "ST01",
-			"uptime":           1,
+			"uptime":           0.98264,
 			"downtime":         0,
 			"unknown":          0,
-			"availability":     66.7,
-			"reliability":      54.6,
+			"availability":     98.26389,
+			"reliability":      98.26389,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -175,11 +175,11 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			"date":             20150622,
 			"name":             "SF02",
 			"supergroup":       "ST01",
-			"uptime":           1,
+			"uptime":           0.96875,
 			"downtime":         0,
 			"unknown":          0,
-			"availability":     70.0,
-			"reliability":      45.0,
+			"availability":     96.875,
+			"reliability":      96.875,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -192,11 +192,11 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			"date":             20150623,
 			"name":             "SF01",
 			"supergroup":       "ST01",
-			"uptime":           1,
-			"downtime":         0,
-			"unknown":          0,
-			"availability":     100,
-			"reliability":      100,
+			"uptime":           0.53472,
+			"downtime":         0.33333,
+			"unknown":          0.01042,
+			"availability":     54.03509,
+			"reliability":      81.48148,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -212,8 +212,8 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			"uptime":            1,
 			"downtime":          0,
 			"unknown":           0,
-			"availability":      43.5,
-			"reliability":       56,
+			"availability":      100,
+			"reliability":       100,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
