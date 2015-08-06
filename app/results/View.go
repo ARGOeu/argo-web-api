@@ -30,6 +30,60 @@ import (
 	"time"
 )
 
+func createServiceFlavorResultView(results []ServiceFlavorInterface, report ReportInterface, format string) ([]byte, error) {
+
+	docRoot := &root{}
+
+	prevSuperGroup := ""
+	prevServiceFlavor := ""
+	serviceFlavor := &ServiceFlavor{}
+	superGroup := &SuperGroup{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		//if new superGroup value does not match the previous superGroup value
+		//we create a new superGroup in the xml
+		if prevSuperGroup != row.SuperGroup {
+			prevSuperGroup = row.SuperGroup
+			superGroup = &SuperGroup{
+				Name: row.SuperGroup,
+				Type: report.EndpointGroupType, // Endpoint groups are parents of SFs
+			}
+			docRoot.Result = append(docRoot.Result, superGroup)
+			prevServiceFlavor = ""
+		}
+		//if new endpointGroup does not match the previous service value
+		//we create a new endpointGroup entry in the xml
+		if prevServiceFlavor != row.Name {
+			prevServiceFlavor = row.Name
+			serviceFlavor = &ServiceFlavor{
+				Name: row.Name,
+				Type: fmt.Sprintf("service"),
+			}
+			superGroup.ServiceFlavor = append(superGroup.ServiceFlavor, serviceFlavor)
+		}
+		//we append the new availability values
+		serviceFlavor.Availability = append(serviceFlavor.Availability,
+			&Availability{
+				Timestamp:    timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability),
+				Unknown:      fmt.Sprintf("%g", row.Unknown),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+				Downtime:     fmt.Sprintf("%g", row.Down),
+			})
+	}
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
+	}
+
+}
+
 func createEndpointGroupResultView(results []EndpointGroupInterface, report ReportInterface, format string) ([]byte, error) {
 
 	docRoot := &root{}
