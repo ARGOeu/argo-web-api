@@ -243,8 +243,88 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 }
 
-// TestListServiceFlavorAvailability tests if daily results are returned correctly
-func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailability() {
+// TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabilityMonthly() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	serviceFlavorAvailabilityXML := ` <root>
+   <group name="ST01" type="SITE">
+     <group name="SF01" type="service">
+       <results timestamp="2015-06" availability="76.26534166743393" reliability="91.61418757296076" unknown="0" uptime="0.75868" downtime="0.166665"></results>
+     </group>
+     <group name="SF02" type="service">
+       <results timestamp="2015-06" availability="98.43749901562502" reliability="98.43749901562502" unknown="0" uptime="0.984375" downtime="0"></results>
+     </group>
+   </group>
+ </root>`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(serviceFlavorAvailabilityXML, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	serviceFlavorAvailabilityJSON := `{
+   "root": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "SF01",
+           "type": "service",
+           "results": [
+             {
+               "timestamp": "2015-06",
+               "availability": "76.26534166743393",
+               "reliability": "91.61418757296076",
+               "unknown": "0",
+               "uptime": "0.75868",
+               "downtime": "0.166665"
+             }
+           ]
+         },
+         {
+           "name": "SF02",
+           "type": "service",
+           "results": [
+             {
+               "timestamp": "2015-06",
+               "availability": "98.43749901562502",
+               "reliability": "98.43749901562502",
+               "unknown": "0",
+               "uptime": "0.984375",
+               "downtime": "0"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(serviceFlavorAvailabilityJSON, response.Body.String(), "Response body mismatch")
+
+}
+
+// TestListServiceFlavorAvailabilityDaily tests if daily results are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabilityDaily() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -254,16 +334,16 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.router.ServeHTTP(response, request)
 
 	serviceFlavorAvailabilityXML := ` <root>
-  <group name="ST01" type="SITE">
-    <group name="SF01" type="service">
-      <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0" /> 
-      <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" />
-    </group>
-    <group name="SF02" type="service">
-      <results timestamp="2015-06-22" availability="70.0" reliability="45.0" unknown="0" uptime="1" downtime="0" /> 
-      <results timestamp="2015-06-23" availability="43.5" reliability="56" unknown="0" uptime="1" downtime="0" />
-    </group>
-  </group>
+   <group name="ST01" type="SITE">
+     <group name="SF01" type="service">
+       <results timestamp="2015-06-22" availability="98.26389" reliability="98.26389" unknown="0" uptime="0.98264" downtime="0"></results>
+       <results timestamp="2015-06-23" availability="54.03509" reliability="81.48148" unknown="0.01042" uptime="0.53472" downtime="0.33333"></results>
+     </group>
+     <group name="SF02" type="service">
+       <results timestamp="2015-06-22" availability="96.875" reliability="96.875" unknown="0" uptime="0.96875" downtime="0"></results>
+       <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
+     </group>
+   </group>
  </root>`
 
 	// Check that we must have a 200 ok code
@@ -284,26 +364,26 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
      {
        "name": "ST01",
        "type": "SITE",
-       "services": [
+       "serviceflavors": [
          {
            "name": "SF01",
            "type": "service",
            "results": [
              {
                "timestamp": "2015-06-22",
-               "availability": "66.7",
-               "reliability": "54.6",
+               "availability": "98.26389",
+               "reliability": "98.26389",
                "unknown": "0",
-               "uptime": "1",
+               "uptime": "0.98264",
                "downtime": "0"
              },
              {
                "timestamp": "2015-06-23",
-               "availability": "100",
-               "reliability": "100",
-               "unknown": "0",
-               "uptime": "1",
-               "downtime": "0"
+               "availability": "54.03509",
+               "reliability": "81.48148",
+               "unknown": "0.01042",
+               "uptime": "0.53472",
+               "downtime": "0.33333"
              }
            ]
          },
@@ -313,16 +393,16 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
            "results": [
              {
                "timestamp": "2015-06-22",
-               "availability": "70.0",
-               "reliability": "45.0",
+               "availability": "96.875",
+               "reliability": "96.875",
                "unknown": "0",
-               "uptime": "1",
+               "uptime": "0.96875",
                "downtime": "0"
              },
              {
                "timestamp": "2015-06-23",
-               "availability": "43.5",
-               "reliability": "56",
+               "availability": "100",
+               "reliability": "100",
                "unknown": "0",
                "uptime": "1",
                "downtime": "0"
