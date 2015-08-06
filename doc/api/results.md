@@ -136,22 +136,16 @@ Status: 200 OK
 
 ```
 <root>
- <group name="GROUP_A" type="GROUP">
-   <group name="ST01" type="SITE">
-     <group name="SF01" type="service">
-       <results timestamp="2015-05-06" availability="66.7" reliability="66.7" unknown="0" uptime="1" downtime="0" /> 
-       <results timestamp="2015-05-07" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" />
-     </group>
-     <group name="SF02" type="service">
-       <results timestamp="2015-05-06" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" /> 
-       <results timestamp="2015-05-07" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" />
-     </group>
-     <group name="SF03" type="service">
-       <results timestamp="2015-05-06" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" /> 
-       <results timestamp="2015-05-07" availability="100" reliability="100" unknown="0" uptime="1" downtime="0" />
-     </group>
-   </group>
- </group>
+  <group name="ST01" type="SITE">
+    <group name="SF01" type="service">
+      <results timestamp="2015-06-22" availability="98.26389" reliability="98.26389" unknown="0" uptime="0.98264" downtime="0"></results>
+      <results timestamp="2015-06-23" availability="54.03509" reliability="81.48148" unknown="0.01042" uptime="0.53472" downtime="0.33333"></results>
+    </group>
+    <group name="SF02" type="service">
+      <results timestamp="2015-06-22" availability="96.875" reliability="96.875" unknown="0" uptime="0.96875" downtime="0"></results>
+      <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
+    </group>
+  </group>
 </root>
 ```
 
