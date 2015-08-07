@@ -28,25 +28,25 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
+	"github.com/ARGOeu/argo-web-api/app/metric_result"
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
-	"github.com/ARGOeu/argo-web-api/app/metric_result"
 	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/ARGOeu/argo-web-api/app/statusDetail"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
+	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusMsg"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
-	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 )
 
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
 	{"Status timelines", "/status", statusMetrics.HandleSubrouter},
-	{"Status timelines", "/status", statusMetrics.HandleSubrouter},
+	{"Status timelines", "/status", statusServices.HandleSubrouter},
 }
 
 var routes = []Route{
