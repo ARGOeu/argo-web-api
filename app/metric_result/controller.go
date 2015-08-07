@@ -85,16 +85,12 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	result := []metricResultOutput{}
+	result := metricResultOutput{}
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
 
 	// Query the detailed metric results
-	err = metricCol.Find(prepQuery(input)).All(&result)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	err = metricCol.Find(prepQuery(input)).One(&result)
 
 	output, err = createMetricResultView(result, input.Format)
 

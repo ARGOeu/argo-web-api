@@ -29,39 +29,34 @@ import (
 	"strings"
 )
 
-func createMetricResultView(result []metricResultOutput, format string) ([]byte, error) {
+func createMetricResultView(result metricResultOutput, format string) ([]byte, error) {
 
 	docRoot := &root{}
 
 	// Exit here in case result is empty
-	if len(result) == 0 {
+	if result.Hostname == "" {
 		output, err := xml.MarshalIndent(docRoot, "", "")
 		return output, err
 	}
 
-	// we iterate through the results struct array
-	// keeping only the value of each row
-	for _, row := range result {
-
-		hostname := &HostXML{
-			Name: row.Hostname,
-		}
-		docRoot.Result = append(docRoot.Result, hostname)
-
-		metric := &MetricXML{
-			Name: row.Metric,
-		}
-		hostname.Metrics = append(hostname.Metrics, metric)
-
-		// we append the detailed results
-		metric.Details = append(metric.Details,
-			&StatusXML{
-				Timestamp:    fmt.Sprintf("%s", row.Timestamp),
-				Value:        fmt.Sprintf("%s", row.Status),
-				Summary:      fmt.Sprintf("%s", row.Summary),
-				Message:      fmt.Sprintf("%s", row.Message),
-			})
+	hostname := &HostXML{
+		Name: result.Hostname,
 	}
+	docRoot.Result = append(docRoot.Result, hostname)
+
+	metric := &MetricXML{
+		Name: result.Metric,
+	}
+	hostname.Metrics = append(hostname.Metrics, metric)
+
+	// we append the detailed results
+	metric.Details = append(metric.Details,
+		&StatusXML{
+			Timestamp:    fmt.Sprintf("%s", result.Timestamp),
+			Value:        fmt.Sprintf("%s", result.Status),
+			Summary:      fmt.Sprintf("%s", result.Summary),
+			Message:      fmt.Sprintf("%s", result.Message),
+		})
 
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
