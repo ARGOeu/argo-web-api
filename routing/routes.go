@@ -39,13 +39,17 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/statusMsg"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
-	"github.com/ARGOeu/argo-web-api/app/timelines"
+	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 )
 
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
+<<<<<<< HEAD
 	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
 	{"Timelines", "/timelines", timelines.HandleSubrouter},
+=======
+	{"Status timelines", "/status", statusMetrics.HandleSubrouter},
+>>>>>>> ARGO-180 Complete model,view,controller for status metrics timelines
 }
 
 var routes = []Route{

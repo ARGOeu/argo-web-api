@@ -20,14 +20,17 @@
  *
  */
 
-package timelines
+package statusMetrics
 
 import (
 	"net/http"
-
+	"github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"labix.org/v2/mgo/bson"
+
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
@@ -43,15 +46,38 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Name("metric name").
 		Handler(confhandler.Respond(ListMetricTimelines))
 
+	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics
+	groupSubrouter.
+		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
+		Methods("GET").
+		Name("metric name").
+		Handler(confhandler.Respond(ListMetricTimelines))
+
 }
 
-func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
+	//STANDARD DECLARATIONS END
+
+	vars := mux.Vars(r)
+	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		return code, h, output, err
+	}
+	session, err := mongo.OpenSession(tenantcfg)
+	if err != nil {
+		return code, h, output, err
+	}
+	result := bson.M{}
+	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
+	if err != nil {
+		return code, h, output, err
+	}
 
 	return code, h, output, err
 
