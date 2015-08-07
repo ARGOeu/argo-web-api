@@ -44,12 +44,8 @@ import (
 
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
-<<<<<<< HEAD
 	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
-	{"Timelines", "/timelines", timelines.HandleSubrouter},
-=======
 	{"Status timelines", "/status", statusMetrics.HandleSubrouter},
->>>>>>> ARGO-180 Complete model,view,controller for status metrics timelines
 }
 
 var routes = []Route{
