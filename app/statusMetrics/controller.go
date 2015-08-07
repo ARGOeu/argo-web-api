@@ -1,16 +1,16 @@
 package statusMetrics
 
-
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
-	"time"
-	"strconv"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"labix.org/v2/mgo/bson"
 )
 
 // ListMetricTimelines returns a list of metric timelines
@@ -26,7 +26,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
-	
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
@@ -41,7 +41,6 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 		vars["endpoint_name"],
 		vars["metric_name"],
 	}
-
 
 	// Call authenticateTenant to check the api key and retrieve
 	// the correct tenant db conf
@@ -69,7 +68,6 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-
 	output, err = createView(results, input) //Render the results into XML format
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
@@ -89,10 +87,11 @@ func prepareQuery(input InputParams) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
-		"date_integer":  bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report": input.report,
-		"service":   input.service,
-		"hostname":  input.hostname,
+		"date_integer":   bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"report":         input.report,
+		"endpoint_group": input.group,
+		"service":        input.service,
+		"hostname":       input.hostname,
 	}
 
 	if len(input.metric) > 0 {
@@ -101,4 +100,3 @@ func prepareQuery(input InputParams) bson.M {
 
 	return filter
 }
-
