@@ -95,6 +95,6 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	return ListMetricTimelines(r, cfg)
+	return ListServiceTimelines(r, cfg)
 
 }

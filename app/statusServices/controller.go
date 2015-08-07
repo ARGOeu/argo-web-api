@@ -14,7 +14,7 @@ import (
 )
 
 // ListMetricTimelines returns a list of metric timelines
-func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
