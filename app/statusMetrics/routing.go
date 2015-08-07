@@ -30,6 +30,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"labix.org/v2/mgo/bson"
+	"fmt"
 
 )
 
@@ -44,14 +45,14 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
 		Methods("GET").
 		Name("metric name").
-		Handler(confhandler.Respond(ListMetricTimelines))
+		Handler(confhandler.Respond(routeCheckGroup))
 
 	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics
 	groupSubrouter.
 		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
 		Methods("GET").
-		Name("metric name").
-		Handler(confhandler.Respond(ListMetricTimelines))
+		Name("all metrics").
+		Handler(confhandler.Respond(routeCheckGroup))
 
 }
 
@@ -60,8 +61,10 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("")
+	output := []byte("group check")
 	err := error(nil)
+	contentType := "text/xml"
+	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
 	vars := mux.Vars(r)
@@ -75,10 +78,23 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	}
 	result := bson.M{}
 	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
+	
 	if err != nil {
+		message := "The report with the name " + vars["report_name"] + " does not exist" 
+		output, err := messageXML(message) //Render the response into XML
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
-	return code, h, output, err
+	if vars["group_type"] != result["endpoint_group"] {
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["group_type"] 
+		output, err := messageXML(message) //Render the response into XML
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	return ListMetricTimelines(r, cfg)
+
+	
 
 }
