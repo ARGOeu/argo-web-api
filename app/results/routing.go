@@ -37,6 +37,28 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
+	serviceSubrouter := s.PathPrefix("/{report_name}").Subrouter()
+
+	serviceSubrouter.Path("/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}").
+		Methods("GET").
+		Name("Service Flavor").
+		Handler(confhandler.Respond(ListServiceFlavorResults))
+
+	serviceSubrouter.Path("/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services").
+		Methods("GET").
+		Name("Service Flavor").
+		Handler(confhandler.Respond(ListServiceFlavorResults))
+
+	serviceSubrouter.Path("/{lgroup_type}/{lgroup_name}/services/{service_type}").
+		Methods("GET").
+		Name("Service Flavor").
+		Handler(confhandler.Respond(ListServiceFlavorResults))
+
+	serviceSubrouter.Path("/{lgroup_type}/{lgroup_name}/services").
+		Methods("GET").
+		Name("Service Flavor").
+		Handler(confhandler.Respond(ListServiceFlavorResults))
+
 	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
 	groupSubrouter.
 		Path("/{group_name}/{lgroup_type}/{lgroup_name}").
