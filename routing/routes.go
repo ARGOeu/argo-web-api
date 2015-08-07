@@ -34,7 +34,6 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/results"
 	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/ARGOeu/argo-web-api/app/statusDetail"
-	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusMsg"
@@ -97,7 +96,4 @@ var routes = []Route{
 
 	//Status Endpoints
 	{"status endpoint list", "GET", "/status/endpoints/timeline/{hostname}/{service_type}", statusEndpoints.List},
-
-	//Status Sites
-	{"status endpoint group list", "GET", "/status/sites/timeline/{group}", statusEndpointGroups.List},
 }
