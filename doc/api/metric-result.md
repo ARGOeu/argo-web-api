@@ -11,9 +11,9 @@ This method may be used to retrieve a detailed metric result.
 
 #### Query Parameters
 
-Type            | Description                                                                                     | Required | Default value
---------------- | ----------------------------------------------------------------------------------------------- | -------- | -------------
-`[exec_time]`   | UTC time in W3C format                                                                          | YES      |
+Type            | Description             | Required | Default value
+--------------- | ----------------------- | -------- | -------------
+`[exec_time]`   | UTC time in W3C format  | YES      |
 
 #### Path Parameters
 
