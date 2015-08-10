@@ -9,7 +9,6 @@ type InputParams struct {
 	report    string
 	groupType string
 	group     string
-	service   string
 }
 
 // DataOutput struct holds the queried data from datastore
@@ -30,13 +29,6 @@ type rootXML struct {
 }
 
 type endpointGroupXML struct {
-	XMLName   xml.Name `xml:"Group"`
-	Name      string   `xml:"name,attr"`
-	GroupType string   `xml:"type,attr"`
-	Services  []*serviceXML
-}
-
-type serviceXML struct {
 	XMLName   xml.Name `xml:"Group"`
 	Name      string   `xml:"name,attr"`
 	GroupType string   `xml:"type,attr"`

@@ -40,10 +40,8 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	}
 
 	prevEndpointGroup := ""
-	prevService := ""
 
 	var ppEndpointGroup *endpointGroupXML
-	var ppService *serviceXML
 
 	for _, row := range results {
 
@@ -56,20 +54,10 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 			ppEndpointGroup = endpointGroup
 		}
 
-		if row.Service != prevService && row.Service != "" {
-			service := &serviceXML{}
-			service.Name = row.Service
-			service.GroupType = "service"
-			ppEndpointGroup.Services = append(ppEndpointGroup.Services, service)
-
-			prevService = row.Service
-			ppService = service
-		}
-
 		status := &statusXML{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
-		ppService.Statuses = append(ppService.Statuses, status)
+		ppEndpointGroup.Statuses = append(ppEndpointGroup.Statuses, status)
 
 	}
 

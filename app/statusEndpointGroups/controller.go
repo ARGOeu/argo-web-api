@@ -13,8 +13,8 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-// ListMetricTimelines returns a list of metric timelines
-func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+// ListEndpointGroupTimelines returns a list of metric timelines
+func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
@@ -56,10 +56,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_services")
-
-	fmt.Println("this is a call to print services")
-	fmt.Println(input)
+	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoint_groups")
 
 	// Query the detailed metric results
 	err = metricCollection.Find(prepareQuery(input)).All(&results)
@@ -93,8 +90,8 @@ func prepareQuery(input InputParams) bson.M {
 		"report":       input.report,
 	}
 
-	if len(input.service) > 0 {
-		filter["service"] = input.service
+	if len(input.endpoint_group) > 0 {
+		filter["endpoint_group"] = input.endpoint_group
 	}
 
 	return filter

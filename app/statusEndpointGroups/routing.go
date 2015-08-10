@@ -37,23 +37,21 @@ import (
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	fmt.Println("this is the route")
-
 	// Goes up to /report/REPORT_NAME/group_type
 	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
 
-	// eg. timelines/critical/SITE/mysite/services/apache
+	// eg. timelines/critical/SITES/mysite
 	groupSubrouter.
-		Path("/{group_name}/services/{service_name}").
+		Path("/{group_name}").
 		Methods("GET").
-		Name("service name").
+		Name("endpoint group name").
 		Handler(confhandler.Respond(routeCheckGroup))
 
-	// eg. timelines/critical/SITE/mysite/services
+	// eg. timelines/critical/SITES
 	groupSubrouter.
-		Path("/{group_name}/services/").
+		Path("/").
 		Methods("GET").
-		Name("all services").
+		Name("all endpoint groups").
 		Handler(confhandler.Respond(routeCheckGroup))
 
 }
@@ -95,6 +93,6 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	return ListMetricTimelines(r, cfg)
+	return ListEndpointGroupTimelines(r, cfg)
 
 }
