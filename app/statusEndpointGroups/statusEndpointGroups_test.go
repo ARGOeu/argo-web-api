@@ -172,7 +172,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_services")
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
 		"date_int":       20150501,
@@ -227,7 +227,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_services")
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
 		"date_int":       20150501,
@@ -252,7 +252,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 
 }
 
-func (suite *StatusServicesTestSuite) TestReadStatusDetail() {
+func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 	respXML1 := ` <root>
    <Group name="HG-03-AUTH" type="SITES">
      <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
