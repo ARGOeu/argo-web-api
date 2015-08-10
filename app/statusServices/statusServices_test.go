@@ -175,7 +175,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -183,7 +183,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -191,7 +191,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -233,7 +233,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
@@ -241,7 +241,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
@@ -249,7 +249,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
