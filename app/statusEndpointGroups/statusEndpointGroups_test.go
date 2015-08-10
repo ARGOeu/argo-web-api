@@ -73,7 +73,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argotest_status_services"
+    db = "argotest_egroups"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -111,7 +111,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_metric_egi",
+				"database": "argotest_egroups_egi",
 				"username": "",
 				"password": ""},
 		},
@@ -129,7 +129,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_metric_eudat",
+				"database": "argotest_egroups_eudat",
 				"username": "",
 				"password": ""},
 		},
@@ -175,26 +175,23 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
 		"status":         "OK",
 	})
 
@@ -233,26 +230,23 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_integer":   20150501,
+		"date_int":       20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
 		"status":         "OK",
 	})
 
@@ -261,30 +255,24 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 func (suite *StatusServicesTestSuite) TestReadStatusDetail() {
 	respXML1 := ` <root>
    <Group name="HG-03-AUTH" type="SITES">
-     <Group name="CREAM-CE" type="service">
-       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-     </Group>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
    </Group>
  </root>`
 
 	respXML2 := ` <root>
    <Group name="EL-01-AUTH" type="EUDAT_SITES">
-     <Group name="srv.typeA" type="service">
-       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-     </Group>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
    </Group>
  </root>`
 
 	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	response := httptest.NewRecorder()
@@ -328,9 +316,9 @@ func (suite *StatusServicesTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
-	session.DB("argotest_metric").DropDatabase()
-	session.DB("argotest_metric_eudat").DropDatabase()
-	session.DB("argotest_metric_egi").DropDatabase()
+	session.DB("argotest_egroups").DropDatabase()
+	session.DB("argotest_egroups_eudat").DropDatabase()
+	session.DB("argotest_egroups_egi").DropDatabase()
 }
 
 // This is the first function called when go test is issued

@@ -86,12 +86,12 @@ func prepareQuery(input InputParams) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
-		"date_integer": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report":       input.report,
+		"date_int": bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"report":   input.report,
 	}
 
-	if len(input.endpoint_group) > 0 {
-		filter["endpoint_group"] = input.endpoint_group
+	if len(input.group) > 0 {
+		filter["endpoint_group"] = input.group
 	}
 
 	return filter
