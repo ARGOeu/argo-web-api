@@ -282,7 +282,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 
 }
 
-func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
+func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	respXML1 := ` <root>
    <Group name="HG-03-AUTH" type="SITES">
      <Group name="CREAM-CE" type="service">
