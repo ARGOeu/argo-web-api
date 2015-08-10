@@ -31,16 +31,16 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
 	"code.google.com/p/gcfg"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/gorilla/mux"
-
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -174,34 +174,40 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T00:00:00Z",
-		"endpoint_group":      "HG-03-AUTH",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "OK",
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"hostname":       "cream01.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+		"prev_timestamp": "2015-04-30T22:00:00Z",
+		"prev_status":    "WARNING",
 	})
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T01:00:00Z",
-		"endpoint_group":      "HG-03-AUTH",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "CRITICAL",
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T01:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"hostname":       "cream01.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "CRITICAL",
+		"prev_timestamp": "2015-05-01T00:00:00Z",
+		"prev_status":    "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T05:00:00Z",
-		"endpoint_group":      "HG-03-AUTH",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "OK",
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T05:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"hostname":       "cream01.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+		"prev_timestamp": "2015-05-01T01:00:00Z",
+		"prev_status":    "CRITICAL",
 	})
 
 	// get dbconfiguration based on the tenant
@@ -235,38 +241,43 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 				"value": "value2"},
 		}})
 
-
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":              "EUDAT_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T00:00:00Z",
-		"endpoint_group":      "EL-01-AUTH",
-		"service":             "srv.typeA",
-		"hostname":            "host01.eudat.gr",
-		"metric":              "typeA.metric.Memory",
-		"status":              "OK",
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"service":        "srv.typeA",
+		"hostname":       "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
+		"status":         "OK",
+		"prev_timestamp": "2015-04-30T22:00:00Z",
+		"prev_status":    "WARNING",
 	})
 	c.Insert(bson.M{
-		"report":              "EUDAT_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T01:00:00Z",
-		"endpoint_group":      "EL-01-AUTH",
-		"service":             "srv.typeA",
-		"hostname":            "host01.eudat.gr",
-		"metric":              "typeA.metric.Memory",
-		"status":              "CRITICAL",
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T01:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"service":        "srv.typeA",
+		"hostname":       "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
+		"status":         "CRITICAL",
+		"prev_timestamp": "2015-05-01T00:00:00Z",
+		"prev_status":    "OK",
 	})
 	c.Insert(bson.M{
-		"report":              "EUDAT_CRITICAL",
-		"date_integer":        20150501,
-		"timestamp":           "2015-05-01T05:00:00Z",
-		"endpoint_group":      "EL-01-AUTH",
-		"service":             "srv.typeA",
-		"hostname":            "host01.eudat.gr",
-		"metric":              "typeA.metric.Memory",
-		"status":              "OK",
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T05:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"service":        "srv.typeA",
+		"hostname":       "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
+		"status":         "OK",
+		"prev_timestamp": "2015-05-01T01:00:00Z",
+		"prev_status":    "WARNING",
 	})
 
 }
@@ -277,6 +288,7 @@ func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
      <Group name="CREAM-CE" type="service">
        <Group name="cream01.afroditi.gr" type="endpoint">
          <Group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -291,6 +303,7 @@ func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
      <Group name="srv.typeA" type="service">
        <Group name="host01.eudat.gr" type="endpoint">
          <Group name="typeA.metric.Memory" type="metric">
+           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -300,16 +313,15 @@ func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
    </Group>
  </root>`
 
-	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH"+
+	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
-	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH"+
+	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
 		"/services/srv.typeA/endpoints/host01.eudat.gr/metrics/typeA.metric.Memory" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
-
-    response := httptest.NewRecorder()
+	response := httptest.NewRecorder()
 
 	// Prepare the request object for fist tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
@@ -317,7 +329,6 @@ func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
-
 
 	suite.router.ServeHTTP(response, request)
 
@@ -335,7 +346,7 @@ func (suite *StatusMetricsTestSuite) TestReadStatusDetail() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// Pass request to controller calling List() handler method
-	
+
 	suite.router.ServeHTTP(response, request)
 
 	// Check that we must have a 200 ok code

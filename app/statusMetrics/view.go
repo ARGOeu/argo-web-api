@@ -39,7 +39,6 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		return output, err
 	}
 
-
 	prevHostname := ""
 	prevMetric := ""
 	prevEndpointGroup := ""
@@ -51,7 +50,6 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	var ppService *serviceXML
 
 	for _, row := range results {
-
 
 		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
 			endpointGroup := &endpointGroupXML{}
@@ -91,6 +89,12 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 			ppHost.Metrics = append(ppHost.Metrics, metric)
 			prevMetric = row.Metric
 			ppMetric = metric
+
+			prevStatus := &statusXML{}
+			prevStatus.Timestamp = row.PrevTimestamp
+			prevStatus.Value = row.PrevStatus
+			ppMetric.Statuses = append(ppMetric.Statuses, prevStatus)
+
 		}
 
 		status := &statusXML{}
@@ -98,10 +102,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		status.Value = row.Status
 		ppMetric.Statuses = append(ppMetric.Statuses, status)
 
-		
-
 	}
-
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
@@ -114,5 +115,3 @@ func messageXML(answer string) ([]byte, error) {
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
 }
-
-
