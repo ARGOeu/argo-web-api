@@ -42,12 +42,10 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type StatusEndpointsTestSuite struct {
 	suite.Suite
-	cfg              config.Config
-	router           *mux.Router
-	confHandler      respond.ConfHandler
-	tenantDbConf     config.MongoConfig
-	respUnauthorized string
-	respBadJSON      string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
 }
 
 // Setup the Test Environment
@@ -78,11 +76,6 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/status").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
-
-	suite.respBadJSON = " <root>\n" +
-		"   <Message>Malformated json input data</Message>\n </root>"
-
-	suite.respUnauthorized = "Unauthorized"
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
@@ -268,28 +261,97 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 
 func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	respXML1 := ` <root>
-   <Group name="HG-03-AUTH" type="SITES">
-     <Group name="CREAM-CE" type="service">
-       <Group name="cream01.afroditi.gr" type="endpoint">
+   <group name="HG-03-AUTH" type="SITES">
+     <group name="CREAM-CE" type="service">
+       <group name="cream01.afroditi.gr" type="endpoint">
          <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
          <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
          <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </Group>
-     </Group>
-   </Group>
+       </group>
+     </group>
+   </group>
  </root>`
 
 	respXML2 := ` <root>
-   <Group name="EL-01-AUTH" type="EUDAT_SITES">
-     <Group name="srv.typeA" type="service">
-       <Group name="host01.eudat.gr" type="endpoint">
+   <group name="EL-01-AUTH" type="EUDAT_SITES">
+     <group name="srv.typeA" type="service">
+       <group name="host01.eudat.gr" type="endpoint">
          <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
          <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
          <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </Group>
-     </Group>
-   </Group>
+       </group>
+     </group>
+   </group>
  </root>`
+
+	respJSON1 := `{
+   "endpoint_groups": [
+     {
+       "name": "HG-03-AUTH",
+       "type": "SITES",
+       "services": [
+         {
+           "name": "CREAM-CE",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "cream01.afroditi.gr",
+               "type": "endpoint",
+               "statuses": [
+                 {
+                   "timestamp": "2015-05-01T00:00:00Z",
+                   "value": "OK"
+                 },
+                 {
+                   "timestamp": "2015-05-01T01:00:00Z",
+                   "value": "CRITICAL"
+                 },
+                 {
+                   "timestamp": "2015-05-01T05:00:00Z",
+                   "value": "OK"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+	respJSON2 := `{
+   "endpoint_groups": [
+     {
+       "name": "EL-01-AUTH",
+       "type": "EUDAT_SITES",
+       "services": [
+         {
+           "name": "srv.typeA",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "host01.eudat.gr",
+               "type": "endpoint",
+               "statuses": [
+                 {
+                   "timestamp": "2015-05-01T00:00:00Z",
+                   "value": "OK"
+                 },
+                 {
+                   "timestamp": "2015-05-01T01:00:00Z",
+                   "value": "CRITICAL"
+                 },
+                 {
+                   "timestamp": "2015-05-01T05:00:00Z",
+                   "value": "OK"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
 
 	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
@@ -299,38 +361,77 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 		"/services/srv.typeA/endpoints" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
+	// 1. EGI XML REQUEST
+	// init the response placeholder
 	response := httptest.NewRecorder()
-
 	// Prepare the request object for fist tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
+	// add accept xml header
+	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
-
+	// Serve the http request
 	suite.router.ServeHTTP(response, request)
-
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(respXML1, string(response.Body.String()), "Response body mismatch")
+	suite.Equal(respXML1, response.Body.String(), "Response body mismatch")
 
+	// 2. EUDAT XML REQUEST
+	// init the response placeholder
 	response = httptest.NewRecorder()
-
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
+	// add accept xml header
+	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
-	// Pass request to controller calling List() handler method
-
+	// Serve the http request
 	suite.router.ServeHTTP(response, request)
-
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(respXML2, string(response.Body.String()), "Response body mismatch")
+	suite.Equal(respXML2, response.Body.String(), "Response body mismatch")
+
+	// 3. EGI JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json")
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+	// 4. EUDAT JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json")
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests

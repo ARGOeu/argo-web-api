@@ -33,6 +33,7 @@ type InputParams struct {
 	group     string
 	service   string
 	hostname  string
+	format    string
 }
 
 // DataOutput struct holds the queried data from datastore
@@ -46,42 +47,42 @@ type DataOutput struct {
 	DateInt       string `bson:"date_int"`
 }
 
-// xml response related structs
+// json/xml response related structs
 
-type rootXML struct {
-	XMLName        xml.Name `xml:"root"`
-	EndpointGroups []*endpointGroupXML
+type rootOUT struct {
+	XMLName        xml.Name            `xml:"root" json:"-"`
+	EndpointGroups []*endpointGroupOUT `json:"endpoint_groups"`
 }
 
-type endpointGroupXML struct {
-	XMLName   xml.Name `xml:"Group"`
-	Name      string   `xml:"name,attr"`
-	GroupType string   `xml:"type,attr"`
-	Services  []*serviceXML
+type endpointGroupOUT struct {
+	XMLName   xml.Name      `xml:"group" json:"-"`
+	Name      string        `xml:"name,attr" json:"name"`
+	GroupType string        `xml:"type,attr" json:"type"`
+	Services  []*serviceOUT `json:"services"`
 }
 
-type serviceXML struct {
-	XMLName   xml.Name `xml:"Group"`
-	Name      string   `xml:"name,attr"`
-	GroupType string   `xml:"type,attr"`
-	Endpoints []*endpointXML
+type serviceOUT struct {
+	XMLName   xml.Name       `xml:"group" json:"-"`
+	Name      string         `xml:"name,attr" json:"name"`
+	GroupType string         `xml:"type,attr" json:"type"`
+	Endpoints []*endpointOUT `json:"endpoints"`
 }
 
-type endpointXML struct {
-	XMLName   xml.Name `xml:"Group"`
-	Name      string   `xml:"name,attr"`
-	GroupType string   `xml:"type,attr"`
-	Statuses  []*statusXML
+type endpointOUT struct {
+	XMLName   xml.Name     `xml:"group" json:"-"`
+	Name      string       `xml:"name,attr" json:"name"`
+	GroupType string       `xml:"type,attr" json:"type"`
+	Statuses  []*statusOUT `json:"statuses"`
 }
 
-type statusXML struct {
-	XMLName   xml.Name `xml:"status"`
-	Timestamp string   `xml:"timestamp,attr"`
-	Value     string   `xml:"value,attr"`
+type statusOUT struct {
+	XMLName   xml.Name `xml:"status" json:"-"`
+	Timestamp string   `xml:"timestamp,attr" json:"timestamp"`
+	Value     string   `xml:"value,attr" json:"value"`
 }
 
-// Message struct to hold the xml response
-type message struct {
-	XMLName xml.Name `xml:"root"`
-	Message string
+// Message struct to hold the json/xml response
+type messageOUT struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Message string   `xml:"message" json:"message"`
 }

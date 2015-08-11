@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
@@ -61,6 +62,13 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		vars["group_name"],
 		vars["service_name"],
 		vars["endpoint_name"],
+		r.Header.Get("Accept"),
+	}
+
+	// Handle response format based on Accept Header
+	// Default is application/xml
+	if strings.EqualFold(input.format, "application/json") {
+		contentType = "application/json"
 	}
 
 	// Call authenticateTenant to check the api key and retrieve

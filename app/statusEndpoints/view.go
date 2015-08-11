@@ -23,12 +23,17 @@
 package statusEndpoints
 
 import (
+	"encoding/json"
 	"encoding/xml"
+	"strings"
 )
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
-	docRoot := &rootXML{}
+	output := []byte("reponse output")
+	err := error(nil)
+
+	docRoot := &rootOUT{}
 
 	if len(results) == 0 {
 		output, err := xml.MarshalIndent(docRoot, " ", "  ")
@@ -39,14 +44,14 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	prevEndpointGroup := ""
 	prevService := ""
 
-	var ppHost *endpointXML
-	var ppEndpointGroup *endpointGroupXML
-	var ppService *serviceXML
+	var ppHost *endpointOUT
+	var ppEndpointGroup *endpointGroupOUT
+	var ppService *serviceOUT
 
 	for _, row := range results {
 
 		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
-			endpointGroup := &endpointGroupXML{}
+			endpointGroup := &endpointGroupOUT{}
 			endpointGroup.Name = row.EndpointGroup
 			endpointGroup.GroupType = input.groupType
 			docRoot.EndpointGroups = append(docRoot.EndpointGroups, endpointGroup)
@@ -55,7 +60,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		}
 
 		if row.Service != prevService && row.Service != "" {
-			service := &serviceXML{}
+			service := &serviceOUT{}
 			service.Name = row.Service
 			service.GroupType = "service"
 			ppEndpointGroup.Services = append(ppEndpointGroup.Services, service)
@@ -65,7 +70,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		}
 
 		if row.Hostname != prevHostname && row.Hostname != "" {
-			host := &endpointXML{} //create new host
+			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
 			host.GroupType = "endpoint"
 			ppService.Endpoints = append(ppService.Endpoints, host)
@@ -73,21 +78,33 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 			ppHost = host
 		}
 
-		status := &statusXML{}
+		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
 	}
 
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	if strings.EqualFold(input.format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 
 }
 
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+func createMessageOUT(message string, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &messageOUT{}
+
+	docRoot.Message = message
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 }
