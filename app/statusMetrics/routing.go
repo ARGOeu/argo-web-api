@@ -23,15 +23,15 @@
 package statusMetrics
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"fmt"
+	"net/http"
 
+	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"labix.org/v2/mgo/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
@@ -78,23 +78,21 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	}
 	result := bson.M{}
 	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
-	
+
 	if err != nil {
-		message := "The report with the name " + vars["report_name"] + " does not exist" 
+		message := "The report with the name " + vars["report_name"] + " does not exist"
 		output, err := messageXML(message) //Render the response into XML
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
 	if vars["group_type"] != result["endpoint_group"] {
-		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["group_type"] 
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["group_type"]
 		output, err := messageXML(message) //Render the response into XML
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
 	return ListMetricTimelines(r, cfg)
-
-	
 
 }
