@@ -30,6 +30,9 @@ import (
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
+	output := []byte("reponse output")
+	err := error(nil)
+
 	docRoot := &rootOUT{}
 
 	if len(results) == 0 {
@@ -59,7 +62,11 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 	}
 
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	if strings.EqualFold(input.format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 
 }

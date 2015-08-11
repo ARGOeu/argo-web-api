@@ -95,9 +95,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		return code, h, output, err
 	}
 
-	fmt.Println(results)
-
-	output, err = createView(results, input) //Render the results into XML format
+	output, err = createView(results, input) //Render the results into JSON/XML format
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
