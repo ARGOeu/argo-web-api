@@ -38,8 +38,6 @@ import (
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	fmt.Println("this is the route")
-
 	// Goes up to /report/REPORT_NAME/group_type
 	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
 

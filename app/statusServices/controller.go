@@ -89,17 +89,12 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 
 	metricCollection := session.DB(tenantDbConfig.Db).C("status_services")
 
-	fmt.Println("this is a call to print services")
-	fmt.Println(input)
-
 	// Query the detailed metric results
 	err = metricCollection.Find(prepareQuery(input)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
-	fmt.Println(results)
 
 	output, err = createView(results, input) //Render the results into XML format
 
