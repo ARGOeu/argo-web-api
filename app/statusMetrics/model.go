@@ -80,10 +80,10 @@ type endpointOUT struct {
 }
 
 type metricOUT struct {
-	XMLName   xml.Name `xml:"group" json:"-"`
-	Name      string   `xml:"name,attr" json:"name"`
-	GroupType string   `xml:"type,attr" json"type"`
-	Statuses  []*statusOUT
+	XMLName   xml.Name     `xml:"group" json:"-"`
+	Name      string       `xml:"name,attr" json:"name"`
+	GroupType string       `xml:"type,attr" json:"type"`
+	Statuses  []*statusOUT `json:"statuses"`
 }
 
 type statusOUT struct {
