@@ -23,12 +23,14 @@
 package statusEndpointGroups
 
 import (
+	"encoding/json"
 	"encoding/xml"
+	"strings"
 )
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
-	docRoot := &rootXML{}
+	docRoot := &rootOUT{}
 
 	if len(results) == 0 {
 		output, err := xml.MarshalIndent(docRoot, " ", "  ")
@@ -37,12 +39,12 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 	prevEndpointGroup := ""
 
-	var ppEndpointGroup *endpointGroupXML
+	var ppEndpointGroup *endpointGroupOUT
 
 	for _, row := range results {
 
 		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
-			endpointGroup := &endpointGroupXML{}
+			endpointGroup := &endpointGroupOUT{}
 			endpointGroup.Name = row.EndpointGroup
 			endpointGroup.GroupType = input.groupType
 			docRoot.EndpointGroups = append(docRoot.EndpointGroups, endpointGroup)
@@ -50,7 +52,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 			ppEndpointGroup = endpointGroup
 		}
 
-		status := &statusXML{}
+		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
 		ppEndpointGroup.Statuses = append(ppEndpointGroup.Statuses, status)
@@ -62,9 +64,17 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 }
 
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+func createMessageOUT(message string, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &messageOUT{}
+
+	docRoot.Message = message
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 }

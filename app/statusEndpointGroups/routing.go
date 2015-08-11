@@ -25,6 +25,7 @@ package statusEndpointGroups
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
@@ -63,9 +64,16 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	h := http.Header{}
 	output := []byte("group check")
 	err := error(nil)
-	contentType := "text/xml"
+	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
+
+	// Handle response format based on Accept Header
+	// Default is application/xml
+	format := r.Header.Get("Accept")
+	if strings.EqualFold(format, "application/json") {
+		contentType = "application/json"
+	}
 
 	vars := mux.Vars(r)
 	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
@@ -81,14 +89,14 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 
 	if err != nil {
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := messageXML(message) //Render the response into XML
+		output, err := createMessageOUT(message, format) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
 	if vars["group_type"] != result["endpoint_group"] {
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["group_type"]
-		output, err := messageXML(message) //Render the response into XML
+		output, err := createMessageOUT(message, format) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
