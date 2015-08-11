@@ -22,9 +22,7 @@
 
 package statusMetrics
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
