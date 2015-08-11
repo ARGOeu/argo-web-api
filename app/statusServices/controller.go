@@ -1,9 +1,32 @@
+/*
+ * Copyright (c) 2015 GRNET S.A.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS
+ * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * The views and conclusions contained in the software and
+ * documentation are those of the authors and should not be
+ * interpreted as representing official policies, either expressed
+ * or implied, of GRNET S.A.
+ *
+ */
+
 package statusServices
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
@@ -22,7 +45,7 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 	h := http.Header{}
 	output := []byte("List Metric Timelines")
 	err := error(nil)
-	contentType := "text/xml"
+	contentType := "application/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -38,6 +61,13 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		vars["group_type"],
 		vars["group_name"],
 		vars["service_name"],
+		r.Header.Get("Accept"),
+	}
+
+	// Handle response format based on Accept Header
+	// Default is application/xml
+	if strings.EqualFold(input.format, "application/json") {
+		contentType = "application/json"
 	}
 
 	// Call authenticateTenant to check the api key and retrieve

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,23 +16,24 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package statusServices
 
 import (
+	"encoding/json"
 	"encoding/xml"
+	"strings"
 )
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
-	docRoot := &rootXML{}
+	output := []byte("reponse output")
+	err := error(nil)
+
+	docRoot := &rootOUT{}
 
 	if len(results) == 0 {
 		output, err := xml.MarshalIndent(docRoot, " ", "  ")
@@ -42,13 +43,13 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	prevEndpointGroup := ""
 	prevService := ""
 
-	var ppEndpointGroup *endpointGroupXML
-	var ppService *serviceXML
+	var ppEndpointGroup *endpointGroupOUT
+	var ppService *serviceOUT
 
 	for _, row := range results {
 
 		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
-			endpointGroup := &endpointGroupXML{}
+			endpointGroup := &endpointGroupOUT{}
 			endpointGroup.Name = row.EndpointGroup
 			endpointGroup.GroupType = input.groupType
 			docRoot.EndpointGroups = append(docRoot.EndpointGroups, endpointGroup)
@@ -57,7 +58,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		}
 
 		if row.Service != prevService && row.Service != "" {
-			service := &serviceXML{}
+			service := &serviceOUT{}
 			service.Name = row.Service
 			service.GroupType = "service"
 			ppEndpointGroup.Services = append(ppEndpointGroup.Services, service)
@@ -66,21 +67,33 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 			ppService = service
 		}
 
-		status := &statusXML{}
+		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
 		ppService.Statuses = append(ppService.Statuses, status)
 
 	}
 
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	if strings.EqualFold(input.format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 
 }
 
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+func createMessageOUT(message string, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &messageOUT{}
+
+	docRoot.Message = message
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
 	return output, err
 }
