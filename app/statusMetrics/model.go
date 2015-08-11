@@ -58,28 +58,28 @@ type rootXML struct {
 }
 
 type endpointGroupXML struct {
-	XMLName   xml.Name `xml:"Group"`
+	XMLName   xml.Name `xml:"group"`
 	Name      string   `xml:"name,attr"`
 	GroupType string   `xml:"type,attr"`
 	Services  []*serviceXML
 }
 
 type serviceXML struct {
-	XMLName   xml.Name `xml:"Group"`
+	XMLName   xml.Name `xml:"group"`
 	Name      string   `xml:"name,attr"`
 	GroupType string   `xml:"type,attr"`
 	Endpoints []*endpointXML
 }
 
 type endpointXML struct {
-	XMLName   xml.Name `xml:"Group"`
+	XMLName   xml.Name `xml:"group"`
 	Name      string   `xml:"name,attr"`
 	GroupType string   `xml:"type,attr"`
 	Metrics   []*metricXML
 }
 
 type metricXML struct {
-	XMLName   xml.Name `xml:"Group"`
+	XMLName   xml.Name `xml:"group"`
 	Name      string   `xml:"name,attr"`
 	GroupType string   `xml:"type,attr"`
 	Statuses  []*statusXML
