@@ -51,7 +51,7 @@ type DataOutput struct {
 	PrevStatus    string `bson:"prev_status"`
 }
 
-// xml response related structs
+// json/xml response related structs
 
 type rootOUT struct {
 	XMLName        xml.Name            `xml:"root" json:"-"`
@@ -92,7 +92,7 @@ type statusOUT struct {
 	Value     string   `xml:"value,attr" json:"value"`
 }
 
-// Message struct to hold the xml response
+// Message struct to hold the json/xml response
 type messageOUT struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Message string   `xml:"message" json:"message"`
