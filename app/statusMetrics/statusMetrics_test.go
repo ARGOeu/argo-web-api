@@ -42,12 +42,10 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type StatusMetricsTestSuite struct {
 	suite.Suite
-	cfg              config.Config
-	router           *mux.Router
-	confHandler      respond.ConfHandler
-	tenantDbConf     config.MongoConfig
-	respUnauthorized string
-	respBadJSON      string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
 }
 
 // Setup the Test Environment
@@ -78,11 +76,6 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/status").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
-
-	suite.respBadJSON = " <root>\n" +
-		"   <Message>Malformated json input data</Message>\n </root>"
-
-	suite.respUnauthorized = "Unauthorized"
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
