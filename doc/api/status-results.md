@@ -239,6 +239,7 @@ Status: 200 OK
 URL:
 ```
 /status/EGI_CRITICAL/SITES/HG-03-AUTH/services?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
+
 ```
 Headers:
 ```
