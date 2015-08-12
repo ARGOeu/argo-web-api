@@ -8,6 +8,7 @@ description: API calls for retrieving monitoring status results
 ## API Calls
 
 | Name  | Description | Shortcut |
+|-------|-------------|----------|
 | GET: List Service Metric Status Timelines | This method may be used to retrieve a specific service metric status timeline (applies on a specific host endpoint and a specific service flavor).|<a href="#1"> Description</a>|
 | GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service flavor). | <a href="#2"> Description</a>|
 | GET: List Service Flavor Status Timelines |This method may be used to retrieve a specific service flavor status timeline (applies for a specific site). | <a href="#3"> Description</a>|
@@ -27,6 +28,7 @@ This method may be used to retrieve a specific service metric status timeline (a
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES |  |
 |`end_time`| UTC time in W3C format| YES |  |
 |`job`| Job (view) name | YES |  |
@@ -104,6 +106,7 @@ This method may be used to retrieve a specific service endpoint status timeline 
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES | |
 |`end_time`| UTC time in W3C format| YES| |
 |`job`| Job (view) name | YES |  |
@@ -145,6 +148,7 @@ This method may be used to retrieve a specific service flavor status timeline (a
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES ||
 |`end_time`| UTC time in W3C format| YES| |
 |`vo`| vo name | NO | `ops` |
@@ -191,6 +195,7 @@ This method may be used to retrieve a detailed metric result.
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`exec_time`| UTC time in W3C format| YES |  |
 |`job`| Job (view) name | YES |  |
 
