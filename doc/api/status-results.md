@@ -11,7 +11,7 @@ description: API calls for retrieving monitoring status results
 |-------|-------------|----------|
 | GET: List Service Metric Status Timelines | This method may be used to retrieve a specific service metric status timeline (applies on a specific service endpoint).|<a href="#1"> Description</a>|
 | GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service flavor). | <a href="#2"> Description</a>|
-| GET: List Service Flavor Status Timelines |This method may be used to retrieve a specific service flavor status timeline (applies for a specific site). | <a href="#3"> Description</a>|
+| GET: List Service  Status Timelines |This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group). | <a href="#3"> Description</a>|
 | GET: List Site Status timelines| This method may be used to retrieve a whole site status timeline. | <a href="#4"> Description</a>|
 
 
@@ -85,24 +85,24 @@ Status: 200 OK
 ```
 Reponse body:
 ```
-    <root>
-      <group name="HG-03-AUTH" type="SITES">
-         <group name="CREAM-CE" type="service">
-           <group name="cream01.afroditi.gr" type="endpoint">
-             <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
-               <status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
-               <status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
-               <status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-             </group>
-             group name="emi.wn.WN-Bi" type="metric">
-               <status timestamp="2015-04-30T22:59:00Z" status="OK"></status>
-               <status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-               <status timestamp="2015-05-01T03:00:00Z" status="OK"></status>
-             </group>
-           </group>
-         </group>
-       </group>
-     </root>
+<root>
+	<group name="HG-03-AUTH" type="SITES">
+		<group name="CREAM-CE" type="service">
+			<group name="cream01.afroditi.gr" type="endpoint">
+				<group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+				</group>
+				<group name="emi.wn.WN-Bi" type="metric">
+					<status timestamp="2015-04-30T22:59:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T03:00:00Z" status="OK"></status>
+				</group>
+			</group>
+		</group>
+	</group>
+</root>
 ```
 
 
@@ -127,19 +127,19 @@ Status: 200 OK
 Reponse body:
 
 ```
-    <root>
-      <group name="HG-03-AUTH" type="SITES">
-         <group name="CREAM-CE" type="service">
-           <group name="cream01.afroditi.gr" type="endpoint">
-             <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
-               <status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
-               <status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
-               <status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-             </group>
-           </group>
-         </group>
-       </group>
-     </root>
+<root>
+	<group name="HG-03-AUTH" type="SITES">
+		<group name="CREAM-CE" type="service">
+			<group name="cream01.afroditi.gr" type="endpoint">
+				<group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+				</group>
+			</group>
+		</group>
+	</group>
+</root>
 ```
 
 <a id="2"></a>
@@ -186,49 +186,119 @@ Headers: `Status: 200 OK`
 
 <a id="3"></a>
 
-## GET: List Service Flavor Status Timelines (TBD)
+## GET: List Service Status Timelines
 
-This method may be used to retrieve a specific service flavor status timeline (applies for a specific site).
+This method may be used to retrieve a specific service flavor status timeline (applies for a specific service endpoint group).
 
 ### Input
+##### List All service types:
+```
+/status/{report}/{group_type}/{group_name}/services[start_time]&[end_time]
+```
+##### List a specific service type:
+```
+/status/{report}/{group_type}/{group_name}/services/{service_type}[start_time]&[end_time]
+```
+#### Path Parameters
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`report`| name of the report used | YES | |
+|`group_type`| type of endpoint group| YES |  |
+|`group_name`| name of endpoint group| YES |  |
+|`service_type`| type of endpoint group| NO |  |
 
-    /status/services/timeline/{group}?[start_time]&[end_time]&[vo]&[profile]&[group_type]
-
-#### Parameters
+#### Url Parameters
 
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
-|`start_time`| UTC time in W3C format| YES ||
-|`end_time`| UTC time in W3C format| YES| |
-|`vo`| vo name | NO | `ops` |
-|`profile`| POEM profile name | NO | `ch.cern.sam.ROC_CRITICAL` |
-|`group_type`| `site` or `ngi` | NO | `site` |
+|`start_time`| UTC time in W3C format| YES |  |
+|`end_time`| UTC time in W3C format| YES |  |
 
-Depending on the `group_type`, `{group}` is the name of the group (for example `HG-03-AUTH` when `group_type=site` or `NGI_GRNET` when `group_type=ngi`).
+___Notes___:
+`group_type` and `group_name` in the specific request refer always to endpoint groups (eg. `SITES`).
+when `service_name` is supplied, the request returns results for a specific service type. Else returns results for all available service types for the specific __endpoint_group__ (and __report__)
 
-### Response
+#### Headers
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
 
-Headers: `Status: 200 OK`
+#### Response Code
+```
+Status: 200 OK
+```
 
-#### Response body
+### Response body
 
-    <root>
-      <profile name="A_POEM">
-        <flavor name="A_FLAVOR" site="A_SITE-NAME" vo="A_VO" roc="A_ROC" monitoring_host="A_MONHOST">
-          <timeline start_time="2014-10-23T00:00:00Z" end_time="2014-10-24T00:00:00Z">
-            <status timestamp="2014-10-23T00:12:34Z" value="OK" />
-            <status timestamp="2014-10-23T01:12:20Z" value="WARNING" />
-            <status timestamp="2014-10-23T02:12:31Z" value="CRITICAL" />
-            <status timestamp="2014-10-23T04:12:25Z" value="OK" />
-            .
-            .
-            .
-            <status timestamp="2014-10-23T23:17:45Z" value="OK" />
-          </timeline>
-        </flavor>
-      </profile>
-    </root>
+##### List All service types:
 
+###### Example Request:
+URL:
+```
+/status/EGI_CRITICAL/SITES/HG-03-AUTH/services?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
+```
+Headers:
+```
+x-api-key:"INSERTTENANTKEYHERE"
+Accept:"application/xml"
+
+```
+###### Example Response:
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+<root>
+	<group name="HG-03-AUTH" type="SITES">
+		<group name="CREAM-CE" type="service">
+			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		</group>
+		<group name="SRMv2" type="service">
+			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		</group>
+	</group>
+</root>
+```
+
+
+#### List specific service type (`service_type=CREAM-CE`):
+
+##### Example Request:
+URL:
+```
+/status/EGI_CRITICAL/SITES/HG-03-AUTH/services/CREAM-CE?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
+```
+Headers:
+```
+x-api-key:"INSERTTENANTKEYHERE"
+Accept:"application/xml"
+
+```
+##### Example Response:
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+
+```
+<root>
+	<group name="HG-03-AUTH" type="SITES">
+		<group name="CREAM-CE" type="service">
+			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
+			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		</group>
+	</group>
+</root>
+```
 
 <a id="4"></a>
 
