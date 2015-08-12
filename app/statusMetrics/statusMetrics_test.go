@@ -23,7 +23,6 @@
 package statusMetrics
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -454,7 +453,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
+
 	// 4. EUDAT JSON REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
@@ -472,7 +471,6 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 }
 
