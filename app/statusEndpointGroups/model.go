@@ -47,7 +47,7 @@ type DataOutput struct {
 
 type rootOUT struct {
 	XMLName        xml.Name            `xml:"root" json:"-"`
-	EndpointGroups []*endpointGroupOUT `json:"endpoint_groups"`
+	EndpointGroups []*endpointGroupOUT `json:"groups"`
 }
 
 type endpointGroupOUT struct {
