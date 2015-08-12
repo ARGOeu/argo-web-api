@@ -285,7 +285,7 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
  </root>`
 
 	respJSON1 := `{
-   "endpoint_groups": [
+   "groups": [
      {
        "name": "HG-03-AUTH",
        "type": "SITES",
@@ -319,7 +319,7 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
    ]
  }`
 	respJSON2 := `{
-   "endpoint_groups": [
+   "groups": [
      {
        "name": "EL-01-AUTH",
        "type": "EUDAT_SITES",
