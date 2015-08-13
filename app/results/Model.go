@@ -65,16 +65,16 @@ type ReportInterface struct {
 
 // ServiceFlavorInterface for mongodb object exchanging
 type ServiceFlavorInterface struct {
-	Name          string  `bson:"name"`
-	Report        string  `bson:"report"`
-	Date          string  `bson:"date"`
-	Type          string  `bson:"type"`
-	Up            float64 `bson:"uptime"`
-	Down          float64 `bson:"downtime"`
-	Unknown       float64 `bson:"unknown"`
-	Availability  float64 `bson:"availability"`
-	Reliability   float64 `bson:"reliability"`
-	SuperGroup    string  `bson:"supergroup"`
+	Name         string  `bson:"name"`
+	Report       string  `bson:"report"`
+	Date         string  `bson:"date"`
+	Type         string  `bson:"type"`
+	Up           float64 `bson:"uptime"`
+	Down         float64 `bson:"downtime"`
+	Unknown      float64 `bson:"unknown"`
+	Availability float64 `bson:"availability"`
+	Reliability  float64 `bson:"reliability"`
+	SuperGroup   string  `bson:"supergroup"`
 }
 
 // EndpointGroupInterface for mongodb object exchanging
@@ -125,7 +125,7 @@ type ServiceFlavor struct {
 	Availability []interface{} `json:"results"`
 }
 
-// EndpointGroup struct for formating xml/json
+// Group struct for formating xml/json
 type Group struct {
 	XMLName      xml.Name      `xml:"group" json:"-"`
 	Name         string        `xml:"name,attr" json:"name"`
@@ -143,10 +143,11 @@ type ServiceFlavorGroup struct {
 
 // SuperGroup struct for formating xml/json
 type SuperGroup struct {
-	XMLName xml.Name      `xml:"group" json:"-"`
-	Name    string        `xml:"name,attr" json:"name"`
-	Type    string        `xml:"type,attr" json:"type"`
-	Results []interface{} `json:"endpoints"`
+	XMLName   xml.Name      `xml:"group" json:"-"`
+	Name      string        `xml:"name,attr" json:"name"`
+	Type      string        `xml:"type,attr" json:"type"`
+	Endpoints []interface{} `json:"endpoints,omitempty"`
+	Results   []interface{} `json:"results,omitempty"`
 }
 
 type root struct {

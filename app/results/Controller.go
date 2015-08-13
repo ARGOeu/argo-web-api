@@ -567,13 +567,11 @@ func DailySuperGroup(filter bson.M) []bson.M {
 			{"date", 1}},
 		}}
 
-	//query := []bson.M{{"$match": q}, {"$group": bson.M{"_id": bson.M{"dt": bson.D{{"$substr", list{"$dt", 0, 8}}}, "n": "$n", "ns": "$ns", "p": "$p"}, "a": bson.M{"$sum": bson.M{"$multiply": list{"$a", "$hs"}}}, 		"r": bson.M{"$sum": bson.M{"$multiply": list{"$r", "$hs"}}}, "hs": bson.M{"$sum": "$hs"}}}, {"$match": bson.M{"hs": bson.M{"$gt": 0}}}, {"$project": bson.M{"dt": "$_id.dt", "n": "$_id.n", "ns": "$_id.ns", "p": 		"$_id.p", "a": bson.M{"$divide": list{"$a", "$hs"}}, "r": bson.M{"$divide": list{"$r", "$hs"}}}}, {"$sort": bson.D{{"p", 1}, {"n", 1}, {"s", 1}, {"dt", 1}}}}
 	return query
 }
 
 // MonthlySuperGroup function to build the MongoDB aggregation query for monthly calculations
 func MonthlySuperGroup(filter bson.M) []bson.M {
-	//PROBABLY THIS LEADS TO THE SAME BUG WE RAN INTO WITH SITES. MUST BE INVESTIGATED!!!!!!!!!!!!
 	filter["availability"] = bson.M{"$gte": 0}
 	filter["reliability"] = bson.M{"$gte": 0}
 	// Mongo aggregation pipeline

@@ -23,6 +23,7 @@
 package results
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -337,7 +338,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 
 	suite.router.ServeHTTP(response, request)
 
-	SuperGrouAvailabitiyXML := ` <root>
+	SuperGrouAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
      <results timestamp="2015-06-22" availability="68.13896116893515" reliability="50.413931144915935"></results>
      <results timestamp="2015-06-23" availability="75.36324059247399" reliability="80.8138510808647"></results>
@@ -347,7 +348,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(SuperGrouAvailabitiyXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGrouAvailabilityXML, response.Body.String(), "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -357,12 +358,12 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 
 	suite.router.ServeHTTP(response, request)
 
-	SuperGrouAvailabitiyJSON := `{
+	SuperGrouAvailabilityJSON := `{
    "root": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
-       "endpoints": [
+       "results": [
          {
            "timestamp": "2015-06-22",
            "availability": "68.13896116893515",
@@ -381,7 +382,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(SuperGrouAvailabitiyJSON, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGrouAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
 }
 
@@ -394,7 +395,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 
 	suite.router.ServeHTTP(response, request)
 
-	SuperGroupAvailabitiyXML := ` <root>
+	SuperGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
      <results timestamp="2015-06-22" availability="68.13896116893515" reliability="50.413931144915935"></results>
      <results timestamp="2015-06-23" availability="75.36324059247399" reliability="80.8138510808647"></results>
@@ -409,7 +410,60 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(SuperGroupAvailabitiyXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	fmt.Println(response.Body.String())
+	SuperGroupAvailabilityJSON := `{
+   "root": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06-22",
+           "availability": "68.13896116893515",
+           "reliability": "50.413931144915935"
+         },
+         {
+           "timestamp": "2015-06-23",
+           "availability": "75.36324059247399",
+           "reliability": "80.8138510808647"
+         }
+       ]
+     },
+     {
+       "name": "GROUP_B",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06-23",
+           "availability": "60.79234972677595",
+           "reliability": "100"
+         },
+         {
+           "timestamp": "2015-06-24",
+           "availability": "40",
+           "reliability": "70"
+         },
+         {
+           "timestamp": "2015-06-25",
+           "availability": "40",
+           "reliability": "70"
+         }
+       ]
+     }
+   ]
+ }`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(SuperGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
 }
 

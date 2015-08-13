@@ -117,7 +117,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 				Name: row.Name,
 				Type: report.EndpointGroupType,
 			}
-			superGroup.Results = append(superGroup.Results, endpointGroup)
+			superGroup.Endpoints = append(superGroup.Endpoints, endpointGroup)
 		}
 		//we append the new availability values
 		endpointGroup.Availability = append(endpointGroup.Availability,
