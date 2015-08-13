@@ -337,10 +337,8 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	// 1. EGI XML REQUEST
 	// init the response placeholder
 	response := httptest.NewRecorder()
-	// Prepare the request object for fist tenant
+	// Prepare the request object for first tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -357,8 +355,6 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -375,8 +371,6 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -393,8 +387,6 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
