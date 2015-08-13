@@ -23,6 +23,7 @@
 package results
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -37,7 +38,7 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-type endpointGroupAvailabilityTestSuite struct {
+type SuperGroupAvailabilityTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
 	router                    *mux.Router
@@ -47,11 +48,12 @@ type endpointGroupAvailabilityTestSuite struct {
 	tenantusername            string
 	tenantstorename           string
 	clientkey                 string
+	respRecomputationsCreated string
 }
 
 // Setup the Test Environment
 // This function runs before any test and setups the environment
-func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
+func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -64,12 +66,12 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "ARGO_test_endpointGroup_availability"
+    db = "ARGO_test_SuperGroup_availability"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.tenantDbConf.Db = "ARGO_test_endpointGroup_availability_tenant"
+	suite.tenantDbConf.Db = "ARGO_test_SuperGroup_availability_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
@@ -93,7 +95,6 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
 				bson.M{
 					"server":   "localhost",
 					"port":     27017,
@@ -213,6 +214,82 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 		bson.M{
 			"report":       "Report_A",
 			"date":         20150623,
+			"name":         "ST04",
+			"type":         "SITE",
+			"supergroup":   "GROUP_B",
+			"uptime":       1,
+			"downtime":     0,
+			"unknown":      0,
+			"availability": 30,
+			"reliability":  100,
+			"weights":      5344,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		},
+		bson.M{
+			"report":       "Report_A",
+			"date":         20150623,
+			"name":         "ST05",
+			"type":         "SITE",
+			"supergroup":   "GROUP_B",
+			"uptime":       0,
+			"downtime":     0,
+			"unknown":      1,
+			"availability": 90,
+			"reliability":  100,
+			"weights":      5634,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		},
+		bson.M{
+			"report":       "Report_A",
+			"date":         20150624,
+			"name":         "ST05",
+			"type":         "SITE",
+			"supergroup":   "GROUP_B",
+			"uptime":       1,
+			"downtime":     0,
+			"unknown":      0,
+			"availability": 40,
+			"reliability":  70,
+			"weights":      5634,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		},
+		bson.M{
+			"report":       "Report_A",
+			"date":         20150625,
+			"name":         "ST05",
+			"type":         "SITE",
+			"supergroup":   "GROUP_B",
+			"uptime":       1,
+			"downtime":     0,
+			"unknown":      0,
+			"availability": 40,
+			"reliability":  70,
+			"weights":      5634,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+		},
+		bson.M{
+			"report":       "Report_A",
+			"date":         20150623,
 			"name":         "ST02",
 			"type":         "SITE",
 			"supergroup":   "GROUP_A",
@@ -251,31 +328,29 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 
 }
 
-// TestListEndpointGroupAvailability test if daily results are returned correctly
-func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailability() {
+// TestListSuperGroupAvailability test if daily results are returned correctly
+func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGroupAvailabilityXML := ` <root>
+	SuperGrouAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
-     <group name="ST01" type="SITE">
-       <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
-       <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
-     </group>
+     <results timestamp="2015-06-22" availability="68.13896116893515" reliability="50.413931144915935"></results>
+     <results timestamp="2015-06-23" availability="75.36324059247399" reliability="80.8138510808647"></results>
    </group>
  </root>`
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGrouAvailabilityXML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -283,33 +358,21 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGroupAvailabilityJSON := `{
+	SuperGrouAvailabilityJSON := `{
    "root": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
-       "endpoints": [
+       "results": [
          {
-           "name": "ST01",
-           "type": "SITE",
-           "results": [
-             {
-               "timestamp": "2015-06-22",
-               "availability": "66.7",
-               "reliability": "54.6",
-               "unknown": "0",
-               "uptime": "1",
-               "downtime": "0"
-             },
-             {
-               "timestamp": "2015-06-23",
-               "availability": "100",
-               "reliability": "100",
-               "unknown": "0",
-               "uptime": "1",
-               "downtime": "0"
-             }
-           ]
+           "timestamp": "2015-06-22",
+           "availability": "68.13896116893515",
+           "reliability": "50.413931144915935"
+         },
+         {
+           "timestamp": "2015-06-23",
+           "availability": "75.36324059247399",
+           "reliability": "80.8138510808647"
          }
        ]
      }
@@ -319,41 +382,93 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGrouAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
 }
 
-// TestListAllEndpointGroupAvailability test if daily results are returned correctly
-func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailability() {
+// TestListAllSuperGroupAvailability test if daily results are returned correctly
+func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
 
-	endpointGroupAvailabilityXML := ` <root>
+	SuperGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
-     <group name="ST01" type="SITE">
-       <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
-       <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
-     </group>
-     <group name="ST02" type="SITE">
-       <results timestamp="2015-06-22" availability="70" reliability="45" unknown="0" uptime="1" downtime="0"></results>
-       <results timestamp="2015-06-23" availability="43.5" reliability="56" unknown="0" uptime="1" downtime="0"></results>
-     </group>
+     <results timestamp="2015-06-22" availability="68.13896116893515" reliability="50.413931144915935"></results>
+     <results timestamp="2015-06-23" availability="75.36324059247399" reliability="80.8138510808647"></results>
+   </group>
+   <group name="GROUP_B" type="GROUP">
+     <results timestamp="2015-06-23" availability="60.79234972677595" reliability="100"></results>
+     <results timestamp="2015-06-24" availability="40" reliability="70"></results>
+     <results timestamp="2015-06-25" availability="40" reliability="70"></results>
    </group>
  </root>`
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(SuperGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	fmt.Println(response.Body.String())
+	SuperGroupAvailabilityJSON := `{
+   "root": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06-22",
+           "availability": "68.13896116893515",
+           "reliability": "50.413931144915935"
+         },
+         {
+           "timestamp": "2015-06-23",
+           "availability": "75.36324059247399",
+           "reliability": "80.8138510808647"
+         }
+       ]
+     },
+     {
+       "name": "GROUP_B",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06-23",
+           "availability": "60.79234972677595",
+           "reliability": "100"
+         },
+         {
+           "timestamp": "2015-06-24",
+           "availability": "40",
+           "reliability": "70"
+         },
+         {
+           "timestamp": "2015-06-25",
+           "availability": "40",
+           "reliability": "70"
+         }
+       ]
+     }
+   ]
+ }`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(SuperGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
 }
 
 //TearDownTest to tear down every test
-func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
+func (suite *SuperGroupAvailabilityTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()
@@ -374,7 +489,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 }
 
 //TearDownTest to tear down every test
-func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
+func (suite *SuperGroupAvailabilityTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()
@@ -387,7 +502,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
 
 }
 
-// TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestEndpointGroupsTestSuite(t *testing.T) {
-	suite.Run(t, new(endpointGroupAvailabilityTestSuite))
+// TestRecompuptationsTestSuite is responsible for calling the tests
+func TestSuperGroupResultsTestSuite(t *testing.T) {
+	suite.Run(t, new(SuperGroupAvailabilityTestSuite))
 }

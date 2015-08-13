@@ -65,21 +65,35 @@ type ReportInterface struct {
 
 // ServiceFlavorInterface for mongodb object exchanging
 type ServiceFlavorInterface struct {
-	Name          string  `bson:"name"`
-	Report        string  `bson:"report"`
-	Date          string  `bson:"date"`
-	Type          string  `bson:"type"`
-	Up            float64 `bson:"uptime"`
-	Down          float64 `bson:"downtime"`
-	Unknown       float64 `bson:"unknown"`
-	Availability  float64 `bson:"availability"`
-	Reliability   float64 `bson:"reliability"`
-	SuperGroup    string  `bson:"supergroup"`
+	Name         string  `bson:"name"`
+	Report       string  `bson:"report"`
+	Date         string  `bson:"date"`
+	Type         string  `bson:"type"`
+	Up           float64 `bson:"uptime"`
+	Down         float64 `bson:"downtime"`
+	Unknown      float64 `bson:"unknown"`
+	Availability float64 `bson:"availability"`
+	Reliability  float64 `bson:"reliability"`
+	SuperGroup   string  `bson:"supergroup"`
 }
 
 // EndpointGroupInterface for mongodb object exchanging
 type EndpointGroupInterface struct {
 	Name         string  `bson:"name"`
+	Report       string  `bson:"report"`
+	Date         string  `bson:"date"`
+	Type         string  `bson:"type"`
+	Up           float64 `bson:"uptime"`
+	Down         float64 `bson:"downtime"`
+	Unknown      float64 `bson:"unknown"`
+	Availability float64 `bson:"availability"`
+	Reliability  float64 `bson:"reliability"`
+	Weights      string  `bson:"weights"`
+	SuperGroup   string  `bson:"supergroup"`
+}
+
+// SuperGroupInterface for mongodb object exchanging
+type SuperGroupInterface struct {
 	Report       string  `bson:"report"`
 	Date         string  `bson:"date"`
 	Type         string  `bson:"type"`
@@ -98,9 +112,9 @@ type Availability struct {
 	Timestamp    string   `xml:"timestamp,attr" json:"timestamp"`
 	Availability string   `xml:"availability,attr" json:"availability"`
 	Reliability  string   `xml:"reliability,attr" json:"reliability"`
-	Unknown      string   `xml:"unknown,attr" json:"unknown"`
-	Uptime       string   `xml:"uptime,attr" json:"uptime"`
-	Downtime     string   `xml:"downtime,attr" json:"downtime"`
+	Unknown      string   `xml:"unknown,attr,omitempty" json:"unknown,omitempty"`
+	Uptime       string   `xml:"uptime,attr,omitempty" json:"uptime,omitempty"`
+	Downtime     string   `xml:"downtime,attr,omitempty" json:"downtime,omitempty"`
 }
 
 // ServiceFlavor struct for formating xml/json
@@ -111,8 +125,8 @@ type ServiceFlavor struct {
 	Availability []interface{} `json:"results"`
 }
 
-// EndpointGroup struct for formating xml/json
-type EndpointGroup struct {
+// Group struct for formating xml/json
+type Group struct {
 	XMLName      xml.Name      `xml:"group" json:"-"`
 	Name         string        `xml:"name,attr" json:"name"`
 	Type         string        `xml:"type,attr" json:"type"`
@@ -129,10 +143,11 @@ type ServiceFlavorGroup struct {
 
 // SuperGroup struct for formating xml/json
 type SuperGroup struct {
-	XMLName       xml.Name      `xml:"group" json:"-"`
-	Name          string        `xml:"name,attr" json:"name"`
-	Type          string        `xml:"type,attr" json:"type"`
-	EndpointGroup []interface{} `json:"endpoints"`
+	XMLName   xml.Name      `xml:"group" json:"-"`
+	Name      string        `xml:"name,attr" json:"name"`
+	Type      string        `xml:"type,attr" json:"type"`
+	Endpoints []interface{} `json:"endpoints,omitempty"`
+	Results   []interface{} `json:"results,omitempty"`
 }
 
 type root struct {
