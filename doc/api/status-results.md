@@ -106,7 +106,8 @@ Reponse body:
 ```
 
 
-#### List specific metric (`metric_name=emi.cream.CREAM-CE-JobSubmit`):
+#### List specific metric 
+(`metric_name=emi.cream.CREAM-CE-JobSubmit`):
 
 ##### Example Request:
 URL:
@@ -230,7 +231,8 @@ Reponse body:
 ```
 
 
-#### List specific metric (`hostname=cream01.afroditi.gr`):
+#### List specific endpoint
+(`hostname=cream01.afroditi.gr`):
 
 ##### Example Request:
 URL:
@@ -352,7 +354,8 @@ Reponse body:
 ```
 
 
-#### List specific service type (`service_type=CREAM-CE`):
+#### List specific service type 
+(`service_type=CREAM-CE`):
 
 ##### Example Request:
 URL:
@@ -465,7 +468,8 @@ Reponse body:
 ```
 
 
-#### List specific endpoint group (`group_name=HG-03-AUTH`):
+#### List specific endpoint group 
+(`group_name=HG-03-AUTH`):
 
 ##### Example Request:
 URL:
