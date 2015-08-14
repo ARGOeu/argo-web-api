@@ -20,7 +20,7 @@
  *
  */
 
-package statusMetrics
+package statusServices
 
 import (
 	"net/http"
@@ -40,7 +40,7 @@ import (
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
-type StatusMetricsTestSuite struct {
+type StatusServicesTestSuite struct {
 	suite.Suite
 	cfg          config.Config
 	router       *mux.Router
@@ -54,7 +54,7 @@ type StatusMetricsTestSuite struct {
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
-func (suite *StatusMetricsTestSuite) SetupTest() {
+func (suite *StatusServicesTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -67,7 +67,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argotest_metrics"
+    db = "argotest_services"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -100,7 +100,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_metrics_egi",
+				"database": "argotest_services_egi",
 				"username": "",
 				"password": ""},
 		},
@@ -118,7 +118,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_metrics_eudat",
+				"database": "argotest_services_eudat",
 				"username": "",
 				"password": ""},
 		},
@@ -133,7 +133,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
@@ -161,18 +161,14 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
 		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
-		"prev_timestamp": "2015-04-30T22:00:00Z",
-		"prev_status":    "WARNING",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
@@ -180,11 +176,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
-		"prev_timestamp": "2015-05-01T00:00:00Z",
-		"prev_status":    "CRITICAL",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
@@ -192,18 +184,14 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
-		"prev_timestamp": "2015-05-01T01:00:00Z",
-		"prev_status":    "CRITICAL",
 	})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
@@ -231,18 +219,14 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
 		"date_int":       20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
-		"prev_timestamp": "2015-04-30T22:00:00Z",
-		"prev_status":    "WARNING",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
@@ -250,11 +234,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
-		"prev_timestamp": "2015-05-01T00:00:00Z",
-		"prev_status":    "OK",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
@@ -262,27 +242,18 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
-		"prev_timestamp": "2015-05-01T01:00:00Z",
-		"prev_status":    "WARNING",
 	})
 
 }
 
-func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
+func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	respXML1 := ` <root>
    <group name="HG-03-AUTH" type="SITES">
      <group name="CREAM-CE" type="service">
-       <group name="cream01.afroditi.gr" type="endpoint">
-         <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
      </group>
    </group>
  </root>`
@@ -290,14 +261,9 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	respXML2 := ` <root>
    <group name="EL-01-AUTH" type="EUDAT_SITES">
      <group name="srv.typeA" type="service">
-       <group name="host01.eudat.gr" type="endpoint">
-         <group name="typeA.metric.Memory" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
      </group>
    </group>
  </root>`
@@ -311,34 +277,18 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
          {
            "name": "CREAM-CE",
            "type": "service",
-           "endpoints": [
+           "statuses": [
              {
-               "name": "cream01.afroditi.gr",
-               "type": "endpoint",
-               "metrics": [
-                 {
-                   "name": "emi.cream.CREAMCE-JobSubmit",
-                   "type": "metric",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
+               "timestamp": "2015-05-01T00:00:00Z",
+               "value": "OK"
+             },
+             {
+               "timestamp": "2015-05-01T01:00:00Z",
+               "value": "CRITICAL"
+             },
+             {
+               "timestamp": "2015-05-01T05:00:00Z",
+               "value": "OK"
              }
            ]
          }
@@ -356,34 +306,18 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
          {
            "name": "srv.typeA",
            "type": "service",
-           "endpoints": [
+           "statuses": [
              {
-               "name": "host01.eudat.gr",
-               "type": "endpoint",
-               "metrics": [
-                 {
-                   "name": "typeA.metric.Memory",
-                   "type": "metric",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
+               "timestamp": "2015-05-01T00:00:00Z",
+               "value": "OK"
+             },
+             {
+               "timestamp": "2015-05-01T01:00:00Z",
+               "value": "CRITICAL"
+             },
+             {
+               "timestamp": "2015-05-01T05:00:00Z",
+               "value": "OK"
              }
            ]
          }
@@ -393,11 +327,11 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
  }`
 
 	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
+		"/services/CREAM-CE" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA/endpoints/host01.eudat.gr/metrics/typeA.metric.Memory" +
+		"/services/srv.typeA" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
@@ -469,16 +403,16 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-func (suite *StatusMetricsTestSuite) TearDownTest() {
+func (suite *StatusServicesTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
-	session.DB("argotest_metrics").DropDatabase()
-	session.DB("argotest_metrics_eudat").DropDatabase()
-	session.DB("argotest_metrics_egi").DropDatabase()
+	session.DB("argotest_services").DropDatabase()
+	session.DB("argotest_services_eudat").DropDatabase()
+	session.DB("argotest_services_egi").DropDatabase()
 }
 
 // This is the first function called when go test is issued
-func TestStatusMetricsSuite(t *testing.T) {
-	suite.Run(t, new(StatusMetricsTestSuite))
+func TestStatusServicesSuite(t *testing.T) {
+	suite.Run(t, new(StatusServicesTestSuite))
 }
