@@ -133,7 +133,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
@@ -197,7 +197,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
@@ -366,8 +366,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	response := httptest.NewRecorder()
 	// Prepare the request object for fist tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -384,8 +382,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -402,8 +398,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -420,8 +414,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
