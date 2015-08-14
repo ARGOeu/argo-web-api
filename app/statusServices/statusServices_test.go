@@ -133,7 +133,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
@@ -191,7 +191,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant

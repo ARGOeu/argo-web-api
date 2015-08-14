@@ -45,8 +45,9 @@ import (
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
-	{"Status timelines", "/status", statusMetrics.HandleSubrouter},
-	{"Status timelines", "/status", statusServices.HandleSubrouter},
+	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
+	{"Status service timelines", "/status", statusServices.HandleSubrouter},
+	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
 }
 
 var routes = []Route{
@@ -97,7 +98,4 @@ var routes = []Route{
 
 	//Status Endpoints
 	{"status endpoint list", "GET", "/status/endpoints/timeline/{hostname}/{service_type}", statusEndpoints.List},
-
-	//Status Sites
-	{"status endpoint group list", "GET", "/status/sites/timeline/{group}", statusEndpointGroups.List},
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,22 +16,21 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package statusEndpointGroups
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"code.google.com/p/gcfg"
+	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
@@ -40,19 +39,22 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-type StatusEndpointGroupTestSuite struct {
+// This is a util. suite struct used in tests (see pkg "testify")
+type StatusEndpointGroupsTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    mux.Router
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
 }
 
-// SetupTest adds the required entries in the database and
-// give the required values to the StatusEndpointGroupTestSuite struct
-func (suite *StatusEndpointGroupTestSuite) SetupTest() {
+// Setup the Test Environment
+// This function runs before any test and setups the environment
+// A test configuration object is instantiated using a reference
+// to testdb: argo_test_details. Also here is are instantiated some expected
+// xml response validation messages (authorization,crud responses).
+// Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
+func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -65,161 +67,327 @@ func (suite *StatusEndpointGroupTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_core_status_site"
-    `
-
-	suite.respUnauthorized = "Unauthorized"
-	suite.clientkey = "mysecretcombination"
-	suite.tenantDbConf = config.MongoConfig{
-		Host:     "127.0.0.1",
-		Port:     27017,
-		Db:       "argo_egi_test_status_site",
-		Username: "johndoe",
-		Password: "h4shp4ss",
-		Store:    "ar",
-	}
+    db = "argotest_egroups"
+`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+	// Create router and confhandler for test
+	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/status").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
 
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
+	// Connect to mongo testdb
+	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
-		bson.M{"name": "Westeros",
-			"db_conf": []bson.M{
+	// Add authentication token to mongo testdb
+	seedAuth := bson.M{"api_key": "S3CR3T"}
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
 
-				bson.M{
-					"server":   "localhost",
-					"port":     27017,
-					"database": "argo_Westeros1",
-				},
-				bson.M{
-					"server":   "localhost",
-					"port":     27017,
-					"database": "argo_Westeros2",
-				},
-			},
-			"users": []bson.M{
-
-				bson.M{
-					"name":    "John Snow",
-					"email":   "J.Snow@brothers.wall",
-					"api_key": "wh1t3_w@lk3rs",
-				},
-				bson.M{
-					"name":    "King Joffrey",
-					"email":   "g0dk1ng@kingslanding.gov",
-					"api_key": "sansa <3",
-				},
-			}})
-	c.Insert(
-		bson.M{"name": "EGI",
-			"db_conf": []bson.M{
-
-				bson.M{
-					// "store":    "ar",
-					"server":   "localhost",
-					"port":     27017,
-					"database": suite.tenantDbConf.Db,
-					"username": suite.tenantDbConf.Username,
-					"password": suite.tenantDbConf.Password,
-				},
-				bson.M{
-					"server":   "localhost",
-					"port":     27017,
-					"database": "argo_egi_metric_data",
-				},
-			},
-			"users": []bson.M{
-
-				bson.M{
-					"name":    "Joe Complex",
-					"email":   "C.Joe@egi.eu",
-					"api_key": suite.clientkey,
-				},
-				bson.M{
-					"name":    "Josh Plain",
-					"email":   "P.Josh@egi.eu",
-					"api_key": "itsamysterytoyou",
-				},
-			}})
-
-	c = session.DB(suite.tenantDbConf.Db).C("status_endpointgroups")
-	c.Insert(
-		bson.M{
-			"job":             "JOB_A",
-			"supergroup":      "NGI_GRNET",
-			"name":            "GR-01-AUTH",
-			"timestamp":       "2015-01-06T00:00:41Z",
-			"status":          "OK",
-			"previous_status": "OK",
-			"date_integer":    20150106,
-			"time_integer":    41,
-		})
-	c.Insert(
-		bson.M{
-			"job":             "JOB_A",
-			"supergroup":      "NGI_GRNET",
-			"name":            "GR-01-AUTH",
-			"timestamp":       "2015-01-06T00:05:00Z",
-			"status":          "CRITICAL",
-			"previous_status": "OK",
-			"date_integer":    20150106,
-			"time_integer":    500,
-		})
-	c.Insert(
-		bson.M{
-			"job":             "JOB_A",
-			"supergroup":      "NGI_GRNET",
-			"name":            "GR-01-AUTH",
-			"timestamp":       "2015-01-06T00:12:00Z",
-			"status":          "OK",
-			"previous_status": "CRITICAL",
-			"date_integer":    20150106,
-			"time_integer":    1200,
-		})
-}
-
-//TestListStatusEndpointGroup tests the correct formatting when listing Sites' statuses
-func (suite *StatusEndpointGroupTestSuite) TestListStatusEndpointGroup() {
-	query := "?start_time=2015-01-06T00:00:00Z&end_time=2015-01-06T23:59:59Z&job=JOB_A&supergroup_name=NGI_GRNET"
-	request, _ := http.NewRequest("GET", "/api/v1/status/sites/timeline/GR-01-AUTH"+query, strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ := List(request, suite.cfg)
-	statusEndpointGroupRequestXML := ` <root>
-   <Job name="JOB_A">
-     <EndpointGroup name="GR-01-AUTH">
-       <Status timestamp="2015-01-06T00:00:41Z" Status="OK" PreviousStatus="OK"></Status>
-       <Status timestamp="2015-01-06T00:05:00Z" Status="CRITICAL" PreviousStatus="OK"></Status>
-       <Status timestamp="2015-01-06T00:12:00Z" Status="OK" PreviousStatus="CRITICAL"></Status>
-     </EndpointGroup>
-   </Job>
- </root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Regexp(statusEndpointGroupRequestXML, string(output), "Response body mismatch")
-}
-
-//TearDownTest to tear down every test
-func (suite *StatusEndpointGroupTestSuite) TearDownTest() {
-
+	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
 		panic(err)
 	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	defer session.Close()
+
+	// seed a tenant to use
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	c.Insert(bson.M{
+		"name": "EGI",
+		"db_conf": []bson.M{
+			bson.M{
+				"store":    "main",
+				"server":   "localhost",
+				"port":     27017,
+				"database": "argotest_egroups_egi",
+				"username": "",
+				"password": ""},
+		},
+		"users": []bson.M{
+			bson.M{
+				"name":    "egi_user",
+				"email":   "egi_user@email.com",
+				"api_key": "KEY1"},
+		}})
+
+	c.Insert(bson.M{
+		"name": "EUDAT",
+		"db_conf": []bson.M{
+			bson.M{
+				"store":    "main",
+				"server":   "localhost",
+				"port":     27017,
+				"database": "argotest_egroups_eudat",
+				"username": "",
+				"password": ""},
+		},
+		"users": []bson.M{
+			bson.M{
+				"name":    "eudat_user",
+				"email":   "eudat_user@email.com",
+				"api_key": "KEY2"},
+		}})
+
+	// get dbconfiguration based on the tenant
+	// Prepare the request object
+	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// authenticate user's api key and find corresponding tenant
+	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+
+	// Now seed the report DEFINITIONS
+	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c.Insert(bson.M{
+		"name":            "ROC_CRITICAL",
+		"tenant":          "EGI",
+		"endpoint_group":  "SITES",
+		"group_of_groups": "NGI",
+		"profiles": []bson.M{
+			bson.M{
+				"name":  "metric",
+				"value": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
+
+	// seed the status detailed metric data
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
+	c.Insert(bson.M{
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"status":         "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T01:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"status":         "CRITICAL",
+	})
+	c.Insert(bson.M{
+		"report":         "ROC_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T05:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"status":         "OK",
+	})
+
+	// get dbconfiguration based on the tenant
+	// Prepare the request object
+	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Content-Type", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// authenticate user's api key and find corresponding tenant
+	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+
+	// Now seed the reports DEFINITIONS
+	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c.Insert(bson.M{
+		"name":            "EUDAT_CRITICAL",
+		"tenant":          "EUDAT",
+		"endpoint_group":  "EUDAT_SITES",
+		"group_of_groups": "EUDAT_GROUPS",
+		"profiles": []bson.M{
+			bson.M{
+				"name":  "metric",
+				"value": "eudat.CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
+
+	// seed the status detailed metric data
+	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
+	c.Insert(bson.M{
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"status":         "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T01:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"status":         "CRITICAL",
+	})
+	c.Insert(bson.M{
+		"report":         "EUDAT_CRITICAL",
+		"date_int":       20150501,
+		"timestamp":      "2015-05-01T05:00:00Z",
+		"endpoint_group": "EL-01-AUTH",
+		"status":         "OK",
+	})
 
 }
 
-func TestRecompuptationsTestSuite(t *testing.T) {
-	suite.Run(t, new(StatusEndpointGroupTestSuite))
+func (suite *StatusEndpointGroupsTestSuite) TestListStatusEndpointGroups() {
+	respXML1 := ` <root>
+   <group name="HG-03-AUTH" type="SITES">
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   </group>
+ </root>`
+
+	respXML2 := ` <root>
+   <group name="EL-01-AUTH" type="EUDAT_SITES">
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   </group>
+ </root>`
+
+	respJSON1 := `{
+   "groups": [
+     {
+       "name": "HG-03-AUTH",
+       "type": "SITES",
+       "statuses": [
+         {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+         },
+         {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+         },
+         {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+         }
+       ]
+     }
+   ]
+ }`
+	respJSON2 := `{
+   "groups": [
+     {
+       "name": "EL-01-AUTH",
+       "type": "EUDAT_SITES",
+       "statuses": [
+         {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+         },
+         {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+         },
+         {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+         }
+       ]
+     }
+   ]
+ }`
+
+	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	// 1. EGI XML REQUEST
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for fist tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add accept xml header
+	request.Header.Set("Accept", "application/xml")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respXML1, response.Body.String(), "Response body mismatch")
+
+	// 2. EUDAT XML REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add accept xml header
+	request.Header.Set("Accept", "application/xml")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respXML2, response.Body.String(), "Response body mismatch")
+
+	// 3. EGI JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+	// 4. EUDAT JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+}
+
+// This function is actually called in the end of all tests
+// and clears the test environment.
+// Mainly it's purpose is to drop the testdb
+func (suite *StatusEndpointGroupsTestSuite) TearDownTest() {
+
+	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+
+	session.DB("argotest_egroups").DropDatabase()
+	session.DB("argotest_egroups_eudat").DropDatabase()
+	session.DB("argotest_egroups_egi").DropDatabase()
+}
+
+// This is the first function called when go test is issued
+func TestStatusEndpointGroupsSuite(t *testing.T) {
+	suite.Run(t, new(StatusEndpointGroupsTestSuite))
 }
