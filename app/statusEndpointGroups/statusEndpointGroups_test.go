@@ -40,7 +40,7 @@ import (
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
-type StatusServicesTestSuite struct {
+type StatusEndpointGroupsTestSuite struct {
 	suite.Suite
 	cfg          config.Config
 	router       *mux.Router
@@ -54,7 +54,7 @@ type StatusServicesTestSuite struct {
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
-func (suite *StatusServicesTestSuite) SetupTest() {
+func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 
 	const testConfig = `
     [server]
@@ -133,7 +133,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
@@ -188,7 +188,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Prepare the request object
 	request, _ = http.NewRequest("GET", "", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
@@ -241,7 +241,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 
 }
 
-func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
+func (suite *StatusEndpointGroupsTestSuite) TestListStatusEndpointGroups() {
 	respXML1 := ` <root>
    <group name="HG-03-AUTH" type="SITES">
      <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
@@ -314,8 +314,6 @@ func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 	response := httptest.NewRecorder()
 	// Prepare the request object for fist tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -332,8 +330,6 @@ func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
 	// add the authentication token which is seeded in testdb
@@ -350,8 +346,6 @@ func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -368,8 +362,6 @@ func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -386,7 +378,7 @@ func (suite *StatusServicesTestSuite) TestListStatusEndpointGroups() {
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-func (suite *StatusServicesTestSuite) TearDownTest() {
+func (suite *StatusEndpointGroupsTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
@@ -396,6 +388,6 @@ func (suite *StatusServicesTestSuite) TearDownTest() {
 }
 
 // This is the first function called when go test is issued
-func TestStatusServicesSuite(t *testing.T) {
-	suite.Run(t, new(StatusServicesTestSuite))
+func TestStatusEndpointGroupsSuite(t *testing.T) {
+	suite.Run(t, new(StatusEndpointGroupsTestSuite))
 }
