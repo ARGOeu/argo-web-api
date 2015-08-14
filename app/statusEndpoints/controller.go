@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package statusEndpoints
@@ -36,91 +32,99 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 	"labix.org/v2/mgo/bson"
 )
 
-// List the endpoint status details
-func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+// ListMetricTimelines returns a list of metric timelines
+func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("Hello there!")
+	output := []byte("List Endpoint Timelines")
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	input := InputParams{
+		urlValues.Get("start_time"),
+		urlValues.Get("end_time"),
+		vars["report_name"],
+		vars["group_type"],
+		vars["group_name"],
+		vars["service_name"],
+		vars["endpoint_name"],
+		r.Header.Get("Accept"),
+	}
+
+	// Handle response format based on Accept Header
+	// Default is application/xml
+	if strings.EqualFold(input.format, "application/json") {
+		contentType = "application/json"
+	}
+
+	// Call authenticateTenant to check the api key and retrieve
+	// the correct tenant db conf
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
+
+	// Mongo Session
+	results := []DataOutput{}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
+	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoints")
+
+	// Query the detailed metric results
+	err = metricCollection.Find(prepareQuery(input)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// URL PATH_VALUES
-	urlPath := r.URL.Path
-	hostname := strings.Split(urlPath, "/")[6]
-	service_type := strings.Split(urlPath, "/")[7]
-
-	urlValues := r.URL.Query()
-
-	input := StatusEndpointsInput{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
-		urlValues.Get("job"),
-		hostname,
-		service_type,
-	}
-
-	// Mongo Session
-	results := []StatusEndpointsOutput{}
-
-	c := session.DB(tenantDbConfig.Db).C("status_endpoints")
-	err = c.Find(prepQuery(input)).All(&results)
-
 	output, err = createView(results, input) //Render the results into XML format
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
 	return code, h, output, err
 }
 
-func prepQuery(input StatusEndpointsInput) bson.M {
+func prepareQuery(input InputParams) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	ts, _ := time.Parse(zuluForm, input.start_time)
-	te, _ := time.Parse(zuluForm, input.end_time)
+	ts, _ := time.Parse(zuluForm, input.startTime)
+	te, _ := time.Parse(zuluForm, input.endTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
-	teInt := (te.Hour() * 10000) + (te.Minute() * 100) + te.Second()
-
-	query := bson.M{
-		"job":            input.job,
-		"date_int":       tsYMD,
-		"hostname":       input.hostname,
-		"service":        input.service_type,
-		"time_int":       bson.M{"$gte": tsInt, "$lte": teInt},
+	// prepare the match filter
+	filter := bson.M{
+		"date_int":       bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"report":         input.report,
+		"endpoint_group": input.group,
+		"service":        input.service,
 	}
 
-	return query
+	if len(input.hostname) > 0 {
+		filter["hostname"] = input.hostname
+	}
 
+	return filter
 }
