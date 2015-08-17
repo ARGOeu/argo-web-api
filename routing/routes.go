@@ -28,7 +28,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
-	"github.com/ARGOeu/argo-web-api/app/metric_result"
+	"github.com/ARGOeu/argo-web-api/app/metricResult"
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
@@ -44,7 +44,7 @@ import (
 
 var subroutes = []SubRouter{
 	{"Results", "/results", results.HandleSubrouter},
-	{"Metric Result", "/metric_result", metric_result.HandleSubrouter},
+	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
 	{"Status service timelines", "/status", statusServices.HandleSubrouter},
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
