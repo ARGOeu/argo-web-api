@@ -20,7 +20,7 @@
  *
  */
 
-package metric_result
+package metricResult
 
 import (
 	"github.com/ARGOeu/argo-web-api/respond"
