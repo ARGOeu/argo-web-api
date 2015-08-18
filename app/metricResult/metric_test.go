@@ -42,11 +42,11 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type metricResultTestSuite struct {
 	suite.Suite
-	cfg              config.Config
-	router           *mux.Router
-	confHandler      respond.ConfHandler
-	tenantDbConf     config.MongoConfig
-	clientkey        string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -131,58 +131,46 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_int":            20150501,
-		"timestamp":           "2015-05-01T00:00:00Z",
-		"supergroup":          "NGI_GRNET",
-		"endpoint_group":      "HG-03-AUTH",
-		"group_type":          "NGI",
-		"endpoint_group_type": "SITES",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "OK",
-		"time_int":            0,
-		"prev_status":         "OK",
-		"prev_timestamp":      "2015-04-30T23:59:00Z",
-		"summary":             "Cream status is ok",
-		"message":             "Cream job submission test return value of ok",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T00:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "OK",
+		"time_integer":       0,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-04-30T23:59:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_int":            20150501,
-		"timestamp":           "2015-05-01T01:00:00Z",
-		"supergroup":          "NGI_GRNET",
-		"endpoint_group":      "HG-03-AUTH",
-		"group_type":          "NGI",
-		"endpoint_group_type": "SITES",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "CRITICAL",
-		"time_int":            10000,
-		"prev_status":         "OK",
-		"prev_timestamp":      "2015-05-01T00:00:00Z",
-		"summary":             "Cream status is CRITICAL",
-		"message":             "Cream job submission test failed",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T01:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "CRITICAL",
+		"time_integer":       10000,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-05-01T00:00:00Z",
+		"summary":            "Cream status is CRITICAL",
+		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"report":              "ROC_CRITICAL",
-		"date_int":            20150501,
-		"timestamp":           "2015-05-01T05:00:00Z",
-		"supergroup":          "NGI_GRNET",
-		"endpoint_group":      "HG-03-AUTH",
-		"group_type":          "NGI",
-		"endpoint_group_type": "SITES",
-		"service":             "CREAM-CE",
-		"hostname":            "cream01.afroditi.gr",
-		"metric":              "emi.cream.CREAMCE-JobSubmit",
-		"status":              "OK",
-		"time_int":            50000,
-		"prev_status":         "CRITICAL",
-		"prev_timestamp":      "2015-05-01T01:00:00Z",
-		"summary":             "Cream status is ok",
-		"message":             "Cream job submission test return value of ok",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T05:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "OK",
+		"time_integer":       50000,
+		"previous_state":     "CRITICAL",
+		"previous_timestamp": "2015-05-01T01:00:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
 	})
 
 }
@@ -269,5 +257,3 @@ func (suite *metricResultTestSuite) TearDownTest() {
 func TestMetricResultSuite(t *testing.T) {
 	suite.Run(t, new(metricResultTestSuite))
 }
-
-

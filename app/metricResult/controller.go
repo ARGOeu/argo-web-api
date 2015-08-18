@@ -115,10 +115,10 @@ func prepQuery(input metricResultQuery) bson.M {
 	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 
 	query := bson.M{
-		"date_int": tsYMD,
-		"hostname": input.EndpointName,
-		"metric":   input.MetricName,
-		"time_int": tsInt,
+		"date_integer": tsYMD,
+		"host":         input.EndpointName,
+		"metric":       input.MetricName,
+		"time_integer": tsInt,
 	}
 
 	return query

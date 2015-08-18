@@ -25,20 +25,20 @@ package metricResult
 import "encoding/xml"
 
 type metricResultQuery struct {
-	EndpointName        string `bson:"hostname"`
-	MetricName          string `bson:"metric_name"`
-	Format              string `bson:"-"`
-	ExecTime            string `bson:"exec_time"`   // UTC time in W3C format
+	EndpointName string `bson:"hostname"`
+	MetricName   string `bson:"metric_name"`
+	Format       string `bson:"-"`
+	ExecTime     string `bson:"exec_time"` // UTC time in W3C format
 }
 
 // metricResultOutput structure holds mongo results
 type metricResultOutput struct {
-	Timestamp         string `bson:"timestamp"`
-	Hostname          string `bson:"hostname"`
-	Metric            string `bson:"metric"`
-	Status            string `bson:"status"`
-	Summary           string `bson:"summary"`
-	Message           string `bson:"message"`
+	Timestamp string `bson:"timestamp"`
+	Hostname  string `bson:"host"`
+	Metric    string `bson:"metric"`
+	Status    string `bson:"status"`
+	Summary   string `bson:"summary"`
+	Message   string `bson:"message"`
 }
 
 // HostXML struct used as xml block
@@ -50,8 +50,8 @@ type HostXML struct {
 
 // MetricXML struct used as xml block
 type MetricXML struct {
-	XMLName  xml.Name `xml:"metric" json:"-"`
-	Name     string   `xml:"name,attr"`
+	XMLName xml.Name `xml:"metric" json:"-"`
+	Name    string   `xml:"name,attr"`
 	Details []*StatusXML
 }
 
@@ -68,4 +68,3 @@ type root struct {
 	XMLName xml.Name      `xml:"root" json:"-"`
 	Result  []interface{} `json:"root"`
 }
-
