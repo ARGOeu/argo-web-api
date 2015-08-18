@@ -34,7 +34,7 @@ type metricResultQuery struct {
 // metricResultOutput structure holds mongo results
 type metricResultOutput struct {
 	Timestamp         string `bson:"timestamp"`
-	Hostname          string `bson:"hostname"`
+	Hostname          string `bson:"host"`
 	Metric            string `bson:"metric"`
 	Status            string `bson:"status"`
 	Summary           string `bson:"summary"`
