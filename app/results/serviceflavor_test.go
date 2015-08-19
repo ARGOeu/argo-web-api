@@ -189,6 +189,23 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 		},
 		bson.M{
 			"report":       "Report_A",
+			"date":         20150622,
+			"name":         "SF03",
+			"supergroup":   "ST02",
+			"up":           0.96875,
+			"down":         0,
+			"unknown":      0,
+			"availability": 96.875,
+			"reliability":  96.875,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "production",
+					"value": "Y",
+				},
+			},
+		},
+		bson.M{
+			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "SF01",
 			"supergroup":   "ST01",
