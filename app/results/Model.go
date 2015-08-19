@@ -102,7 +102,7 @@ type SuperGroupInterface struct {
 	Unknown      float64 `bson:"unknown"`
 	Availability float64 `bson:"availability"`
 	Reliability  float64 `bson:"reliability"`
-	Weights      string  `bson:"weights"`
+	Weights      string  `bson:"weight"`
 	SuperGroup   string  `bson:"supergroup"`
 }
 

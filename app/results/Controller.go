@@ -536,8 +536,8 @@ func DailySuperGroup(filter bson.M) []bson.M {
 			"reliability":  1,
 			"report":       1,
 			"supergroup":   1,
-			"weights": bson.M{
-				"$add": list{"$weights", 1}}},
+			"weight": bson.M{
+				"$add": list{"$weight", 1}}},
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
@@ -546,20 +546,20 @@ func DailySuperGroup(filter bson.M) []bson.M {
 				"report":     "$report"},
 			"availability": bson.M{
 				"$sum": bson.M{
-					"$multiply": list{"$availability", "$weights"}}},
+					"$multiply": list{"$availability", "$weight"}}},
 			"reliability": bson.M{
 				"$sum": bson.M{
-					"$multiply": list{"$reliability", "$weights"}}},
-			"weights": bson.M{"$sum": "$weights"}},
+					"$multiply": list{"$reliability", "$weight"}}},
+			"weight": bson.M{"$sum": "$weight"}},
 		},
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"supergroup": "$_id.supergroup",
 			"report":     "$_id.report",
 			"availability": bson.M{
-				"$divide": list{"$availability", "$weights"}},
+				"$divide": list{"$availability", "$weight"}},
 			"reliability": bson.M{
-				"$divide": list{"$reliability", "$weights"}}},
+				"$divide": list{"$reliability", "$weight"}}},
 		},
 		{"$sort": bson.D{
 			{"report", 1},
@@ -598,27 +598,27 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 			"reliability":  1,
 			"report":       1,
 			"supergroup":   1,
-			"weights": bson.M{
-				"$add": list{"$weights", 1}}},
+			"weight": bson.M{
+				"$add": list{"$weight", 1}}},
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
 				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weights"}}},
-			"reliability":  bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weights"}}},
-			"weights":      bson.M{"$sum": "$weights"}},
+			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weight"}}},
+			"reliability":  bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weight"}}},
+			"weight":       bson.M{"$sum": "$weight"}},
 		},
 		{"$match": bson.M{
-			"weights": bson.M{"$gt": 0}},
+			"weight": bson.M{"$gt": 0}},
 		},
 		{"$project": bson.M{
 			"date":         "$_id.date",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report",
-			"availability": bson.M{"$divide": list{"$availability", "$weights"}},
-			"reliability":  bson.M{"$divide": list{"$reliability", "$weights"}}},
+			"availability": bson.M{"$divide": list{"$availability", "$weight"}},
+			"reliability":  bson.M{"$divide": list{"$reliability", "$weight"}}},
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
