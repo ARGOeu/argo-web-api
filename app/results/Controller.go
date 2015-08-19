@@ -115,6 +115,10 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		filter["name"] = input.Name
 	}
 
+	if len(input.EndpointGroup) > 0 {
+		filter["supergroup"] = input.EndpointGroup
+	}
+
 	// Select the granularity of the search daily/monthly
 	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
 		customForm[0] = "20060102"
@@ -371,8 +375,8 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 				"availability": "$availability",
 				"reliability":  "$reliability",
 				"unknown":      "$unknown",
-				"uptime":       "$uptime",
-				"downtime":     "$downtime",
+				"up":           "$up",
+				"down":         "$down",
 				"report":       "$report"}}},
 		{"$project": bson.M{
 			"date":         "$_id.date",
@@ -380,8 +384,8 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 			"availability": "$_id.availability",
 			"reliability":  "$_id.reliability",
 			"unknown":      "$_id.unknown",
-			"uptime":       "$_id.uptime",
-			"downtime":     "$_id.downtime",
+			"up":           "$_id.up",
+			"down":         "$_id.down",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
@@ -402,26 +406,26 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"avguptime":  bson.M{"$avg": "$uptime"},
+			"avgup":      bson.M{"$avg": "$up"},
 			"avgunknown": bson.M{"$avg": "$unknown"},
-			"avgdown":    bson.M{"$avg": "$downtime"}}},
+			"avgdown":    bson.M{"$avg": "$down"}}},
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"name":       "$_id.name",
 			"supergroup": "$_id.supergroup",
 			"report":     "$_id.report",
 			"unknown":    "$avgunkown",
-			"uptime":     "$avguptime",
-			"downtime":   "$avgdown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
 					100}},
 			"reliability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
 			{"supergroup", 1},
