@@ -23,7 +23,6 @@
 package results
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -418,7 +417,6 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
-	fmt.Println(response.Body.String())
 	SuperGroupAvailabilityJSON := `{
    "root": [
      {
