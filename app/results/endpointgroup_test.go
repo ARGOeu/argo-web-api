@@ -39,14 +39,14 @@ import (
 
 type endpointGroupAvailabilityTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	tenantpassword            string
-	tenantusername            string
-	tenantstorename           string
-	clientkey                 string
+	cfg             config.Config
+	router          *mux.Router
+	confHandler     respond.ConfHandler
+	tenantDbConf    config.MongoConfig
+	tenantpassword  string
+	tenantusername  string
+	tenantstorename string
+	clientkey       string
 }
 
 // Setup the Test Environment
@@ -158,8 +158,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"date":         20150622,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
@@ -176,8 +176,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"date":         20150622,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 70,
 			"reliability":  45,
@@ -194,8 +194,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"date":         20150623,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
@@ -212,8 +212,8 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"date":         20150623,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 43.5,
 			"reliability":  56,
