@@ -371,8 +371,8 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 				"availability": "$availability",
 				"reliability":  "$reliability",
 				"unknown":      "$unknown",
-				"up":       "$up",
-				"down":     "$down",
+				"up":           "$up",
+				"down":         "$down",
 				"report":       "$report"}}},
 		{"$project": bson.M{
 			"date":         "$_id.date",
@@ -380,8 +380,8 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 			"availability": "$_id.availability",
 			"reliability":  "$_id.reliability",
 			"unknown":      "$_id.unknown",
-			"up":       "$_id.up",
-			"down":     "$_id.down",
+			"up":           "$_id.up",
+			"down":         "$_id.down",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
@@ -402,7 +402,7 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"avgup":  bson.M{"$avg": "$up"},
+			"avgup":      bson.M{"$avg": "$up"},
 			"avgunknown": bson.M{"$avg": "$unknown"},
 			"avgdown":    bson.M{"$avg": "$down"}}},
 		{"$project": bson.M{
@@ -411,8 +411,8 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 			"supergroup": "$_id.supergroup",
 			"report":     "$_id.report",
 			"unknown":    "$avgunkown",
-			"up":     "$avgup",
-			"down":   "$avgdown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{

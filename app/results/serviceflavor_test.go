@@ -39,14 +39,14 @@ import (
 
 type serviceFlavorAvailabilityTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	tenantpassword            string
-	tenantusername            string
-	tenantstorename           string
-	clientkey                 string
+	cfg             config.Config
+	router          *mux.Router
+	confHandler     respond.ConfHandler
+	tenantDbConf    config.MongoConfig
+	tenantpassword  string
+	tenantusername  string
+	tenantstorename string
+	clientkey       string
 }
 
 // Setup the Test Environment
@@ -154,15 +154,15 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":           "Report_A",
-			"date":             20150622,
-			"name":             "SF01",
-			"supergroup":       "ST01",
+			"report":       "Report_A",
+			"date":         20150622,
+			"name":         "SF01",
+			"supergroup":   "ST01",
 			"up":           0.98264,
 			"down":         0,
-			"unknown":          0,
-			"availability":     98.26389,
-			"reliability":      98.26389,
+			"unknown":      0,
+			"availability": 98.26389,
+			"reliability":  98.26389,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -171,15 +171,15 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":           "Report_A",
-			"date":             20150622,
-			"name":             "SF02",
-			"supergroup":       "ST01",
+			"report":       "Report_A",
+			"date":         20150622,
+			"name":         "SF02",
+			"supergroup":   "ST01",
 			"up":           0.96875,
 			"down":         0,
-			"unknown":          0,
-			"availability":     96.875,
-			"reliability":      96.875,
+			"unknown":      0,
+			"availability": 96.875,
+			"reliability":  96.875,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -188,15 +188,15 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":           "Report_A",
-			"date":             20150623,
-			"name":             "SF01",
-			"supergroup":       "ST01",
+			"report":       "Report_A",
+			"date":         20150623,
+			"name":         "SF01",
+			"supergroup":   "ST01",
 			"up":           0.53472,
 			"down":         0.33333,
-			"unknown":          0.01042,
-			"availability":     54.03509,
-			"reliability":      81.48148,
+			"unknown":      0.01042,
+			"availability": 54.03509,
+			"reliability":  81.48148,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
@@ -205,15 +205,15 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":            "Report_A",
-			"date":              20150623,
-			"name":              "SF02",
-			"supergroup":        "ST01",
-			"up":            1,
-			"down":          0,
-			"unknown":           0,
-			"availability":      100,
-			"reliability":       100,
+			"report":       "Report_A",
+			"date":         20150623,
+			"name":         "SF02",
+			"supergroup":   "ST01",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 100,
+			"reliability":  100,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "production",
