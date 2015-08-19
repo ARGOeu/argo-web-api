@@ -163,7 +163,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -181,7 +181,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 70,
 			"reliability":  45,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -199,7 +199,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -217,7 +217,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"unknown":      0,
 			"availability": 43.5,
 			"reliability":  56,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
