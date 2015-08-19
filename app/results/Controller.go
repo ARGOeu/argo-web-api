@@ -444,7 +444,6 @@ func DailyEndpointGroup(filter bson.M) []bson.M {
 			"unknown":      1,
 			"up":           1,
 			"down":         1,
-			"type":         1,
 			"report":       1,
 			"supergroup":   1,
 			"name":         1}},
@@ -452,7 +451,6 @@ func DailyEndpointGroup(filter bson.M) []bson.M {
 			{"report", 1},
 			{"supergroup", 1},
 			{"name", 1},
-			{"type", 1},
 			{"date", 1}}}}
 
 	return query
@@ -478,7 +476,6 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"type":      bson.M{"$fist": "$type"},
 			"avguptime": bson.M{"$avg": "$up"},
 			"avgunkown": bson.M{"$avg": "$unknown"},
 			"avgdown":   bson.M{"$avg": "$down"}}},
@@ -490,7 +487,6 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 			"unknown":    "$avgunkown",
 			"up":         "$avgup",
 			"down":       "$avgdown",
-			"type":       1,
 			"avgup":      1,
 			"avgunkown":  1,
 			"avgdown":    1,
@@ -507,7 +503,6 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 		{"$sort": bson.D{
 			{"report", 1},
 			{"supergroup", 1},
-			{"type", 1},
 			{"name", 1},
 			{"date", 1}}}}
 
