@@ -115,6 +115,10 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		filter["name"] = input.Name
 	}
 
+	if len(input.EndpointGroup) > 0 {
+		filter["supergroup"] = input.EndpointGroup
+	}
+
 	// Select the granularity of the search daily/monthly
 	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
 		customForm[0] = "20060102"
