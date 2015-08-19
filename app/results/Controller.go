@@ -218,7 +218,6 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	filter := bson.M{
 		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"report": input.Report,
-		"type":   vars["lgroup_type"],
 	}
 
 	if len(input.Name) > 0 {
