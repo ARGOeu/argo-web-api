@@ -83,8 +83,8 @@ type EndpointGroupInterface struct {
 	Report       string  `bson:"report"`
 	Date         string  `bson:"date"`
 	Type         string  `bson:"type"`
-	Up           float64 `bson:"uptime"`
-	Down         float64 `bson:"downtime"`
+	Up           float64 `bson:"up"`
+	Down         float64 `bson:"down"`
 	Unknown      float64 `bson:"unknown"`
 	Availability float64 `bson:"availability"`
 	Reliability  float64 `bson:"reliability"`

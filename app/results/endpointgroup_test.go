@@ -39,14 +39,14 @@ import (
 
 type endpointGroupAvailabilityTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	tenantpassword            string
-	tenantusername            string
-	tenantstorename           string
-	clientkey                 string
+	cfg             config.Config
+	router          *mux.Router
+	confHandler     respond.ConfHandler
+	tenantDbConf    config.MongoConfig
+	tenantpassword  string
+	tenantusername  string
+	tenantstorename string
+	clientkey       string
 }
 
 // Setup the Test Environment
@@ -157,14 +157,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150622,
 			"name":         "ST01",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -176,14 +175,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150622,
 			"name":         "ST02",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 70,
 			"reliability":  45,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -195,14 +193,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST01",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -214,14 +211,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST02",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 43.5,
 			"reliability":  56,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",

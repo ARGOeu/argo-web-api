@@ -222,7 +222,6 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	filter := bson.M{
 		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"report": input.Report,
-		"type":   vars["lgroup_type"],
 	}
 
 	if len(input.Name) > 0 {
@@ -447,9 +446,8 @@ func DailyEndpointGroup(filter bson.M) []bson.M {
 			"availability": 1,
 			"reliability":  1,
 			"unknown":      1,
-			"uptime":       1,
-			"downtime":     1,
-			"type":         1,
+			"up":           1,
+			"down":         1,
 			"report":       1,
 			"supergroup":   1,
 			"name":         1}},
@@ -457,7 +455,6 @@ func DailyEndpointGroup(filter bson.M) []bson.M {
 			{"report", 1},
 			{"supergroup", 1},
 			{"name", 1},
-			{"type", 1},
 			{"date", 1}}}}
 
 	return query
@@ -483,36 +480,33 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"type":      bson.M{"$fist": "$type"},
-			"avguptime": bson.M{"$avg": "$uptime"},
+			"avguptime": bson.M{"$avg": "$up"},
 			"avgunkown": bson.M{"$avg": "$unknown"},
-			"avgdown":   bson.M{"$avg": "$downtime"}}},
+			"avgdown":   bson.M{"$avg": "$down"}}},
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"name":       "$_id.name",
 			"report":     "$_id.report",
 			"supergroup": "$_id.supergroup",
 			"unknown":    "$avgunkown",
-			"uptime":     "$avguptime",
-			"downtime":   "$avgdown",
-			"type":       1,
-			"avguptime":  1,
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"avgup":      1,
 			"avgunkown":  1,
 			"avgdown":    1,
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{1.00000001, "$avgunkown"}}}},
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunkown"}}}},
 					100}},
 			"reliability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunkown"}}, "$avgdown"}}}},
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunkown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
 			{"report", 1},
 			{"supergroup", 1},
-			{"type", 1},
 			{"name", 1},
 			{"date", 1}}}}
 
