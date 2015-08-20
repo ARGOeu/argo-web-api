@@ -23,7 +23,6 @@
 package results
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -158,14 +157,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150622,
 			"name":         "ST01",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 66.7,
 			"reliability":  54.6,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -177,14 +175,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150622,
 			"name":         "ST02",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 70,
 			"reliability":  45,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -196,14 +193,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST01",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 100,
 			"reliability":  100,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -215,14 +211,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST04",
-			"type":         "SITE",
 			"supergroup":   "GROUP_B",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 30,
 			"reliability":  100,
-			"weights":      5344,
+			"weight":       5344,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -234,14 +229,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST05",
-			"type":         "SITE",
 			"supergroup":   "GROUP_B",
-			"uptime":       0,
-			"downtime":     0,
+			"up":           0,
+			"down":         0,
 			"unknown":      1,
 			"availability": 90,
 			"reliability":  100,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -253,14 +247,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150624,
 			"name":         "ST05",
-			"type":         "SITE",
 			"supergroup":   "GROUP_B",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 40,
 			"reliability":  70,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -272,14 +265,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150625,
 			"name":         "ST05",
-			"type":         "SITE",
 			"supergroup":   "GROUP_B",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 40,
 			"reliability":  70,
-			"weights":      5634,
+			"weight":       5634,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -291,14 +283,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"report":       "Report_A",
 			"date":         20150623,
 			"name":         "ST02",
-			"type":         "SITE",
 			"supergroup":   "GROUP_A",
-			"uptime":       1,
-			"downtime":     0,
+			"up":           1,
+			"down":         0,
 			"unknown":      0,
 			"availability": 43.5,
 			"reliability":  56,
-			"weights":      4356,
+			"weight":       4356,
 			"tags": []bson.M{
 				bson.M{
 					"name":  "",
@@ -418,7 +409,6 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
-	fmt.Println(response.Body.String())
 	SuperGroupAvailabilityJSON := `{
    "root": [
      {
