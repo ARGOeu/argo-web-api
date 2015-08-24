@@ -29,7 +29,7 @@ package tenants
 import (
 	"encoding/xml"
 
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Tenant structure holds information about tenant information

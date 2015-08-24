@@ -31,8 +31,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"strings"
 	"testing"
@@ -41,11 +41,11 @@ import (
 // FactorsTestSuite is a utility suite struct used in tests
 type FactorsTestSuite struct {
 	suite.Suite
-	cfg                 config.Config
-	tenantcfg           config.MongoConfig
-	resp_nokeyprovided  string
-	resp_unauthorized   string
-	resp_factorsList    string
+	cfg                config.Config
+	tenantcfg          config.MongoConfig
+	resp_nokeyprovided string
+	resp_unauthorized  string
+	resp_factorsList   string
 }
 
 // SetupTest will bootstrap and provide the testing environment
@@ -76,22 +76,22 @@ func (suite *FactorsTestSuite) SetupTest() {
 	}
 
 	// Add authentication token to mongo coredb
-	seed_auth := bson.M{"name" : "TEST",
-		"db_conf" : []bson.M{ bson.M{"server" : "127.0.0.1", "port" : 27017, "database" : "AR_test"} } ,
-		"users" : []bson.M{ bson.M{"name" : "Jack Doe", "email" : "jack.doe@example.com", "api_key" : "secret"} }}
+	seed_auth := bson.M{"name": "TEST",
+		"db_conf": []bson.M{bson.M{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
+		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret"}}}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seed_auth)
 
-	// TODO: I don't like it here that I rewrite the test data. 
-	// However, this is a test for factors, not for AuthenticateTenant function. 
+	// TODO: I don't like it here that I rewrite the test data.
+	// However, this is a test for factors, not for AuthenticateTenant function.
 	suite.tenantcfg.Host = "127.0.0.1"
 	suite.tenantcfg.Port = 27017
 	suite.tenantcfg.Db = "AR_test"
 
 	// Add a few factors in collection
 	c := session.DB(suite.tenantcfg.Db).C("weights")
-	c.Insert(bson.M{ "hepspec" : 14595, "name" : "CIEMAT-LCG2" })
-	c.Insert(bson.M{ "hepspec" : 1019, "name" : "CFP-IST" })
-	c.Insert(bson.M{ "hepspec" : 5406, "name" : "CETA-GRID" })
+	c.Insert(bson.M{"hepspec": 14595, "name": "CIEMAT-LCG2"})
+	c.Insert(bson.M{"hepspec": 1019, "name": "CFP-IST"})
+	c.Insert(bson.M{"hepspec": 5406, "name": "CETA-GRID"})
 
 }
 

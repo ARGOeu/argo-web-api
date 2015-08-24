@@ -32,7 +32,7 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Auth struct {
@@ -72,7 +72,7 @@ func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 	defer mongo.CloseSession(session)
 
 	query := bson.M{"api_key": h.Get("x-api-key")}
-	projection := bson.M{"_id":0, "name":0, "email":0 }
+	projection := bson.M{"_id": 0, "name": 0, "email": 0}
 
 	results := []Auth{}
 	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)

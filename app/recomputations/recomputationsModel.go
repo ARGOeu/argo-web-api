@@ -29,7 +29,7 @@ package recomputations
 import (
 	"encoding/xml"
 
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // MongoInterface struct used to retrieve recomputations from db

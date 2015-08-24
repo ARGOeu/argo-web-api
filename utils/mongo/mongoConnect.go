@@ -30,7 +30,7 @@ import (
 	"fmt"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 )
 
 // OpenSession to mongodb

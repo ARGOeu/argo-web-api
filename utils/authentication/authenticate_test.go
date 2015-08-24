@@ -35,8 +35,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/stretchr/testify/suite"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // AuthenticationProfileTestSuite is a utility suite struct used in tests
@@ -149,16 +149,16 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("authentication")
 	c.Insert(
 		bson.M{
-			"name" : "Igano Kabamaru",
-			"email" : "igano@kabamaru.io",
-			"api_key" : "makaronada",
+			"name":    "Igano Kabamaru",
+			"email":   "igano@kabamaru.io",
+			"api_key": "makaronada",
 		},
 	)
 	c.Insert(
 		bson.M{
-			"name" : "Optimus Prime",
-			"email" : "prime@autobots.com",
-			"api_key" : "megatron_sucks",
+			"name":    "Optimus Prime",
+			"email":   "prime@autobots.com",
+			"api_key": "megatron_sucks",
 		},
 	)
 }
