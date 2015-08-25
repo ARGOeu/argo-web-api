@@ -375,7 +375,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
-
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_B/GROUP/GROUP_A/SITE?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 
@@ -387,7 +386,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
-
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
