@@ -94,7 +94,18 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusInternalServerError
+		code = http.StatusBadRequest
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	if vars["lgroup_type"] != report.EndpointGroupType {
+		code = http.StatusBadRequest
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.EndpointGroupType + " instead."
+		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -207,7 +218,18 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusInternalServerError
+		code = http.StatusBadRequest
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	if vars["lgroup_type"] != report.EndpointGroupType {
+		code = http.StatusBadRequest
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.EndpointGroupType + " instead."
+		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
