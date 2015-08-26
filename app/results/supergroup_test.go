@@ -375,6 +375,17 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 	// Compare the expected and actual xml response
 	suite.Equal(SuperGrouAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/xml")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+
 }
 
 // TestListAllSuperGroupAvailability test if daily results are returned correctly
