@@ -104,6 +104,11 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	vars := mux.Vars(r)
 	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 	session, err := mongo.OpenSession(tenantcfg)
