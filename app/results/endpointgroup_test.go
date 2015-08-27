@@ -325,7 +325,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 200 ok code
+	// Check that we must have a 401 Unauthorized code
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 
 }
