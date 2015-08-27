@@ -117,11 +117,9 @@ func prepareQuery(input InputParams) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
-		"date_int":       bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report":         input.report,
-		"endpoint_group": input.group,
-		"service":        input.service,
-		"hostname":       input.hostname,
+		"date_integer": bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"service":      input.service,
+		"host":         input.hostname,
 	}
 
 	if len(input.metric) > 0 {
