@@ -89,7 +89,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_metrics")
+	metricCollection := session.DB(tenantDbConfig.Db).C("status_metric")
 
 	// Query the detailed metric results
 	err = metricCollection.Find(prepareQuery(input)).All(&results)

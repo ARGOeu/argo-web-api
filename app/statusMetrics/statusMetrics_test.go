@@ -53,7 +53,7 @@ type StatusMetricsTestSuite struct {
 // A test configuration object is instantiated using a reference
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
+// Also the testdb is seeded with tenants,reports,metric_profiles and status_metric
 func (suite *StatusMetricsTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -161,7 +161,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
 		"date_int":       20150501,
@@ -231,7 +231,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
 		"date_int":       20150501,
