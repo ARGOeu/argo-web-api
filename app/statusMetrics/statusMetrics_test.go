@@ -433,7 +433,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA/endpoints/host01.eudat.gr/metrics/typeA.metric.Memory" +
+		"/services/iRods/endpoints/irods.example.gr/metrics/iRods-FileTransfer" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
