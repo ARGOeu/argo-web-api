@@ -319,7 +319,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
      <group name="CREAM-CE" type="service">
        <group name="cream01.afroditi.gr" type="endpoint">
          <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
+           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -331,10 +331,10 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 
 	respXML2 := ` <root>
    <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="srv.typeA" type="service">
-       <group name="host01.eudat.gr" type="endpoint">
-         <group name="typeA.metric.Memory" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
+     <group name="iRods" type="service">
+       <group name="irods.example.gr" type="endpoint">
+         <group name="iRods-FileTransfer" type="metric">
+           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -363,8 +363,8 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
                    "type": "metric",
                    "statuses": [
                      {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
+                       "timestamp": "2015-04-30T23:59:00Z",
+                       "value": "OK"
                      },
                      {
                        "timestamp": "2015-05-01T00:00:00Z",
@@ -396,20 +396,20 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
        "type": "EUDAT_SITES",
        "services": [
          {
-           "name": "srv.typeA",
+           "name": "iRods",
            "type": "service",
            "endpoints": [
              {
-               "name": "host01.eudat.gr",
+               "name": "irods.example.gr",
                "type": "endpoint",
                "metrics": [
                  {
-                   "name": "typeA.metric.Memory",
+                   "name": "iRods-FileTransfer",
                    "type": "metric",
                    "statuses": [
                      {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
+                       "timestamp": "2015-04-30T23:59:00Z",
+                       "value": "OK"
                      },
                      {
                        "timestamp": "2015-05-01T00:00:00Z",
