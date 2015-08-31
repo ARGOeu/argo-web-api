@@ -46,19 +46,31 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 	prevHostname := ""
 	prevMetric := ""
+	prevEndpointGroup := ""
 	prevService := ""
 
 	var ppHost *endpointOUT
 	var ppMetric *metricOUT
+	var ppEndpointGroup *endpointGroupOUT
 	var ppService *serviceOUT
 
 	for _, row := range results {
+
+		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
+			endpointGroup := &endpointGroupOUT{}
+			endpointGroup.Name = row.EndpointGroup
+			endpointGroup.GroupType = input.groupType
+			docRoot.EndpointGroups = append(docRoot.EndpointGroups, endpointGroup)
+			prevEndpointGroup = row.EndpointGroup
+			ppEndpointGroup = endpointGroup
+		}
 
 		if row.Service != prevService && row.Service != "" {
 			service := &serviceOUT{}
 			service.Name = row.Service
 			service.GroupType = "service"
-			docRoot.Services = append(docRoot.Services, service)
+			ppEndpointGroup.Services = append(ppEndpointGroup.Services, service)
+
 			prevService = row.Service
 			ppService = service
 		}

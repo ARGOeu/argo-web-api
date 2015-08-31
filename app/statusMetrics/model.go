@@ -40,6 +40,7 @@ type InputParams struct {
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
 	Timestamp     string `bson:"timestamp"`
+	EndpointGroup string `bson:"endpoint_group"`
 	Service       string `bson:"service"`
 	Hostname      string `bson:"host"`
 	Metric        string `bson:"metric"`
@@ -52,7 +53,14 @@ type DataOutput struct {
 // json/xml response related structs
 type rootOUT struct {
 	XMLName        xml.Name            `xml:"root" json:"-"`
-	Services []*serviceOUT `json:"services"`
+	EndpointGroups []*endpointGroupOUT `json:"groups"`
+}
+
+type endpointGroupOUT struct {
+	XMLName   xml.Name      `xml:"group" json:"-"`
+	Name      string        `xml:"name,attr" json:"name"`
+	GroupType string        `xml:"type,attr" json:"type"`
+	Services  []*serviceOUT `json:"services"`
 }
 
 type serviceOUT struct {
