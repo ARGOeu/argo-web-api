@@ -162,18 +162,6 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
-	// c.Insert(bson.M{
-	// 	"report":         "ROC_CRITICAL",
-	// 	"date_int":       20150501,
-	// 	"timestamp":      "2015-05-01T00:00:00Z",
-	// 	"endpoint_group": "HG-03-AUTH",
-	// 	"service":        "CREAM-CE",
-	// 	"hostname":       "cream01.afroditi.gr",
-	// 	"metric":         "emi.cream.CREAMCE-JobSubmit",
-	// 	"status":         "OK",
-	// 	"prev_timestamp": "2015-04-30T22:00:00Z",
-	// 	"prev_status":    "WARNING",
-	// })
 	c.Insert(bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -253,18 +241,6 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
-	// c.Insert(bson.M{
-	// 	"report":         "EUDAT_CRITICAL",
-	// 	"date_int":       20150501,
-	// 	"timestamp":      "2015-05-01T00:00:00Z",
-	// 	"endpoint_group": "EL-01-AUTH",
-	// 	"service":        "srv.typeA",
-	// 	"hostname":       "host01.eudat.gr",
-	// 	"metric":         "typeA.metric.Memory",
-	// 	"status":         "OK",
-	// 	"prev_timestamp": "2015-04-30T22:00:00Z",
-	// 	"prev_status":    "WARNING",
-	// })
 	c.Insert(bson.M{
 		"monitoring_box":     "nagios3.eudat.eu",
 		"date_integer":       20150501,
