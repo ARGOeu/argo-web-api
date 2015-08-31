@@ -164,21 +164,21 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"status":         "OK",
@@ -219,21 +219,21 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoint_groups")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"status":         "OK",
