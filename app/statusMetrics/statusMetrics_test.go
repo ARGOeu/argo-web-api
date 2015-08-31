@@ -53,7 +53,7 @@ type StatusMetricsTestSuite struct {
 // A test configuration object is instantiated using a reference
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
+// Also the testdb is seeded with tenants,reports,metric_profiles and status_metric
 func (suite *StatusMetricsTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -161,42 +161,51 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T00:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
-		"status":         "OK",
-		"prev_timestamp": "2015-04-30T22:00:00Z",
-		"prev_status":    "WARNING",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T00:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"endpoint_group":     "HG-03-AUTH",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "OK",
+		"time_integer":       0,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-04-30T23:59:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T01:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
-		"status":         "CRITICAL",
-		"prev_timestamp": "2015-05-01T00:00:00Z",
-		"prev_status":    "CRITICAL",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T01:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"endpoint_group":     "HG-03-AUTH",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "CRITICAL",
+		"time_integer":       10000,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-05-01T00:00:00Z",
+		"summary":            "Cream status is CRITICAL",
+		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T05:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
-		"status":         "OK",
-		"prev_timestamp": "2015-05-01T01:00:00Z",
-		"prev_status":    "CRITICAL",
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T05:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"endpoint_group":     "HG-03-AUTH",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "OK",
+		"time_integer":       50000,
+		"previous_state":     "CRITICAL",
+		"previous_timestamp": "2015-05-01T01:00:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
 	})
 
 	// get dbconfiguration based on the tenant
@@ -231,42 +240,51 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T00:00:00Z",
-		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
-		"status":         "OK",
-		"prev_timestamp": "2015-04-30T22:00:00Z",
-		"prev_status":    "WARNING",
+		"monitoring_box":     "nagios3.eudat.eu",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T00:00:00Z",
+		"service":            "iRods",
+		"host":               "irods.example.gr",
+		"endpoint_group":     "EL-01-AUTH",
+		"metric":             "iRods-FileTransfer",
+		"status":             "OK",
+		"time_integer":       0,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-04-30T23:59:00Z",
+		"summary":            "iRods status is ok",
+		"message":            "iRods data upload test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T01:00:00Z",
-		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
-		"status":         "CRITICAL",
-		"prev_timestamp": "2015-05-01T00:00:00Z",
-		"prev_status":    "OK",
+		"monitoring_box":     "nagios3.eudat.eu",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T01:00:00Z",
+		"service":            "iRods",
+		"host":               "irods.example.gr",
+		"endpoint_group":     "EL-01-AUTH",
+		"metric":             "iRods-FileTransfer",
+		"status":             "CRITICAL",
+		"time_integer":       10000,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-05-01T00:00:00Z",
+		"summary":            "iRods status is CRITICAL",
+		"message":            "iRods data upload test failed",
 	})
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
-		"timestamp":      "2015-05-01T05:00:00Z",
-		"endpoint_group": "EL-01-AUTH",
-		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
-		"metric":         "typeA.metric.Memory",
-		"status":         "OK",
-		"prev_timestamp": "2015-05-01T01:00:00Z",
-		"prev_status":    "WARNING",
+		"monitoring_box":     "nagios3.eudat.eu",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T05:00:00Z",
+		"service":            "iRods",
+		"host":               "irods.example.gr",
+		"endpoint_group":     "EL-01-AUTH",
+		"metric":             "iRods-FileTransfer",
+		"status":             "OK",
+		"time_integer":       50000,
+		"previous_state":     "CRITICAL",
+		"previous_timestamp": "2015-05-01T01:00:00Z",
+		"summary":            "iRods status is ok",
+		"message":            "iRods data upload test return value of ok",
 	})
 
 }
@@ -277,7 +295,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
      <group name="CREAM-CE" type="service">
        <group name="cream01.afroditi.gr" type="endpoint">
          <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
+           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -289,10 +307,10 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 
 	respXML2 := ` <root>
    <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="srv.typeA" type="service">
-       <group name="host01.eudat.gr" type="endpoint">
-         <group name="typeA.metric.Memory" type="metric">
-           <status timestamp="2015-04-30T22:00:00Z" value="WARNING"></status>
+     <group name="iRods" type="service">
+       <group name="irods.example.gr" type="endpoint">
+         <group name="iRods-FileTransfer" type="metric">
+           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
@@ -321,8 +339,8 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
                    "type": "metric",
                    "statuses": [
                      {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
+                       "timestamp": "2015-04-30T23:59:00Z",
+                       "value": "OK"
                      },
                      {
                        "timestamp": "2015-05-01T00:00:00Z",
@@ -354,20 +372,20 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
        "type": "EUDAT_SITES",
        "services": [
          {
-           "name": "srv.typeA",
+           "name": "iRods",
            "type": "service",
            "endpoints": [
              {
-               "name": "host01.eudat.gr",
+               "name": "irods.example.gr",
                "type": "endpoint",
                "metrics": [
                  {
-                   "name": "typeA.metric.Memory",
+                   "name": "iRods-FileTransfer",
                    "type": "metric",
                    "statuses": [
                      {
-                       "timestamp": "2015-04-30T22:00:00Z",
-                       "value": "WARNING"
+                       "timestamp": "2015-04-30T23:59:00Z",
+                       "value": "OK"
                      },
                      {
                        "timestamp": "2015-05-01T00:00:00Z",
@@ -397,7 +415,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA/endpoints/host01.eudat.gr/metrics/typeA.metric.Memory" +
+		"/services/iRods/endpoints/irods.example.gr/metrics/iRods-FileTransfer" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
