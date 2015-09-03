@@ -163,6 +163,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -178,6 +179,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -193,6 +195,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -242,6 +245,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
 	c.Insert(bson.M{
+		"report":             "EUDAT_CRITICAL",
 		"monitoring_box":     "nagios3.eudat.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -257,6 +261,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "iRods data upload test return value of ok",
 	})
 	c.Insert(bson.M{
+		"report":             "EUDAT_CRITICAL",
 		"monitoring_box":     "nagios3.eudat.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -272,6 +277,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "iRods data upload test failed",
 	})
 	c.Insert(bson.M{
+		"report":             "EUDAT_CRITICAL",
 		"monitoring_box":     "nagios3.eudat.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
