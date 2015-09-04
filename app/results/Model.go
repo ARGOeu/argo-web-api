@@ -154,3 +154,9 @@ type root struct {
 	XMLName xml.Name      `xml:"root" json:"-"`
 	Result  []interface{} `json:"root"`
 }
+
+// errorMessage struct to hold the json/xml error response
+type errorMessage struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Message string   `xml:"message" json:"message"`
+}

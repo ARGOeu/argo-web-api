@@ -457,6 +457,44 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 
 }
 
+// TestListSuperGroupAvailabilityErrors tests if errors/exceptions are returned correctly
+func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailabilityErrors() {
+
+	reportErrorXML := ` <root>
+   <message>The report with the name Report_B does not exist</message>
+ </root>`
+
+	typeErrorXML := ` <root>
+   <message>The report Report_A does not define any group type: supergroup</message>
+ </root>`
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/supergroup?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 400 bad request code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/supergroup?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	//request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 400 bad request code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeErrorXML, response.Body.String(), "Response body mismatch")
+
+}
+
 //TearDownTest to tear down every test
 func (suite *SuperGroupAvailabilityTestSuite) TearDownTest() {
 

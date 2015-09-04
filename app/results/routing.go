@@ -23,7 +23,9 @@
 package results
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
@@ -88,7 +90,16 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
+	contentType := "application/xml"
+	charset := "utf-8"
 	//STANDARD DECLARATIONS END
+
+	// Handle response format based on Accept Header
+	// Default is application/xml
+	format := r.Header.Get("Accept")
+	if strings.EqualFold(format, "application/json") {
+		contentType = "application/json"
+	}
 
 	vars := mux.Vars(r)
 	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
@@ -101,15 +112,27 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	}
 	result := bson.M{}
 	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
+
 	if err != nil {
+		code = http.StatusBadRequest
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
+
 	if vars["group_type"] == result["endpoints_group"] {
 		vars["lgroup_type"] = vars["group_type"]
 		vars["lgroup_name"] = vars["group_name"]
 		return ListEndpointGroupResults(r, cfg)
 	} else if vars["group_type"] == result["group_of_groups"] {
 		return ListSuperGroupResults(r, cfg)
+	} else {
+		code = http.StatusBadRequest
+		message := "The report " + vars["report_name"] + " does not define any group type: " + vars["group_type"]
+		output, err := createErrorMessage(message, format) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", format, charset))
+		return code, h, output, err
 	}
 
 	return code, h, output, err

@@ -174,3 +174,18 @@ func createSuperGroupView(results []SuperGroupInterface, report ReportInterface,
 		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
 }
+
+func createErrorMessage(message string, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &errorMessage{}
+
+	docRoot.Message = message
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
+	return output, err
+}
