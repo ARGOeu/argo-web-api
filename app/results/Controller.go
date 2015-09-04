@@ -50,6 +50,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
@@ -175,6 +178,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
@@ -293,6 +299,9 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
