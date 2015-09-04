@@ -28,7 +28,7 @@ package serviceFlavorAvailability
 
 import (
 	"encoding/xml"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"time"
 )
@@ -56,10 +56,10 @@ type SuperGroup struct {
 }
 
 // Job struct to hold all SuperGroups related with this job
-type Job struct{
-	XMLName     xml.Name `xml:"Job" json:"-"`
-	Name        string   `xml:"name,attr" json:"name"`
-	SuperGroup  []*SuperGroup
+type Job struct {
+	XMLName    xml.Name `xml:"Job" json:"-"`
+	Name       string   `xml:"name,attr" json:"name"`
+	SuperGroup []*SuperGroup
 }
 
 // Root struct to represent the root of the XML document
@@ -70,13 +70,13 @@ type Root struct {
 
 // ApiSFAvailabilityInProfileInput struct to represent the api call input parameters
 type ApiSFAvailabilityInProfileInput struct {
-	start_time     string // UTC time in W3C format
-	end_time       string // UTC time in W3C format
-	job            string
-	granularity    string // availability period; possible values: `DAILY`, `MONTHLY`
-	format         string
-	flavor         []string // sf name; may appear more than once
-	supergroup     []string // name of group
+	start_time  string // UTC time in W3C format
+	end_time    string // UTC time in W3C format
+	job         string
+	granularity string // availability period; possible values: `DAILY`, `MONTHLY`
+	format      string
+	flavor      []string // sf name; may appear more than once
+	supergroup  []string // name of group
 }
 
 // ApiSFAvailabilityInProfileOutput to represent db data retrieval

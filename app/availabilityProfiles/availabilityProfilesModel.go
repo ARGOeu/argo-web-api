@@ -28,7 +28,7 @@ package availabilityProfiles
 
 import (
 	"encoding/xml"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // TODO: Merge duplicated structs into one with multiple annotations.

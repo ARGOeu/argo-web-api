@@ -30,7 +30,7 @@ import (
 	"encoding/xml"
 	"errors"
 
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Report structure holds information for a defined computational job
