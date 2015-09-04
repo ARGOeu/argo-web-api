@@ -106,6 +106,9 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
