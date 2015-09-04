@@ -436,6 +436,17 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(serviceFlavorAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/xml")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+
 }
 
 // TestListServiceFlavorAvailabilityErrors tests if errors/exceptions are returned correctly

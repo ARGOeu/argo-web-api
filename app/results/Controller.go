@@ -46,16 +46,6 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
@@ -81,6 +71,18 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -171,15 +173,6 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -205,6 +198,18 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -289,15 +294,6 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -323,6 +319,19 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			message := err.Error()
+			output, err = createErrorMessage(message, contentType)
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)

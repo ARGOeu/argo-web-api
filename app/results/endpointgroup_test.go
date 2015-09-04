@@ -317,6 +317,22 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
 
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/xml")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	unauthorizedresponseXML := ` <root>
+   <message>Unauthorized</message>
+ </root>`
+
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(unauthorizedresponseXML, response.Body.String(), "Response body mismatch")
 }
 
 // TestListAllEndpointGroupAvailability test if daily results are returned correctly
