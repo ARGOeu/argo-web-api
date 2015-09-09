@@ -78,7 +78,7 @@ type GroupXML struct {
 
 // HostXML struct used as xml block
 type HostXML struct {
-	XMLName xml.Name `xml:"host"`
+	XMLName xml.Name `xml:"endpoint"`
 	Name    string   `xml:"name,attr"`
 	Metrics []*MetricXML
 }
