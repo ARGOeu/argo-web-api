@@ -296,7 +296,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
            "endpoints": [
              {
                "name": "cream01.afroditi.gr",
-               "type": "endpoint",
                "statuses": [
                  {
                    "timestamp": "2015-05-01T00:00:00Z",
@@ -330,7 +329,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
            "endpoints": [
              {
                "name": "host01.eudat.gr",
-               "type": "endpoint",
                "statuses": [
                  {
                    "timestamp": "2015-05-01T00:00:00Z",
