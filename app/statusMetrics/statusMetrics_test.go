@@ -299,14 +299,14 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	respXML1 := ` <root>
    <group name="HG-03-AUTH" type="SITES">
      <group name="CREAM-CE" type="service">
-       <group name="cream01.afroditi.gr" type="endpoint">
-         <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+       <endpoint name="cream01.afroditi.gr">
+         <metric name="emi.cream.CREAMCE-JobSubmit">
            <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+         </metric>
+       </endpoint>
      </group>
    </group>
  </root>`
@@ -314,14 +314,14 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	respXML2 := ` <root>
    <group name="EL-01-AUTH" type="EUDAT_SITES">
      <group name="iRods" type="service">
-       <group name="irods.example.gr" type="endpoint">
-         <group name="iRods-FileTransfer" type="metric">
+       <endpoint name="irods.example.gr">
+         <metric name="iRods-FileTransfer">
            <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+         </metric>
+       </endpoint>
      </group>
    </group>
  </root>`
