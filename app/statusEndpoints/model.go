@@ -69,9 +69,8 @@ type serviceOUT struct {
 }
 
 type endpointOUT struct {
-	XMLName   xml.Name     `xml:"group" json:"-"`
+	XMLName   xml.Name     `xml:"endpoint" json:"-"`
 	Name      string       `xml:"name,attr" json:"name"`
-	GroupType string       `xml:"type,attr" json:"type"`
 	Statuses  []*statusOUT `json:"statuses"`
 }
 

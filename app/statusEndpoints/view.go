@@ -76,7 +76,6 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		if row.Hostname != prevHostname && row.Hostname != "" {
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
-			host.GroupType = "endpoint"
 			ppService.Endpoints = append(ppService.Endpoints, host)
 			prevHostname = row.Hostname
 			ppHost = host
