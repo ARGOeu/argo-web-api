@@ -338,11 +338,9 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
            "endpoints": [
              {
                "name": "cream01.afroditi.gr",
-               "type": "endpoint",
                "metrics": [
                  {
                    "name": "emi.cream.CREAMCE-JobSubmit",
-                   "type": "metric",
                    "statuses": [
                      {
                        "timestamp": "2015-04-30T23:59:00Z",
@@ -383,11 +381,9 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
            "endpoints": [
              {
                "name": "irods.example.gr",
-               "type": "endpoint",
                "metrics": [
                  {
                    "name": "iRods-FileTransfer",
-                   "type": "metric",
                    "statuses": [
                      {
                        "timestamp": "2015-04-30T23:59:00Z",
