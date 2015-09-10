@@ -531,14 +531,14 @@ Headers: `Status: 200 OK`
          <group name="NGI_GRNET" type="ngi">
            <group name="HG-03-AUTH" type="site">
              <group name="CREAM-CE" type="service_type">
-               <host name="cream01.afroditi.gr">
+               <endpoint name="cream01.afroditi.gr">
                  <metric name="emi.cream.CREAMCE-JobSubmit">
                    <status timestamp="2015-05-01T01:00:00Z" status="">
                      <summary>Cream status is CRITICAL</summary>
                      <message>Cream job submission test failed!</message>
                    </status>
                  </metric>
-               </host>
+               </endpoint>
              </group>
            </group>
          </group>
