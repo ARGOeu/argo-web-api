@@ -40,7 +40,7 @@ type DataOutput struct {
 	Timestamp     string `bson:"timestamp"`
 	EndpointGroup string `bson:"endpoint_group"`
 	Status        string `bson:"status"`
-	DateInteger   string `bson:"date_int"`
+	DateInteger   string `bson:"date_integer"`
 }
 
 // xml response related structs
