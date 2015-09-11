@@ -123,7 +123,7 @@ func prepareQuery(input InputParams) bson.M {
 	}
 
 	if len(input.hostname) > 0 {
-		filter["hostname"] = input.hostname
+		filter["host"] = input.hostname
 	}
 
 	return filter

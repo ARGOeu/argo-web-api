@@ -42,7 +42,7 @@ type DataOutput struct {
 	Timestamp     string `bson:"timestamp"`
 	EndpointGroup string `bson:"endpoint_group"`
 	Service       string `bson:"service"`
-	Hostname      string `bson:"hostname"`
+	Hostname      string `bson:"host"`
 	Status        string `bson:"status"`
 	DateInt       string `bson:"date_integer"`
 }
