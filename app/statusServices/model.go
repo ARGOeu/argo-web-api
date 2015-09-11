@@ -42,7 +42,7 @@ type DataOutput struct {
 	EndpointGroup string `bson:"endpoint_group"`
 	Service       string `bson:"service"`
 	Status        string `bson:"status"`
-	DateInteger   string `bson:"date_int"`
+	DateInteger   string `bson:"date_integer"`
 }
 
 // xml/json response related structs
