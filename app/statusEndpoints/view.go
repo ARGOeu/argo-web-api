@@ -36,7 +36,11 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	docRoot := &rootOUT{}
 
 	if len(results) == 0 {
-		output, err := xml.MarshalIndent(docRoot, " ", "  ")
+		if strings.EqualFold(input.format, "application/json") {
+			output, err = json.MarshalIndent(docRoot, " ", "  ")
+		} else {
+			output, err = xml.MarshalIndent(docRoot, " ", "  ")
+		}
 		return output, err
 	}
 
@@ -72,7 +76,6 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		if row.Hostname != prevHostname && row.Hostname != "" {
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
-			host.GroupType = "endpoint"
 			ppService.Endpoints = append(ppService.Endpoints, host)
 			prevHostname = row.Hostname
 			ppHost = host

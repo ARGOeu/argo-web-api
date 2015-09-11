@@ -116,7 +116,7 @@ func prepareQuery(input InputParams) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
-		"date_int":       bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"date_integer":   bson.M{"$gte": tsYMD, "$lte": teYMD},
 		"report":         input.report,
 		"endpoint_group": input.group,
 		"service":        input.service,

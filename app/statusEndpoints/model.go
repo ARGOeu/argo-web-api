@@ -44,7 +44,7 @@ type DataOutput struct {
 	Service       string `bson:"service"`
 	Hostname      string `bson:"hostname"`
 	Status        string `bson:"status"`
-	DateInt       string `bson:"date_int"`
+	DateInt       string `bson:"date_integer"`
 }
 
 // json/xml response related structs
@@ -69,9 +69,8 @@ type serviceOUT struct {
 }
 
 type endpointOUT struct {
-	XMLName   xml.Name     `xml:"group" json:"-"`
+	XMLName   xml.Name     `xml:"endpoint" json:"-"`
 	Name      string       `xml:"name,attr" json:"name"`
-	GroupType string       `xml:"type,attr" json:"type"`
 	Statuses  []*statusOUT `json:"statuses"`
 }
 

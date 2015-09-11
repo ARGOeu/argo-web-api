@@ -215,16 +215,16 @@ Reponse body:
 <root>
 	<group name="HG-03-AUTH" type="SITES">
 		<group name="CREAM-CE" type="service">
-			<group name="cream01.afroditi.gr" type="endpoint">
+			<endpoint name="cream01.afroditi.gr">
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-			</group>
-			<group name="cream02.afroditi.gr" type="endpoint">
+			</endpoint>
+			<endpoint name="cream02.afroditi.gr">
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-			</group>
+			</endpoint>
 		</group>
 	</group>
 </root>
@@ -256,11 +256,11 @@ Reponse body:
 <root>
 	<group name="HG-03-AUTH" type="SITES">
 		<group name="CREAM-CE" type="service">
-			<group name="cream01.afroditi.gr" type="endpoint">
+			<endpoint name="cream01.afroditi.gr">
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-			</group>
+			</endpoint>
 		</group>
 	</group>
 </root>

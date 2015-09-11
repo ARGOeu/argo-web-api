@@ -164,7 +164,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -174,7 +174,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -184,7 +184,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "ROC_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -228,7 +228,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
@@ -238,7 +238,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
@@ -248,7 +248,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":         "EUDAT_CRITICAL",
-		"date_int":       20150501,
+		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
@@ -263,11 +263,11 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	respXML1 := ` <root>
    <group name="HG-03-AUTH" type="SITES">
      <group name="CREAM-CE" type="service">
-       <group name="cream01.afroditi.gr" type="endpoint">
+       <endpoint name="cream01.afroditi.gr">
          <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
          <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
          <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </group>
+       </endpoint>
      </group>
    </group>
  </root>`
@@ -275,11 +275,11 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	respXML2 := ` <root>
    <group name="EL-01-AUTH" type="EUDAT_SITES">
      <group name="srv.typeA" type="service">
-       <group name="host01.eudat.gr" type="endpoint">
+       <endpoint name="host01.eudat.gr">
          <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
          <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
          <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </group>
+       </endpoint>
      </group>
    </group>
  </root>`
@@ -296,7 +296,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
            "endpoints": [
              {
                "name": "cream01.afroditi.gr",
-               "type": "endpoint",
                "statuses": [
                  {
                    "timestamp": "2015-05-01T00:00:00Z",
@@ -330,7 +329,6 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
            "endpoints": [
              {
                "name": "host01.eudat.gr",
-               "type": "endpoint",
                "statuses": [
                  {
                    "timestamp": "2015-05-01T00:00:00Z",
