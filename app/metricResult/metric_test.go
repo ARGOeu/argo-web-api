@@ -129,7 +129,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,

@@ -87,7 +87,7 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 
 	result := metricResultOutput{}
 
-	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
+	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
 
 	// Query the detailed metric results
 	err = metricCol.Find(prepQuery(input)).One(&result)

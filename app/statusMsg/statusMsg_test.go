@@ -360,14 +360,14 @@ func (suite *StatusMsgTestSuite) TestReadStatusDetail() {
      <group name="EUDAT_EL" type="EUDAT_GROUP">
        <group name="EL-01-AUTH" type="EUDAT_SITE">
          <group name="srv.typeA" type="service_type">
-           <host name="host01.eudat.gr">
+           <endpoint name="host01.eudat.gr">
              <metric name="typeA.metric.Memory">
                <status timestamp="2015-05-01T01:00:00Z" status="">
                  <summary>srv.typeA status is critical</summary>
                  <message>memory error: Out of memory </message>
                </status>
              </metric>
-           </host>
+           </endpoint>
          </group>
        </group>
      </group>
@@ -379,14 +379,14 @@ func (suite *StatusMsgTestSuite) TestReadStatusDetail() {
      <group name="NGI_GRNET" type="NGI">
        <group name="HG-03-AUTH" type="SITES">
          <group name="CREAM-CE" type="service_type">
-           <host name="cream01.afroditi.gr">
+           <endpoint name="cream01.afroditi.gr">
              <metric name="emi.cream.CREAMCE-JobSubmit">
                <status timestamp="2015-05-01T01:00:00Z" status="">
                  <summary>Cream status is CRITICAL</summary>
                  <message>Cream job submission test failed</message>
                </status>
              </metric>
-           </host>
+           </endpoint>
          </group>
        </group>
      </group>
