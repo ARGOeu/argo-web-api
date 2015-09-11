@@ -89,7 +89,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_metric")
+	metricCollection := session.DB(tenantDbConfig.Db).C("status_metrics")
 
 	// Query the detailed metric results
 	err = metricCollection.Find(prepareQuery(input)).All(&results)
@@ -117,10 +117,11 @@ func prepareQuery(input InputParams) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
+		"report":         input.report,
 		"date_integer":   bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"endpoint_group": input.group,
 		"service":        input.service,
 		"host":           input.hostname,
-		"endpoint_group": input.group,
 	}
 
 	if len(input.metric) > 0 {

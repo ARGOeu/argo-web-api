@@ -88,18 +88,18 @@ Reponse body:
 <root>
 	<group name="HG-03-AUTH" type="SITES">
 		<group name="CREAM-CE" type="service">
-			<group name="cream01.afroditi.gr" type="endpoint">
-				<group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+			<endpoint name="cream01.afroditi.gr">
+				<metric name="emi.cream.CREAMCE-JobSubmit">
 					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-				</group>
-				<group name="emi.wn.WN-Bi" type="metric">
+				</metric>
+				<metric name="emi.wn.WN-Bi">
 					<status timestamp="2015-04-30T22:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T03:00:00Z" status="OK"></status>
-				</group>
-			</group>
+				</metric>
+			</endpoint>
 		</group>
 	</group>
 </root>
@@ -131,13 +131,13 @@ Reponse body:
 <root>
 	<group name="HG-03-AUTH" type="SITES">
 		<group name="CREAM-CE" type="service">
-			<group name="cream01.afroditi.gr" type="endpoint">
-				<group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+			<endpoint name="cream01.afroditi.gr">
+				<metric name="emi.cream.CREAMCE-JobSubmit">
 					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
-				</group>
-			</group>
+				</metric>
+			</endpoint>
 		</group>
 	</group>
 </root>

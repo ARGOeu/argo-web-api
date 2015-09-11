@@ -53,7 +53,7 @@ type StatusMetricsTestSuite struct {
 // A test configuration object is instantiated using a reference
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with tenants,reports,metric_profiles and status_metric
+// Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *StatusMetricsTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -112,20 +112,20 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"name": "EUDAT",
+		"name": "TENANT2",
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_metrics_eudat",
+				"database": "argotest_metrics_tenant2",
 				"username": "",
 				"password": ""},
 		},
 		"users": []bson.M{
 			bson.M{
-				"name":    "eudat_user",
-				"email":   "eudat_user@email.com",
+				"name":    "tenant2_user",
+				"email":   "tenant2_user@email.com",
 				"api_key": "KEY2"},
 		}})
 
@@ -161,8 +161,9 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -178,6 +179,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -193,6 +195,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
+		"report":             "ROC_CRITICAL",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -221,14 +224,14 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "EUDAT_CRITICAL",
-		"tenant":          "EUDAT",
-		"endpoint_group":  "EUDAT_SITES",
-		"group_of_groups": "EUDAT_GROUPS",
+		"name":            "TENANT2_CRITICAL",
+		"tenant":          "TENANT2",
+		"endpoint_group":  "TENANT2_SITES",
+		"group_of_groups": "TENANT2_GROUPS",
 		"profiles": []bson.M{
 			bson.M{
 				"name":  "metric",
-				"value": "eudat.CRITICAL"},
+				"value": "tenant2.CRITICAL"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -240,51 +243,54 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metric")
+	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"monitoring_box":     "nagios3.eudat.eu",
+		"report":             "TENANT2_CRITICAL",
+		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
-		"service":            "iRods",
-		"host":               "irods.example.gr",
+		"service":            "someService",
+		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
-		"metric":             "iRods-FileTransfer",
+		"metric":             "someService-FileTransfer",
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-04-30T23:59:00Z",
-		"summary":            "iRods status is ok",
-		"message":            "iRods data upload test return value of ok",
+		"summary":            "someService status is ok",
+		"message":            "someService data upload test return value of ok",
 	})
 	c.Insert(bson.M{
-		"monitoring_box":     "nagios3.eudat.eu",
+		"report":             "TENANT2_CRITICAL",
+		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
-		"service":            "iRods",
-		"host":               "irods.example.gr",
+		"service":            "someService",
+		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
-		"metric":             "iRods-FileTransfer",
+		"metric":             "someService-FileTransfer",
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-05-01T00:00:00Z",
-		"summary":            "iRods status is CRITICAL",
-		"message":            "iRods data upload test failed",
+		"summary":            "someService status is CRITICAL",
+		"message":            "someService data upload test failed",
 	})
 	c.Insert(bson.M{
-		"monitoring_box":     "nagios3.eudat.eu",
+		"report":             "TENANT2_CRITICAL",
+		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
-		"service":            "iRods",
-		"host":               "irods.example.gr",
+		"service":            "someService",
+		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
-		"metric":             "iRods-FileTransfer",
+		"metric":             "someService-FileTransfer",
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
 		"previous_timestamp": "2015-05-01T01:00:00Z",
-		"summary":            "iRods status is ok",
-		"message":            "iRods data upload test return value of ok",
+		"summary":            "someService status is ok",
+		"message":            "someService data upload test return value of ok",
 	})
 
 }
@@ -293,29 +299,29 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	respXML1 := ` <root>
    <group name="HG-03-AUTH" type="SITES">
      <group name="CREAM-CE" type="service">
-       <group name="cream01.afroditi.gr" type="endpoint">
-         <group name="emi.cream.CREAMCE-JobSubmit" type="metric">
+       <endpoint name="cream01.afroditi.gr">
+         <metric name="emi.cream.CREAMCE-JobSubmit">
            <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+         </metric>
+       </endpoint>
      </group>
    </group>
  </root>`
 
 	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="iRods" type="service">
-       <group name="irods.example.gr" type="endpoint">
-         <group name="iRods-FileTransfer" type="metric">
+   <group name="EL-01-AUTH" type="TENANT2_SITES">
+     <group name="someService" type="service">
+       <endpoint name="someservice.example.gr">
+         <metric name="someService-FileTransfer">
            <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
            <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
            <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
            <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </group>
-       </group>
+         </metric>
+       </endpoint>
      </group>
    </group>
  </root>`
@@ -332,11 +338,9 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
            "endpoints": [
              {
                "name": "cream01.afroditi.gr",
-               "type": "endpoint",
                "metrics": [
                  {
                    "name": "emi.cream.CREAMCE-JobSubmit",
-                   "type": "metric",
                    "statuses": [
                      {
                        "timestamp": "2015-04-30T23:59:00Z",
@@ -369,19 +373,17 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
    "groups": [
      {
        "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
+       "type": "TENANT2_SITES",
        "services": [
          {
-           "name": "iRods",
+           "name": "someService",
            "type": "service",
            "endpoints": [
              {
-               "name": "irods.example.gr",
-               "type": "endpoint",
+               "name": "someservice.example.gr",
                "metrics": [
                  {
-                   "name": "iRods-FileTransfer",
-                   "type": "metric",
+                   "name": "someService-FileTransfer",
                    "statuses": [
                      {
                        "timestamp": "2015-04-30T23:59:00Z",
@@ -414,8 +416,8 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
-	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
-		"/services/iRods/endpoints/irods.example.gr/metrics/iRods-FileTransfer" +
+	fullurl2 := "/api/v2/status/TENANT2_CRITICAL/TENANT2_SITES/EL-01-AUTH" +
+		"/services/someService/endpoints/someservice.example.gr/metrics/someService-FileTransfer" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
@@ -434,7 +436,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	// Compare the expected and actual xml response
 	suite.Equal(respXML1, response.Body.String(), "Response body mismatch")
 
-	// 2. EUDAT XML REQUEST
+	// 2. TENANT2 XML REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -466,7 +468,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
 
-	// 4. EUDAT JSON REQUEST
+	// 4. TENANT2 JSON REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -492,7 +494,7 @@ func (suite *StatusMetricsTestSuite) TearDownTest() {
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
 	session.DB("argotest_metrics").DropDatabase()
-	session.DB("argotest_metrics_eudat").DropDatabase()
+	session.DB("argotest_metrics_tenant2").DropDatabase()
 	session.DB("argotest_metrics_egi").DropDatabase()
 }
 
