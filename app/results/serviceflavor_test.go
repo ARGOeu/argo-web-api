@@ -250,7 +250,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 				"metrics":      "ch.cern.sam.ROC_CRITICAL",
 				"operations":   "ops1",
 			},
-			"endpoints_group": "SITE",
+			"endpoint_group": "SITE",
 			"group_of_groups": "GROUP",
 			"filter_tags": []bson.M{
 				{"name": "production", "value": "Y"},

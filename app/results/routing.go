@@ -129,7 +129,7 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if vars["group_type"] == result["endpoints_group"] {
+	if vars["group_type"] == result["endpoint_group"] {
 		vars["lgroup_type"] = vars["group_type"]
 		vars["lgroup_name"] = vars["group_name"]
 		return ListEndpointGroupResults(r, cfg)

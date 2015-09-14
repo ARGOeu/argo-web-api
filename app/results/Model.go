@@ -59,7 +59,7 @@ type endpointGroupResultQuery struct {
 type ReportInterface struct {
 	Name              string `bson:"name"`
 	Tenant            string `bson:"tenant"`
-	EndpointGroupType string `bson:"endpoints_group"`
+	EndpointGroupType string `bson:"endpoint_group"`
 	SuperGroupType    string `bson:"group_of_groups"`
 }
 
