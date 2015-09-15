@@ -1,3 +1,6 @@
+#debuginfo not supported with Go
+%global debug_package %{nil}
+
 Name: argo-web-api
 Summary: A/R API
 Version: 1.6.0
