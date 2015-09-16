@@ -168,7 +168,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
+		"host":           "cream01.afroditi.gr",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
@@ -178,7 +178,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
+		"host":           "cream01.afroditi.gr",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
@@ -188,7 +188,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
-		"hostname":       "cream01.afroditi.gr",
+		"host":           "cream01.afroditi.gr",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
@@ -232,7 +232,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
+		"host":           "host01.eudat.gr",
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
@@ -242,7 +242,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
+		"host":           "host01.eudat.gr",
 		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
 	})
@@ -252,7 +252,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
-		"hostname":       "host01.eudat.gr",
+		"host":           "host01.eudat.gr",
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
