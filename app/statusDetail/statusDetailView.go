@@ -26,9 +26,13 @@
 
 package statusDetail
 
-import "encoding/xml"
+import (
+	"encoding/xml"
 
-func createView(results []StatusDetailOutput, input StatusDetailInput, poem_detail []PoemDetailOutput) ([]byte, error) {
+	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
+)
+
+func createView(results []DataOutput, input InputParams, metricDetail metricProfiles.MongoInterface) ([]byte, error) {
 
 	docRoot := &ReadRoot{}
 
@@ -37,105 +41,113 @@ func createView(results []StatusDetailOutput, input StatusDetailInput, poem_deta
 		return output, err
 	}
 
-	profile := &Profile{}
-	profile.Name = input.profile
-	vo := &Group{}
-	vo.Type = "vo"
-	vo.Name = input.vo
+	report := &ReportXML{}
+	report.Name = input.report
 
 	prevHostname := ""
 	prevMetric := ""
-	prevSite := ""
-	prevRoc := ""
+	prevEndpointGroup := ""
+	prevGroup := ""
 	prevService := ""
 
-	var pp_Host *Host
-	var pp_Metric *Metric
-	var pp_Site *Group
-	var pp_Roc *Group
-	var pp_Service *Group
+	var ppHost *HostXML
+	var ppMetric *MetricXML
+	var ppEndpointGroup *GroupXML
+	var ppGroup *GroupXML
+	var ppService *GroupXML
 
 	for _, row := range results {
 
-		if filter_by_profile(row.Service, row.Metric, poem_detail) == 1 {
+		// Filter row of metric result based on metric profile (check metric name and service type)
+		if filterByProfile(row.Service, row.Metric, metricDetail) == 1 {
 			continue
 		}
 
-		if row.Roc != prevRoc && row.Roc != "" {
-			roc := &Group{}
-			roc.Name = row.Roc
-			roc.Type = "ngi"
-			vo.Groups = append(vo.Groups, roc)
-			prevRoc = roc.Name
-			pp_Roc = roc
+		if row.Group != prevGroup && row.Group != "" {
+			group := &GroupXML{}
+			group.Name = row.Group
+			group.Type = row.GroupType
+			report.Groups = append(report.Groups, group)
+			prevGroup = group.Name
+			ppGroup = group
 		}
 
-		if row.Site != prevSite && row.Site != "" {
-			site := &Group{}
-			site.Name = row.Site
-			site.Type = "site"
-			pp_Roc.Groups = append(pp_Roc.Groups, site)
-			prevSite = row.Site
-			pp_Site = site
+		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
+			endpointGroup := &GroupXML{}
+			endpointGroup.Name = row.EndpointGroup
+			endpointGroup.Type = row.EndpointGroupType
+			ppGroup.Groups = append(ppGroup.Groups, endpointGroup)
+			prevEndpointGroup = row.EndpointGroup
+			ppEndpointGroup = endpointGroup
 		}
 
 		if row.Service != prevService && row.Service != "" {
-			service := &Group{}
+			service := &GroupXML{}
 			service.Name = row.Service
 			service.Type = "service_type"
-			pp_Site.Groups = append(pp_Site.Groups, service)
+			ppEndpointGroup.Groups = append(ppEndpointGroup.Groups, service)
 
 			prevService = row.Service
-			pp_Service = service
+			ppService = service
 		}
 
 		if row.Hostname != prevHostname && row.Hostname != "" {
-			host := &Host{} //create new host
+			host := &HostXML{} //create new host
 			host.Name = row.Hostname
-			pp_Service.Hosts = append(pp_Service.Hosts, host)
+			ppService.Hosts = append(ppService.Hosts, host)
 			prevHostname = row.Hostname
-			pp_Host = host
+			ppHost = host
 		}
 
 		if row.Metric != prevMetric {
 
-			metric := &Metric{}
+			metric := &MetricXML{}
 			//Add the prev status as the firstone
 
 			metric.Name = row.Metric
-			pp_Host.Metrics = append(pp_Host.Metrics, metric)
+			ppHost.Metrics = append(ppHost.Metrics, metric)
 			prevMetric = row.Metric
-			pp_Metric = metric
+			ppMetric = metric
 
-			status := &Status{}
-			status.Timestamp = row.P_timestamp
-			status.Status = row.P_status
-			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
+			status := &StatusXML{}
+			status.Timestamp = row.PrevTimestamp
+			status.Status = row.PrevStatus
+			ppMetric.Timeline = append(ppMetric.Timeline, status)
 
 		} else {
-			status := &Status{}
+			status := &StatusXML{}
 			status.Timestamp = row.Timestamp
 			status.Status = row.Status
-			pp_Metric.Timeline = append(pp_Metric.Timeline, status)
+			ppMetric.Timeline = append(ppMetric.Timeline, status)
 		}
 
 	}
 
-	profile.Groups = append(profile.Groups, vo)
-	docRoot.Profile = profile
+	docRoot.Report = report
 
 	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
 
 }
 
-func filter_by_profile(stype string, metric string, poem_detail []PoemDetailOutput) int {
+func messageXML(answer string) ([]byte, error) {
+	docRoot := &Message{}
+	docRoot.Message = answer
+	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+	return output, err
+}
 
-	for _, item := range poem_detail {
+func filterByProfile(service string, metric string, metricDetail metricProfiles.MongoInterface) int {
 
-		if item.Metric == metric {
-			if item.Service == stype {
-				return 0
+	for _, serviceItem := range metricDetail.Services {
+
+		if serviceItem.Service == service {
+
+			for _, metricItem := range serviceItem.Metrics {
+
+				if metricItem == metric {
+					return 0
+				}
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -28,6 +28,7 @@ package caches
 
 import (
 	"fmt"
+
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/go-lru-cache"
 )
@@ -40,6 +41,7 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
+//TODO Add multitenant support on cache util.
 func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) {
 	output := []byte(nil)
 	found := false
@@ -52,10 +54,15 @@ func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) 
 	return found, output
 }
 
+//TODO Add multitenant support on cache util.
 func WriteCache(name string, input interface{}, output interface{}, cfg config.Config) bool {
 
 	if cfg.Server.Cache == true {
 		httpcache.Set(name+fmt.Sprint(input), output.(mystring))
 	}
 	return true
+}
+
+func ResetCache() {
+	httpcache.Clear()
 }

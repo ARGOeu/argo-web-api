@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -28,8 +28,9 @@ package mongo
 
 import (
 	"errors"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Id struct {
@@ -49,14 +50,35 @@ func Pipe(session *mgo.Session, dbName string, collectionName string, query []bs
 	return err
 }
 
-func Find(session *mgo.Session, dbName string, collectionName string, query bson.M, sorter string, results interface{}) error {
-
+func Find(session *mgo.Session, dbName string, collectionName string, query interface{}, sorter string, results interface{}) error {
 	c := openCollection(session, dbName, collectionName)
-	err := c.Find(query).Sort(sorter).All(results)
+	var err error
+	if sorter != "" {
+		err = c.Find(query).Sort(sorter).All(results)
+	} else {
+		err = c.Find(query).All(results)
+	}
 	return err
 }
 
-func Insert(session *mgo.Session, dbName string, collectionName string, query bson.M) error {
+func FindOne(session *mgo.Session, dbName string, collectionName string, query interface{}, result interface{}) error {
+	c := openCollection(session, dbName, collectionName)
+	var err error
+	err = c.Find(query).One(result)
+
+	return err
+}
+
+// FindAndProject uses a query and projection pair, updates results object and returns error code
+func FindAndProject(session *mgo.Session, dbName string, collectionName string, query bson.M, projection bson.M, sorter string, results interface{}) error {
+
+	c := openCollection(session, dbName, collectionName)
+	err := c.Find(query).Select(projection).Sort(sorter).All(results)
+	return err
+}
+
+//Insert a document into the collection of a database that are specified in the arguements
+func Insert(session *mgo.Session, dbName string, collectionName string, query interface{}) error {
 
 	c := openCollection(session, dbName, collectionName)
 	err := c.Insert(query)
@@ -89,5 +111,13 @@ func IdUpdate(session *mgo.Session, dbName string, collectionName string, id str
 	c := openCollection(session, dbName, collectionName)
 	rid := bson.ObjectIdHex(id)
 	err := c.UpdateId(rid, update)
+	return err
+}
+
+// Update a specfic document in a collection based on a query
+func Update(session *mgo.Session, dbName string, collectionName string, query bson.M, update interface{}) error {
+	// Check if given id is proper ObjectId
+	c := openCollection(session, dbName, collectionName)
+	err := c.Update(query, update)
 	return err
 }

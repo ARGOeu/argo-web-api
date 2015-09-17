@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -27,13 +27,14 @@
 package main
 
 import (
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/go-lru-cache"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
+
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache

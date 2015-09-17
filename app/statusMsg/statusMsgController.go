@@ -29,15 +29,20 @@ package statusMsg
 import (
 	//"bytes"
 	"fmt"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
+	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
+// List the detailed message
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -61,39 +66,68 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 
-	input := StatusMsgInput{
+	input := MsgInput{
 		urlValues.Get("exec_time"),
-		urlValues.Get("vo"),
-		urlValues.Get("profile"),
+		urlValues.Get("job"),
 		hostname,
 		service,
 		metric,
 	}
 
-	// Set default values
-	if len(input.profile) == 0 {
-		input.profile = "ch.cern.sam.ROC_CRITICAL"
+	// Call authenticateTenant to check the api key and retrieve
+	// the correct tenant db conf
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
 	}
 
-	if len(input.vo) == 0 {
-		input.vo = "ops"
-	}
+	// Structure to hold job information
+	reportResult := reports.Report{}
+	metricProfileResult := metricProfiles.MongoInterface{}
 
 	// Mongo Session
-	results := []StatusMsgOutput{}
-	poem_results := []PoemDetailOutput{}
+	results := []MsgOutput{}
 
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
-	c := session.DB("AR").C("status_metric")
-	pc := session.DB("AR").C("poem_details")
+	metricCol := session.DB(tenantDbConfig.Db).C("status_metric")
+	reportCol := session.DB(tenantDbConfig.Db).C("reports")
+	profileCol := session.DB(tenantDbConfig.Db).C("metric_profiles")
 
-	err = pc.Find(bson.M{"p": input.profile}).All(&poem_results)
-	err = c.Find(prepQuery(input)).All(&results)
+	// Get report details
+	err = reportCol.Find(bson.M{"name": input.report}).One(&reportResult)
+	if err != nil {
+		output = []byte("Error on retrieving Report information")
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
-	mongo.CloseSession(session)
+	// Search report for used metric profile
+	metricProfileName := ""
+	metricProfileName, err = reports.GetMetricProfile(reportResult)
 
-	output, err = createView(results, input, poem_results) //Render the results into XML format
+	// Query details for the metric profile used
+	err = profileCol.Find(bson.M{"name": metricProfileName}).One(&metricProfileResult)
+	if err != nil {
+
+		output = []byte("Error on retrieving metric profile information")
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Query the detailed metric results
+	err = metricCol.Find(prepQuery(input)).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createView(results, input, metricProfileResult) //Render the results into XML format
 	//if strings.ToLower(input.format) == "json" {
 	//	contentType = "application/json"
 	//}
@@ -104,25 +138,26 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-func prepQuery(input StatusMsgInput) bson.M {
+func prepQuery(input MsgInput) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
 	const ymdForm = "20060102"
 
-	ts, _ := time.Parse(zuluForm, input.exec_time)
+	ts, _ := time.Parse(zuluForm, input.execTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	//teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
 	// parse time as integer
-	ts_int := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
+	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
 
 	query := bson.M{
-		"di":  tsYMD,
-		"h":   input.host,
-		"srv": input.service,
-		"m":   input.metric,
-		"ti":  ts_int,
+		"report":   input.report,
+		"date_int": tsYMD,
+		"hostname": input.host,
+		"service":  input.service,
+		"metric":   input.metric,
+		"time_int": tsInt,
 	}
 
 	return query

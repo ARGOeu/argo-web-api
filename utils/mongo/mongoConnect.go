@@ -28,12 +28,14 @@ package mongo
 
 import (
 	"fmt"
+
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 )
 
-func OpenSession(cfg config.Config) (*mgo.Session, error) {
-	s, err := mgo.Dial(cfg.MongoDB.Host + ":" + fmt.Sprint(cfg.MongoDB.Port))
+// OpenSession to mongodb
+func OpenSession(mongoCfg config.MongoConfig) (*mgo.Session, error) {
+	s, err := mgo.Dial(mongoCfg.Host + ":" + fmt.Sprint(mongoCfg.Port))
 	if err != nil {
 		return s, err
 	}
@@ -42,6 +44,7 @@ func OpenSession(cfg config.Config) (*mgo.Session, error) {
 	return s, err
 }
 
+// CloseSession closes mongodb session
 func CloseSession(session *mgo.Session) bool {
 	session.Close()
 	return true
