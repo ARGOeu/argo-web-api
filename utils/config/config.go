@@ -46,6 +46,7 @@ var flGzip = flag.String("gzip", "yes", "specify weather to use compression or n
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 var flCert = flag.String("cert", "", "speficy path to the host certificate")
 var flPrivKey = flag.String("privkey", "", "speficy path to the private key file")
+var flReqSizeLimit = flag.Int64("request-size-limit", 1073741824, "specify maximum allowed size of a request body")
 
 // MongoConfig configuration to connect to a mongodb instance
 type MongoConfig struct {
@@ -60,14 +61,15 @@ type MongoConfig struct {
 // Config configuration for the api
 type Config struct {
 	Server struct {
-		Bindip   string
-		Port     int
-		Maxprocs int
-		Cache    bool
-		Lrucache int
-		Gzip     bool
-		Cert     string
-		Privkey  string
+		Bindip       string
+		Port         int
+		Maxprocs     int
+		Cache        bool
+		Lrucache     int
+		Gzip         bool
+		Cert         string
+		Privkey      string
+		ReqSizeLimit int64
 	}
 	MongoDB MongoConfig
 	Profile string
@@ -83,6 +85,7 @@ const defaultConfig = `
     gzip = true
     cert = /etc/pki/tls/certs/localhost.crt
     privkey = /etc/pki/tls/private/localhost.key
+	requestsizelimit = 1073741824
 
     [mongodb]
     host = "127.0.0.1"
@@ -146,6 +149,10 @@ func LoadConfiguration() Config {
 
 	if *flPrivKey != "" {
 		cfg.Server.Privkey = *flPrivKey
+	}
+
+	if *flReqSizeLimit != cfg.Server.ReqSizeLimit {
+		cfg.Server.ReqSizeLimit = *flReqSizeLimit
 	}
 
 	return cfg
