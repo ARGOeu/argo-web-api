@@ -29,33 +29,47 @@ package recomputations2
 import "encoding/xml"
 
 type IncomingRequest struct {
-	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time"`
-	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time"`
-	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason"`
-	Group     string   `xml:"group,attr" json:"group" bson:"group"`
-	SubGroups []string `xml:"subgroups" json:"subgroups" bson:"subgroups"`
+	Data []IncomingRecomputation `xml:"data" json:"data"`
 }
 
-type GroupInRequest struct {
-	Type      string   `xml:"type,attr" json:"type"`
-	Group     string   `xml:"group,attr" json:"group"`
-	SubTypes  string   `xml:"sub_type,attr" json:"subtype"`
-	SubGroups []string `xml:"sub_groups" json:"sub_groups"`
+type IncomingRecomputation struct {
+	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
+	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
+	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
+	Report    string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
+	Exclude   []string `xml:"subgroups" json:"subgroups" bson:"subgroups,omitempty"`
 }
 
 type MongoInterface struct {
-	RequesterName  string   `bson:"requester_name"`
-	RequesterEmail string   `bson:"requester_email"`
-	Reason         string   `bson:"reason"`
-	StartTime      string   `bson:"start_time"`
-	EndTime        string   `bson:"end_time"`
-	Report         string   `bson:"report"`
-	Exclude        []string `bson:"exclude"`
-	Status         string   `bson:"status"`
-	Timestamp      string   `bson:"timestamp"`
+	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
+	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
+	Reason         string   `bson:"reason" xml:"reason" json:"reason"`
+	StartTime      string   `bson:"start_time" xml:"start_time" json:"start_time"`
+	EndTime        string   `bson:"end_time" xml:"end_time" json:"end_time"`
+	Report         string   `bson:"report" xml:"report" json:"report"`
+	Exclude        []string `bson:"exclude" xml:"exclude" json:"exclude"`
+	Status         string   `bson:"status" xml:"status" json:"status"`
+	Timestamp      string   `bson:"timestamp" xml:"timestamp" json:"timestamp"`
 }
 
 type Exclude struct {
-	XMLName xml.Name `xml:"subgroup" json:"-"`
+	XMLName xml.Name `xml:"exclude" json:"-"`
 	Group   string   `xml:"name,attr" json:"name"`
+}
+
+type root struct {
+	XMLName xml.Name    `xml:"root" json:"-"`
+	Result  interface{} `json:"root"`
+}
+
+type Message struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Message string   `json:"message" xml:"message"`
+	Status  string   `json:"status" xml:"status"`
+}
+
+// errorMessage struct to hold the json/xml error response
+type errorMessage struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Message string   `xml:"message" json:"message"`
 }

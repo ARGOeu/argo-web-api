@@ -28,6 +28,8 @@ package mongo
 
 import (
 	"errors"
+	"log"
+	"reflect"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -85,6 +87,13 @@ func Insert(session *mgo.Session, dbName string, collectionName string, query in
 	return err
 }
 
+func MultiInsert(session *mgo.Session, dbName string, collectionName string, docs interface{}) error {
+	array := structsToInterfaces(docs)
+	c := openCollection(session, dbName, collectionName)
+	err := c.Insert(array...)
+	return err
+}
+
 func Remove(session *mgo.Session, dbName string, collectionName string, query bson.M) (*mgo.ChangeInfo, error) {
 
 	c := openCollection(session, dbName, collectionName)
@@ -120,4 +129,22 @@ func Update(session *mgo.Session, dbName string, collectionName string, query bs
 	c := openCollection(session, dbName, collectionName)
 	err := c.Update(query, update)
 	return err
+}
+
+func structsToInterfaces(array interface{}) []interface{} {
+
+	v := reflect.ValueOf(array)
+	t := v.Type()
+
+	if t.Kind() != reflect.Slice {
+		log.Panicf("`array` should be %s but got %s", reflect.Slice, t.Kind())
+	}
+
+	result := make([]interface{}, v.Len(), v.Len())
+
+	for i := 0; i < v.Len(); i++ {
+		result[i] = v.Index(i).Interface()
+	}
+
+	return result
 }

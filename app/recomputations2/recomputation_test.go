@@ -27,11 +27,18 @@
 package recomputations2
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"strings"
+	"testing"
 
 	"code.google.com/p/gcfg"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -41,10 +48,9 @@ import (
 type RecomputationsProfileTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
-	tenantdb                  string
-	tenantpassword            string
-	tenantusername            string
-	tenantstorename           string
+	router                    *mux.Router
+	confHandler               respond.ConfHandler
+	tenantDbConf              config.MongoConfig
 	clientkey                 string
 	respRecomputationsCreated string
 	respUnauthorized          string
@@ -62,6 +68,8 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
     cache = false
     lrucache = 700000000
     gzip = true
+	reqsizelimit = 1073741824
+
     [mongodb]
     host = "127.0.0.1"
     port = 27017
@@ -74,8 +82,19 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 		"   <Message>A recalculation request has been filed</Message>\n </root>"
 
 	suite.respUnauthorized = "Unauthorized"
-	suite.tenantdb = "AR_test_recomputations_tenant"
+	suite.tenantDbConf = config.MongoConfig{
+		Host:     "localhost",
+		Port:     27017,
+		Db:       "AR_test_recomputations_tenant",
+		Password: "h4shp4ss",
+		Username: "dbuser",
+		Store:    "ar",
+	}
 	suite.clientkey = "mysecretcombination"
+
+	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/recomputations").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -121,16 +140,16 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 
 				bson.M{
 					// "store":    "ar",
-					"server":   "localhost",
-					"port":     27017,
-					"database": suite.tenantdb,
-					"username": suite.tenantusername,
-					"password": suite.tenantpassword,
+					"server":   suite.tenantDbConf.Host,
+					"port":     suite.tenantDbConf.Port,
+					"database": suite.tenantDbConf.Db,
+					"username": suite.tenantDbConf.Username,
+					"password": suite.tenantDbConf.Password,
 				},
 				bson.M{
-					"server":   "localhost",
-					"port":     27017,
-					"database": "argo_egi_metric_data",
+					"server":   suite.tenantDbConf.Host,
+					"port":     suite.tenantDbConf.Port,
+					"database": suite.tenantDbConf.Db,
 				},
 			},
 			"users": []bson.M{
@@ -147,51 +166,274 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				},
 			}})
 	// Seed database with recomputations
-	c = session.DB(suite.tenantdb).C("recomputations")
+	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
 		MongoInterface{
-			StartTime: "2015-03-10T12:00:00Z",
-			EndTime:   "2015-03-30T23:00:00Z",
-			Reason:    "reasons",
-			Group:     "NGI_PL",
-			SubGroups: []string{"WCSS"},
-			Status:    "pending",
-			Timestamp: "2015-04-01 14:58:40",
+			RequesterName:  "John Snow",
+			RequesterEmail: "jsnow@wall.com",
+			StartTime:      "2015-03-10T12:00:00Z",
+			EndTime:        "2015-03-30T23:00:00Z",
+			Reason:         "reasons",
+			Report:         "EGI_Critical",
+			Exclude:        []string{"WCSS"},
+			Status:         "pending",
+			Timestamp:      "2015-04-01 14:58:40",
 		},
 	)
 	c.Insert(
 		MongoInterface{
-			StartTime: "2015-01-10T12:00:00Z",
-			EndTime:   "2015-01-30T23:00:00Z",
-			Reason:    "power cuts",
-			Group:     "NGI_FR",
-			SubGroups: []string{"Gluster"},
-			Status:    "running",
-			Timestamp: "2015-02-01 14:58:40",
+			RequesterName:  "Arya Stark",
+			RequesterEmail: "astark@shadowguild.com",
+			StartTime:      "2015-01-10T12:00:00Z",
+			EndTime:        "2015-01-30T23:00:00Z",
+			Reason:         "power cuts",
+			Report:         "EGI_Critical",
+			Exclude:        []string{"Gluster"},
+			Status:         "running",
+			Timestamp:      "2015-02-01 14:58:40",
 		},
 	)
 
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
+	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	request, _ := http.NewRequest("GET", "/api/v1/recomputations", strings.NewReader(""))
-	request.Header.Set("x-api-key", "mysecretcombination")
+	suite.router.ServeHTTP(response, request)
 
-	code, _, output, _ := List(request, suite.cfg)
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "root": [
+  {
+   "requester_name": "Arya Stark",
+   "requester_email": "astark@shadowguild.com",
+   "reason": "power cuts",
+   "start_time": "2015-01-10T12:00:00Z",
+   "end_time": "2015-01-30T23:00:00Z",
+   "report": "EGI_Critical",
+   "exclude": [
+    "Gluster"
+   ],
+   "status": "running",
+   "timestamp": "2015-02-01 14:58:40"
+  },
+  {
+   "requester_name": "John Snow",
+   "requester_email": "jsnow@wall.com",
+   "reason": "reasons",
+   "start_time": "2015-03-10T12:00:00Z",
+   "end_time": "2015-03-30T23:00:00Z",
+   "report": "EGI_Critical",
+   "exclude": [
+    "WCSS"
+   ],
+   "status": "pending",
+   "timestamp": "2015-04-01 14:58:40"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
 
 	recomputationRequestsXML := `<root>
- <Request start_time="2015-01-10T12:00:00Z" end_time="2015-01-30T23:00:00Z" reason="power cuts" group="NGI_FR" status="running" timestamp="2015-02-01 14:58:40">
-  <Exclude site="Gluster"></Exclude>
- </Request>
- <Request start_time="2015-03-10T12:00:00Z" end_time="2015-03-30T23:00:00Z" reason="reasons" group="NGI_PL" status="pending" timestamp="2015-04-01 14:58:40">
-  <Exclude site="WCSS"></Exclude>
- </Request>
+ <Result>
+  <requester_name>Arya Stark</requester_name>
+  <requester_email>astark@shadowguild.com</requester_email>
+  <reason>power cuts</reason>
+  <start_time>2015-01-10T12:00:00Z</start_time>
+  <end_time>2015-01-30T23:00:00Z</end_time>
+  <report>EGI_Critical</report>
+  <exclude>Gluster</exclude>
+  <status>running</status>
+  <timestamp>2015-02-01 14:58:40</timestamp>
+ </Result>
+ <Result>
+  <requester_name>John Snow</requester_name>
+  <requester_email>jsnow@wall.com</requester_email>
+  <reason>reasons</reason>
+  <start_time>2015-03-10T12:00:00Z</start_time>
+  <end_time>2015-03-30T23:00:00Z</end_time>
+  <report>EGI_Critical</report>
+  <exclude>WCSS</exclude>
+  <status>pending</status>
+  <timestamp>2015-04-01 14:58:40</timestamp>
+ </Result>
 </root>`
+
+	response = httptest.NewRecorder()
+	request.Header.Set("Accept", "application/xml")
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(recomputationRequestsXML, string(output), "Response body mismatch")
+	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
+}
 
+func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
+	suite.router.Methods("POST").Handler(suite.confHandler.Respond(SubmitRecomputation))
+	submission := IncomingRequest{
+		Data: []IncomingRecomputation{
+			{
+				StartTime: "2015-01-10T12:00:00Z",
+				EndTime:   "2015-01-30T23:00:00Z",
+				Reason:    "Ups failure",
+				Report:    "EGI_Critical",
+				Exclude:   []string{"HPC"},
+			},
+			{
+				StartTime: "2015-01-13T16:00:00Z",
+				EndTime:   "2015-01-15T20:00:00Z",
+				Reason:    "dos attack",
+				Report:    "EGI_Critical",
+				Exclude:   []string{"SRVMv2"},
+			},
+		}}
+	jsonsubmission, _ := json.Marshal(submission)
+	// strsubmission := string(jsonsubmission)
+	// fmt.Println(strsubmission)
+	request, _ := http.NewRequest("POST", "/api/v2/recomputations", bytes.NewBuffer(jsonsubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "message": "Recomputations successfully submitted",
+ "status": "202"
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+	// 	recomputationRequestsXML := `<root>
+	//  <Result>
+	//   <requester_name>Arya Stark</requester_name>
+	//   <requester_email>astark@shadowguild.com</requester_email>
+	//   <reason>power cuts</reason>
+	//   <start_time>2015-01-10T12:00:00Z</start_time>
+	//   <end_time>2015-01-30T23:00:00Z</end_time>
+	//   <report>EGI_Critical</report>
+	//   <exclude>Gluster</exclude>
+	//   <status>running</status>
+	//   <timestamp>2015-02-01 14:58:40</timestamp>
+	//  </Result>
+	//  <Result>
+	//   <requester_name>John Snow</requester_name>
+	//   <requester_email>jsnow@wall.com</requester_email>
+	//   <reason>reasons</reason>
+	//   <start_time>2015-03-10T12:00:00Z</start_time>
+	//   <end_time>2015-03-30T23:00:00Z</end_time>
+	//   <report>EGI_Critical</report>
+	//   <exclude>WCSS</exclude>
+	//   <status>pending</status>
+	//   <timestamp>2015-04-01 14:58:40</timestamp>
+	//  </Result>
+	// </root>`
+	//
+	// 	response = httptest.NewRecorder()
+	// 	request.Header.Set("Accept", "application/xml")
+	// 	suite.router.ServeHTTP(response, request)
+	//
+	// 	code = response.Code
+	// 	output = response.Body.String()
+	//
+	// 	// Check that we must have a 200 ok code
+	// 	suite.Equal(200, code, "Internal Server Error")
+	// 	// Compare the expected and actual xml response
+	// 	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
+
+	dbDumpJson := `\[
+ \{
+  "requester_name": "Arya Stark",
+  "requester_email": "astark@shadowguild.com",
+  "reason": "power cuts",
+  "start_time": "2015-01-10T12:00:00Z",
+  "end_time": "2015-01-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": \[
+   "Gluster"
+  \],
+  "status": "running",
+  "timestamp": "2015-02-01 14:58:40"
+ \},
+ \{
+  "requester_name": "John Snow",
+  "requester_email": "jsnow@wall.com",
+  "reason": "reasons",
+  "start_time": "2015-03-10T12:00:00Z",
+  "end_time": "2015-03-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": \[
+   "WCSS"
+  \],
+  "status": "pending",
+  "timestamp": "2015-04-01 14:58:40"
+ \},
+ \{
+  "requester_name": "Joe Complex",
+  "requester_email": "C.Joe@egi.eu",
+  "reason": "Ups failure",
+  "start_time": "2015-01-10T12:00:00Z",
+  "end_time": "2015-01-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": \[
+   "HPC"
+  \],
+  "status": "pending",
+  "timestamp": ".*"
+ \},
+ \{
+  "requester_name": "Joe Complex",
+  "requester_email": "C.Joe@egi.eu",
+  "reason": "dos attack",
+  "start_time": "2015-01-13T16:00:00Z",
+  "end_time": "2015-01-15T20:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": \[
+   "SRVMv2"
+  \],
+  "status": "pending",
+  "timestamp": ".*"
+ \}
+\]`
+
+	session, _ := mongo.OpenSession(suite.tenantDbConf)
+	defer mongo.CloseSession(session)
+	var results []MongoInterface
+	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, IncomingRecomputation{}, "timestamp", &results)
+	json, _ := json.MarshalIndent(results, "", " ")
+	suite.Regexp(dbDumpJson, string(json), "Error")
+
+}
+
+//TearDownTest to tear down every test
+func (suite *RecomputationsProfileTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+	session.DB(suite.tenantDbConf.Db).DropDatabase()
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+}
+
+func TestRecompuptationsTestSuite(t *testing.T) {
+	suite.Run(t, new(RecomputationsProfileTestSuite))
 }

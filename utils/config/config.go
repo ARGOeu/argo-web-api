@@ -50,12 +50,15 @@ var flReqSizeLimit = flag.Int64("request-size-limit", 1073741824, "specify maxim
 
 // MongoConfig configuration to connect to a mongodb instance
 type MongoConfig struct {
+	User     string `bson:"name"`
+	Email    string `bson:"email"`
 	Host     string `bson:"server"`
 	Port     int    `bson:"port"`
 	Db       string `bson:"database"`
 	Username string `bson:"username"`
 	Password string `bson:"password"`
 	Store    string `bson:"store"`
+	ApiKey   string `bson:"api_key"`
 }
 
 // Config configuration for the api
@@ -85,7 +88,7 @@ const defaultConfig = `
     gzip = true
     cert = /etc/pki/tls/certs/localhost.crt
     privkey = /etc/pki/tls/private/localhost.key
-	requestsizelimit = 1073741824
+	reqsizelimit = 1073741824
 
     [mongodb]
     host = "127.0.0.1"
@@ -151,7 +154,7 @@ func LoadConfiguration() Config {
 		cfg.Server.Privkey = *flPrivKey
 	}
 
-	if *flReqSizeLimit != cfg.Server.ReqSizeLimit {
+	if *flReqSizeLimit != cfg.Server.ReqSizeLimit || cfg.Server.ReqSizeLimit != 0 {
 		cfg.Server.ReqSizeLimit = *flReqSizeLimit
 	}
 

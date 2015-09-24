@@ -32,11 +32,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 
+	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/authentication"
-	"github.com/argoeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 )
+
+var recomputationsColl = "recomputations"
 
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
@@ -44,16 +47,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	// contentType := "application/xml"
-	// charset := "utf-8"
+	// contentType := "application/json"
+	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
 	urlValues := r.URL.Query()
+	contentType := r.Header.Get("Accept")
 
-	filter := IncomingRequest{
+	filter := IncomingRecomputation{
 		StartTime: urlValues.Get("start_time"),
 		EndTime:   urlValues.Get("end_time"),
 		Reason:    urlValues.Get("reason"),
+		Report:    urlValues.Get("report"),
 	}
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
@@ -73,12 +78,14 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, "recomputations", nil, "timestamp", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, filter, "timestamp", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	output, err = createListView(results, contentType)
 
 	return code, h, output, err
 
@@ -90,12 +97,31 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	// contentType := "application/xml"
-	// charset := "utf-8"
+	// contentType := "application/json"
+	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	var incomingRequest IncomingRequest
+	contentType := r.Header.Get("Accept")
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	var recompSubmission IncomingRequest
 	// urlValues := r.URL.Query()
+
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
@@ -103,9 +129,42 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
-	if err := json.Unmarshal(body, &incomingRequest); err != nil {
+	if err := json.Unmarshal(body, &recompSubmission); err != nil {
 		code = 422 // unprocessable entity
+		output = []byte("Unprocessable JSON")
+		return code, h, output, err
 	}
+	now := time.Now()
+	recomputations := []MongoInterface{}
+	for _, r := range recompSubmission.Data {
+		recomputations = append(recomputations,
+			MongoInterface{
+				RequesterName:  tenantDbConfig.User,
+				RequesterEmail: tenantDbConfig.Email,
+				StartTime:      r.StartTime,
+				EndTime:        r.EndTime,
+				Reason:         r.Reason,
+				Report:         r.Report,
+				Exclude:        r.Exclude,
+				Timestamp:      now.Format("2006-01-02 15:04:05"),
+				Status:         "pending",
+			})
+	}
+
+	// err = session.DB(cfg.MongoDB.Db).C(recomputationsColl).Insert(recomputations)
+
+	err = mongo.MultiInsert(session, tenantDbConfig.Db, recomputationsColl, recomputations)
+
+	if err != nil {
+		panic(err)
+	}
+
+	out := Message{
+		Message: "Recomputations successfully submitted",
+		Status:  "202",
+	}
+
+	output, err = json.MarshalIndent(out, "", " ")
 
 	return code, h, output, err
 }

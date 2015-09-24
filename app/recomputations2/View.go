@@ -27,31 +27,38 @@
 package recomputations2
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	"encoding/xml"
 )
 
-func createView(results []MongoInterface) ([]byte, error) {
+func createListView(results []MongoInterface, format string) ([]byte, error) {
 
-	docRoot := &Root{}
+	docRoot := &root{}
 
-	for _, row := range results {
-		r := &Request{}
-		r.StartTime = row.StartTime
-		r.EndTime = row.EndTime
-		r.Reason = row.Reason
-		r.Group = row.Group
-		r.Status = row.Status
-		r.Timestamp = row.Timestamp
-		for _, s := range row.ExcludeSite {
-			e := &Exclude{
-				Site: s,
-			}
-			r.Exclude = append(r.Exclude, e)
-		}
-		docRoot.Request = append(docRoot.Request, r)
+	docRoot.Result = results
+
+	// for _, row := range results {
+	// 	r := &M{}
+	// 	r.StartTime = row.StartTime
+	// 	r.EndTime = row.EndTime
+	// 	r.Reason = row.Reason
+	// 	r.Group = row.Group
+	// 	r.Status = row.Status
+	// 	r.Timestamp = row.Timestamp
+	// 	for _, g := range row.Exclude {
+	// 		e := &Exclude{
+	// 			Group: g,
+	// 		}
+	// 		r.Exclude = append(r.Exclude, e)
+	// 	}
+	// 	docRoot.Request = append(docRoot.Request, r)
+	// }
+	if format == "application/xml" {
+		output, err := xml.MarshalIndent(docRoot, "", " ")
+		return output, err
 	}
-	output, err := xml.MarshalIndent(docRoot, "", " ")
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err
 }
 
