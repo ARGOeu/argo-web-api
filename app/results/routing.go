@@ -115,9 +115,12 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 	session, err := mongo.OpenSession(tenantcfg)
+	defer mongo.CloseSession(session)
+
 	if err != nil {
 		return code, h, output, err
 	}
+
 	result := bson.M{}
 	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
 
