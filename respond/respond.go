@@ -27,6 +27,7 @@
 package respond
 
 import (
+	"encoding/xml"
 	"fmt"
 	"log"
 	"net/http"
@@ -45,6 +46,19 @@ const ymdForm = "20060102"
 // ConfHandler Keeps all the configuration/variables required by all the requests
 type ConfHandler struct {
 	Config config.Config
+}
+
+type ResponseMessage struct {
+	XMLName xml.Name       `xml:"root" json:"-"`
+	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
+	Data    interface{}    `xml:"data>result,omitempty" json:"data,omitempty"`
+	Errors  interface{}    `xml:"errors,omitempty" json:"errors,omitempty"`
+}
+
+type StatusResponse struct {
+	Message string `xml:"message,omitempty" json:"message,omitempty"`
+	Code    string `xml:"code,omitempty" json:"code,omitempty"`
+	Detail  string `xml:"details,omitempty" json:"details,omitempty"`
 }
 
 // Respond will be called to answer to http requests to the PI

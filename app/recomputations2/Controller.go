@@ -97,7 +97,6 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	// contentType := "application/json"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
@@ -159,12 +158,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		panic(err)
 	}
 
-	out := Message{
-		Message: "Recomputations successfully submitted",
-		Status:  "202",
-	}
-
-	output, err = json.MarshalIndent(out, "", " ")
+	output, err = createSubmitView(recomputations, contentType)
 
 	return code, h, output, err
 }

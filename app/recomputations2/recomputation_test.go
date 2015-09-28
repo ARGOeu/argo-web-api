@@ -175,7 +175,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			EndTime:        "2015-03-30T23:00:00Z",
 			Reason:         "reasons",
 			Report:         "EGI_Critical",
-			Exclude:        []string{"WCSS"},
+			Exclude:        []string{"HG-01-AUTH"},
 			Status:         "pending",
 			Timestamp:      "2015-04-01 14:58:40",
 		},
@@ -188,7 +188,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			EndTime:        "2015-01-30T23:00:00Z",
 			Reason:         "power cuts",
 			Report:         "EGI_Critical",
-			Exclude:        []string{"Gluster"},
+			Exclude:        []string{"GR-01-AUTH"},
 			Status:         "running",
 			Timestamp:      "2015-02-01 14:58:40",
 		},
@@ -209,7 +209,11 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	output := response.Body.String()
 
 	recomputationRequestsJSON := `{
- "root": [
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
   {
    "requester_name": "Arya Stark",
    "requester_email": "astark@shadowguild.com",
@@ -218,7 +222,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "end_time": "2015-01-30T23:00:00Z",
    "report": "EGI_Critical",
    "exclude": [
-    "Gluster"
+    "GR-01-AUTH"
    ],
    "status": "running",
    "timestamp": "2015-02-01 14:58:40"
@@ -231,7 +235,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "end_time": "2015-03-30T23:00:00Z",
    "report": "EGI_Critical",
    "exclude": [
-    "WCSS"
+    "HG-01-AUTH"
    ],
    "status": "pending",
    "timestamp": "2015-04-01 14:58:40"
@@ -244,28 +248,34 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
 
 	recomputationRequestsXML := `<root>
- <Result>
-  <requester_name>Arya Stark</requester_name>
-  <requester_email>astark@shadowguild.com</requester_email>
-  <reason>power cuts</reason>
-  <start_time>2015-01-10T12:00:00Z</start_time>
-  <end_time>2015-01-30T23:00:00Z</end_time>
-  <report>EGI_Critical</report>
-  <exclude>Gluster</exclude>
-  <status>running</status>
-  <timestamp>2015-02-01 14:58:40</timestamp>
- </Result>
- <Result>
-  <requester_name>John Snow</requester_name>
-  <requester_email>jsnow@wall.com</requester_email>
-  <reason>reasons</reason>
-  <start_time>2015-03-10T12:00:00Z</start_time>
-  <end_time>2015-03-30T23:00:00Z</end_time>
-  <report>EGI_Critical</report>
-  <exclude>WCSS</exclude>
-  <status>pending</status>
-  <timestamp>2015-04-01 14:58:40</timestamp>
- </Result>
+ <status>
+  <message>Success</message>
+  <code>200</code>
+ </status>
+ <data>
+  <recomputation>
+   <requester_name>Arya Stark</requester_name>
+   <requester_email>astark@shadowguild.com</requester_email>
+   <reason>power cuts</reason>
+   <start_time>2015-01-10T12:00:00Z</start_time>
+   <end_time>2015-01-30T23:00:00Z</end_time>
+   <report>EGI_Critical</report>
+   <exclude>GR-01-AUTH</exclude>
+   <status>running</status>
+   <timestamp>2015-02-01 14:58:40</timestamp>
+  </recomputation>
+  <recomputation>
+   <requester_name>John Snow</requester_name>
+   <requester_email>jsnow@wall.com</requester_email>
+   <reason>reasons</reason>
+   <start_time>2015-03-10T12:00:00Z</start_time>
+   <end_time>2015-03-30T23:00:00Z</end_time>
+   <report>EGI_Critical</report>
+   <exclude>HG-01-AUTH</exclude>
+   <status>pending</status>
+   <timestamp>2015-04-01 14:58:40</timestamp>
+  </recomputation>
+ </data>
 </root>`
 
 	response = httptest.NewRecorder()
@@ -290,14 +300,14 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 				EndTime:   "2015-01-30T23:00:00Z",
 				Reason:    "Ups failure",
 				Report:    "EGI_Critical",
-				Exclude:   []string{"HPC"},
+				Exclude:   []string{"GRNET-01"},
 			},
 			{
 				StartTime: "2015-01-13T16:00:00Z",
 				EndTime:   "2015-01-15T20:00:00Z",
 				Reason:    "dos attack",
 				Report:    "EGI_Critical",
-				Exclude:   []string{"SRVMv2"},
+				Exclude:   []string{"GRNET-02"},
 			},
 		}}
 	jsonsubmission, _ := json.Marshal(submission)
@@ -312,10 +322,11 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 	code := response.Code
 	output := response.Body.String()
-
 	recomputationRequestsJSON := `{
- "message": "Recomputations successfully submitted",
- "status": "202"
+ "status": {
+  "message": "Recomputations successfully created",
+  "code": "201"
+ }
 }`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
@@ -330,7 +341,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	//   <start_time>2015-01-10T12:00:00Z</start_time>
 	//   <end_time>2015-01-30T23:00:00Z</end_time>
 	//   <report>EGI_Critical</report>
-	//   <exclude>Gluster</exclude>
+	//   <exclude>GR-01-AUTH</exclude>
 	//   <status>running</status>
 	//   <timestamp>2015-02-01 14:58:40</timestamp>
 	//  </Result>
@@ -341,7 +352,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	//   <start_time>2015-03-10T12:00:00Z</start_time>
 	//   <end_time>2015-03-30T23:00:00Z</end_time>
 	//   <report>EGI_Critical</report>
-	//   <exclude>WCSS</exclude>
+	//   <exclude>HG-01-AUTH</exclude>
 	//   <status>pending</status>
 	//   <timestamp>2015-04-01 14:58:40</timestamp>
 	//  </Result>
@@ -368,7 +379,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-01-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "Gluster"
+   "GR-01-AUTH"
   \],
   "status": "running",
   "timestamp": "2015-02-01 14:58:40"
@@ -381,7 +392,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-03-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "WCSS"
+   "HG-01-AUTH"
   \],
   "status": "pending",
   "timestamp": "2015-04-01 14:58:40"
@@ -394,7 +405,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-01-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "HPC"
+   "GRNET-01"
   \],
   "status": "pending",
   "timestamp": ".*"
@@ -407,7 +418,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-01-15T20:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "SRVMv2"
+   "GRNET-02"
   \],
   "status": "pending",
   "timestamp": ".*"

@@ -41,6 +41,7 @@ type IncomingRecomputation struct {
 }
 
 type MongoInterface struct {
+	XMLName        xml.Name `xml:"recomputation" json:"-"`
 	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
 	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
 	Reason         string   `bson:"reason" xml:"reason" json:"reason"`

@@ -29,34 +29,41 @@ package recomputations2
 import (
 	"encoding/json"
 	"encoding/xml"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 )
 
 func createListView(results []MongoInterface, format string) ([]byte, error) {
 
-	docRoot := &root{}
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Success",
+			Code:    "200",
+		},
+	}
 
-	docRoot.Result = results
-
-	// for _, row := range results {
-	// 	r := &M{}
-	// 	r.StartTime = row.StartTime
-	// 	r.EndTime = row.EndTime
-	// 	r.Reason = row.Reason
-	// 	r.Group = row.Group
-	// 	r.Status = row.Status
-	// 	r.Timestamp = row.Timestamp
-	// 	for _, g := range row.Exclude {
-	// 		e := &Exclude{
-	// 			Group: g,
-	// 		}
-	// 		r.Exclude = append(r.Exclude, e)
-	// 	}
-	// 	docRoot.Request = append(docRoot.Request, r)
-	// }
+	docRoot.Data = results
 	if format == "application/xml" {
 		output, err := xml.MarshalIndent(docRoot, "", " ")
 		return output, err
 	}
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}
+
+func createSubmitView(inserted []MongoInterface, format string) ([]byte, error) {
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Recomputations successfully created",
+			Code:    "201",
+		},
+	}
+
+	// Message{
+	// 	Message: "Recomputations successfully submitted",
+	// 	Status:  "202",
+	// }
 
 	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err
