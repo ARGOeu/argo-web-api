@@ -37,7 +37,7 @@ type IncomingRecomputation struct {
 	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
 	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
 	Report    string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
-	Exclude   []string `xml:"subgroups" json:"subgroups" bson:"subgroups,omitempty"`
+	Exclude   []string `xml:"excluded" json:"excluded" bson:"excluded,omitempty"`
 }
 
 type MongoInterface struct {

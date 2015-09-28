@@ -4,6 +4,16 @@ language: go
 # mongodb should be running
 services: mongodb
 
+# addons:
+#   apt:
+#     sources:
+#     - mongodb-upstart
+#     packages:
+#     - mongodb-org
+#     - mongodb-org-server
+#     - mongodb-org-shell
+#     - mongodb-org-tools
+
 # install all third party go packages that we use
 install:
  - go get github.com/gorilla/handlers
@@ -21,11 +31,11 @@ before_script:
   - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
   - sudo apt-get update
   - sudo apt-get install -y mongodb-org=2.6.6 mongodb-org-server=2.6.6 mongodb-org-shell=2.6.6 mongodb-org-mongos=2.6.6 mongodb-org-tools=2.6.6
-# Wait a bit for mongod service to become available  
-  - sleep 15 
+# Wait a bit for mongod service to become available
+  - until nc -z localhost 27017 ; do echo Waiting for MongoDB; sleep 1; done
 # Check mongodb version
   - mongo --version
 
 # Run all unittests sequentally in order to not push mongodb resources
 script:
- - go test -v -p=1 ./...  
+ - go test -v -p=1 ./...
