@@ -118,7 +118,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	var recompSubmission IncomingRequest
+	var recompSubmission IncomingRecomputation
 	// urlValues := r.URL.Query()
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -134,31 +134,26 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 	now := time.Now()
-	recomputations := []MongoInterface{}
-	for _, r := range recompSubmission.Data {
-		recomputations = append(recomputations,
-			MongoInterface{
-				RequesterName:  tenantDbConfig.User,
-				RequesterEmail: tenantDbConfig.Email,
-				StartTime:      r.StartTime,
-				EndTime:        r.EndTime,
-				Reason:         r.Reason,
-				Report:         r.Report,
-				Exclude:        r.Exclude,
-				Timestamp:      now.Format("2006-01-02 15:04:05"),
-				Status:         "pending",
-			})
+	recomputation := MongoInterface{
+		UUID:           mongo.NewUUID(),
+		RequesterName:  tenantDbConfig.User,
+		RequesterEmail: tenantDbConfig.Email,
+		StartTime:      recompSubmission.StartTime,
+		EndTime:        recompSubmission.EndTime,
+		Reason:         recompSubmission.Reason,
+		Report:         recompSubmission.Report,
+		Exclude:        recompSubmission.Exclude,
+		Timestamp:      now.Format("2006-01-02 15:04:05"),
+		Status:         "pending",
 	}
 
-	// err = session.DB(cfg.MongoDB.Db).C(recomputationsColl).Insert(recomputations)
-
-	err = mongo.MultiInsert(session, tenantDbConfig.Db, recomputationsColl, recomputations)
+	err = mongo.Insert(session, tenantDbConfig.Db, recomputationsColl, recomputation)
 
 	if err != nil {
 		panic(err)
 	}
 
-	output, err = createSubmitView(recomputations, contentType)
+	output, err = createSubmitView(recomputation, contentType)
 
 	return code, h, output, err
 }

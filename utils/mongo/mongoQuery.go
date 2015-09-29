@@ -31,12 +31,17 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/twinj/uuid"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type Id struct {
 	ID bson.ObjectId `bson:"_id"`
+}
+
+func NewUUID() string {
+	return uuid.NewV4().String()
 }
 
 func openCollection(session *mgo.Session, dbName string, collectionName string) *mgo.Collection {

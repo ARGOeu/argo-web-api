@@ -33,6 +33,7 @@ type IncomingRequest struct {
 }
 
 type IncomingRecomputation struct {
+	UUID      string   `xml:"uuid" json:"uuid" bson:"uuid,omitempty"`
 	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
 	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
 	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
@@ -42,6 +43,7 @@ type IncomingRecomputation struct {
 
 type MongoInterface struct {
 	XMLName        xml.Name `xml:"recomputation" json:"-"`
+	UUID           string   `bson:"uuid" xml:"uuid" json:"uuid"`
 	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
 	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
 	Reason         string   `bson:"reason" xml:"reason" json:"reason"`

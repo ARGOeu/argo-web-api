@@ -169,6 +169,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
 		MongoInterface{
+			UUID:           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			RequesterName:  "John Snow",
 			RequesterEmail: "jsnow@wall.com",
 			StartTime:      "2015-03-10T12:00:00Z",
@@ -182,6 +183,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	)
 	c.Insert(
 		MongoInterface{
+			UUID:           "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
 			RequesterName:  "Arya Stark",
 			RequesterEmail: "astark@shadowguild.com",
 			StartTime:      "2015-01-10T12:00:00Z",
@@ -215,6 +217,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
  },
  "data": [
   {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
    "requester_name": "Arya Stark",
    "requester_email": "astark@shadowguild.com",
    "reason": "power cuts",
@@ -228,6 +231,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "timestamp": "2015-02-01 14:58:40"
   },
   {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "requester_name": "John Snow",
    "requester_email": "jsnow@wall.com",
    "reason": "reasons",
@@ -254,6 +258,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
  </status>
  <data>
   <recomputation>
+   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50a</uuid>
    <requester_name>Arya Stark</requester_name>
    <requester_email>astark@shadowguild.com</requester_email>
    <reason>power cuts</reason>
@@ -265,6 +270,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    <timestamp>2015-02-01 14:58:40</timestamp>
   </recomputation>
   <recomputation>
+   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50b</uuid>
    <requester_name>John Snow</requester_name>
    <requester_email>jsnow@wall.com</requester_email>
    <reason>reasons</reason>
@@ -293,23 +299,13 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	suite.router.Methods("POST").Handler(suite.confHandler.Respond(SubmitRecomputation))
-	submission := IncomingRequest{
-		Data: []IncomingRecomputation{
-			{
-				StartTime: "2015-01-10T12:00:00Z",
-				EndTime:   "2015-01-30T23:00:00Z",
-				Reason:    "Ups failure",
-				Report:    "EGI_Critical",
-				Exclude:   []string{"GRNET-01"},
-			},
-			{
-				StartTime: "2015-01-13T16:00:00Z",
-				EndTime:   "2015-01-15T20:00:00Z",
-				Reason:    "dos attack",
-				Report:    "EGI_Critical",
-				Exclude:   []string{"GRNET-02"},
-			},
-		}}
+	submission := IncomingRecomputation{
+		StartTime: "2015-01-10T12:00:00Z",
+		EndTime:   "2015-01-30T23:00:00Z",
+		Reason:    "Ups failure",
+		Report:    "EGI_Critical",
+		Exclude:   []string{"GRNET-01"},
+	}
 	jsonsubmission, _ := json.Marshal(submission)
 	// strsubmission := string(jsonsubmission)
 	// fmt.Println(strsubmission)
@@ -333,45 +329,9 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	// Compare the expected and actual xml response
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
 
-	// 	recomputationRequestsXML := `<root>
-	//  <Result>
-	//   <requester_name>Arya Stark</requester_name>
-	//   <requester_email>astark@shadowguild.com</requester_email>
-	//   <reason>power cuts</reason>
-	//   <start_time>2015-01-10T12:00:00Z</start_time>
-	//   <end_time>2015-01-30T23:00:00Z</end_time>
-	//   <report>EGI_Critical</report>
-	//   <exclude>GR-01-AUTH</exclude>
-	//   <status>running</status>
-	//   <timestamp>2015-02-01 14:58:40</timestamp>
-	//  </Result>
-	//  <Result>
-	//   <requester_name>John Snow</requester_name>
-	//   <requester_email>jsnow@wall.com</requester_email>
-	//   <reason>reasons</reason>
-	//   <start_time>2015-03-10T12:00:00Z</start_time>
-	//   <end_time>2015-03-30T23:00:00Z</end_time>
-	//   <report>EGI_Critical</report>
-	//   <exclude>HG-01-AUTH</exclude>
-	//   <status>pending</status>
-	//   <timestamp>2015-04-01 14:58:40</timestamp>
-	//  </Result>
-	// </root>`
-	//
-	// 	response = httptest.NewRecorder()
-	// 	request.Header.Set("Accept", "application/xml")
-	// 	suite.router.ServeHTTP(response, request)
-	//
-	// 	code = response.Code
-	// 	output = response.Body.String()
-	//
-	// 	// Check that we must have a 200 ok code
-	// 	suite.Equal(200, code, "Internal Server Error")
-	// 	// Compare the expected and actual xml response
-	// 	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
-
 	dbDumpJson := `\[
  \{
+  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
   "requester_name": "Arya Stark",
   "requester_email": "astark@shadowguild.com",
   "reason": "power cuts",
@@ -385,6 +345,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "timestamp": "2015-02-01 14:58:40"
  \},
  \{
+  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
   "requester_name": "John Snow",
   "requester_email": "jsnow@wall.com",
   "reason": "reasons",
@@ -398,6 +359,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "timestamp": "2015-04-01 14:58:40"
  \},
  \{
+  "uuid": ".+-.+-.+-.+-.+",
   "requester_name": "Joe Complex",
   "requester_email": "C.Joe@egi.eu",
   "reason": "Ups failure",
@@ -409,26 +371,13 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   \],
   "status": "pending",
   "timestamp": ".*"
- \},
- \{
-  "requester_name": "Joe Complex",
-  "requester_email": "C.Joe@egi.eu",
-  "reason": "dos attack",
-  "start_time": "2015-01-13T16:00:00Z",
-  "end_time": "2015-01-15T20:00:00Z",
-  "report": "EGI_Critical",
-  "exclude": \[
-   "GRNET-02"
-  \],
-  "status": "pending",
-  "timestamp": ".*"
  \}
 \]`
 
 	session, _ := mongo.OpenSession(suite.tenantDbConf)
 	defer mongo.CloseSession(session)
 	var results []MongoInterface
-	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, IncomingRecomputation{}, "timestamp", &results)
+	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
 	json, _ := json.MarshalIndent(results, "", " ")
 	suite.Regexp(dbDumpJson, string(json), "Error")
 

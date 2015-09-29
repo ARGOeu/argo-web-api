@@ -52,7 +52,7 @@ type ResponseMessage struct {
 	XMLName xml.Name       `xml:"root" json:"-"`
 	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
 	Data    interface{}    `xml:"data>result,omitempty" json:"data,omitempty"`
-	Errors  interface{}    `xml:"errors,omitempty" json:"errors,omitempty"`
+	Errors  interface{}    `xml:"errors>error,omitempty" json:"errors,omitempty"`
 }
 
 type StatusResponse struct {

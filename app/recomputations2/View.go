@@ -52,7 +52,7 @@ func createListView(results []MongoInterface, format string) ([]byte, error) {
 	return output, err
 }
 
-func createSubmitView(inserted []MongoInterface, format string) ([]byte, error) {
+func createSubmitView(inserted MongoInterface, format string) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
 			Message: "Recomputations successfully created",
