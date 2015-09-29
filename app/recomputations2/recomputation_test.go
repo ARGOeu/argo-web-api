@@ -198,6 +198,76 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 
 }
 
+func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
+	suite.router.Methods("GET").Path("/{uuid}").Handler(suite.confHandler.Respond(ListOne))
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": {
+  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+  "requester_name": "John Snow",
+  "requester_email": "jsnow@wall.com",
+  "reason": "reasons",
+  "start_time": "2015-03-10T12:00:00Z",
+  "end_time": "2015-03-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": [
+   "HG-01-AUTH"
+  ],
+  "status": "pending",
+  "timestamp": "2015-04-01 14:58:40"
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+	recomputationRequestsXML := `<root>
+ <status>
+  <message>Success</message>
+  <code>200</code>
+ </status>
+ <data>
+  <recomputation>
+   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50b</uuid>
+   <requester_name>John Snow</requester_name>
+   <requester_email>jsnow@wall.com</requester_email>
+   <reason>reasons</reason>
+   <start_time>2015-03-10T12:00:00Z</start_time>
+   <end_time>2015-03-30T23:00:00Z</end_time>
+   <report>EGI_Critical</report>
+   <exclude>HG-01-AUTH</exclude>
+   <status>pending</status>
+   <timestamp>2015-04-01 14:58:40</timestamp>
+  </recomputation>
+ </data>
+</root>`
+
+	response = httptest.NewRecorder()
+	request.Header.Set("Accept", "application/xml")
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
+}
+
 func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
 	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))

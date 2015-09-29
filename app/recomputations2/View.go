@@ -33,7 +33,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-func createListView(results []MongoInterface, format string) ([]byte, error) {
+func createListView(results interface{}, format string) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{

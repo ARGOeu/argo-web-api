@@ -37,6 +37,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 var recomputationsColl = "recomputations"
@@ -86,6 +87,54 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	output, err = createListView(results, contentType)
+
+	return code, h, output, err
+
+}
+
+func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	// contentType := "application/json"
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// urlValues := r.URL.Query()
+	contentType := r.Header.Get("Accept")
+	vars := mux.Vars(r)
+
+	filter := IncomingRecomputation{
+		UUID: vars["UUID"],
+	}
+
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output = []byte(http.StatusText(http.StatusUnauthorized))
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	result := MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, recomputationsColl, filter, &result)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createListView(result, contentType)
 
 	return code, h, output, err
 
