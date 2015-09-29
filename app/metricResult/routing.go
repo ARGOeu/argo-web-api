@@ -31,7 +31,7 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s.Path("/{endpoint_name}/{metric_name}").
+	s.Path("/{report}/{endpoint_name}/{metric_name}").
 		Methods("GET").
 		Name("Metric Result").
 		Handler(confhandler.Respond(GetMetricResult))
