@@ -27,7 +27,7 @@
 package availabilityProfiles
 
 import (
-	"code.google.com/p/gcfg"
+	"gopkg.in/gcfg.v1"
 	"encoding/xml"
 	"fmt"
 	"github.com/ARGOeu/argo-web-api/utils/config"

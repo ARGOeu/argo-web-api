@@ -30,7 +30,7 @@ import (
 	"flag"
 	"os"
 
-	"code.google.com/p/gcfg"
+	"gopkg.in/gcfg.v1"
 )
 
 //All the flags that can be added when starting the PI
