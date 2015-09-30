@@ -268,6 +268,31 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
 	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
 }
 
+func (suite *RecomputationsProfileTestSuite) TestListErrorRecomputations() {
+	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/jaason")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Not Acceptable Content Type",
+  "code": "406",
+  "details": "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'"
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(406, code, "Should be not acceptable")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+}
+
 func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
 	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))
@@ -379,7 +404,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	jsonsubmission, _ := json.Marshal(submission)
 	// strsubmission := string(jsonsubmission)
 	// fmt.Println(strsubmission)
-	request, _ := http.NewRequest("POST", "/api/v2/recomputations", bytes.NewBuffer(jsonsubmission))
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer(jsonsubmission))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -388,16 +413,23 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 	code := response.Code
 	output := response.Body.String()
+
 	recomputationRequestsJSON := `{
  "status": {
   "message": "Recomputations successfully created",
   "code": "201"
+ },
+ "data": {
+  "uuid": ".+",
+  "links": {
+   "self": "https://argo-web-api.grnet.gr:443/api/v2/recomputations/.+"
+  }
  }
 }`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
 
 	dbDumpJson := `\[
  \{
@@ -449,7 +481,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	var results []MongoInterface
 	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
 	json, _ := json.MarshalIndent(results, "", " ")
-	suite.Regexp(dbDumpJson, string(json), "Error")
+	suite.Regexp(dbDumpJson, string(json), "Database contents were not expected")
 
 }
 

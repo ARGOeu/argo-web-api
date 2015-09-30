@@ -34,6 +34,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
@@ -42,6 +43,7 @@ import (
 
 var recomputationsColl = "recomputations"
 
+// List existing recomputations
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -55,20 +57,28 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	urlValues := r.URL.Query()
 	contentType := r.Header.Get("Accept")
 
-	filter := IncomingRecomputation{
-		StartTime: urlValues.Get("start_time"),
-		EndTime:   urlValues.Get("end_time"),
-		Reason:    urlValues.Get("reason"),
-		Report:    urlValues.Get("report"),
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
 	}
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
+	}
+
+	filter := IncomingRecomputation{
+		StartTime: urlValues.Get("start_time"),
+		EndTime:   urlValues.Get("end_time"),
+		Reason:    urlValues.Get("reason"),
+		Report:    urlValues.Get("report"),
 	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -92,6 +102,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 }
 
+// ListOne lists a single recomputation according to the given uuid
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -106,17 +117,25 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	contentType := r.Header.Get("Accept")
 	vars := mux.Vars(r)
 
-	filter := IncomingRecomputation{
-		UUID: vars["UUID"],
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
 	}
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
+	}
+
+	filter := IncomingRecomputation{
+		UUID: vars["UUID"],
 	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -140,6 +159,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 }
 
+// SubmitRecomputation insert a new pending recomputation in the tenants database
 func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -149,14 +169,20 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType := r.Header.Get("Accept")
+	contentType, err := respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -202,7 +228,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		panic(err)
 	}
 
-	output, err = createSubmitView(recomputation, contentType)
+	output, err = createSubmitView(recomputation, contentType, *r.URL)
 
 	return code, h, output, err
 }

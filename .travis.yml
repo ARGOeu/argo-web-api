@@ -16,14 +16,14 @@ services: mongodb
 
 # install all third party go packages that we use
 install:
- - go get github.com/gorilla/handlers
- - go get github.com/gorilla/mux
+ - go get github.com/gorilla/handlers github.com/gorilla/mux
  - go get github.com/gorilla/context
  - go get github.com/stretchr/testify
  - go get gopkg.in/mgo.v2
  - go get gopkg.in/mgo.v2/bson
  - go get github.com/ARGOeu/go-lru-cache
- - go get code.google.com/p/gcfg
+ - go get gopkg.in/gcfg.v1
+ - go get github.com/twinj/uuid
 
 before_script:
 # Standard mongodb 2.6 installation procedure (mongo docs)

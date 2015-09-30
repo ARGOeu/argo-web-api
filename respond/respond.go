@@ -27,10 +27,13 @@
 package respond
 
 import (
+	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -48,6 +51,7 @@ type ConfHandler struct {
 	Config config.Config
 }
 
+// ResponseMessage is used to construct and marshal correctly response messages
 type ResponseMessage struct {
 	XMLName xml.Name       `xml:"root" json:"-"`
 	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
@@ -55,10 +59,11 @@ type ResponseMessage struct {
 	Errors  interface{}    `xml:"errors>error,omitempty" json:"errors,omitempty"`
 }
 
+// StatusResponse accompanies the ResponseMessage struct to construct a response
 type StatusResponse struct {
 	Message string `xml:"message,omitempty" json:"message,omitempty"`
 	Code    string `xml:"code,omitempty" json:"code,omitempty"`
-	Detail  string `xml:"details,omitempty" json:"details,omitempty"`
+	Details string `xml:"details,omitempty" json:"details,omitempty"`
 }
 
 // Respond will be called to answer to http requests to the PI
@@ -91,6 +96,43 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 
 }
 
+var acceptedContentTypes = []string{
+	"application/xml",
+	"application/json",
+}
+
+var defaultContentType = "application/json"
+
+// ParseAcceptHeader parses the accept header to determine the content type
+func ParseAcceptHeader(r *http.Request) (string, error) {
+	contentType := r.Header.Get("Accept")
+	if r.Header.Get("Accept") == "" {
+		return defaultContentType, nil
+	}
+	// contentType := httputil.NegotiateContentType(r, acceptedContentTypes, "notvalid")
+	if strings.Contains(contentType, "application/json") {
+		return "application/json", nil
+	} else if strings.Contains(contentType, "application/xml") {
+		return "application/xml", nil
+	} else {
+		return defaultContentType, errors.New("Not Acceptable ContentType")
+	}
+}
+
+// MarshalContent marshals content using the marshaler that corresponds to the contentType parameter
+func MarshalContent(doc interface{}, contentType string, prefix string, indent string) ([]byte, error) {
+	var output []byte
+	var err error
+
+	if contentType == "application/xml" {
+		output, err = xml.MarshalIndent(doc, prefix, indent)
+	} else {
+		output, err = json.MarshalIndent(doc, prefix, indent)
+	}
+
+	return output, err
+}
+
 func (confhandler *ConfHandler) walker(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 	// route.Handler(route.GetHandler())
 	return nil
@@ -106,3 +148,19 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	answer = "No Caching is active"
 	return []byte(answer)
 }
+
+// UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
+var UnauthorizedMessage = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Unauthorized",
+		Code:    "401",
+		Details: "You need to provide a correct authentication token using the header 'x-api-key'",
+	}}
+
+// NotAcceptableContentType is used to inform the user about incorrect Accept header and can be marshaled to xml and json
+var NotAcceptableContentType = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Acceptable Content Type",
+		Code:    "406",
+		Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'",
+	}}

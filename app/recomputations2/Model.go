@@ -41,6 +41,15 @@ type IncomingRecomputation struct {
 	Exclude   []string `xml:"excluded" json:"excluded" bson:"excluded,omitempty"`
 }
 
+type SelfReference struct {
+	UUID  string `xml:"uuid" json:"uuid" bson:"uuid,omitempty"`
+	Links Links  `xml:"links" json:"links"`
+}
+
+type Links struct {
+	Self string `xml:"self" json:"self"`
+}
+
 type MongoInterface struct {
 	XMLName        xml.Name `xml:"recomputation" json:"-"`
 	UUID           string   `bson:"uuid" xml:"uuid" json:"uuid"`

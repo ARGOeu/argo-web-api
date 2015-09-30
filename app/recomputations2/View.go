@@ -29,6 +29,8 @@ package recomputations2
 import (
 	"encoding/json"
 	"encoding/xml"
+	"net/url"
+	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 )
@@ -52,11 +54,15 @@ func createListView(results interface{}, format string) ([]byte, error) {
 	return output, err
 }
 
-func createSubmitView(inserted MongoInterface, format string) ([]byte, error) {
+func createSubmitView(inserted MongoInterface, format string, reqURL url.URL) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
 			Message: "Recomputations successfully created",
 			Code:    "201",
+		},
+		Data: SelfReference{
+			UUID:  inserted.UUID,
+			Links: Links{Self: strings.Join([]string{reqURL.String(), inserted.UUID}, "/")},
 		},
 	}
 
