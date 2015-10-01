@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// RequestError is used to pass the errors from controllers to repsonse handlers]
 type RequestError struct {
 	code   int
 	header http.Header
