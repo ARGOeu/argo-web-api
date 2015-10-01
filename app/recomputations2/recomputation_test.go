@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package recomputations2
@@ -34,12 +30,12 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -176,7 +172,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			EndTime:        "2015-03-30T23:00:00Z",
 			Reason:         "reasons",
 			Report:         "EGI_Critical",
-			Exclude:        []string{"HG-01-AUTH"},
+			Exclude:        []string{"SITE1", "SITE3"},
 			Status:         "pending",
 			Timestamp:      "2015-04-01 14:58:40",
 		},
@@ -190,7 +186,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			EndTime:        "2015-01-30T23:00:00Z",
 			Reason:         "power cuts",
 			Report:         "EGI_Critical",
-			Exclude:        []string{"GR-01-AUTH"},
+			Exclude:        []string{"SITE2", "SITE4"},
 			Status:         "running",
 			Timestamp:      "2015-02-01 14:58:40",
 		},
@@ -209,6 +205,7 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
 
 	code := response.Code
 	output := response.Body.String()
+
 	recomputationRequestsJSON := `{
  "status": {
   "message": "Success",
@@ -223,7 +220,8 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
   "end_time": "2015-03-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": [
-   "HG-01-AUTH"
+   "SITE1",
+   "SITE3"
   ],
   "status": "pending",
   "timestamp": "2015-04-01 14:58:40"
@@ -248,7 +246,10 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
    <start_time>2015-03-10T12:00:00Z</start_time>
    <end_time>2015-03-30T23:00:00Z</end_time>
    <report>EGI_Critical</report>
-   <exclude>HG-01-AUTH</exclude>
+   <exclude>
+    <group>SITE1</group>
+    <group>SITE3</group>
+   </exclude>
    <status>pending</status>
    <timestamp>2015-04-01 14:58:40</timestamp>
   </recomputation>
@@ -304,7 +305,6 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 
 	code := response.Code
 	output := response.Body.String()
-
 	recomputationRequestsJSON := `{
  "status": {
   "message": "Success",
@@ -320,7 +320,8 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "end_time": "2015-01-30T23:00:00Z",
    "report": "EGI_Critical",
    "exclude": [
-    "GR-01-AUTH"
+    "SITE2",
+    "SITE4"
    ],
    "status": "running",
    "timestamp": "2015-02-01 14:58:40"
@@ -334,7 +335,8 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "end_time": "2015-03-30T23:00:00Z",
    "report": "EGI_Critical",
    "exclude": [
-    "HG-01-AUTH"
+    "SITE1",
+    "SITE3"
    ],
    "status": "pending",
    "timestamp": "2015-04-01 14:58:40"
@@ -360,7 +362,10 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    <start_time>2015-01-10T12:00:00Z</start_time>
    <end_time>2015-01-30T23:00:00Z</end_time>
    <report>EGI_Critical</report>
-   <exclude>GR-01-AUTH</exclude>
+   <exclude>
+    <group>SITE2</group>
+    <group>SITE4</group>
+   </exclude>
    <status>running</status>
    <timestamp>2015-02-01 14:58:40</timestamp>
   </recomputation>
@@ -372,7 +377,10 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    <start_time>2015-03-10T12:00:00Z</start_time>
    <end_time>2015-03-30T23:00:00Z</end_time>
    <report>EGI_Critical</report>
-   <exclude>HG-01-AUTH</exclude>
+   <exclude>
+    <group>SITE1</group>
+    <group>SITE3</group>
+   </exclude>
    <status>pending</status>
    <timestamp>2015-04-01 14:58:40</timestamp>
   </recomputation>
@@ -382,7 +390,6 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	response = httptest.NewRecorder()
 	request.Header.Set("Accept", "application/xml")
 	suite.router.ServeHTTP(response, request)
-
 	code = response.Code
 	output = response.Body.String()
 
@@ -399,7 +406,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 		EndTime:   "2015-01-30T23:00:00Z",
 		Reason:    "Ups failure",
 		Report:    "EGI_Critical",
-		Exclude:   []string{"GRNET-01"},
+		Exclude:   []string{"SITE5", "SITE8"},
 	}
 	jsonsubmission, _ := json.Marshal(submission)
 	// strsubmission := string(jsonsubmission)
@@ -441,7 +448,8 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-01-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "GR-01-AUTH"
+   "SITE2",
+   "SITE4"
   \],
   "status": "running",
   "timestamp": "2015-02-01 14:58:40"
@@ -455,7 +463,8 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-03-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "HG-01-AUTH"
+   "SITE1",
+   "SITE3"
   \],
   "status": "pending",
   "timestamp": "2015-04-01 14:58:40"
@@ -469,7 +478,8 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "end_time": "2015-01-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": \[
-   "GRNET-01"
+   "SITE5",
+   "SITE8"
   \],
   "status": "pending",
   "timestamp": ".*"

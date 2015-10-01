@@ -16,7 +16,8 @@ services: mongodb
 
 # install all third party go packages that we use
 install:
- - go get github.com/gorilla/handlers github.com/gorilla/mux
+ - go get github.com/gorilla/handlers
+ - go get github.com/gorilla/mux
  - go get github.com/gorilla/context
  - go get github.com/stretchr/testify
  - go get gopkg.in/mgo.v2
@@ -31,7 +32,7 @@ before_script:
   - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
   - sudo apt-get update
   - sudo apt-get install -y mongodb-org=2.6.6 mongodb-org-server=2.6.6 mongodb-org-shell=2.6.6 mongodb-org-mongos=2.6.6 mongodb-org-tools=2.6.6
-# Wait a bit for mongod service to become available
+# Wait for mongod service to become available
   - until nc -z localhost 27017 ; do echo Waiting for MongoDB; sleep 1; done
 # Check mongodb version
   - mongo --version

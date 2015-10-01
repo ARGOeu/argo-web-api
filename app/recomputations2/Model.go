@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,12 +16,8 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package recomputations2
@@ -59,7 +55,7 @@ type MongoInterface struct {
 	StartTime      string   `bson:"start_time" xml:"start_time" json:"start_time"`
 	EndTime        string   `bson:"end_time" xml:"end_time" json:"end_time"`
 	Report         string   `bson:"report" xml:"report" json:"report"`
-	Exclude        []string `bson:"exclude" xml:"exclude" json:"exclude"`
+	Exclude        []string `bson:"exclude" xml:"exclude>group" json:"exclude"`
 	Status         string   `bson:"status" xml:"status" json:"status"`
 	Timestamp      string   `bson:"timestamp" xml:"timestamp" json:"timestamp"`
 }
