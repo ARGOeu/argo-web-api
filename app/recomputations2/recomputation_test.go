@@ -231,42 +231,6 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
-
-	recomputationRequestsXML := `<root>
- <status>
-  <message>Success</message>
-  <code>200</code>
- </status>
- <data>
-  <recomputation>
-   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50b</uuid>
-   <requester_name>John Snow</requester_name>
-   <requester_email>jsnow@wall.com</requester_email>
-   <reason>reasons</reason>
-   <start_time>2015-03-10T12:00:00Z</start_time>
-   <end_time>2015-03-30T23:00:00Z</end_time>
-   <report>EGI_Critical</report>
-   <exclude>
-    <group>SITE1</group>
-    <group>SITE3</group>
-   </exclude>
-   <status>pending</status>
-   <timestamp>2015-04-01 14:58:40</timestamp>
-  </recomputation>
- </data>
-</root>`
-
-	response = httptest.NewRecorder()
-	request.Header.Set("Accept", "application/xml")
-	suite.router.ServeHTTP(response, request)
-
-	code = response.Code
-	output = response.Body.String()
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListErrorRecomputations() {
@@ -347,56 +311,6 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
-
-	recomputationRequestsXML := `<root>
- <status>
-  <message>Success</message>
-  <code>200</code>
- </status>
- <data>
-  <recomputation>
-   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50a</uuid>
-   <requester_name>Arya Stark</requester_name>
-   <requester_email>astark@shadowguild.com</requester_email>
-   <reason>power cuts</reason>
-   <start_time>2015-01-10T12:00:00Z</start_time>
-   <end_time>2015-01-30T23:00:00Z</end_time>
-   <report>EGI_Critical</report>
-   <exclude>
-    <group>SITE2</group>
-    <group>SITE4</group>
-   </exclude>
-   <status>running</status>
-   <timestamp>2015-02-01 14:58:40</timestamp>
-  </recomputation>
-  <recomputation>
-   <uuid>6ac7d684-1f8e-4a02-a502-720e8f11e50b</uuid>
-   <requester_name>John Snow</requester_name>
-   <requester_email>jsnow@wall.com</requester_email>
-   <reason>reasons</reason>
-   <start_time>2015-03-10T12:00:00Z</start_time>
-   <end_time>2015-03-30T23:00:00Z</end_time>
-   <report>EGI_Critical</report>
-   <exclude>
-    <group>SITE1</group>
-    <group>SITE3</group>
-   </exclude>
-   <status>pending</status>
-   <timestamp>2015-04-01 14:58:40</timestamp>
-  </recomputation>
- </data>
-</root>`
-
-	response = httptest.NewRecorder()
-	request.Header.Set("Accept", "application/xml")
-	suite.router.ServeHTTP(response, request)
-	code = response.Code
-	output = response.Body.String()
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(recomputationRequestsXML, output, "Response body mismatch")
 }
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
