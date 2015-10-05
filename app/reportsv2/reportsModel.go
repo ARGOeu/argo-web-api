@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reports2
+package reportsv2
 
 import (
 	"encoding/xml"
@@ -111,7 +111,10 @@ func GetMetricProfile(input MongoInterface) (string, error) {
 // searchName is used to create a simple query object based on name
 func searchName(name string) bson.M {
 	query := bson.M{
-		"name": name,
+		// 	"info": bson.M{
+		// 		"name": name,
+		// 	},
+		"info.name": name,
 	}
 
 	return query

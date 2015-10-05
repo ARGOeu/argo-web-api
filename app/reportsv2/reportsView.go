@@ -24,9 +24,13 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reports2
+package reportsv2
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+
+	"github.com/ARGOeu/argo-web-api/respond"
+)
 
 func messageXML(answer string) ([]byte, error) {
 	docRoot := &Message{}
@@ -35,9 +39,16 @@ func messageXML(answer string) ([]byte, error) {
 	return output, err
 }
 
-func createView(results []MongoInterface) ([]byte, error) {
-	docRoot := &RootXML{}
-	docRoot.Reports = &results
-	output, err := xml.MarshalIndent(docRoot, "", " ")
+func createView(results interface{}, format string) ([]byte, error) {
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Success",
+			Code:    "200",
+		},
+	}
+
+	docRoot.Data = &results
+	output, err := respond.MarshalContent(docRoot, format, "", " ")
+	// output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
 }

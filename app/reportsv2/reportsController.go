@@ -24,18 +24,21 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reports2
+package reportsv2
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"time"
 
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 var reportsColl = "reports"
@@ -54,51 +57,51 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Authenticate user's api key and find corresponding tenant
-	tenantDbConf, err := authentication.AuthenticateTenant(r.Header, cfg)
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// if authentication procedure fails then
-	// return unauthorized http status
 	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
 	//Reading the json input from the request body
-	reqBody, err := ioutil.ReadAll(r.Body)
-	// TODO: after rebase delete the above and uncomment below
-	// reqBody, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	reqBody, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 
 	if err != nil {
 		return code, h, output, err
 	}
 	input := MongoInterface{}
 	//Unmarshalling the json input into byte form
+
 	err = json.Unmarshal(reqBody, &input)
 
 	// Check if json body is malformed
 	if err != nil {
-		if err != nil {
-			// Msg in xml style, to notify for malformed json
-			output, err := messageXML("Malformated json input data")
-
-			if err != nil {
-				code = http.StatusInternalServerError
-				return code, h, output, err
-			}
-
-			code = http.StatusBadRequest
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
+		// Msg in xml style, to notify for malformed json
+		out := respond.ResponseMessage{
+			Status: respond.StatusResponse{
+				Code:    "400",
+				Message: "Malformated json input data",
+			},
 		}
+		output, _ := respond.MarshalContent(out, contentType, "", " ")
+		code = http.StatusBadRequest
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
 	}
 
 	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConf)
+	session, err := mongo.OpenSession(tenantDbConfig)
 	defer session.Close()
 
 	if err != nil {
@@ -111,7 +114,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if report with the same name exists in datastore
 	query := searchName(input.Info.Name)
-	err = mongo.Find(session, tenantDbConf.Db, reportsColl, query, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, query, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -135,10 +138,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 
 	}
+	input.Info.Created = time.Now().Format("2006-01-02 15:04:05")
+	input.Info.Updated = input.Info.Created
 
 	// If no report exists with this name create a new one
-	query = createReport(input)
-	err = mongo.Insert(session, tenantDbConf.Db, reportsColl, query)
+
+	err = mongo.Insert(session, tenantDbConfig.Db, reportsColl, input)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -171,17 +176,20 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Authenticate user's api key and find corresponding tenant
-	tenantDbConf, err := authentication.AuthenticateTenant(r.Header, cfg)
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// if authentication procedure fails then
-	// return unauthorized http status
 	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
@@ -198,7 +206,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []MongoInterface{}
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
-	err = mongo.Find(session, tenantDbConf.Db, reportsColl, nil, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, nil, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -207,7 +215,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
-	output, err = createView(results)
+	output, err = createView(results, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -231,26 +239,29 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Authenticate user's api key and find corresponding tenant
-	tenantDbConf, err := authentication.AuthenticateTenant(r.Header, cfg)
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// if authentication procedure fails then
-	// return unauthorized http status
 	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
 	//Extracting urlvar "name" from url path
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
+
+	nameFromURL := mux.Vars(r)["name"]
 
 	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConf)
+	session, err := mongo.OpenSession(tenantDbConfig)
 	defer session.Close()
 
 	if err != nil {
@@ -263,7 +274,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// Create a simple query object to query by name
 	query := searchName(nameFromURL)
 	// Query collection tenants for the specific tenant name
-	err = mongo.Find(session, tenantDbConf.Db, reportsColl, query, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, query, "", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -288,7 +299,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
-	output, err = createView(results)
+	output, err = createView(results, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -316,23 +327,25 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
-	// Authenticate user's api key and find corresponding tenant
-	tenantDbConf, err := authentication.AuthenticateTenant(r.Header, cfg)
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// if authentication procedure fails then
-	// return unauthorized http status
 	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
 	//Extracting report name from url
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
+	nameFromURL := mux.Vars(r)["name"]
 
 	//Reading the json input
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -358,7 +371,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConf)
+	session, err := mongo.OpenSession(tenantDbConfig)
 	defer session.Close()
 
 	if err != nil {
@@ -368,7 +381,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// We search by name and update
 	query := searchName(nameFromURL)
-	err = mongo.Update(session, tenantDbConf.Db, reportsColl, query, input)
+	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, query, input)
 
 	if err != nil {
 
@@ -408,26 +421,28 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
-	// Authenticate user's api key and find corresponding tenant
-	tenantDbConf, err := authentication.AuthenticateTenant(r.Header, cfg)
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// if authentication procedure fails then
-	// return unauthorized http status
 	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+
+	if err != nil {
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
 	//Extracting record id from url
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
+	nameFromURL := mux.Vars(r)["name"]
 
 	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConf)
+	session, err := mongo.OpenSession(tenantDbConfig)
 	defer session.Close()
 
 	if err != nil {
@@ -437,7 +452,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// We search by name and delete the document in db
 	query := searchName(nameFromURL)
-	info, err := mongo.Remove(session, tenantDbConf.Db, reportsColl, query)
+	info, err := mongo.Remove(session, tenantDbConfig.Db, reportsColl, query)
 
 	if err != nil {
 		code = http.StatusInternalServerError

@@ -24,17 +24,21 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reports2
+package reportsv2
 
 import (
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"code.google.com/p/gcfg"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -45,6 +49,8 @@ type ReportTestSuite struct {
 	suite.Suite
 	cfg                config.Config
 	tenantDbConf       config.MongoConfig
+	router             *mux.Router
+	confHandler        respond.ConfHandler
 	respReportCreated  string
 	respReportUpdated  string
 	respReportDeleted  string
@@ -69,6 +75,9 @@ func (suite *ReportTestSuite) SetupTest() {
     cache = false
     lrucache = 700000000
     gzip = true
+	reqsizelimit = 1073741824
+
+
     [mongodb]
     host = "127.0.0.1"
     port = 27017
@@ -77,8 +86,9 @@ func (suite *ReportTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.respReportCreated = " <root>\n" +
-		"   <Message>Report was successfully created</Message>\n </root>"
+	suite.respReportCreated = ` <root>
+   <Message>Report was successfully created</Message>
+ </root>`
 
 	suite.respReportUpdated = " <root>\n" +
 		"   <Message>Report was successfully updated</Message>\n </root>"
@@ -89,8 +99,12 @@ func (suite *ReportTestSuite) SetupTest() {
 	suite.respReportNotFound = " <root>\n" +
 		"   <Message>Report not found</Message>\n </root>"
 
-	suite.respBadJSON = " <root>\n" +
-		"   <Message>Malformated json input data</Message>\n </root>"
+	suite.respBadJSON = `{
+ "status": {
+  "message": "Malformated json input data",
+  "code": "400"
+ }
+}`
 
 	suite.respUnauthorized = "Unauthorized"
 
@@ -107,6 +121,10 @@ func (suite *ReportTestSuite) SetupTest() {
 		panic(err)
 	}
 	defer session.Close()
+
+	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/reports").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
@@ -152,10 +170,10 @@ func (suite *ReportTestSuite) SetupTest() {
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "Report_A",
-		"tenant":          "AVENGERS",
-		"endpoint_group":  "SITES",
-		"group_of_groups": "NGI",
+		"info": bson.M{
+			"name":        "Report_A",
+			"description": "report aaaaa",
+		},
 		"topology": bson.M{
 			"group": bson.M{
 				"type": "NGI",
@@ -182,10 +200,10 @@ func (suite *ReportTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"name":            "Report_B",
-		"tenant":          "AVENGERS",
-		"endpoint_group":  "SITES",
-		"group_of_groups": "NGI",
+		"info": bson.M{
+			"name":        "Report_B",
+			"description": "report bbb",
+		},
 		"topology": bson.M{
 			"group": bson.M{
 				"type": "ARCHIPELAGO",
@@ -220,62 +238,83 @@ func (suite *ReportTestSuite) SetupTest() {
 func (suite *ReportTestSuite) TestCreateReport() {
 
 	// create json input data for the request
-	postData := `
-  {
-    "name":"Foo_Report",
-    "tenant":"AVENGERS",
-    "profiles":[
-      { "name":"metric","value":"profA"},
-      { "name":"ap","value":"profB"}
-     ],
-    "endpoint_group":"SITES",
-    "group_of_groups":"NGI",
-    "filter_tags":[
-      { "name":"production","value":"Y"},
-      { "name":"monitored","value":"Y"}
+	postData := `{
+    "info": {
+        "name": "Foo_Report",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+    "profiles": [
+        {
+            "name": "metric",
+            "type": "profA"
+        },
+        {
+            "name": "ap",
+            "type": "profB"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
     ]
-  }
-    `
+}`
+
 	// Prepare the request object
-	request, _ := http.NewRequest("POST", "", strings.NewReader(postData))
+	request, _ := http.NewRequest("POST", "/api/v2/reports", strings.NewReader(postData))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Accept", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "C4PK3Y")
 
+	response := httptest.NewRecorder()
+
 	// Execute the request in the controller
-	code, _, output, _ := Create(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respReportCreated, string(output), "Response body mismatch")
+	suite.Equal(suite.respReportCreated, output, "Response body mismatch")
 
 	// Double check that you read the newly inserted profile
 	// Create a string literal of the expected xml Response
-	respXML := `<root>
- <report name="Foo_Report" tenant="AVENGERS" endpoint_group="SITES" group_of_groups="NGI">
-  <profiles>
-   <profile name="metric" value="profA"></profile>
-   <profile name="ap" value="profB"></profile>
-  </profiles>
-  <filter_tags>
-   <tag name="production" value="Y"></tag>
-   <tag name="monitored" value="Y"></tag>
-  </filter_tags>
- </report>
-</root>`
+	respXML := ``
 
 	// Prepare the request object using report name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/reports/Foo_Report", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/reports/Foo_Report", strings.NewReader(""))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Accept", "application/json;")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response = httptest.NewRecorder()
+
 	// Pass request to controller calling List() handler method
-	code, _, output, _ = ListOne(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+	fmt.Println(output)
+
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	suite.Equal(respXML, output, "Response body mismatch")
 }
 
 // TestUpdateReport function implements testing the http PUT update report request.
@@ -303,7 +342,7 @@ func (suite *ReportTestSuite) TestUpdateReport() {
   }
     `
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/reports/Report_A", strings.NewReader(postData))
+	request, _ := http.NewRequest("PUT", "/api/v2/reports/Report_A", strings.NewReader(postData))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -331,7 +370,7 @@ func (suite *ReportTestSuite) TestUpdateReport() {
 </root>`
 
 	// Prepare the request object using report name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/reports/Report_A_modified", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/reports/Report_A_modified", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -351,7 +390,7 @@ func (suite *ReportTestSuite) TestUpdateReport() {
 func (suite *ReportTestSuite) TestDeleteReport() {
 
 	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/reports/Report_B", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/reports/Report_B", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -366,7 +405,7 @@ func (suite *ReportTestSuite) TestDeleteReport() {
 	// Double check that the report is actually removed when you try
 	// to retrieve it's information by name
 	// Prepare the request object using report name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/reports/Report_B", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/reports/Report_B", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -399,7 +438,7 @@ func (suite *ReportTestSuite) TestReadOneReport() {
 </root>`
 
 	// Prepare the request object using report name as urlvar in url path
-	request, _ := http.NewRequest("GET", "/api/v1/reports/Report_A", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/reports/Report_A", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -511,7 +550,7 @@ func (suite *ReportTestSuite) TestDeleteUnauthorized() {
 // bad json input. The response should be malformed json
 func (suite *ReportTestSuite) TestCreateBadJson() {
 	// Prepare the request object
-	request, _ := http.NewRequest("POST", "/api/v1/reports/Report_A", strings.NewReader("{ bad json"))
+	request, _ := http.NewRequest("POST", "/api/v2/reports/Report_A", strings.NewReader("{ bad json"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -528,7 +567,7 @@ func (suite *ReportTestSuite) TestCreateBadJson() {
 // bad json input. The response should be malformed json
 func (suite *ReportTestSuite) TestUpdateBadJson() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/reports/Re[prt_A", strings.NewReader("{ bad json"))
+	request, _ := http.NewRequest("PUT", "/api/v2/reports/Re[prt_A", strings.NewReader("{ bad json"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -545,7 +584,7 @@ func (suite *ReportTestSuite) TestUpdateBadJson() {
 // and provide a non-existing report name. The response should be report not found
 func (suite *ReportTestSuite) TestListOneNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("GET", "/api/v1/reports/BADNAME", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/reports/BADNAME", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -562,7 +601,7 @@ func (suite *ReportTestSuite) TestListOneNotFound() {
 // and provide a non-existing report name. The response should be report not found
 func (suite *ReportTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/reports/BADNAME", strings.NewReader("{}"))
+	request, _ := http.NewRequest("PUT", "/api/v2/reports/BADNAME", strings.NewReader("{}"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -579,7 +618,7 @@ func (suite *ReportTestSuite) TestUpdateNotFound() {
 // and provide a non-existing report name. The response should be report not found
 func (suite *ReportTestSuite) TestDeleteNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/reports/BADNAME", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/reports/BADNAME", strings.NewReader(""))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json;")
 	// add the authentication token which is seeded in testdb
@@ -597,10 +636,10 @@ func (suite *ReportTestSuite) TestDeleteNotFound() {
 // Mainly it's purpose is to drop the testdb
 func (suite *ReportTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
-	session.DB("argo_test_reports").DropDatabase()
-	session.DB("argo_test_reports_db1").DropDatabase()
+	// session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	//
+	// session.DB("argo_test_reports").DropDatabase()
+	// session.DB("argo_test_reports_db1").DropDatabase()
 }
 
 // This is the first function called when go test is issued

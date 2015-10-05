@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reports2
+package reportsv2
 
 import (
 	"github.com/ARGOeu/argo-web-api/respond"
@@ -34,5 +34,9 @@ import (
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-
+	s.Methods("POST").Handler(confhandler.Respond(Create))
+	s.Methods("PUT").Path("/{name}").Handler(confhandler.Respond(Update))
+	s.Methods("DELETE").Path("/{name}").Handler(confhandler.Respond(Delete))
+	s.Methods("GET").Path("/{name}").Handler(confhandler.Respond(ListOne))
+	s.Methods("GET").Handler(confhandler.Respond(List))
 }
