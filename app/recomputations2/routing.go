@@ -23,6 +23,10 @@
 package recomputations2
 
 import (
+	"fmt"
+	"net/http"
+	"regexp"
+
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/gorilla/mux"
 )
@@ -31,16 +35,21 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	s.Methods("GET").
-		Path("/recomputations/{uuid}").
+		Path("/{uuid}").
 		Name("List Recomputations").
 		Handler(confhandler.Respond(ListOne))
 	s.Methods("GET").
-		Path("/recomputations").
 		Name("List Recomputations").
 		Handler(confhandler.Respond(List))
-	s.Methods("POST").
-		Path("/recomputations").
+	s.Methods("POST").MatcherFunc(EndMatcher).
 		Name("Recomputations").
 		Handler(confhandler.Respond(SubmitRecomputation))
+}
 
+func EndMatcher(r *http.Request, route *mux.RouteMatch) bool {
+	fmt.Println(r.URL.Path)
+	if match, _ := regexp.MatchString(`.*recomputations$`, r.URL.Path); match {
+		return true
+	}
+	return false
 }

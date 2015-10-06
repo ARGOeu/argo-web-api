@@ -131,9 +131,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 
 	filter := IncomingRecomputation{
-		UUID: vars["UUID"],
+		UUID: vars["uuid"],
 	}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 
 	if err != nil {
@@ -157,6 +156,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 // SubmitRecomputation insert a new pending recomputation in the tenants database
 func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
@@ -204,6 +204,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		output = []byte("Unprocessable JSON")
 		return code, h, output, err
 	}
+
 	now := time.Now()
 	recomputation := MongoInterface{
 		UUID:           mongo.NewUUID(),
@@ -224,7 +225,6 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		panic(err)
 	}
 
-	output, err = createSubmitView(recomputation, contentType, *r.URL)
-
+	output, err = createSubmitView(recomputation, contentType, r)
 	return code, h, output, err
 }

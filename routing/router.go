@@ -55,7 +55,7 @@ type SubRouter struct {
 func NewRouter(cfg config.Config) *mux.Router {
 
 	confhandler := respond.ConfHandler{Config: cfg}
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter().StrictSlash(false)
 	for _, route := range routes {
 
 		handler := confhandler.Respond(route.HandlerFunc)

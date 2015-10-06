@@ -99,6 +99,7 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 var acceptedContentTypes = []string{
 	"application/xml",
 	"application/json",
+	"*/*",
 }
 
 var defaultContentType = "application/json"
@@ -114,6 +115,8 @@ func ParseAcceptHeader(r *http.Request) (string, error) {
 		return "application/json", nil
 	} else if strings.Contains(contentType, "application/xml") {
 		return "application/xml", nil
+	} else if strings.Contains(contentType, "*/*") {
+		return "application/json", nil
 	} else {
 		return defaultContentType, errors.New("Not Acceptable ContentType")
 	}
