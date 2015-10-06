@@ -1,20 +1,15 @@
----
-title: API documentation | ARGO
-page_title: API - Recalculation Requests
-font_title: 'fa fa-cogs'
-description: API Calls for listing and creating new recalculation requests
----
+# Recalculation Requests
 
-
-## API Calls
+API Calls for listing and creating new recalculation requests
 
 | Name  | Description | Shortcut |
+--------|-------------|----------|
 | GET: List Recalculation Requests| This method can be used to retrieve a list of current Recalculation requests. |<a href="#1"> Description</a>|
 | POST: Create a new recalculation request | This method can be used to insert a new recalculation request onto the Compute Engine. | <a href="#2"> Description</a>|
 
 <a id='1'></a>
 
-## GET: List Recalculation Requests
+## [GET]: List Recalculation Requests
 
 This method can be used to retrieve a list of current Recalculation requests.
 
@@ -37,7 +32,7 @@ Headers: `Status: 200 OK`
 
 <a id='2'></a>
 
-## POST: Create a new recalculation request
+## [POST]: Create a new recalculation request
 
 This method can be used to insert a new recalculation request onto the Compute Engine.
 
@@ -53,6 +48,7 @@ This method can be used to insert a new recalculation request onto the Compute E
 #### Parameters
 
 | Type | Description | Required | Default value | 
+-------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format | YES | |
 |`end_time`| UTC time in W3C format | YES | |
 |`reason`| Explain the need for a recalculation | YES | |

@@ -1,11 +1,6 @@
----
-title: API documentation | ARGO
-page_title: API - Status results
-font_title: 'fa fa-cogs'
-description: API calls for retrieving monitoring status results
----
+#Status results
 
-## API Calls
+API calls for retrieving monitoring status results
 
 | Name  | Description | Shortcut |
 |-------|-------------|----------|
@@ -17,7 +12,7 @@ description: API calls for retrieving monitoring status results
 
 <a id="1"></a>
 
-## GET: List Service Metric Status Timelines
+## [GET]: List Service Metric Status Timelines
 
 This method may be used to retrieve a specific service metric status timeline (applies on a specific host endpoint and a specific service flavor).
 
@@ -146,7 +141,7 @@ Reponse body:
 <a id="2"></a>
 
 
-## GET: List Service Endpoint Status Timelines
+## [GET]: List Service Endpoint Status Timelines
 
 This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type).
 
@@ -273,7 +268,7 @@ Reponse body:
 <a id="3"></a>
 
 
-## GET: List Service Status Timelines
+## [GET]: List Service Status Timelines
 
 This method may be used to retrieve a specific service flavor status timeline (applies for a specific service endpoint group).
 
@@ -394,7 +389,7 @@ Reponse body:
 
 
 
-## GET: List Endpoint Group Status Timelines
+## [GET]: List Endpoint Group Status Timelines
 
 This method may be used to retrieve status timelines for endpoint groups.
 
@@ -505,7 +500,7 @@ Reponse body:
 
 <a id="5"></a>
 
-## GET: Metric Result
+## [GET]: Metric Result
 
 This method may be used to retrieve a detailed metric result.
 
