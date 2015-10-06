@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/utils/caches"
@@ -150,6 +151,16 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	}
 	answer = "No Caching is active"
 	return []byte(answer)
+}
+
+// EndsWith creates a MatcherFunc to check that a url actual endswith a string
+func EndsWith(match string) mux.MatcherFunc {
+	return func(r *http.Request, route *mux.RouteMatch) bool {
+		if matches, _ := regexp.MatchString(match, r.URL.Path); matches {
+			return true
+		}
+		return false
+	}
 }
 
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json

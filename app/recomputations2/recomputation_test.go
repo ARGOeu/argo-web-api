@@ -69,7 +69,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_recomputations"
+    db = "AR_test_recomputations2"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -81,7 +81,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
 		Port:     27017,
-		Db:       "AR_test_recomputations_tenant",
+		Db:       "AR_test_recomputations2_tenant",
 		Password: "h4shp4ss",
 		Username: "dbuser",
 		Store:    "ar",
@@ -89,7 +89,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.clientkey = "mysecretcombination"
 
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/recomputations").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/recomputations").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed mongo

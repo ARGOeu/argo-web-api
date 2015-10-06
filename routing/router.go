@@ -71,6 +71,7 @@ func NewRouter(cfg config.Config) *mux.Router {
 		subrouter := router.
 			PathPrefix("/api/v2").
 			PathPrefix(subroute.Pattern).
+			Name(subroute.Name).
 			Subrouter()
 		subroute.SubrouterHandler(subrouter, &confhandler)
 	}
