@@ -2,7 +2,7 @@
 title: 'API documentation | ARGO'
 page_title: API - Recomputations Requests
 font_title: fa fa-cogs
-description: API Calls for listing and creating new recomputation requests
+description: API Calls for listing existing and creating new recomputation requests
 ---
 
 # API Calls
