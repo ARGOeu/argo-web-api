@@ -131,9 +131,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 
 	filter := IncomingRecomputation{
-		UUID: vars["UUID"],
+		UUID: vars["uuid"],
 	}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 
 	if err != nil {
@@ -224,7 +223,6 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		panic(err)
 	}
 
-	output, err = createSubmitView(recomputation, contentType, *r.URL)
-
+	output, err = createSubmitView(recomputation, contentType, r)
 	return code, h, output, err
 }

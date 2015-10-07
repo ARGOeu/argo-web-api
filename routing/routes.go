@@ -43,17 +43,17 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 )
 
-var subroutes = []SubRouter{
+var routesV2 = []RouteV2{
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
 	{"Status service timelines", "/status", statusServices.HandleSubrouter},
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
-	{"Recomputations", "/recomputations", recomputations2.HandleSubrouter},
+	{"Recomputations", "", recomputations2.HandleSubrouter},
 }
 
-var routes = []Route{
+var routesV1 = []RouteV1{
 
 	//-----------------------------------Old requests for here on down -------------------------------------------------
 	{"Group Availability", "GET", "/group_availability", endpointGroupAvailability.List},

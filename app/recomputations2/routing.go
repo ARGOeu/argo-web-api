@@ -32,15 +32,18 @@ import (
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	s.Methods("GET").
 		Path("/recomputations/{uuid}").
-		Name("List Recomputations").
+		Name("List Single Recomputation").
 		Handler(confhandler.Respond(ListOne))
+
+	// strictRoute := s.MatcherFunc(respond.MatchRegex("^" + confhandler.Routes.V2["recomputations"] + "$")).Subrouter()
+
 	s.Methods("GET").
 		Path("/recomputations").
 		Name("List Recomputations").
 		Handler(confhandler.Respond(List))
+
 	s.Methods("POST").
 		Path("/recomputations").
 		Name("Recomputations").
 		Handler(confhandler.Respond(SubmitRecomputation))
-
 }

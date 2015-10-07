@@ -69,7 +69,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_recomputations"
+    db = "AR_test_recomputations2"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -81,7 +81,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
 		Port:     27017,
-		Db:       "AR_test_recomputations_tenant",
+		Db:       "AR_test_recomputations2_tenant",
 		Password: "h4shp4ss",
 		Username: "dbuser",
 		Store:    "ar",
@@ -89,7 +89,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.clientkey = "mysecretcombination"
 
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/recomputations").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed mongo
@@ -195,8 +195,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
-	suite.router.Methods("GET").Path("/{uuid}").Handler(suite.confHandler.Respond(ListOne))
-	request, _ := http.NewRequest("GET", "/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50a", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -212,19 +211,19 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
   "code": "200"
  },
  "data": {
-  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-  "requester_name": "John Snow",
-  "requester_email": "jsnow@wall.com",
-  "reason": "reasons",
-  "start_time": "2015-03-10T12:00:00Z",
-  "end_time": "2015-03-30T23:00:00Z",
+  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+  "requester_name": "Arya Stark",
+  "requester_email": "astark@shadowguild.com",
+  "reason": "power cuts",
+  "start_time": "2015-01-10T12:00:00Z",
+  "end_time": "2015-01-30T23:00:00Z",
   "report": "EGI_Critical",
   "exclude": [
-   "SITE1",
-   "SITE3"
+   "SITE2",
+   "SITE4"
   ],
-  "status": "pending",
-  "timestamp": "2015-04-01 14:58:40"
+  "status": "running",
+  "timestamp": "2015-02-01 14:58:40"
  }
 }`
 	// Check that we must have a 200 ok code
@@ -259,7 +258,6 @@ func (suite *RecomputationsProfileTestSuite) TestListErrorRecomputations() {
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
-	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
 	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
@@ -314,7 +312,6 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 }
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
-	suite.router.Methods("POST").Handler(suite.confHandler.Respond(SubmitRecomputation))
 	submission := IncomingRecomputation{
 		StartTime: "2015-01-10T12:00:00Z",
 		EndTime:   "2015-01-30T23:00:00Z",
@@ -323,8 +320,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 		Exclude:   []string{"SITE5", "SITE8"},
 	}
 	jsonsubmission, _ := json.Marshal(submission)
-	// strsubmission := string(jsonsubmission)
-	// fmt.Println(strsubmission)
+
 	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer(jsonsubmission))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
