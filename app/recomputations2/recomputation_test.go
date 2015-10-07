@@ -89,7 +89,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.clientkey = "mysecretcombination"
 
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/recomputations").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed mongo

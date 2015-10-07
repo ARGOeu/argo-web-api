@@ -156,7 +156,6 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 // SubmitRecomputation insert a new pending recomputation in the tenants database
 func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
@@ -204,7 +203,6 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		output = []byte("Unprocessable JSON")
 		return code, h, output, err
 	}
-
 	now := time.Now()
 	recomputation := MongoInterface{
 		UUID:           mongo.NewUUID(),
