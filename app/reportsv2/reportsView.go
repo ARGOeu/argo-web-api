@@ -32,6 +32,36 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
+func SubmitSuccesful(inserted MongoInterface, contentType string, link string) ([]byte, error) {
+	docRoot := respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Successfully Created Report",
+			Code:    "201",
+		},
+		Data: respond.SelfReference{
+			UUID:  inserted.UUID,
+			Links: respond.SelfLinks{Self: link},
+		},
+	}
+	output, err := respond.MarshalContent(docRoot, contentType, "", " ")
+	return output, err
+}
+
+func RequestSuccessful(message string, contentType string) {
+
+}
+
+func ReportNotFound(contentType string) ([]byte, error) {
+	docRoot := respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Report Not Found",
+			Code:    "404",
+		},
+	}
+	output, err := respond.MarshalContent(docRoot, contentType, "", " ")
+	return output, err
+}
+
 func messageXML(answer string) ([]byte, error) {
 	docRoot := &Message{}
 	docRoot.Message = answer

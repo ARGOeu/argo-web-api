@@ -34,9 +34,9 @@ import (
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s.Methods("POST").Handler(confhandler.Respond(Create))
-	s.Methods("PUT").Path("/{name}").Handler(confhandler.Respond(Update))
-	s.Methods("DELETE").Path("/{name}").Handler(confhandler.Respond(Delete))
-	s.Methods("GET").Path("/{name}").Handler(confhandler.Respond(ListOne))
-	s.Methods("GET").Handler(confhandler.Respond(List))
+	s.Methods("POST").Path("/reports").Handler(confhandler.Respond(Create))
+	s.Methods("PUT").Path("/reports/{id}").Handler(confhandler.Respond(Update))
+	s.Methods("DELETE").Path("/reports/{id}").Handler(confhandler.Respond(Delete))
+	s.Methods("GET").Path("/reports/{id}").Handler(confhandler.Respond(ListOne))
+	s.Methods("GET").Path("/reports").Handler(confhandler.Respond(List))
 }

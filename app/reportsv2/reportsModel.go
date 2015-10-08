@@ -34,6 +34,7 @@ import (
 )
 
 type MongoInterface struct {
+	UUID     string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	Info     Info      `bson:"info" json:"info" xml:"info"`
 	Topology Topology  `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles []Profile `bson:"profiles" json:"profiles" xml:"profiles"`
@@ -41,25 +42,25 @@ type MongoInterface struct {
 }
 
 type Info struct {
-	Name        string `bson:"name" json:"name" xml:"name"`
-	Description string `bson:"description" json:"description" xml:"description"`
-	Created     string `bson:"created" json:"created" xml:"created"`
-	Updated     string `bson:"updated" json:"updated" xml:"updated"`
+	Name        string `bson:"name,omitempty" json:"name" xml:"name"`
+	Description string `bson:"description,omitempty" json:"description" xml:"description"`
+	Created     string `bson:"created,omitempty" json:"created,omitempty" xml:"created,omitempty"`
+	Updated     string `bson:"updated,omitempty" json:"updated,omitempty" xml:"updated,omitempty"`
 }
 
 type Topology struct {
-	Nesting int            `bson:"nesting"`
-	Group   *TopologyLevel `bson:"group"`
+	// Nesting int            `bson:"nesting" json:"nesting" xml:"nesting"`
+	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
 }
 
 type TopologyLevel struct {
-	Type  string         `bson:"type"`
-	Group *TopologyLevel `bson:"type,omitempty"`
+	Type  string         `bson:"type" json:"type" xml:"type"`
+	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
 }
 
 // Profile holds info about the profiles included in a report definition
 type Profile struct {
-	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"profile"`
+	XMLName xml.Name `bson:"-" json:"-"     xml:"profile"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Type    string   `bson:"type"       json:"type"  xml:"type,attr"`
 }
