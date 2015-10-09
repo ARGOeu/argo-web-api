@@ -1,11 +1,5 @@
----
-title: 'API documentation | ARGO'
-page_title: API - Recomputations Requests
-font_title: fa fa-cogs
-description: API Calls for listing existing and creating new recomputation requests
----
-
-# API Calls
+# Recomputations Requests
+ API Calls for listing existing and creating new recomputation requests
 
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
@@ -14,27 +8,27 @@ POST: Create a new recomputation request | This method can be used to insert a n
 
 <a id='1'></a>
 
-# GET: List Recomputation Requests
+## [GET]: List Recomputation Requests
 This method can be used to retrieve a list of current Recomputation requests.
 
-## Input
+### Input
 
 ```
 /recomputations
 ```
 
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -76,23 +70,23 @@ Xml Response
 
 <a id='2'></a>
 
-# POST: Create a new recomputation request
+## [POST]: Create a new recomputation request
 This method can be used to insert a new recomputation request onto the Compute Engine.
 
-## Input
+### Input
 
 ```
 /recomputations
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
 ```
 
-### Parameters
+#### Parameters
 
 Type         | Description                                                                                                                                            | Required | Default value
 ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------------
@@ -102,5 +96,5 @@ Type         | Description                                                      
 `report`     | Report for which the recomputation is requested                                                                                                        | YES      |
 `exclude`    | Groups to be excluded from recomputation. If more than one group are to be excluded use the parameter as many times as needed within the same API call | NO       |
 
-## Response
+### Response
 Headers: `Status: 200 OK`

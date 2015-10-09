@@ -1,13 +1,9 @@
----
-title: API documentation | ARGO
-page_title: API - Availability Profiles 
-font_title: 'fa fa-cogs'
-description: API Calls for managing Availability Profiles
----
 
-## API Calls
+# Availability Profiles
+ API Calls for managing Availability Profiles
 
 | Name  | Description | Shortcut |
+--------|-------------|----------|
 | GET: List Availability Profiles | This method can be used to retrieve a list of current Availability profiles used by the Compute Engine. |<a href="#1"> Description</a>|
 | POST: Create a new availability profile |This method can be used to insert a new Availability Profile onto the Compute Engine. | <a href="#2"> Description</a>|
 | PUT: Update an existing Availability Profile |This method can be used to update an existing Availability Profile onto the Compute Engine.|<a href="#3"> Description</a>|
@@ -17,7 +13,7 @@ description: API Calls for managing Availability Profiles
 
 <a id="1"></a>
 
-## GET: List Availability Profiles
+## [GET]: List Availability Profiles
 
 This method can be used to retrieve a list of current Availability profiles used by the Compute Engine.
 
@@ -28,6 +24,7 @@ This method can be used to retrieve a list of current Availability profiles used
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`name`| Profile name (both name and namespace are needed) | YES| |
 |`namespace`| Profile namespace (both name and namespace are needed) | YES| |
 
@@ -64,7 +61,7 @@ Headers: `Status: 200 OK`
 
 <a id="2"></a>
 
-## POST: Create a new availability profile
+## [POST]: Create a new availability profile
 
 This method can be used to insert a new Availability Profile onto the Compute Engine.
 
@@ -82,6 +79,7 @@ This method can be used to insert a new Availability Profile onto the Compute En
     }
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 |`name`| Profile name (both name and namespace are needed) | YES| |
 |`namespace`| Profile namespace (both name and namespace are needed) | YES| |
 |`poems`| Low level profile matching checks with service flavors | YES| |
@@ -138,7 +136,7 @@ Headers: `Status: 200 OK`
 
 <a id="3"></a>
 
-## PUT: Update an existing Availability Profile
+## [PUT]: Update an existing Availability Profile
 
 This method can be used to update an existing Availability Profile onto the Compute Engine.
 
@@ -159,6 +157,7 @@ This method can be used to update an existing Availability Profile onto the Comp
 ##### Input parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 | id | The availability profile id | YES | | 
 
 
@@ -198,7 +197,7 @@ Headers: `Status: 200 OK`
 
 <a id="4"></a>
 
-## DELETE: Delete an availability profile
+## [DELETE]: Delete an availability profile
 
 This method can be used to delete an existing Availability Profile.
 
@@ -209,6 +208,7 @@ This method can be used to delete an existing Availability Profile.
 #### Parameters
 
 | Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
 | id | The availability profile id | YES | | 
 
 #### Request headers

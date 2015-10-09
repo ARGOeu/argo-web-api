@@ -1,19 +1,15 @@
----
-title: API documentation | ARGO
-page_title: API - Availabilities & Reliabilities
-font_title: 'fa fa-cogs'
-description: API calls for retrieving computed Availabilities and Reliabilities
----
+# API - Availabilities & Reliabilities
 
-## API Calls
+API calls for retrieving computed Availabilities and Reliabilities
 
 | Name  | Description | Shortcut |
+--------|-------------|----------|
 | GET: List Availabilities and Reliabilities for Groups | The following methods can be used to obtain Availability and Reliablity metrics per group type elements (i.e. Endpoint Groups, Group of Endpoint Groups etc). Results can be retrieved on daily or monthly granularity.  |<a href="#1"> Description</a>|
 | GET: List Availabilities and Reliabilities for Service Flavors | This method can be used to obtain Availability and Reliability metrics for Service Flavors per Site. Results can be retrieved on daily or monthly granularity. | <a href="#2"> Description</a>|
 
 <a id="1"></a>
 
-## GET: List Availabilities and Reliabilities for Endpoint Groups, Group of Endpoint Groups
+## [GET]: List Availabilities and Reliabilities for Endpoint Groups, Group of Endpoint Groups
 
 The following methods can be used to obtain Availability and Reliability metrics per group type elements (i.e. Endpoint Groups, Group of Endpoint Groups etc). Results can be retrieved on daily or monthly granularity.
 
@@ -28,6 +24,7 @@ Endpoint Groups
 ##### Parameters
 
 | Type | Description | Required | Default value |
+-------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES ||
 |`end_time`| UTC time in W3C format| YES| |
 |`job`| Name of the job that contains all the information about the profile, filter tags etc. | YES| |
@@ -72,6 +69,7 @@ Group of Endpoint Groups
 ##### Parameters
 
 | Type | Description | Required | Default value |
+-------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES ||
 |`end_time`| UTC time in W3C format| YES| |
 |`job`| Name of the job that contains all the information about the profile, filter tags etc. | YES| |
@@ -109,7 +107,7 @@ Headers: `Status: 200 OK`
 
 <a id="2"></a>
 
-## GET: List Availabilities and Reliabilities for Service Flavors
+## [GET]: List Availabilities and Reliabilities for Service Flavors
 
 This method can be used to obtain Availability and Reliability metrics for Service Flavors. Results can be retrieved on daily or monthly granularity.
 
@@ -121,6 +119,7 @@ This method can be used to obtain Availability and Reliability metrics for Servi
 ##### Parameters
 
 | Type | Description | Required | Default value |
+-------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES ||
 |`end_time`| UTC time in W3C format| YES| |
 |`job`| Job (view) according to which A/R has been calculated | YES | |

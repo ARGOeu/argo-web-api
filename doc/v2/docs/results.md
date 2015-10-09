@@ -1,4 +1,4 @@
-# API Calls
+# Results
 
 Name                                                                          | Description                                                                                                                                                                                                                              | Shortcut
 ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -----------------
@@ -8,10 +8,10 @@ GET: List Availability and Reliability results for a Service Flavor           | 
 
 <a id="1"></a>
 
-# GET: List Availabilities and Reliabilities for groups of Endpoint Groups
+# [GET]: List Availabilities and Reliabilities for groups of Endpoint Groups
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per Group of Endpoint Groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single group of endpoint groups results or a bulk of group of endpoint groups results filtered by their type.
 
-## Group of Endpoint groups
+## [GET] Group of Endpoint groups
 ### Input
 
 ```
@@ -66,10 +66,10 @@ Status: 200 OK
 
 <a id="2"></a>
 
-# GET: List Availabilities and Reliabilities for Endpoint Groups
+# [GET]: List Availabilities and Reliabilities for Endpoint Groups
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per Endpoint Group. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single endpoint group results or a bulk of endpoint group results filtered by their type and if necessary their "top-level" group.
 
-## Endpoint Groups
+## [GET] Endpoint Groups
 ### Input
 
 ```
@@ -132,10 +132,10 @@ Status: 200 OK
 
 <a id="3"></a>
 
-# GET: List Availabilities and Reliabilities for Service Flavors
+# [GET]: List Availabilities and Reliabilities for Service Flavors
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per given Service Flavor(s). The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single service flavor results or a bulk of service flavor results.
 
-## Service Flavors
+## [GET] Service Flavors
 ### Input
 
 ```

@@ -1,13 +1,10 @@
----
-title: API documentation | ARGO
-page_title: API - POEM Profiles 
-font_title: 'fa fa-cogs'
-description: API Calls for retrieving available POEM profiles
----
+# POEM Profiles 
+
+API Calls for retrieving available POEM profiles
 
 <a id="1"></a>
 
-## GET: List Metric Profiles
+##  [GET] : List Metric Profiles
 
 This method can be used to retrieve a list of current metric (poem) profiles.
 
