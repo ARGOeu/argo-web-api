@@ -140,6 +140,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	urlValues := r.URL.Query()
+
 	// Tenant Authentication
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
@@ -159,8 +161,16 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// Retrieve Results from database
+
+	var filter interface{}
+	if len(urlValues["name"]) > 0 {
+		filter = bson.M{"name": urlValues["name"][0]}
+	} else {
+		filter = nil
+	}
+
 	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, "metric_profiles", nil, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, "metric_profiles", filter, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError

@@ -295,6 +295,92 @@ func (suite *MetricProfilesTestSuite) TestList() {
 
 }
 
+func (suite *MetricProfilesTestSuite) TestListQueryName() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles?name=ch.cern.SAM.ROC", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "name": "ch.cern.SAM.ROC",
+   "services": [
+    {
+     "service": "CREAM-CE",
+     "metrics": [
+      "emi.cream.CREAMCE-JobSubmit",
+      "emi.wn.WN-Bi",
+      "emi.wn.WN-Csh",
+      "hr.srce.CADist-Check",
+      "hr.srce.CREAMCE-CertLifetime",
+      "emi.wn.WN-SoftVer"
+     ]
+    },
+    {
+     "service": "SRMv2",
+     "metrics": [
+      "hr.srce.SRM2-CertLifetime",
+      "org.sam.SRM-Del",
+      "org.sam.SRM-Get",
+      "org.sam.SRM-GetSURLs",
+      "org.sam.SRM-GetTURLs",
+      "org.sam.SRM-Ls",
+      "org.sam.SRM-LsDir",
+      "org.sam.SRM-Put"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestListOneNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *MetricProfilesTestSuite) TestListOne() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
@@ -347,6 +433,52 @@ func (suite *MetricProfilesTestSuite) TestListOne() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestCreateBadJson() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+    `
+
+	jsonOutput := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400",
+  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(400, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
 
@@ -464,6 +596,81 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 
 }
 
+func (suite *MetricProfilesTestSuite) TestUpdateBadJson() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+    `
+
+	jsonOutput := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400",
+  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(400, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdateNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
@@ -564,6 +771,35 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 	// Compare the expected and actual json response
 
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestDeleteNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
 
