@@ -33,26 +33,40 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// Report structure holds information for a defined computational job
-type Report struct {
-	XMLName       xml.Name        `bson:",omitempty"      json:"-"               xml:"report"`
-	Name          string          `bson:"name"            json:"name"            xml:"name,attr"`
-	Tenant        string          `bson:"tenant"          json:"tenant"          xml:"tenant,attr"`
-	EndpointGroup string          `bson:"endpoint_group"  json:"endpoint_group"  xml:"endpoint_group,attr"`
-	GroupOfGroups string          `bson:"group_of_groups" json:"group_of_groups" xml:"group_of_groups,attr"`
-	Profiles      []ReportProfile `bson:"profiles"        json:"profiles"        xml:"profiles>profile"`
-	FilterTags    []ReportTag     `bson:"filter_tags"     json:"filter_tags"     xml:"filter_tags>tag"`
+type MongoInterface struct {
+	UUID     string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	Info     Info      `bson:"info" json:"info" xml:"info"`
+	Topology Topology  `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
+	Profiles []Profile `bson:"profiles" json:"profiles" xml:"profiles"`
+	Tags     []Tag     `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
 }
 
-// ReportProfile holds info about the profiles included in a report definition
-type ReportProfile struct {
-	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"profile"`
+type Info struct {
+	Name        string `bson:"name,omitempty" json:"name" xml:"name"`
+	Description string `bson:"description,omitempty" json:"description" xml:"description"`
+	Created     string `bson:"created,omitempty" json:"created,omitempty" xml:"created,omitempty"`
+	Updated     string `bson:"updated,omitempty" json:"updated,omitempty" xml:"updated,omitempty"`
+}
+
+type Topology struct {
+	// Nesting int            `bson:"nesting" json:"nesting" xml:"nesting"`
+	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
+}
+
+type TopologyLevel struct {
+	Type  string         `bson:"type" json:"type" xml:"type"`
+	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
+}
+
+// Profile holds info about the profiles included in a report definition
+type Profile struct {
+	XMLName xml.Name `bson:"-" json:"-"     xml:"profile"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
-	Value   string   `bson:"value"      json:"value" xml:"value,attr"`
+	Type    string   `bson:"type"       json:"type"  xml:"type,attr"`
 }
 
 // ReportTag holds info about the tags used in filtering in a report definition
-type ReportTag struct {
+type Tag struct {
 	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"tag"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Value   string   `bson:"value"      json:"value" xml:"value,attr"`
@@ -67,28 +81,36 @@ type Message struct {
 // RootXML struct to represent the root of the xml document
 type RootXML struct {
 	XMLName xml.Name `xml:"root" json:"-"`
-	Reports *[]Report
+	Reports interface{}
 }
 
-// createReport is used to create a new job definition
-func createReport(input Report) bson.M {
-	query := bson.M{
-		"name":            input.Name,
-		"tenant":          input.Tenant,
-		"endpoint_group":  input.EndpointGroup,
-		"group_of_groups": input.GroupOfGroups,
-		"profiles":        input.Profiles,
-		"filter_tags":     input.FilterTags,
+// DetermineGroupType looks into a report struct topology group pointers and determines
+// whether a given groupType is a lesser_group or group or does not exist in the report.
+func DetermineGroupType(report MongoInterface, groupType string) string {
+	nestinglevel := 1
+	currentObject := report.Topology.Group
+	found := false
+	for currentObject.Group != nil {
+		nestinglevel++
+		if currentObject.Type == groupType {
+			found = true
+		}
+		currentObject = currentObject.Group
 	}
-	return query
+	if currentObject.Type == groupType {
+		return "endpoint"
+	} else if found {
+		return "group"
+	}
+	return ""
 }
 
 // GetMetricProfile is a function that takes a report struc element
 // and returns the name of the metric profile (if exists)
-func GetMetricProfile(input Report) (string, error) {
+func GetMetricProfile(input MongoInterface) (string, error) {
 	for _, element := range input.Profiles {
-		if element.Name == "metric" {
-			return element.Value, nil
+		if element.Type == "metric" {
+			return element.Name, nil
 		}
 	}
 
@@ -98,7 +120,10 @@ func GetMetricProfile(input Report) (string, error) {
 // searchName is used to create a simple query object based on name
 func searchName(name string) bson.M {
 	query := bson.M{
-		"name": name,
+		// 	"info": bson.M{
+		// 		"name": name,
+		// 	},
+		"info.name": name,
 	}
 
 	return query

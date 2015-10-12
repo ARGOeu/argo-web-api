@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package reportsv2
+package reports
 
 import (
 	"github.com/ARGOeu/argo-web-api/respond"
