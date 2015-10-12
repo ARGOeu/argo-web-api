@@ -42,7 +42,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//ListOne profile based on uuid
+// ListOne handles the listing of one specific profile based on its given uuid
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -116,7 +116,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	return code, h, output, err
 }
 
-//List the existing metricProfiles for the tenant making the request
+// List the existing metric profiles for the tenant making the request
+// Also there is an optional url param "name" to filter results by
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -189,7 +190,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-//Create function to create a new
+//Create a new metric profile
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -224,8 +225,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	incoming := MongoInterface{}
-	// urlValues := r.URL.Query()
 
+	// Try ingest request body
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
@@ -233,12 +234,15 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
+
+	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
 		code = 400
 		return code, h, output, err
 	}
 
+	// Generate new uuid
 	incoming.UUID = mongo.NewUUID()
 	err = mongo.Insert(session, tenantDbConfig.Db, "metric_profiles", incoming)
 
@@ -252,7 +256,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Update function to update contents of an existing
+//Update function to update contents of an existing metric profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -283,6 +287,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	incoming := MongoInterface{}
 
+	// ingest body data
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
@@ -290,6 +295,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
+	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
 		code = 400
@@ -302,7 +308,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
+	// create filter to retrieve specific profile with uuid
 	filter := bson.M{"uuid": vars["UUID"]}
 
 	incoming.UUID = vars["UUID"]
@@ -322,6 +328,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// run the update query
 	err = mongo.Update(session, tenantDbConfig.Db, "metric_profiles", filter, incoming)
 
 	if err != nil {
@@ -329,13 +336,13 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Create view of the results
-	output, err = createRefView(incoming, "Profile successfully updated", 200, r) //Render the results into JSON
+	// Create view for response message
+	output, err = createMsgView("Profile successfully updated", 200) //Render the results into JSON
 	code = 200
 	return code, h, output, err
 }
 
-//Delete profile based on uuid
+//Delete metric profile based on uuid
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

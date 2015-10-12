@@ -34,10 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-// CreateView marshals the mongodoc into an xml
-// in this case since the structs have very specific annotations
-// it only corrects the id of the document for the xml to be
-// Hex and not a binary string as mongo returns it.
+// createListView constructs the list response template and exports it as json
 func createListView(results []MongoInterface, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
@@ -53,6 +50,7 @@ func createListView(results []MongoInterface, msg string, code int) ([]byte, err
 
 }
 
+// createListView constructs self-reference response and exports it as json
 func createRefView(inserted MongoInterface, msg string, code int, r *http.Request) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
@@ -65,15 +63,11 @@ func createRefView(inserted MongoInterface, msg string, code int, r *http.Reques
 		},
 	}
 
-	// Message{
-	// 	Message: "Recomputations successfully submitted",
-	// 	Status:  "202",
-	// }
-
 	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err
 }
 
+// createMsgView constructs a simple message response without data
 func createMsgView(msg string, code int) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
@@ -81,11 +75,6 @@ func createMsgView(msg string, code int) ([]byte, error) {
 			Code:    strconv.Itoa(code),
 		},
 	}
-
-	// Message{
-	// 	Message: "Recomputations successfully submitted",
-	// 	Status:  "202",
-	// }
 
 	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err

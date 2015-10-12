@@ -699,12 +699,6 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
  "status": {
   "message": "Profile successfully updated",
   "code": "200"
- },
- "data": {
-  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-  "links": {
-   "self": "https:///api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c/6ac7d684-1f8e-4a02-a502-720e8f11e50c"
-  }
  }
 }`
 
@@ -748,6 +742,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	code := response.Code
 	output := response.Body.String()
+
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response

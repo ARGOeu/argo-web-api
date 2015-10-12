@@ -39,11 +39,13 @@ type Service struct {
 	Metrics []string `bson:"metrics" json:"metrics"`
 }
 
+// SelfReference to hold links and uuid
 type SelfReference struct {
 	UUID  string `json:"uuid" bson:"uuid,omitempty"`
 	Links Links  `json:"links"`
 }
 
+// Links struct to hold links
 type Links struct {
 	Self string `json:"self"`
 }
