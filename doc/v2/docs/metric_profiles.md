@@ -36,6 +36,7 @@ Type            | Description                                                   
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
+Accept: application/json
 ```
 
 ## Response
@@ -129,6 +130,7 @@ GET /metric profiles/{UUID}
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
+Accept: application/json
 ```
 
 ## Response
@@ -192,6 +194,7 @@ POST /metric_profiles
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
+Accept: application/json
 ```
 
 ### POST BODY
@@ -257,6 +260,7 @@ PUT /metric_profiles/{UUID}
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
+Accept: application/json
 ```
 
 ### PUT BODY
@@ -322,6 +326,7 @@ DELETE /metric_profiles/{UUID}
 ```
 x-api-key: shared_key_value
 Content-Type: application/json
+Accept: application/json
 ```
 
 
