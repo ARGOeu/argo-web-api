@@ -251,7 +251,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view of the results
-	output, err = createRefView(incoming, "Profile successfully created", 201, r) //Render the results into JSON
+	output, err = createRefView(incoming, "Metric Profile successfully created", 201, r) //Render the results into JSON
 	code = 201
 	return code, h, output, err
 }
@@ -337,7 +337,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view for response message
-	output, err = createMsgView("Profile successfully updated", 200) //Render the results into JSON
+	output, err = createMsgView("Metric Profile successfully updated", 200) //Render the results into JSON
 	code = 200
 	return code, h, output, err
 }

@@ -508,7 +508,7 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Profile successfully created",
+  "message": "Metric Profile successfully created",
   "code": "201"
  },
  "data": {
@@ -697,7 +697,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Profile successfully updated",
+  "message": "Metric Profile successfully updated",
   "code": "200"
  }
 }`
