@@ -22,7 +22,7 @@ This method can be used to retrieve a list of current Metric profiles
 ## Input
 
 ```
-GET /metric profiles
+GET /metric_profiles
 ```
 
 #### Optional Query Parameters
@@ -122,7 +122,7 @@ This method can be used to retrieve specific metric profile based on its uuid
 ## Input
 
 ```
-GET /metric profiles/{UUID}
+GET /metric_profiles/{UUID}
 ```
 
 ### Request headers
