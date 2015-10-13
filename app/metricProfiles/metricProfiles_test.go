@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,43 +16,41 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package metricProfiles
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
+// This is a util. suite struct used in tests (see pkg "testify")
 type MetricProfilesTestSuite struct {
 	suite.Suite
 	cfg                       config.Config
-	router                    mux.Router
+	router                    *mux.Router
+	confHandler               respond.ConfHandler
 	tenantDbConf              config.MongoConfig
 	clientkey                 string
 	respRecomputationsCreated string
 	respUnauthorized          string
 }
 
-// SetupTest adds the required entries in the database and
-// give the required values to the MetricProfilesTestSuite struct
+// Setup the Test Environment
+// This function runs before any test and setups the environment
 func (suite *MetricProfilesTestSuite) SetupTest() {
 
 	const testConfig = `
@@ -63,92 +61,105 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
     cache = false
     lrucache = 700000000
     gzip = true
+	reqsizelimit = 1073741824
+
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_core_metric_profiles"
+    db = "AR_test_recomputations"
     `
-
-	suite.respUnauthorized = "Unauthorized"
-	suite.clientkey = "mysecretcombination"
-	suite.tenantDbConf.Db = "argo_egi_test_metric_profiles"
-	suite.tenantDbConf.Password = "h4shp4ss"
-	suite.tenantDbConf.Username = "johndoe"
-	suite.tenantDbConf.Store = "ar"
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+	suite.respUnauthorized = "Unauthorized"
+	suite.tenantDbConf = config.MongoConfig{
+		Host:     "localhost",
+		Port:     27017,
+		Db:       "AR_test_metric_profiles_tenant",
+		Password: "pass",
+		Username: "dbuser",
+		Store:    "ar",
+	}
+	suite.clientkey = "123456"
 
+	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
+
+	// seed mongo
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
 		panic(err)
 	}
-	defer mongo.CloseSession(session)
+	defer session.Close()
 
+	// Seed database with tenants
+	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"name": "Westeros",
+		bson.M{"name": "FOO",
 			"db_conf": []bson.M{
 
 				bson.M{
 					"server":   "localhost",
 					"port":     27017,
-					"database": "argo_Westeros1",
+					"database": "argo_FOO",
 				},
 				bson.M{
 					"server":   "localhost",
 					"port":     27017,
-					"database": "argo_Westeros2",
+					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
 
 				bson.M{
-					"name":    "John Snow",
-					"email":   "J.Snow@brothers.wall",
-					"api_key": "wh1t3_w@lk3rs",
+					"name":    "user1",
+					"email":   "user1@email.com",
+					"api_key": "USER1KEY",
 				},
 				bson.M{
-					"name":    "King Joffrey",
-					"email":   "g0dk1ng@kingslanding.gov",
-					"api_key": "sansa <3",
+					"name":    "user2",
+					"email":   "user2@email.com",
+					"api_key": "USER2KEY",
 				},
 			}})
 	c.Insert(
-		bson.M{"name": "EGI",
+		bson.M{"name": "BAR",
 			"db_conf": []bson.M{
 
 				bson.M{
 					// "store":    "ar",
-					"server":   "localhost",
-					"port":     27017,
+					"server":   suite.tenantDbConf.Host,
+					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
 				bson.M{
-					"server":   "localhost",
-					"port":     27017,
-					"database": "argo_egi_metric_data",
+					"server":   suite.tenantDbConf.Host,
+					"port":     suite.tenantDbConf.Port,
+					"database": suite.tenantDbConf.Db,
 				},
 			},
 			"users": []bson.M{
 
 				bson.M{
-					"name":    "Joe Complex",
-					"email":   "C.Joe@egi.eu",
+					"name":    "user3",
+					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 				},
 				bson.M{
-					"name":    "Josh Plain",
-					"email":   "P.Josh@egi.eu",
-					"api_key": "itsamysterytoyou",
+					"name":    "user4",
+					"email":   "user4@email.com",
+					"api_key": "USER4KEY",
 				},
 			}})
-
+	// Seed database with metric profiles
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 	c.Insert(
 		bson.M{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "ch.cern.SAM.ROC_CRITICAL",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -172,6 +183,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name": "ch.cern.SAM.ROC",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -198,364 +210,631 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 
 }
 
-//TestListPoemProfiles tests the correct formatting when listing combatibility
-// poem profiles
-func (suite *MetricProfilesTestSuite) TestListPoemProfiles() {
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+func (suite *MetricProfilesTestSuite) TestList() {
 
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "name": "ch.cern.SAM.ROC",
+   "services": [
+    {
+     "service": "CREAM-CE",
+     "metrics": [
+      "emi.cream.CREAMCE-JobSubmit",
+      "emi.wn.WN-Bi",
+      "emi.wn.WN-Csh",
+      "hr.srce.CADist-Check",
+      "hr.srce.CREAMCE-CertLifetime",
+      "emi.wn.WN-SoftVer"
+     ]
+    },
+    {
+     "service": "SRMv2",
+     "metrics": [
+      "hr.srce.SRM2-CertLifetime",
+      "org.sam.SRM-Del",
+      "org.sam.SRM-Get",
+      "org.sam.SRM-GetSURLs",
+      "org.sam.SRM-GetTURLs",
+      "org.sam.SRM-Ls",
+      "org.sam.SRM-LsDir",
+      "org.sam.SRM-Put"
+     ]
+    }
+   ]
+  },
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "name": "ch.cern.SAM.ROC_CRITICAL",
+   "services": [
+    {
+     "service": "CREAM-CE",
+     "metrics": [
+      "emi.cream.CREAMCE-JobSubmit",
+      "emi.wn.WN-Bi",
+      "emi.wn.WN-Csh",
+      "emi.wn.WN-SoftVer"
+     ]
+    },
+    {
+     "service": "SRMv2",
+     "metrics": [
+      "hr.srce.SRM2-CertLifetime",
+      "org.sam.SRM-Del",
+      "org.sam.SRM-Get",
+      "org.sam.SRM-GetSURLs",
+      "org.sam.SRM-GetTURLs",
+      "org.sam.SRM-Ls",
+      "org.sam.SRM-LsDir",
+      "org.sam.SRM-Put"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestListQueryName() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles?name=ch.cern.SAM.ROC", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "name": "ch.cern.SAM.ROC",
+   "services": [
+    {
+     "service": "CREAM-CE",
+     "metrics": [
+      "emi.cream.CREAMCE-JobSubmit",
+      "emi.wn.WN-Bi",
+      "emi.wn.WN-Csh",
+      "hr.srce.CADist-Check",
+      "hr.srce.CREAMCE-CertLifetime",
+      "emi.wn.WN-SoftVer"
+     ]
+    },
+    {
+     "service": "SRMv2",
+     "metrics": [
+      "hr.srce.SRM2-CertLifetime",
+      "org.sam.SRM-Del",
+      "org.sam.SRM-Get",
+      "org.sam.SRM-GetSURLs",
+      "org.sam.SRM-GetTURLs",
+      "org.sam.SRM-Ls",
+      "org.sam.SRM-LsDir",
+      "org.sam.SRM-Put"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestListOneNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestListOne() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "name": "ch.cern.SAM.ROC_CRITICAL",
+   "services": [
+    {
+     "service": "CREAM-CE",
+     "metrics": [
+      "emi.cream.CREAMCE-JobSubmit",
+      "emi.wn.WN-Bi",
+      "emi.wn.WN-Csh",
+      "emi.wn.WN-SoftVer"
+     ]
+    },
+    {
+     "service": "SRMv2",
+     "metrics": [
+      "hr.srce.SRM2-CertLifetime",
+      "org.sam.SRM-Del",
+      "org.sam.SRM-Get",
+      "org.sam.SRM-GetSURLs",
+      "org.sam.SRM-GetTURLs",
+      "org.sam.SRM-Ls",
+      "org.sam.SRM-LsDir",
+      "org.sam.SRM-Put"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestCreateBadJson() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+    `
+
+	jsonOutput := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400",
+  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(400, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestCreate() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+      ]
+    }
+  ]
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Metric Profile successfully created",
+  "code": "201"
+ },
+ "data": {
+  "uuid": "{{UUID}}",
+  "links": {
+   "self": "https:///api/v2/metric_profiles/{{UUID}}"
+  }
+ }
+}`
+
+	jsonCreated := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "{{UUID}}",
+   "name": "test_profile",
+   "services": [
+    {
+     "service": "Service-A",
+     "metrics": [
+      "metric.A.1",
+      "metric.A.2",
+      "metric.A.3",
+      "metric.A.4"
+     ]
+    },
+    {
+     "service": "Service-B",
+     "metrics": [
+      "metric.B.1",
+      "metric.B.2"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	// Grab UUID from mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
-	defer mongo.CloseSession(session)
-
-	c := session.DB(suite.cfg.MongoDB.Db).C("poem_list")
-	c.Insert(
-		bson.M{
-			"name": "ch.cern.SAM.ROC_CRITICAL",
-			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
-					"metrics": []string{
-						"emi.cream.CREAMCE-JobSubmit",
-						"emi.wn.WN-Bi",
-						"emi.wn.WN-Csh",
-						"emi.wn.WN-SoftVer"},
-				},
-				bson.M{"service": "SRMv2",
-					"metrics": []string{"hr.srce.SRM2-CertLifetime",
-						"org.sam.SRM-Del",
-						"org.sam.SRM-Get",
-						"org.sam.SRM-GetSURLs",
-						"org.sam.SRM-GetTURLs",
-						"org.sam.SRM-Ls",
-						"org.sam.SRM-LsDir",
-						"org.sam.SRM-Put"},
-				},
-			},
-		})
-	c.Insert(
-		bson.M{
-			"name": "ch.cern.SAM.ROC",
-			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
-					"metrics": []string{
-						"emi.cream.CREAMCE-JobSubmit",
-						"emi.wn.WN-Bi",
-						"emi.wn.WN-Csh",
-						"hr.srce.CADist-Check",
-						"hr.srce.CREAMCE-CertLifetime",
-						"emi.wn.WN-SoftVer"},
-				},
-				bson.M{"service": "SRMv2",
-					"metrics": []string{"hr.srce.SRM2-CertLifetime",
-						"org.sam.SRM-Del",
-						"org.sam.SRM-Get",
-						"org.sam.SRM-GetSURLs",
-						"org.sam.SRM-GetTURLs",
-						"org.sam.SRM-Ls",
-						"org.sam.SRM-LsDir",
-						"org.sam.SRM-Put"},
-				},
-			},
-		})
-
-	request, _ := http.NewRequest("GET", "/api/v1/poems", strings.NewReader(""))
-
-	code, _, output, _ := ListPoems(request, suite.cfg)
-
-	metricProfileRequestXML := `<root>
- <Poem profile="ch.cern.SAM.ROC_CRITICAL"></Poem>
- <Poem profile="ch.cern.SAM.ROC"></Poem>
-</root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(metricProfileRequestXML, string(output), "Response body mismatch")
-}
-
-//TestListMetricProfiles tests the correct formatting when listing Metric Profiles
-func (suite *MetricProfilesTestSuite) TestListMetricProfiles() {
-
-	request, _ := http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ := List(request, suite.cfg)
-
-	metricProfileRequestXML := `<root>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>hr.srce.CADist-Check</metrics>
-   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC_CRITICAL">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
-</root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
-}
-
-// TestCreateMetricProfiles tests the Create method of the metricProfiles package
-func (suite *MetricProfilesTestSuite) TestCreateMetricProfiles() {
-
-	postData := `
-	{
-	"name" : "ch.cern.BOB.ROCK_AND_ROLL",
-	"services" : [
-		{ "service" : "CREAM-CE",
-		  "metrics" : ["emi.cream.CREAMCE-JobSubmit", "emi.wn.WN-Bi", "emi.wn.WN-Cs"]
-		},
-		{
-		  "service" : "SRMv2",
-		  "metrics" : ["org.sam.SRM-Del","org.sam.SRM-Get","org.sam.SRM-GetSURLs"]
-		}
-	]}`
-
-	request, _ := http.NewRequest("POST", "/api/v1/metric_profiles", strings.NewReader(postData))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ := Create(request, suite.cfg)
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal("Metric profile successfully inserted", string(output), "Response body mismatch")
-
-	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ = List(request, suite.cfg)
-
-	metricProfileRequestXML := `<root>
- <MetricProfiles id=".*" name="ch.cern.BOB.ROCK_AND_ROLL">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Cs</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-  </services>
- </MetricProfiles>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>hr.srce.CADist-Check</metrics>
-   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC_CRITICAL">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
-</root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
-
-}
-
-// TestUpdateMetricProfiles test the Update function of the metricProfiles package
-func (suite *MetricProfilesTestSuite) TestUpdateMetricProfiles() {
-
-	putData := `
-	{
-	"name" : "ch.cern.BOB.ROCK_AND_ROLL",
-	"services" : [
-		{ "service" : "CREAM-CE",
-		  "metrics" : ["emi.cream.CREAMCE-JobSubmit", "emi.wn.WN-Bi", "emi.wn.WN-Cs"]
-		},
-		{
-		  "service" : "SRMv2",
-		  "metrics" : ["org.sam.SRM-Del","org.sam.SRM-Get","org.sam.SRM-GetSURLs"]
-		}
-	]}`
-
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
-
-	result := MongoInterface{}
+	// Retrieve uuid from database
+	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	c.Find(bson.M{}).One(&result)
+	c.Find(bson.M{"name": "test_profile"}).One(&result)
+	uuid := result["uuid"].(string)
 
-	request, _ := http.NewRequest("PUT", "/api/v1/metric_profiles/"+result.ID.Hex(), strings.NewReader(putData))
-	request.Header.Set("x-api-key", suite.clientkey)
-	context.Set(request, "id", result.ID.Hex())
-	code, _, output, _ := Update(request, suite.cfg)
+	// Apply uuid to output template and check
+	suite.Equal(strings.Replace(jsonOutput, "{{UUID}}", uuid, 2), output, "Response body mismatch")
 
+	// Check that actually the item has been created
+	// Call List one with the specific UUID
+	request2, _ := http.NewRequest("GET", "/api/v2/metric_profiles/"+uuid, strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
 	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal("Metric profile successfully updated", string(output), "Response body mismatch")
-
-	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ = List(request, suite.cfg)
-
-	metricProfileRequestXML := `<root>
- <MetricProfiles id=".*" name="ch.cern.BOB.ROCK_AND_ROLL">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Cs</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-  </services>
- </MetricProfiles>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>hr.srce.CADist-Check</metrics>
-   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
-</root>`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
+	suite.Equal(200, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(strings.Replace(jsonCreated, "{{UUID}}", uuid, 2), output2, "Response body mismatch")
 
 }
 
-// TestDeleteMetricProfiles test the Delete function of the metricProfiles package
-func (suite *MetricProfilesTestSuite) TestDeleteMetricProfiles() {
+func (suite *MetricProfilesTestSuite) TestUpdateBadJson() {
 
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+    `
 
+	jsonOutput := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400",
+  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(400, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdateNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdate() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+      ]
+    }
+  ]
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Metric Profile successfully updated",
+  "code": "200"
+ }
+}`
+
+	jsonUpdated := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "name": "test_profile",
+   "services": [
+    {
+     "service": "Service-A",
+     "metrics": [
+      "metric.A.1",
+      "metric.A.2",
+      "metric.A.3",
+      "metric.A.4"
+     ]
+    },
+    {
+     "service": "Service-B",
+     "metrics": [
+      "metric.B.1",
+      "metric.B.2"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	// Apply uuid to output template and check
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+	// Check that the item has actually updated
+	// run a list specific
+	request2, _ := http.NewRequest("GET", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonUpdated, output2, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestDeleteNotFound() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestDelete() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Metric Profile Successfully Deleted",
+  "code": "200"
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
-	defer mongo.CloseSession(session)
-
-	result := MongoInterface{}
+	// try to retrieve item
+	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	c.Find(bson.M{}).One(&result)
+	err = c.Find(bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
-	request, _ := http.NewRequest("DELETE", "/api/v1/metric_profiles/"+result.ID.Hex(), strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	// context.Set(request, "id", result.ID.Hex())
-	code, _, output, _ := Delete(request, suite.cfg)
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal("Metric profile successfully removed", string(output), "Response body mismatch")
-
-	request, _ = http.NewRequest("GET", "/api/v1/metric_profiles", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-
-	code, _, output, _ = List(request, suite.cfg)
-
-	metricProfileRequestXML := `<root>
- <MetricProfiles id=".*" name="ch.cern.SAM.ROC">
-  <services service="CREAM-CE">
-   <metrics>emi.cream.CREAMCE-JobSubmit</metrics>
-   <metrics>emi.wn.WN-Bi</metrics>
-   <metrics>emi.wn.WN-Csh</metrics>
-   <metrics>hr.srce.CADist-Check</metrics>
-   <metrics>hr.srce.CREAMCE-CertLifetime</metrics>
-   <metrics>emi.wn.WN-SoftVer</metrics>
-  </services>
-  <services service="SRMv2">
-   <metrics>hr.srce.SRM2-CertLifetime</metrics>
-   <metrics>org.sam.SRM-Del</metrics>
-   <metrics>org.sam.SRM-Get</metrics>
-   <metrics>org.sam.SRM-GetSURLs</metrics>
-   <metrics>org.sam.SRM-GetTURLs</metrics>
-   <metrics>org.sam.SRM-Ls</metrics>
-   <metrics>org.sam.SRM-LsDir</metrics>
-   <metrics>org.sam.SRM-Put</metrics>
-  </services>
- </MetricProfiles>
-</root>`
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Regexp(metricProfileRequestXML, string(output), "Response body mismatch")
-
+	suite.NotEqual(err, nil, "No not found error")
+	suite.Equal(err.Error(), "not found", "No not found error")
 }
 
 //TearDownTest to tear down every test
@@ -567,9 +846,8 @@ func (suite *MetricProfilesTestSuite) TearDownTest() {
 	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-
 }
 
-func TestRecompuptationsTestSuite(t *testing.T) {
+func TestMetricProfilesTestSuite(t *testing.T) {
 	suite.Run(t, new(MetricProfilesTestSuite))
 }

@@ -26,37 +26,26 @@
 
 package metricProfiles
 
-import (
-	"encoding/xml"
-
-	"gopkg.in/mgo.v2/bson"
-)
-
-type root struct {
-	MetricProfiles []MongoInterface
-}
-
 // MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
-	ID       bson.ObjectId `bson:"_id,omitempty" xml:"-"`
-	OutID    string        `bson:"-" xml:"id,attr"`
-	Name     string        `bson:"name" xml:"name,attr" json:"name"`
-	Services []Service     `bson:"services" xml:"services" json:"services"`
+	UUID     string    `bson:"uuid" json:"uuid"`
+	Name     string    `bson:"name" json:"name"`
+	Services []Service `bson:"services" json:"services"`
 }
 
 // Service struct to represent services with their metrics
 type Service struct {
-	Service string   `bson:"service" xml:"service,attr" json:"service"`
-	Metrics []string `bson:"metrics" xml:"metrics" json:"metrics"`
+	Service string   `bson:"service" json:"service"`
+	Metrics []string `bson:"metrics" json:"metrics"`
 }
 
-//Profiles to preserve compatibility with previous poem request
-type Profiles struct {
-	XMLName xml.Name `xml:"root"`
-	Poems   []Poem   `xml:"Poem"`
+// SelfReference to hold links and uuid
+type SelfReference struct {
+	UUID  string `json:"uuid" bson:"uuid,omitempty"`
+	Links Links  `json:"links"`
 }
 
-// Poem to preserve compatibility with previous poem request
-type Poem struct {
-	Profile string `xml:"profile,attr" bson:"name"`
+// Links struct to hold links
+type Links struct {
+	Self string `json:"self"`
 }

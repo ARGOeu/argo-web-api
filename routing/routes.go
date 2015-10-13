@@ -34,11 +34,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
 	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
-	"github.com/ARGOeu/argo-web-api/app/statusDetail"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
-	"github.com/ARGOeu/argo-web-api/app/statusMsg"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 )
@@ -51,6 +49,7 @@ var routesV2 = []RouteV2{
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Recomputations", "", recomputations2.HandleSubrouter},
+	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
 }
 
 var routesV1 = []RouteV1{
@@ -78,24 +77,9 @@ var routesV1 = []RouteV1{
 	{"reports list", "GET", "/reports", reports.List},
 	{"reports list one", "GET", "/reports/{name}", reports.ListOne},
 
-	//Poem Profiles compatibility
-	{"List poems", "GET", "/poems", metricProfiles.ListPoems},
-
-	//Metric Profiles
-	{"list metric profile", "GET", "/metric_profiles", metricProfiles.List},
-	{"metric profile create", "POST", "/metric_profiles", metricProfiles.Create},
-	{"metric profile delete", "DELETE", "/metric_profiles/{id}", metricProfiles.Delete},
-	{"metric profile update", "PUT", "/metric_profiles/{id}", metricProfiles.Update},
-
 	//Recalculations
 	{"recomputation create", "POST", "/recomputations", recomputations.Create},
 	{"recomputation list", "GET", "/recomputations", recomputations.List},
 
 	{"factors list", "GET", "/factors", factors.List},
-
-	//Status
-	{"status detail list", "GET", "/status/metrics/timeline/{group}", statusDetail.List},
-
-	//Status Raw Msg
-	{"status message list", "GET", "/status/metrics/msg/{hostname}/{service}/{metric}", statusMsg.List},
 }

@@ -152,6 +152,22 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	return []byte(answer)
 }
 
+// BadRequestBadJson is used to inform the user about malformed json body
+var BadRequestBadJSON = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+		Details: "Request Body contains malformed JSON, thus rendering the Request Bad",
+	}}
+
+// NotFound is used to inform the user about not found item
+var NotFound = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+		Details: "item with the specific UUID was not found on the server",
+	}}
+
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
 var UnauthorizedMessage = ResponseMessage{
 	Status: StatusResponse{
