@@ -23,6 +23,7 @@
 package routing
 
 import (
+	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
 	"github.com/ARGOeu/argo-web-api/app/availabilityProfiles"
 	"github.com/ARGOeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/ARGOeu/argo-web-api/app/factors"
@@ -50,6 +51,7 @@ var routesV2 = []RouteV2{
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Recomputations", "", recomputations2.HandleSubrouter},
 	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
+	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 }
 
 var routesV1 = []RouteV1{
