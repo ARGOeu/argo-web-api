@@ -27,6 +27,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
+	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/recomputations2"
@@ -48,6 +49,7 @@ var routesV2 = []RouteV2{
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Recomputations", "", recomputations2.HandleSubrouter},
+	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
 }
 
 var routesV1 = []RouteV1{
