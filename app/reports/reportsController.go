@@ -105,6 +105,17 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// Validate profiles given in report
+	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+
+	if len(validationErrors) > 0 {
+		code = 422
+		out := respond.UnprocessableEntity
+		out.Errors = validationErrors
+		output = out.MarshalTo(contentType)
+		return code, h, output, err
+	}
+
 	// Prepare structure for storing query results
 	results := []MongoInterface{}
 
@@ -205,8 +216,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
 	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, nil, "id", &results)
-	fmt.Println(results)
-	fmt.Println(err)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -344,7 +353,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		// User provided malformed json input data
 		output, _ := respond.MarshalContent(respond.MalformedJsonInput, contentType, "", " ")
-
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -371,12 +379,22 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// Validate profiles given in report
+	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+
+	if len(validationErrors) > 0 {
+		code = 422
+		out := respond.UnprocessableEntity
+		out.Errors = validationErrors
+		output = out.MarshalTo(contentType)
+		return code, h, output, err
+	}
+
 	// We search by name and update
 	query := bson.M{"id": id}
 	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, query, sanitizedInput)
 
 	if err != nil {
-
 		if err.Error() != "not found" {
 			code = http.StatusInternalServerError
 			return code, h, output, err

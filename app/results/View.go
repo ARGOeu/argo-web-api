@@ -28,9 +28,11 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
-func createServiceFlavorResultView(results []ServiceFlavorInterface, report ReportInterface, format string) ([]byte, error) {
+func createServiceFlavorResultView(results []ServiceFlavorInterface, report reports.MongoInterface, format string) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -49,7 +51,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report Repo
 			prevServiceFlavorGroup = row.SuperGroup
 			serviceFlavorGroup = &ServiceFlavorGroup{
 				Name: row.SuperGroup,
-				Type: report.EndpointGroupType, // Endpoint groups are parents of SFs
+				Type: report.GetEndpointType(), // Endpoint groups are parents of SFs
 			}
 			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
 			prevServiceFlavor = ""
@@ -84,7 +86,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report Repo
 
 }
 
-func createEndpointGroupResultView(results []EndpointGroupInterface, report ReportInterface, format string) ([]byte, error) {
+func createEndpointGroupResultView(results []EndpointGroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -104,7 +106,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 			prevSuperGroup = row.SuperGroup
 			superGroup = &SuperGroup{
 				Name: row.SuperGroup,
-				Type: report.SuperGroupType,
+				Type: report.GetGroupType(),
 			}
 			docRoot.Result = append(docRoot.Result, superGroup)
 			prevEndpointGroup = ""
@@ -115,7 +117,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 			prevEndpointGroup = row.Name
 			endpointGroup = &Group{
 				Name: row.Name,
-				Type: report.EndpointGroupType,
+				Type: report.GetEndpointType(),
 			}
 			superGroup.Endpoints = append(superGroup.Endpoints, endpointGroup)
 		}
@@ -138,7 +140,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report Repo
 
 }
 
-func createSuperGroupView(results []SuperGroupInterface, report ReportInterface, format string) ([]byte, error) {
+func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -156,7 +158,7 @@ func createSuperGroupView(results []SuperGroupInterface, report ReportInterface,
 			prevSuperGroup = row.SuperGroup
 			superGroup = &SuperGroup{
 				Name: row.SuperGroup,
-				Type: report.SuperGroupType,
+				Type: report.GetGroupType(),
 			}
 			docRoot.Result = append(docRoot.Result, superGroup)
 		}

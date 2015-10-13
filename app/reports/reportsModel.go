@@ -29,10 +29,13 @@ package reports
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
 
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
+// MongoInterface is used as an interface to Marshal and Unmarshal from different formats
 type MongoInterface struct {
 	UUID     string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	Info     Info      `bson:"info" json:"info" xml:"info"`
@@ -41,6 +44,7 @@ type MongoInterface struct {
 	Tags     []Tag     `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
 }
 
+// Info conatins info about a report and is used inside the main MongoInterface struct
 type Info struct {
 	Name        string `bson:"name,omitempty" json:"name" xml:"name"`
 	Description string `bson:"description,omitempty" json:"description" xml:"description"`
@@ -48,11 +52,13 @@ type Info struct {
 	Updated     string `bson:"updated,omitempty" json:"updated,omitempty" xml:"updated,omitempty"`
 }
 
+// Topology contains the topology used in this report and is used inside the main MongoInterface struct
 type Topology struct {
 	// Nesting int            `bson:"nesting" json:"nesting" xml:"nesting"`
 	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
 }
 
+// TopologyLevel is used to create the multiple nesting levels for the Topology struct
 type TopologyLevel struct {
 	Type  string         `bson:"type" json:"type" xml:"type"`
 	Group *TopologyLevel `bson:"group,omitempty" json:"group,omitempty" xml:"group,omitempty"`
@@ -60,12 +66,13 @@ type TopologyLevel struct {
 
 // Profile holds info about the profiles included in a report definition
 type Profile struct {
-	XMLName xml.Name `bson:"-" json:"-"     xml:"profile"`
+	XMLName xml.Name `bson:"-"          json:"-"     xml:"profile"`
+	UUID    string   `bson:"uuid"       json:"uuid"  xml:"uuid,attr"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Type    string   `bson:"type"       json:"type"  xml:"type,attr"`
 }
 
-// ReportTag holds info about the tags used in filtering in a report definition
+// Tag holds info about the tags used in filtering in a report definition
 type Tag struct {
 	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"tag"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
@@ -84,9 +91,23 @@ type RootXML struct {
 	Reports interface{}
 }
 
+// GetEndpointType retrieves the deepest type nested inside the group hierarchy
+func (report MongoInterface) GetEndpointType() string {
+	currentObject := report.Topology.Group
+	for currentObject.Group != nil {
+		currentObject = currentObject.Group
+	}
+	return currentObject.Type
+}
+
+// GetGroupType retrieves the first type nested inside the group hierarchy
+func (report MongoInterface) GetGroupType() string {
+	return report.Topology.Group.Type
+}
+
 // DetermineGroupType looks into a report struct topology group pointers and determines
 // whether a given groupType is a lesser_group or group or does not exist in the report.
-func DetermineGroupType(report MongoInterface, groupType string) string {
+func (report MongoInterface) DetermineGroupType(groupType string) string {
 	nestinglevel := 1
 	currentObject := report.Topology.Group
 	found := false
@@ -105,6 +126,31 @@ func DetermineGroupType(report MongoInterface, groupType string) string {
 	return ""
 }
 
+var validators = map[string]string{
+	"metric":      "metric_profiles",
+	"aggregation": "aggregation_profiles",
+	"operations":  "operations_profiles",
+}
+
+// ValidateProfiles ensures that the profiles in a report actually exist in the database and
+// corrects possible name inconsistencies
+func (report MongoInterface) ValidateProfiles(db *mgo.Database) []string {
+	errs := []string{}
+	for _, element := range report.Profiles {
+		var result interface{}
+		colName := validators[element.Type]
+		if colName != "" {
+			err := db.C(colName).Find(bson.M{"uuid": element.UUID}).One(&result)
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.UUID))
+				continue
+			}
+			element.Name = result.(bson.M)["name"].(string)
+		}
+	}
+	return errs
+}
+
 // GetMetricProfile is a function that takes a report struc element
 // and returns the name of the metric profile (if exists)
 func GetMetricProfile(input MongoInterface) (string, error) {
@@ -113,7 +159,6 @@ func GetMetricProfile(input MongoInterface) (string, error) {
 			return element.Name, nil
 		}
 	}
-
 	return "", errors.New("Unable to find metric profile with specified name")
 }
 

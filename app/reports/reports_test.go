@@ -194,6 +194,186 @@ func (suite *ReportTestSuite) SetupTest() {
 	// authenticate user's api key and find corresponding tenant
 	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
+	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+
+	c.Insert(
+		bson.M{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name": "profile1",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name": "ch.cern.SAM.ROC",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"hr.srce.CADist-Check",
+						"hr.srce.CREAMCE-CertLifetime",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+
+	c = session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
+	c.Insert(
+		bson.M{
+			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+			"name":              "profile3",
+			"namespace":         "test",
+			"endpoint_group":    "sites",
+			"metric_operation":  "AND",
+			"profile_operation": "AND",
+			"metric_profile": bson.M{
+				"name": "roc.critical",
+				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
+			},
+			"groups": []bson.M{
+				bson.M{"name": "compute",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "CREAM-CE",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "ARC-CE",
+							"operation": "AND",
+						},
+					}},
+				bson.M{"name": "storage",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SRMv2",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SRM",
+							"operation": "AND",
+						},
+					}},
+			}})
+	c.Insert(
+		bson.M{
+			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":              "cloud",
+			"namespace":         "test",
+			"endpoint_group":    "sites",
+			"metric_operation":  "AND",
+			"profile_operation": "AND",
+			"metric_profile": bson.M{
+				"name": "roc.critical",
+				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
+			},
+			"groups": []bson.M{
+				bson.M{"name": "compute",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SERVICEA",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SERVICEB",
+							"operation": "AND",
+						},
+					}},
+				bson.M{"name": "images",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SERVICEC",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SERVICED",
+							"operation": "AND",
+						},
+					}},
+			}})
+
+	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.Insert(
+		bson.M{
+			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+			"name":             "profile2",
+			"available_states": []string{"A,B,C"},
+			"defaults": bson.M{
+				"missing": "A",
+				"down":    "B",
+				"unknown": "C"},
+			"operations": []bson.M{
+				bson.M{
+					"name": "AND",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "A",
+							"b": "B",
+							"x": "B",
+						},
+						bson.M{
+							"a": "A",
+							"b": "C",
+							"x": "C",
+						},
+						bson.M{
+							"a": "B",
+							"b": "C",
+							"x": "C",
+						}}},
+				bson.M{
+					"name": "OR",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "A",
+							"b": "B",
+							"x": "A",
+						},
+						bson.M{
+							"a": "A",
+							"b": "C",
+							"x": "A",
+						},
+						bson.M{
+							"a": "B",
+							"b": "C",
+							"x": "B",
+						}}},
+			}})
+
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C(reportsColl)
 	c.Insert(bson.M{
@@ -214,11 +394,17 @@ func (suite *ReportTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"type": "ops",
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
 				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -247,11 +433,17 @@ func (suite *ReportTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"type": "ops",
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
 				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -284,14 +476,21 @@ func (suite *ReportTestSuite) TestCreateReport() {
             }
         }
     },
-    "profiles": [
+	"profiles": [
         {
-            "name": "metric",
-            "type": "profA"
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
         },
         {
-            "name": "ap",
-            "type": "profB"
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
         }
     ],
     "filter_tags": [
@@ -344,7 +543,6 @@ func (suite *ReportTestSuite) TestCreateReport() {
 
 	code = response.Code
 	output = response.Body.String()
-
 	responseJSON := `{
  "status": {
   "message": "Success",
@@ -369,12 +567,19 @@ func (suite *ReportTestSuite) TestCreateReport() {
    },
    "profiles": \[
     {
-     "name": "metric",
-     "type": "profA"
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
     },
     {
-     "name": "ap",
-     "type": "profB"
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+     "name": "profile3",
+     "type": "aggregation"
     }
    \],
    "filter_tags": \[
@@ -422,12 +627,19 @@ func (suite *ReportTestSuite) TestUpdateReport() {
     },
     "profiles": [
         {
-            "name": "metric",
-            "type": "profD"
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
         },
         {
-            "name": "ap",
-            "type": "profC"
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
         }
     ],
     "filter_tags": [
@@ -483,12 +695,19 @@ func (suite *ReportTestSuite) TestUpdateReport() {
    },
    "profiles": \[
     {
-     "name": "metric",
-     "type": "profD"
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
     },
     {
-     "name": "ap",
-     "type": "profC"
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+     "name": "profile3",
+     "type": "aggregation"
     }
    \],
    "filter_tags": \[
@@ -518,11 +737,84 @@ func (suite *ReportTestSuite) TestUpdateReport() {
 	// Execute the request in the controller
 	code = response.Code
 	output = response.Body.String()
-
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Incorrect Error Code")
 	// Compare the expected and actual xml response
 	suite.Regexp(respondJSON, output, "Response body mismatch")
+}
+
+func (suite *ReportTestSuite) TestWrongUUIDUpdateReport() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "newname",
+        "description": "newdescription",
+        "created": "shouldnotchange",
+        "updated": "shouldnotchange"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "fight"
+            }
+        }
+    },
+    "profiles": [
+        {
+			"uuid": "6ac7d684-1f8e-4a02-a302-720e8f11770b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"uuid": "6ac7d684-1f8e-4a02-a502-7258f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f1250bq",
+            "type": "aggregation",
+            "name": "profile3"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "N"
+        },
+        {
+            "name": "monitored",
+            "value": "N"
+        }
+    ]
+}`
+	// Prepare the request object
+	request, _ := http.NewRequest("PUT", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json;")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+
+	// Execute the request in the controller
+	code := response.Code
+	output := response.Body.String()
+	respReportWrongProfileUUIDJSON := `{
+ "status": {
+  "message": "Unprocessable Entity",
+  "code": "422"
+ },
+ "errors": [
+  "No profile in metric_profiles was found with uuid 6ac7d684-1f8e-4a02-a302-720e8f11770b",
+  "No profile in operations_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-7258f11e523",
+  "No profile in aggregation_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-720e8f1250bq"
+ ]
+}`
+
+	suite.Equal(422, code, "Incorrect Error Code")
+	suite.Equal(respReportWrongProfileUUIDJSON, output, "Response body mismatch")
 }
 
 // TestDeleteReport function implements testing the http DELETE report request.
@@ -603,12 +895,19 @@ func (suite *ReportTestSuite) TestReadOneReport() {
    },
    "profiles": [
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
-     "type": "ops"
+     "type": "operations"
+    },
+    {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
     }
    ],
    "filter_tags": [
@@ -676,12 +975,19 @@ func (suite *ReportTestSuite) TestReadReports() {
    },
    "profiles": [
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
-     "type": "ops"
+     "type": "operations"
+    },
+    {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
     }
    ],
    "filter_tags": [
@@ -713,12 +1019,19 @@ func (suite *ReportTestSuite) TestReadReports() {
    },
    "profiles": [
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
-     "type": "ops"
+     "type": "operations"
+    },
+    {
+     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
     }
    ],
    "filter_tags": [

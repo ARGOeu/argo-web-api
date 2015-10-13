@@ -52,10 +52,10 @@ type ConfHandler struct {
 
 // ResponseMessage is used to construct and marshal correctly response messages
 type ResponseMessage struct {
-	XMLName xml.Name        `xml:"root" json:"-"`
-	Status  StatusResponse  `xml:"status,omitempty" json:"status,omitempty"`
-	Data    interface{}     `xml:"data>result,omitempty" json:"data,omitempty"`
-	Errors  []ErrorResponse `xml:"errors>error,omitempty" json:"errors,omitempty"`
+	XMLName xml.Name       `xml:"root" json:"-"`
+	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
+	Data    interface{}    `xml:"data>result,omitempty" json:"data,omitempty"`
+	Errors  interface{}    `xml:"errors>error,omitempty" json:"errors,omitempty"`
 }
 
 // StatusResponse accompanies the ResponseMessage struct to construct a response
@@ -201,6 +201,11 @@ func CreateResponseMessage(message string, code string, contentType string) ([]b
 	return output, err
 }
 
+func (resp ResponseMessage) MarshalTo(contentType string) []byte {
+	output, _ := MarshalContent(resp, contentType, "", " ")
+	return output
+}
+
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
 var UnauthorizedMessage = ResponseMessage{
 	Status: StatusResponse{
@@ -222,5 +227,12 @@ var MalformedJsonInput = ResponseMessage{
 		Code:    "400",
 		Message: "Malformated json input data",
 		Details: "Check that your json input is valid",
+	},
+}
+
+var UnprocessableEntity = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "422",
+		Message: "Unprocessable Entity",
 	},
 }

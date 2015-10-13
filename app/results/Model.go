@@ -56,12 +56,12 @@ type endpointGroupResultQuery struct {
 }
 
 // ReportInterface for mongodb object exchanging
-type ReportInterface struct {
-	Name              string `bson:"name"`
-	Tenant            string `bson:"tenant"`
-	EndpointGroupType string `bson:"endpoint_group"`
-	SuperGroupType    string `bson:"group_of_groups"`
-}
+// type ReportInterface struct {
+// 	Name              string `bson:"name"`
+// 	Tenant            string `bson:"tenant"`
+// 	EndpointGroupType string `bson:"endpoint_group"`
+// 	SuperGroupType    string `bson:"group_of_groups"`
+// }
 
 // ServiceFlavorInterface for mongodb object exchanging
 type ServiceFlavorInterface struct {
