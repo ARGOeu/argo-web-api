@@ -24,7 +24,7 @@
  * Framework Programme (contract # INFSO-RI-261323)
  */
 
-package metricProfiles2
+package metricProfiles
 
 import (
 	"encoding/json"

@@ -20,7 +20,7 @@
  *
  */
 
-package metricProfiles2
+package metricProfiles
 
 import (
 	"github.com/ARGOeu/argo-web-api/respond"
