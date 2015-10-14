@@ -243,18 +243,13 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Validate States
-	err = incoming.validateStates()
-	// Respond 422 unprocessabe entity
-	if err != nil {
-		output, err = createMsgView(err.Error(), 422)
-		code = 422
-		return code, h, output, err
-	}
-	// Validate Mentions
-	err = incoming.validateMentions()
-	// Respond 422 unprocessabe entity
-	if err != nil {
-		output, err = createMsgView(err.Error(), 422)
+	var errList []string
+	errList = append(errList, incoming.validateDuplicates()...)
+	errList = append(errList, incoming.validateStates()...)
+	errList = append(errList, incoming.validateMentions()...)
+
+	if len(errList) > 0 {
+		output, err = createErrView("Validation Error", 422, errList)
 		code = 422
 		return code, h, output, err
 	}
@@ -268,7 +263,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view of the results
-	output, err = createRefView(incoming, "Aggregation Profile successfully created", 201, r) //Render the results into JSON
+	output, err = createRefView(incoming, "Operations Profile successfully created", 201, r) //Render the results into JSON
 	code = 201
 	return code, h, output, err
 }
@@ -347,18 +342,13 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Validate States
-	err = incoming.validateStates()
-	// Respond 422 unprocessabe entity
-	if err != nil {
-		output, err = createMsgView(err.Error(), 422)
-		code = 422
-		return code, h, output, err
-	}
-	// Validate Mentions
-	err = incoming.validateMentions()
-	// Respond 422 unprocessabe entity
-	if err != nil {
-		output, err = createMsgView(err.Error(), 422)
+	var errList []string
+	errList = append(errList, incoming.validateDuplicates()...)
+	errList = append(errList, incoming.validateStates()...)
+	errList = append(errList, incoming.validateMentions()...)
+
+	if len(errList) > 0 {
+		output, err = createErrView("Validation Error", 422, errList)
 		code = 422
 		return code, h, output, err
 	}
@@ -372,7 +362,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view for response message
-	output, err = createMsgView("Aggregation Profile successfully updated", 200) //Render the results into JSON
+	output, err = createMsgView("Operations Profile successfully updated", 200) //Render the results into JSON
 	code = 200
 	return code, h, output, err
 }
@@ -447,7 +437,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view of the results
-	output, err = createMsgView("Aggregation Profile Successfully Deleted", 200) //Render the results into JSON
+	output, err = createMsgView("Operations Profile Successfully Deleted", 200) //Render the results into JSON
 
 	if err != nil {
 		code = http.StatusInternalServerError

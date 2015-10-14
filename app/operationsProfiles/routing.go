@@ -20,7 +20,7 @@
  *
  */
 
-package operationsProfile
+package operationsProfiles
 
 import (
 	"github.com/ARGOeu/argo-web-api/respond"

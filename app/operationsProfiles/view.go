@@ -67,6 +67,28 @@ func createRefView(inserted OpsProfile, msg string, code int, r *http.Request) (
 	return output, err
 }
 
+// createErrView constructs a simple message response without data
+func createErrView(msg string, code int, errList []string) ([]byte, error) {
+
+	var errRespond []respond.ErrorResponse
+
+	for _, item := range errList {
+		temp := respond.ErrorResponse{"Validation Failed", strconv.Itoa(code), item}
+		errRespond = append(errRespond, temp)
+	}
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+		Errors: errRespond,
+	}
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}
+
 // createMsgView constructs a simple message response without data
 func createMsgView(msg string, code int) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{

@@ -26,7 +26,7 @@
 
 package operationsProfiles
 
-import "errors"
+import "sort"
 
 // OpsProfile to retrieve and insert operationsProfiles in mongo
 type OpsProfile struct {
@@ -78,41 +78,45 @@ func (oprof *OpsProfile) hasState(state string) bool {
 }
 
 // validateStates checks all state references for undeclared states
-func (oprof *OpsProfile) validateStates() error {
+func (oprof *OpsProfile) validateStates() []string {
 	// check default states
+	var errList []string
+
 	if !(oprof.hasState(oprof.Defaults.Down)) {
-		return errors.New("Default Down State: " + oprof.Defaults.Down + " not in available States")
+		errList = append(errList, "Default Down State: "+oprof.Defaults.Down+" not in available States")
 	}
 	if !(oprof.hasState(oprof.Defaults.Missing)) {
-		return errors.New("Default Missing State: " + oprof.Defaults.Missing + " not in available States")
+		errList = append(errList, "Default Missing State: "+oprof.Defaults.Missing+" not in available States")
 	}
 	if !(oprof.hasState(oprof.Defaults.Unknown)) {
-		return errors.New("Default Unknown State: " + oprof.Defaults.Unknown + " not in available States")
+		errList = append(errList, "Default Unknown State: "+oprof.Defaults.Unknown+" not in available States")
 	}
 	// check operations
 	for _, op := range oprof.Operations {
 		for _, st := range op.TruthTable {
 			if !(oprof.hasState(st.A)) {
-				return errors.New("In Operation: " + op.Name + ", statement member a:" + st.A + " contains undeclared state")
+				errList = append(errList, "In Operation: "+op.Name+", statement member a: "+st.A+" contains undeclared state")
 			}
 			if !(oprof.hasState(st.B)) {
-				return errors.New("In Operation: " + op.Name + ", statement member b:" + st.B + " contains undeclared state")
+				errList = append(errList, "In Operation: "+op.Name+", statement member b: "+st.B+" contains undeclared state")
 			}
 			if !(oprof.hasState(st.X)) {
-				return errors.New("In Operation: " + op.Name + ", statement member x:" + st.X + " contains undeclared state")
+				errList = append(errList, "In Operation: "+op.Name+", statement member x: "+st.X+" contains undeclared state")
 			}
 		}
 	}
 
-	return nil
+	return errList
 }
 
 // validateMentions checks if we have enough state mentions in the truth table to accomodate all cases
-func (oprof *OpsProfile) validateMentions() error {
+func (oprof *OpsProfile) validateMentions() []string {
+
+	var errList []string
 
 	counters := make(map[string]int)
 	// threshold of mentions for each element = number of elements + 1
-	thold := len(oprof.AvailStates) + 1
+	thold := len(oprof.AvailStates) - 1
 	// for each operation
 	for _, op := range oprof.Operations {
 		// init counter map
@@ -122,17 +126,55 @@ func (oprof *OpsProfile) validateMentions() error {
 
 		// for all statements in truth table
 		for _, st := range op.TruthTable {
-			counters[st.A]++
-			counters[st.B]++
+			if oprof.hasState(st.A) {
+				counters[st.A]++
+			}
+			if oprof.hasState(st.B) {
+				counters[st.B]++
+			}
+
 		}
 
 		// Check counters if contain mentions >= threshold
+		var sorted []string
 		for key := range counters {
+			sorted = append(sorted, key)
+		}
+		// sort keys
+		sort.Strings(sorted)
+
+		for _, key := range sorted {
 			if counters[key] < thold {
-				return errors.New("Not enough mentions of state:" + key + " in operation: " + op.Name)
+				errList = append(errList, "Not enough mentions of state:"+key+" in operation: "+op.Name)
 			}
 		}
 	}
 
-	return nil
+	return errList
+}
+
+// validateDuplicates checks if we have duplicate states
+func (oprof *OpsProfile) validateDuplicates() []string {
+
+	var errList []string
+
+	// check duplicate in states
+	for i := 0; i < len(oprof.AvailStates); i++ {
+		for j := i + 1; j < len(oprof.AvailStates); j++ {
+			if oprof.AvailStates[i] == oprof.AvailStates[j] {
+				errList = append(errList, "State:"+oprof.AvailStates[i]+" is duplicated")
+			}
+		}
+	}
+
+	// check duplicate in operations
+	for i := 0; i < len(oprof.Operations); i++ {
+		for j := i + 1; j < len(oprof.Operations); j++ {
+			if oprof.Operations[i].Name == oprof.Operations[j].Name {
+				errList = append(errList, "Operation:"+oprof.Operations[i].Name+" is duplicated")
+			}
+		}
+	}
+
+	return errList
 }

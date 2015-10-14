@@ -159,86 +159,106 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 	c.Insert(
 		bson.M{
-			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-			"name":              "critical",
-			"namespace":         "test",
-			"endpoint_group":    "sites",
-			"metric_operation":  "AND",
-			"profile_operation": "AND",
-			"metric_profile": bson.M{
-				"name": "roc.critical",
-				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
-			},
-			"groups": []bson.M{
-				bson.M{"name": "compute",
-					"operation": "OR",
-					"services": []bson.M{
+			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":             "ops1",
+			"available_states": []string{"A,B,C"},
+			"defaults": bson.M{
+				"missing": "A",
+				"down":    "B",
+				"unknown": "C"},
+			"operations": []bson.M{
+				bson.M{
+					"name": "AND",
+					"truth_table": []bson.M{
 						bson.M{
-							"name":      "CREAM-CE",
-							"operation": "AND",
+							"a": "A",
+							"b": "B",
+							"x": "B",
 						},
 						bson.M{
-							"name":      "ARC-CE",
-							"operation": "AND",
-						},
-					}},
-				bson.M{"name": "storage",
-					"operation": "OR",
-					"services": []bson.M{
-						bson.M{
-							"name":      "SRMv2",
-							"operation": "AND",
+							"a": "A",
+							"b": "C",
+							"x": "C",
 						},
 						bson.M{
-							"name":      "SRM",
-							"operation": "AND",
-						},
-					}},
-			}})
-	c.Insert(
-		bson.M{
-			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"name":              "cloud",
-			"namespace":         "test",
-			"endpoint_group":    "sites",
-			"metric_operation":  "AND",
-			"profile_operation": "AND",
-			"metric_profile": bson.M{
-				"name": "roc.critical",
-				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
-			},
-			"groups": []bson.M{
-				bson.M{"name": "compute",
-					"operation": "OR",
-					"services": []bson.M{
+							"a": "B",
+							"b": "C",
+							"x": "C",
+						}}},
+				bson.M{
+					"name": "OR",
+					"truth_table": []bson.M{
 						bson.M{
-							"name":      "SERVICEA",
-							"operation": "AND",
+							"a": "A",
+							"b": "B",
+							"x": "A",
 						},
 						bson.M{
-							"name":      "SERVICEB",
-							"operation": "AND",
-						},
-					}},
-				bson.M{"name": "images",
-					"operation": "OR",
-					"services": []bson.M{
-						bson.M{
-							"name":      "SERVICEC",
-							"operation": "AND",
+							"a": "A",
+							"b": "C",
+							"x": "A",
 						},
 						bson.M{
-							"name":      "SERVICED",
-							"operation": "AND",
-						},
-					}},
+							"a": "B",
+							"b": "C",
+							"x": "B",
+						}}},
 			}})
 
+	// Seed database with operations profiles
+	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.Insert(
+		bson.M{
+			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":             "ops2",
+			"available_states": []string{"X,Y,Z"},
+			"defaults": bson.M{
+				"missing": "X",
+				"down":    "Y",
+				"unknown": "Z"},
+			"operations": []bson.M{
+				bson.M{
+					"name": "AND",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "X",
+							"b": "Y",
+							"x": "Y",
+						},
+						bson.M{
+							"a": "X",
+							"b": "Z",
+							"x": "Z",
+						},
+						bson.M{
+							"a": "Y",
+							"b": "Z",
+							"x": "Z",
+						}}},
+				bson.M{
+					"name": "OR",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "X",
+							"b": "Y",
+							"x": "X",
+						},
+						bson.M{
+							"a": "X",
+							"b": "Z",
+							"x": "X",
+						},
+						bson.M{
+							"a": "Y",
+							"b": "Z",
+							"x": "Y",
+						}}},
+			}})
 }
 
 func (suite *OperationsProfilesTestSuite) TestList() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -255,84 +275,108 @@ func (suite *OperationsProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "cloud",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "name": "ops1",
+   "available_states": [
+    "A,B,C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "compute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "SERVICEA",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "SERVICEB",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "images",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "SERVICEC",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "SERVICED",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "name": "critical",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "name": "ops2",
+   "available_states": [
+    "X,Y,Z"
+   ],
+   "defaults": {
+    "down": "Y",
+    "missing": "X",
+    "unknown": "Z"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "compute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "CREAM-CE",
-       "operation": "AND"
+       "a": "X",
+       "b": "Y",
+       "x": "Y"
       },
       {
-       "name": "ARC-CE",
-       "operation": "AND"
+       "a": "X",
+       "b": "Z",
+       "x": "Z"
+      },
+      {
+       "a": "Y",
+       "b": "Z",
+       "x": "Z"
       }
      ]
     },
     {
-     "name": "storage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "SRMv2",
-       "operation": "AND"
+       "a": "X",
+       "b": "Y",
+       "x": "X"
       },
       {
-       "name": "SRM",
-       "operation": "AND"
+       "a": "X",
+       "b": "Z",
+       "x": "X"
+      },
+      {
+       "a": "Y",
+       "b": "Z",
+       "x": "Y"
       }
      ]
     }
@@ -347,9 +391,9 @@ func (suite *OperationsProfilesTestSuite) TestList() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestListQueryName() {
+func (suite *OperationsProfilesTestSuite) TestListQueryName() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles?name=cloud", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles?name=ops1", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -366,42 +410,54 @@ func (suite *OperationsProfilesTestSuite) NotTestListQueryName() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "cloud",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "name": "ops1",
+   "available_states": [
+    "A,B,C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "compute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "SERVICEA",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "SERVICEB",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "images",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "SERVICEC",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "SERVICED",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -416,7 +472,7 @@ func (suite *OperationsProfilesTestSuite) NotTestListQueryName() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestListOneNotFound() {
+func (suite *OperationsProfilesTestSuite) TestListOneNotFound() {
 
 	jsonInput := `{}`
 
@@ -428,7 +484,7 @@ func (suite *OperationsProfilesTestSuite) NotTestListOneNotFound() {
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -445,9 +501,9 @@ func (suite *OperationsProfilesTestSuite) NotTestListOneNotFound() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestListOne() {
+func (suite *OperationsProfilesTestSuite) TestListOne() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -465,41 +521,53 @@ func (suite *OperationsProfilesTestSuite) NotTestListOne() {
  "data": [
   {
    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "name": "critical",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   "name": "ops1",
+   "available_states": [
+    "A,B,C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "compute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "CREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "ARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "storage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "SRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "SRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -514,7 +582,7 @@ func (suite *OperationsProfilesTestSuite) NotTestListOne() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestCreateBadJson() {
+func (suite *OperationsProfilesTestSuite) TestCreateBadJson() {
 
 	jsonInput := `{
   "name": "test_profile",
@@ -529,7 +597,7 @@ func (suite *OperationsProfilesTestSuite) NotTestCreateBadJson() {
  }
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -546,43 +614,76 @@ func (suite *OperationsProfilesTestSuite) NotTestCreateBadJson() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestInvalidCreate() {
+func (suite *OperationsProfilesTestSuite) TestInvalidCreate() {
 
 	jsonInput := `{
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f110007"
+   "name": "ops1",
+   "available_states": [
+    "A","B","C","C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "FOO",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "tttARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "BAR",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "tttSRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "tttSRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "CAR",
+       "x": "B"
+      }
+     ]
+    },
+    {
+     "name": "OR",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "A"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -591,12 +692,84 @@ func (suite *OperationsProfilesTestSuite) NotTestInvalidCreate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Referenced metric profile UUID is not found",
+  "message": "Validation Error",
   "code": "422"
- }
+ },
+ "errors": [
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "State:C is duplicated"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Operation:OR is duplicated"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Default Missing State: FOO not in available States"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "In Operation: AND, statement member b: BAR contains undeclared state"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "In Operation: OR, statement member b: CAR contains undeclared state"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:A in operation: AND"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:B in operation: AND"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:C in operation: AND"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:A in operation: OR"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:B in operation: OR"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:C in operation: OR"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:A in operation: OR"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:B in operation: OR"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:C in operation: OR"
+  }
+ ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -613,43 +786,56 @@ func (suite *OperationsProfilesTestSuite) NotTestInvalidCreate() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestCreate() {
+func (suite *OperationsProfilesTestSuite) TestCreate() {
 
 	jsonInput := `{
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   "name": "tops1",
+   "available_states": [
+    "A","B","C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "tttARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "tttSRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "tttSRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -658,13 +844,13 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Aggregation Profile successfully created",
+  "message": "Operations Profile successfully created",
   "code": "201"
  },
  "data": {
   "uuid": "{{UUID}}",
   "links": {
-   "self": "https:///api/v2/aggregation_profiles/{{UUID}}"
+   "self": "https:///api/v2/operations_profiles/{{UUID}}"
   }
  }
 }`
@@ -677,41 +863,55 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
  "data": [
   {
    "uuid": "{{UUID}}",
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "critical",
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   "name": "tops1",
+   "available_states": [
+    "A",
+    "B",
+    "C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "tttARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "tttSRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "tttSRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -720,7 +920,7 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -744,7 +944,7 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 
-	c.Find(bson.M{"name": "yolo"}).One(&result)
+	c.Find(bson.M{"name": "tops1"}).One(&result)
 	uuid := result["uuid"].(string)
 
 	// Apply uuid to output template and check
@@ -752,7 +952,7 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
 
 	// Check that actually the item has been created
 	// Call List one with the specific UUID
-	request2, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/"+uuid, strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/"+uuid, strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -767,7 +967,7 @@ func (suite *OperationsProfilesTestSuite) NotTestCreate() {
 	suite.Equal(strings.Replace(jsonCreated, "{{UUID}}", uuid, 1), output2, "Response body mismatch")
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestUpdateBadJson() {
+func (suite *OperationsProfilesTestSuite) TestUpdateBadJson() {
 
 	jsonInput := `{
    "name": "yolo",
@@ -782,7 +982,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdateBadJson() {
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -799,7 +999,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdateBadJson() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestUpdateNotFound() {
+func (suite *OperationsProfilesTestSuite) TestUpdateNotFound() {
 
 	jsonInput := `{}`
 
@@ -811,7 +1011,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdateNotFound() {
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -828,44 +1028,56 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdateNotFound() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestInvalidUpdate() {
+func (suite *OperationsProfilesTestSuite) TestInvalidUpdate() {
 
 	jsonInput := `{
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "testing",
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e007"
+   "name": "tops1",
+   "available_states": [
+    "A","B","C"
+   ],
+   "defaults": {
+    "down": "D",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "tttARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "X",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "tttSRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "tttSRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "Z",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -874,12 +1086,39 @@ func (suite *OperationsProfilesTestSuite) NotTestInvalidUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Referenced metric profile UUID is not found",
+  "message": "Validation Error",
   "code": "422"
- }
+ },
+ "errors": [
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Default Down State: D not in available States"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "In Operation: AND, statement member b: X contains undeclared state"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "In Operation: OR, statement member b: Z contains undeclared state"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:C in operation: AND"
+  },
+  {
+   "message": "Validation Failed",
+   "code": "422",
+   "details": "Not enough mentions of state:C in operation: OR"
+  }
+ ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -895,56 +1134,67 @@ func (suite *OperationsProfilesTestSuite) NotTestInvalidUpdate() {
 
 	// Apply uuid to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
-
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestUpdate() {
+func (suite *OperationsProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "testing",
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
-   },
-   "groups": [
-    {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
-      },
-      {
-       "name": "tttARC-CE",
-       "operation": "AND"
-      }
-     ]
-    },
-    {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "tttSRMv2",
-       "operation": "AND"
-      },
-      {
-       "name": "tttSRM",
-       "operation": "AND"
-      }
-     ]
-    }
-   ]
-  }`
+	 "name": "tops1",
+	 "available_states": [
+		"A","B","C"
+	 ],
+	 "defaults": {
+		"down": "B",
+		"missing": "A",
+		"unknown": "C"
+	 },
+	 "operations": [
+		{
+		 "name": "AND",
+		 "truth_table": [
+			{
+			 "a": "A",
+			 "b": "B",
+			 "x": "B"
+			},
+			{
+			 "a": "A",
+			 "b": "C",
+			 "x": "C"
+			},
+			{
+			 "a": "B",
+			 "b": "C",
+			 "x": "C"
+			}
+		 ]
+		},
+		{
+		 "name": "OR",
+		 "truth_table": [
+			{
+			 "a": "A",
+			 "b": "B",
+			 "x": "A"
+			},
+			{
+			 "a": "A",
+			 "b": "C",
+			 "x": "A"
+			},
+			{
+			 "a": "B",
+			 "b": "C",
+			 "x": "B"
+			}
+		 ]
+		}
+	 ]
+	}`
 
 	jsonOutput := `{
  "status": {
-  "message": "Aggregation Profile successfully updated",
+  "message": "Operations Profile successfully updated",
   "code": "200"
  }
 }`
@@ -957,41 +1207,55 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdate() {
  "data": [
   {
    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "yolo",
-   "namespace": "testing-namespace",
-   "endpoint_group": "test",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "critical",
-    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   "name": "tops1",
+   "available_states": [
+    "A",
+    "B",
+    "C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
    },
-   "groups": [
+   "operations": [
     {
-     "name": "tttcompute",
-     "operation": "OR",
-     "services": [
+     "name": "AND",
+     "truth_table": [
       {
-       "name": "tttCREAM-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "B"
       },
       {
-       "name": "tttARC-CE",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
       }
      ]
     },
     {
-     "name": "tttstorage",
-     "operation": "OR",
-     "services": [
+     "name": "OR",
+     "truth_table": [
       {
-       "name": "tttSRMv2",
-       "operation": "AND"
+       "a": "A",
+       "b": "B",
+       "x": "A"
       },
       {
-       "name": "tttSRM",
-       "operation": "AND"
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
       }
      ]
     }
@@ -1000,7 +1264,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1019,7 +1283,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdate() {
 
 	// Check that the item has actually updated
 	// run a list specific
-	request2, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -1034,7 +1298,7 @@ func (suite *OperationsProfilesTestSuite) NotTestUpdate() {
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestDeleteNotFound() {
+func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 
 	jsonInput := `{}`
 
@@ -1046,7 +1310,7 @@ func (suite *OperationsProfilesTestSuite) NotTestDeleteNotFound() {
  }
 }`
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/aggregation_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()

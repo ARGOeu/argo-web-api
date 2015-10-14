@@ -53,14 +53,21 @@ type ConfHandler struct {
 
 // ResponseMessage is used to construct and marshal correctly response messages
 type ResponseMessage struct {
-	XMLName xml.Name       `xml:"root" json:"-"`
-	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
-	Data    interface{}    `xml:"data>result,omitempty" json:"data,omitempty"`
-	Errors  interface{}    `xml:"errors>error,omitempty" json:"errors,omitempty"`
+	XMLName xml.Name        `xml:"root" json:"-"`
+	Status  StatusResponse  `xml:"status,omitempty" json:"status,omitempty"`
+	Data    interface{}     `xml:"data>result,omitempty" json:"data,omitempty"`
+	Errors  []ErrorResponse `xml:"errors>error,omitempty" json:"errors,omitempty"`
 }
 
 // StatusResponse accompanies the ResponseMessage struct to construct a response
 type StatusResponse struct {
+	Message string `xml:"message,omitempty" json:"message,omitempty"`
+	Code    string `xml:"code,omitempty" json:"code,omitempty"`
+	Details string `xml:"details,omitempty" json:"details,omitempty"`
+}
+
+// ErrorReponse holds a list of error objects
+type ErrorResponse struct {
 	Message string `xml:"message,omitempty" json:"message,omitempty"`
 	Code    string `xml:"code,omitempty" json:"code,omitempty"`
 	Details string `xml:"details,omitempty" json:"details,omitempty"`
