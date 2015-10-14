@@ -242,6 +242,15 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// Validate
+	err = incoming.MetricProf.validateUUID(session, tenantDbConfig.Db, "metric_profiles")
+	// Respond 422 unprocessabe entity
+	if err != nil {
+		output, err = createMsgView("Referenced metric profile UUID is not found", 422)
+		code = 422
+		return code, h, output, err
+	}
+
 	// Generate new uuid
 	incoming.UUID = mongo.NewUUID()
 	err = mongo.Insert(session, tenantDbConfig.Db, "aggregation_profiles", incoming)
@@ -308,6 +317,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
 	// create filter to retrieve specific profile with uuid
 	filter := bson.M{"uuid": vars["UUID"]}
 
@@ -325,6 +335,15 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if len(results) < 1 {
 		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
 		code = 404
+		return code, h, output, err
+	}
+
+	// Validate
+	err = incoming.MetricProf.validateUUID(session, tenantDbConfig.Db, "metric_profiles")
+	// Respond 422 unprocessabe entity
+	if err != nil {
+		output, err = createMsgView("Referenced metric profile UUID is not found", 422)
+		code = 422
 		return code, h, output, err
 	}
 

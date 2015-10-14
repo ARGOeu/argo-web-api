@@ -234,6 +234,33 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 					}},
 			}})
 
+	// Seed database with metric profiles
+	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.Insert(
+		bson.M{
+			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name": "ch.cern.SAM.ROC_CRITICAL",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+
 }
 
 func (suite *AggregationProfilesTestSuite) TestList() {
@@ -555,8 +582,7 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
    "metric_operation": "AND",
    "profile_operation": "AND",
    "metric_profile": {
-    "name": "testing",
-    "uuid": "7737d684-1f8e-4a02-a502-720e8f11e432"
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
     {
@@ -617,8 +643,8 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
    "metric_operation": "AND",
    "profile_operation": "AND",
    "metric_profile": {
-    "name": "testing",
-    "uuid": "7737d684-1f8e-4a02-a502-720e8f11e432"
+    "name": "critical",
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
     {
@@ -772,7 +798,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
    "profile_operation": "AND",
    "metric_profile": {
     "name": "testing",
-    "uuid": "7737d684-1f8e-4a02-a502-720e8f11e432"
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
     {
@@ -827,8 +853,8 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
    "metric_operation": "AND",
    "profile_operation": "AND",
    "metric_profile": {
-    "name": "testing",
-    "uuid": "7737d684-1f8e-4a02-a502-720e8f11e432"
+    "name": "critical",
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
     {
@@ -896,7 +922,6 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
-
 }
 
 func (suite *AggregationProfilesTestSuite) TestDeleteNotFound() {

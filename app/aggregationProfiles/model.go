@@ -26,6 +26,14 @@
 
 package aggregationProfiles
 
+import (
+	"errors"
+
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+)
+
 // MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
 	UUID          string        `bson:"uuid" json:"uuid"`
@@ -66,4 +74,22 @@ type SelfReference struct {
 // Links struct to hold links
 type Links struct {
 	Self string `json:"self"`
+}
+
+// Validate Metric Profile
+func (mp *MetricProfile) validateUUID(session *mgo.Session, db string, col string) error {
+	var results []MetricProfile
+	filter := bson.M{"uuid": mp.UUID}
+	err := mongo.Find(session, db, "aggregation_profiles", filter, "name", &results)
+	if err != nil {
+		return err
+	}
+
+	if len(results) > 0 {
+		mp.Name = results[0].Name
+		return nil
+	}
+
+	err = errors.New("Cannot validate")
+	return err
 }
