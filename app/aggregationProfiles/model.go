@@ -76,7 +76,7 @@ type Links struct {
 	Self string `json:"self"`
 }
 
-// Validate Metric Profile
+// validateUUID validates the metric profile uuid
 func (mp *MetricProfile) validateUUID(session *mgo.Session, db string, col string) error {
 	var results []MetricProfile
 	filter := bson.M{"uuid": mp.UUID}

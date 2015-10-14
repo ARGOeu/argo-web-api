@@ -573,6 +573,73 @@ func (suite *AggregationProfilesTestSuite) TestCreateBadJson() {
 
 }
 
+func (suite *AggregationProfilesTestSuite) TestInvalidCreate() {
+
+	jsonInput := `{
+   "name": "yolo",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f110007"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Referenced metric profile UUID is not found",
+  "code": "422"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(422, code, "Internal Server Error")
+
+	// Apply uuid to output template and check
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *AggregationProfilesTestSuite) TestCreate() {
 
 	jsonInput := `{
@@ -784,6 +851,76 @@ func (suite *AggregationProfilesTestSuite) TestUpdateNotFound() {
 	suite.Equal(404, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *AggregationProfilesTestSuite) TestInvalidUpdate() {
+
+	jsonInput := `{
+   "name": "yolo",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "name": "testing",
+    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e007"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Referenced metric profile UUID is not found",
+  "code": "422"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(422, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	// Apply uuid to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
