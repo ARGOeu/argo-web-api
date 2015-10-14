@@ -66,7 +66,7 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_recomputations"
+    db = "AR_test_aggr_prof"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)

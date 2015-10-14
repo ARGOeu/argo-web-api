@@ -66,7 +66,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_recomputations"
+    db = "AR_test_mprof"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)

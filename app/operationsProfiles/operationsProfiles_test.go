@@ -66,7 +66,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR_test_recomputations"
+    db = "AR_test_op_profiles"
     `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -1327,9 +1327,9 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 
 }
 
-func (suite *OperationsProfilesTestSuite) NotTestDelete() {
+func (suite *OperationsProfilesTestSuite) TestDelete() {
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1341,7 +1341,7 @@ func (suite *OperationsProfilesTestSuite) NotTestDelete() {
 
 	metricProfileJSON := `{
  "status": {
-  "message": "Aggregation Profile Successfully Deleted",
+  "message": "Operations Profile Successfully Deleted",
   "code": "200"
  }
 }`
