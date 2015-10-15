@@ -23,35 +23,40 @@
 package routing
 
 import (
+	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
 	"github.com/ARGOeu/argo-web-api/app/availabilityProfiles"
 	"github.com/ARGOeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
+	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
+	"github.com/ARGOeu/argo-web-api/app/recomputations2"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
 	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
-	"github.com/ARGOeu/argo-web-api/app/statusDetail"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
-	"github.com/ARGOeu/argo-web-api/app/statusMsg"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 )
 
-var subroutes = []SubRouter{
+var routesV2 = []RouteV2{
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
 	{"Status service timelines", "/status", statusServices.HandleSubrouter},
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
+	{"Recomputations", "", recomputations2.HandleSubrouter},
+	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
+	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
+	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
 }
 
-var routes = []Route{
+var routesV1 = []RouteV1{
 
 	//-----------------------------------Old requests for here on down -------------------------------------------------
 	{"Group Availability", "GET", "/group_availability", endpointGroupAvailability.List},
@@ -76,24 +81,9 @@ var routes = []Route{
 	{"reports list", "GET", "/reports", reports.List},
 	{"reports list one", "GET", "/reports/{name}", reports.ListOne},
 
-	//Poem Profiles compatibility
-	{"List poems", "GET", "/poems", metricProfiles.ListPoems},
-
-	//Metric Profiles
-	{"list metric profile", "GET", "/metric_profiles", metricProfiles.List},
-	{"metric profile create", "POST", "/metric_profiles", metricProfiles.Create},
-	{"metric profile delete", "DELETE", "/metric_profiles/{id}", metricProfiles.Delete},
-	{"metric profile update", "PUT", "/metric_profiles/{id}", metricProfiles.Update},
-
 	//Recalculations
 	{"recomputation create", "POST", "/recomputations", recomputations.Create},
 	{"recomputation list", "GET", "/recomputations", recomputations.List},
 
 	{"factors list", "GET", "/factors", factors.List},
-
-	//Status
-	{"status detail list", "GET", "/status/metrics/timeline/{group}", statusDetail.List},
-
-	//Status Raw Msg
-	{"status message list", "GET", "/status/metrics/msg/{hostname}/{service}/{metric}", statusMsg.List},
 }

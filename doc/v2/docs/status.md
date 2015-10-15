@@ -1,23 +1,18 @@
----
-title: API documentation | ARGO
-page_title: API - Status results
-font_title: 'fa fa-cogs'
-description: API calls for retrieving monitoring status results
----
+#Status results
 
-## API Calls
+API calls for retrieving monitoring status results
 
 | Name  | Description | Shortcut |
 |-------|-------------|----------|
-| GET: List Service Metric Status Timelines | This method may be used to retrieve a specific service metric status timeline (applies on a specific service endpoint).|<a href="#1"> Description</a>|
-| GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type). | <a href="#2"> Description</a>|
-| GET: List Service  Status Timelines |This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group). | <a href="#3"> Description</a>|
-| GET: List Endpoint Group Status Timelines| This method may be used to retrieve endpoint group status timelines. | <a href="#4"> Description</a>|
-
+| GET: List Service Metric Status Timelines | This method may be used to retrieve a specific service metric status timeline (applies on a specific service endpoint).|<a href="#1">Description</a>|
+| GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type). | <a href="#2">Description</a>|
+| GET: List Service  Status Timelines |This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group). | <a href="#3">Description</a>|
+| GET: List Endpoint Group Status Timelines| This method may be used to retrieve endpoint group status timelines. | <a href="#4">Description</a>|
+| GET: Metric Result | This method may be used to retrieve a specific and detailed metric result. | <a href="#5">Description</a>|
 
 <a id="1"></a>
 
-## GET: List Service Metric Status Timelines
+## [GET]: List Service Metric Status Timelines
 
 This method may be used to retrieve a specific service metric status timeline (applies on a specific host endpoint and a specific service flavor).
 
@@ -145,7 +140,8 @@ Reponse body:
 
 <a id="2"></a>
 
-## GET: List Service Endpoint Status Timelines
+
+## [GET]: List Service Endpoint Status Timelines
 
 This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type).
 
@@ -271,7 +267,8 @@ Reponse body:
 
 <a id="3"></a>
 
-## GET: List Service Status Timelines
+
+## [GET]: List Service Status Timelines
 
 This method may be used to retrieve a specific service flavor status timeline (applies for a specific service endpoint group).
 
@@ -354,10 +351,10 @@ Reponse body:
 ```
 
 
-#### List specific service type 
+##### List specific service type 
 (`service_type=CREAM-CE`):
 
-##### Example Request:
+###### Example Request:
 URL:
 ```
 /status/EGI_CRITICAL/SITES/HG-03-AUTH/services/CREAM-CE?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
@@ -368,7 +365,7 @@ x-api-key:"INSERTTENANTKEYHERE"
 Accept:"application/xml"
 
 ```
-##### Example Response:
+###### Example Response:
 Code:
 ```
 Status: 200 OK
@@ -389,7 +386,10 @@ Reponse body:
 
 <a id="4"></a>
 
-## GET: List Endpoint Group Status Timelines
+
+
+
+## [GET]: List Endpoint Group Status Timelines
 
 This method may be used to retrieve status timelines for endpoint groups.
 
@@ -444,7 +444,6 @@ Headers:
 ```
 x-api-key:"INSERTTENANTKEYHERE"
 Accept:"application/xml"
-
 ```
 ###### Example Response:
 Code:
@@ -468,10 +467,10 @@ Reponse body:
 ```
 
 
-#### List specific endpoint group 
+##### List specific endpoint group 
 (`group_name=HG-03-AUTH`):
 
-##### Example Request:
+###### Example Request:
 URL:
 ```
 /status/EGI_CRITICAL/SITES/HG-03-AUTH?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
@@ -482,7 +481,7 @@ x-api-key:"INSERTTENANTKEYHERE"
 Accept:"application/xml"
 
 ```
-##### Example Response:
+###### Example Response:
 Code:
 ```
 Status: 200 OK
@@ -499,50 +498,75 @@ Reponse body:
 </root>
 ```
 
+<a id="5"></a>
 
-## GET: List Metric Results
+## [GET]: Metric Result
 
 This method may be used to retrieve a detailed metric result.
 
 ### Input
 
-    /status/metrics/msg/{hostname}/{service_flavor}/{metric}?[exec_time]&[job]
+```
+/metric_result/{hostname}/{metric_name}?[exec_time]
+```
+
+#### Path Parameters
+
+Name             | Description                                              | Required | Default value
+---------------- | -------------------------------------------------------- | -------- | -------------
+`{hostname}`     | Name of the endpoint                                     | YES      |
+`{metric_name}`  | Name of the metric (probe) for which results are queries | YES      |
+
+#### URL Parameters
+
+Type            | Description             | Required | Default value
+--------------- | ----------------------- | -------- | -------------
+`[exec_time]`   | UTC time in W3C format  | YES      |
 
 
-#### Parameters
+#### Headers
 
-| Type | Description | Required | Default value |
-|------|-------------|----------|---------------|
-|`exec_time`| UTC time in W3C format| YES |  |
-|`job`| Job (view) name | YES |  |
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
 
-#### Request headers
 
-    x-api-key: "tenant_key_value"
+#### Response Code
+```
+Status: 200 OK
+```
 
-### Response
 
-Headers: `Status: 200 OK`
 
 #### Response body
+##### Example Request:
+URL:
+```
+/api/v2/metric_result/www.example.com/httpd_check?exec_time=2015-06-20T12:00:00Z
+```
+Headers:
+```
+x-api-key:"INSERTTENANTKEYHERE"
+Accept:"application/xml"
+```
+##### Example Response:
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+ <root>
+   <host name="www.example.com">
+     <metric name="httpd_check">
+       <status timestamp="2015-06-20T12:00:00Z" value="CRITICAL">
+         <summary>httpd status is CRITICAL</summary>
+         <message>httpd service seems down. Failed to connect to port 80.</message>
+       </status>
+     </metric>
+   </host>
+ </root>
+```
 
-    <root>
-       <job name="ROC_CRITICAL">
-         <group name="NGI_GRNET" type="ngi">
-           <group name="HG-03-AUTH" type="site">
-             <group name="CREAM-CE" type="service_type">
-               <endpoint name="cream01.afroditi.gr">
-                 <metric name="emi.cream.CREAMCE-JobSubmit">
-                   <status timestamp="2015-05-01T01:00:00Z" status="">
-                     <summary>Cream status is CRITICAL</summary>
-                     <message>Cream job submission test failed!</message>
-                   </status>
-                 </metric>
-               </endpoint>
-             </group>
-           </group>
-         </group>
-       </job>
-     </root>
-    <root>
 

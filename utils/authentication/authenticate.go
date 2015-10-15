@@ -105,8 +105,9 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 	}
 	defer mongo.CloseSession(session)
 
-	query := bson.M{"users.api_key": h.Get("x-api-key")}
-	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1}
+	apiKey := h.Get("x-api-key")
+	query := bson.M{"users.api_key": apiKey}
+	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1, "users": 1}
 
 	var results []map[string][]config.MongoConfig
 	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
@@ -115,5 +116,19 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 		return config.MongoConfig{}, errors.New("Unauthorized")
 	}
 	mongoConf := results[0]["db_conf"][0]
+	// mongoConf := config.MongoConfig{
+	// 	Host:     conf["server"].(string),
+	// 	Port:     conf["port"].(int),
+	// 	Db:       conf["database"].(string),
+	// 	Username: conf["username"].(string),
+	// 	Password: conf["password"].(string),
+	// 	Store:    conf["store"].(string),
+	// }
+	for _, user := range results[0]["users"] {
+		if user.ApiKey == apiKey {
+			mongoConf.User = user.User
+			mongoConf.Email = user.Email
+		}
+	}
 	return mongoConf, nil
 }

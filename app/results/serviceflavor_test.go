@@ -28,7 +28,7 @@ import (
 	"strings"
 	"testing"
 
-	"code.google.com/p/gcfg"
+	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"

@@ -32,7 +32,7 @@ import (
 	"strings"
 	"testing"
 
-	"code.google.com/p/gcfg"
+	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/mgo.v2"

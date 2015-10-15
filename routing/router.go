@@ -37,7 +37,7 @@ import (
 )
 
 // Route represents the old style routes
-type Route struct {
+type RouteV1 struct {
 	Name        string
 	Method      string
 	Pattern     string
@@ -45,7 +45,7 @@ type Route struct {
 }
 
 // Subrouter represents the new style of routes that are handled by each package respectively
-type SubRouter struct {
+type RouteV2 struct {
 	Name             string
 	Pattern          string
 	SubrouterHandler func(*mux.Router, *respond.ConfHandler)
@@ -55,8 +55,8 @@ type SubRouter struct {
 func NewRouter(cfg config.Config) *mux.Router {
 
 	confhandler := respond.ConfHandler{Config: cfg}
-	router := mux.NewRouter().StrictSlash(true)
-	for _, route := range routes {
+	router := mux.NewRouter().StrictSlash(false)
+	for _, route := range routesV1 {
 
 		handler := confhandler.Respond(route.HandlerFunc)
 		router.
@@ -67,10 +67,10 @@ func NewRouter(cfg config.Config) *mux.Router {
 			Handler(handler)
 	}
 
-	for _, subroute := range subroutes {
+	for _, subroute := range routesV2 {
 		subrouter := router.
-			PathPrefix("/api/v2").
-			PathPrefix(subroute.Pattern).
+			PathPrefix("/api/v2" + subroute.Pattern).
+			Name(subroute.Name).
 			Subrouter()
 		subroute.SubrouterHandler(subrouter, &confhandler)
 	}
