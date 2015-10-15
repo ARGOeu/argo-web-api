@@ -30,6 +30,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
+	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/recomputations2"
 	"github.com/ARGOeu/argo-web-api/app/reports"
@@ -52,6 +53,7 @@ var routesV2 = []RouteV2{
 	{"Recomputations", "", recomputations2.HandleSubrouter},
 	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
+	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
 }
 
 var routesV1 = []RouteV1{
