@@ -28,11 +28,11 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -300,22 +300,32 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
-	c.Insert(
-		bson.M{
-			"name":   "Report_A",
-			"tenant": "EGI",
-			"profiles": bson.M{
-				"availability": "ap1",
-				"metrics":      "ch.cern.sam.ROC_CRITICAL",
-				"operations":   "ops1",
+	c.Insert(bson.M{
+		"info": bson.M{
+			"name":        "Report_A",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "GROUP",
+				"group": bson.M{
+					"type": "SITE",
+				},
 			},
-			"endpoint_group": "SITE",
-			"group_of_groups": "GROUP",
-			"filter_tags": []bson.M{
-				{"name": "production", "value": "Y"},
-				{"name": "monitored", "value": "Y"},
-			},
-		})
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
 
 }
 

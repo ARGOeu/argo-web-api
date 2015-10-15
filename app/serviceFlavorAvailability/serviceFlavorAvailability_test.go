@@ -27,15 +27,16 @@
 package serviceFlavorAvailability
 
 import (
-	"gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // serviceFlavorAvailabilityTestSuite is a utility suite struct used in tests
@@ -72,26 +73,114 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 		panic(err)
 	}
 
-	// Add authentication token to mongo coredb
-	seed_auth := bson.M{"name": "EGI",
-		"db_conf": []bson.M{bson.M{"store": "ar", "server": "127.0.0.1", "port": 27017, "database": "argo_EGI_test_sf"}},
-		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "elmL5K"}}}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seed_auth)
-
-	// TODO: I don't like it here that I rewrite the test data.
-	// However, this is a test for service_ar, not for AuthenticateTenant function.
 	suite.tenantcfg.Host = "127.0.0.1"
 	suite.tenantcfg.Port = 27017
 	suite.tenantcfg.Db = "argo_EGI_test_sf"
 
+	// Add authentication token to mongo coredb
+	seed_auth := bson.M{"name": "EGI",
+		"db_conf": []bson.M{
+			bson.M{
+				"store":    "ar",
+				"server":   suite.tenantcfg.Host,
+				"port":     suite.tenantcfg.Port,
+				"database": suite.tenantcfg.Db,
+			},
+		},
+		"users": []bson.M{
+			bson.M{
+				"name":    "Jack Doe",
+				"email":   "jack.doe@example.com",
+				"api_key": "elmL5K",
+			},
+		},
+	}
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seed_auth)
+
 	// Add a few data in collection service_ar
 	c := session.DB(suite.tenantcfg.Db).C("service_ar")
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150601, "name": "CREAM-CE", "up": 1, "down": 0, "unknown": 0, "availability": 100, "reliability": 100, "supergroup": "BIFI", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150601, "name": "Site-BDII", "up": 0.99306, "down": 0, "unknown": 0, "availability": 99.30556, "reliability": 99.30556, "supergroup": "CIEMAT-LCG2", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150601, "name": "CREAM-CE", "up": 0.88889, "down": 0, "unknown": 0, "availability": 88.88889, "reliability": 88.88889, "supergroup": "CIEMAT-LCG2", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150602, "name": "Site-BDII", "up": 0.88889, "down": 0, "unknown": 0, "availability": 88.88889, "reliability": 88.88889, "supergroup": "BIFI", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150602, "name": "Site-BDII", "up": 1, "down": 0, "unknown": 0, "availability": 100, "reliability": 100, "supergroup": "CIEMAT-LCG2", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
-	c.Insert(bson.M{"job": "EGI_Critical", "date": 20150602, "name": "CREAM-CE", "up": 1, "down": 0, "unknown": 0, "availability": 100, "reliability": 100, "supergroup": "CIEMAT-LCG2", "tags": []bson.M{bson.M{"production": "Y", "monitored": "Y"}}})
+	c.Insert(bson.M{
+		"job":          "EGI_Critical",
+		"date":         20150601,
+		"name":         "CREAM-CE",
+		"up":           1,
+		"down":         0,
+		"unknown":      0,
+		"availability": 100,
+		"reliability":  100,
+		"supergroup":   "BIFI",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y",
+			},
+		},
+	})
+	c.Insert(bson.M{
+		"job":     "EGI_Critical",
+		"date":    20150601,
+		"name":    "Site-BDII",
+		"up":      0.99306,
+		"down":    0,
+		"unknown": 0, "availability": 99.30556,
+		"reliability": 99.30556,
+		"supergroup":  "CIEMAT-LCG2",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y"}}})
+	c.Insert(bson.M{
+		"job":     "EGI_Critical",
+		"date":    20150601,
+		"name":    "CREAM-CE",
+		"up":      0.88889,
+		"down":    0,
+		"unknown": 0, "availability": 88.88889,
+		"reliability": 88.88889,
+		"supergroup":  "CIEMAT-LCG2",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y"}}})
+	c.Insert(bson.M{
+		"job":     "EGI_Critical",
+		"date":    20150602,
+		"name":    "Site-BDII",
+		"up":      0.88889,
+		"down":    0,
+		"unknown": 0, "availability": 88.88889,
+		"reliability": 88.88889,
+		"supergroup":  "BIFI",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y"}}})
+	c.Insert(bson.M{
+		"job":     "EGI_Critical",
+		"date":    20150602,
+		"name":    "Site-BDII",
+		"up":      1,
+		"down":    0,
+		"unknown": 0, "availability": 100,
+		"reliability": 100,
+		"supergroup":  "CIEMAT-LCG2",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y"}}})
+	c.Insert(bson.M{
+		"job":     "EGI_Critical",
+		"date":    20150602,
+		"name":    "CREAM-CE",
+		"up":      1,
+		"down":    0,
+		"unknown": 0, "availability": 100,
+		"reliability": 100,
+		"supergroup":  "CIEMAT-LCG2",
+		"tags": []bson.M{
+			bson.M{
+				"production": "Y",
+				"monitored":  "Y"}}})
 
 }
 

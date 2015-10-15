@@ -28,11 +28,11 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -241,23 +241,32 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
-	c.Insert(
-		bson.M{
-			"name":   "Report_A",
-			"tenant": "EGI",
-			"profiles": bson.M{
-				"availability": "ap1",
-				"metrics":      "ch.cern.sam.ROC_CRITICAL",
-				"operations":   "ops1",
+	c.Insert(bson.M{
+		"info": bson.M{
+			"name":        "Report_A",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "GROUP",
+				"group": bson.M{
+					"type": "SITE",
+				},
 			},
-			"endpoint_group": "SITE",
-			"group_of_groups": "GROUP",
-			"filter_tags": []bson.M{
-				{"name": "production", "value": "Y"},
-				{"name": "monitored", "value": "Y"},
-			},
-		})
-
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
 }
 
 // TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly
@@ -265,15 +274,16 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
-
+	responseBody := response.Body.String()
 	serviceFlavorAvailabilityXML := ` <root>
    <group name="ST01" type="SITE">
      <group name="SF01" type="service">
-       <results timestamp="2015-06" availability="76.26534166743393" reliability="91.61418757296076" unknown="0" uptime="0.75868" downtime="0.166665"></results>
+       <results timestamp="2015-06" availability="76.26534166743393" reliability="91.61418757296076" unknown="0.00521" uptime="0.75868" downtime="0.166665"></results>
      </group>
      <group name="SF02" type="service">
        <results timestamp="2015-06" availability="98.43749901562502" reliability="98.43749901562502" unknown="0" uptime="0.984375" downtime="0"></results>
@@ -284,7 +294,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(serviceFlavorAvailabilityXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(serviceFlavorAvailabilityXML, responseBody, "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -293,6 +303,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
+	responseBody = response.Body.String()
 
 	serviceFlavorAvailabilityJSON := `{
    "root": [
@@ -308,7 +319,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
                "timestamp": "2015-06",
                "availability": "76.26534166743393",
                "reliability": "91.61418757296076",
-               "unknown": "0",
+               "unknown": "0.00521",
                "uptime": "0.75868",
                "downtime": "0.166665"
              }
@@ -336,7 +347,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(serviceFlavorAvailabilityJSON, response.Body.String(), "Response body mismatch")
+	suite.Equal(serviceFlavorAvailabilityJSON, responseBody, "Response body mismatch")
 
 }
 
