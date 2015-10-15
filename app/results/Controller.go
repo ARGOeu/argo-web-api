@@ -444,7 +444,7 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 			"name":       "$_id.name",
 			"supergroup": "$_id.supergroup",
 			"report":     "$_id.report",
-			"unknown":    "$avgunkown",
+			"unknown":    "$avgunknown",
 			"up":         "$avgup",
 			"down":       "$avgdown",
 			"availability": bson.M{
@@ -511,29 +511,29 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"avguptime": bson.M{"$avg": "$up"},
-			"avgunkown": bson.M{"$avg": "$unknown"},
-			"avgdown":   bson.M{"$avg": "$down"}}},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"}}},
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"name":       "$_id.name",
 			"report":     "$_id.report",
 			"supergroup": "$_id.supergroup",
-			"unknown":    "$avgunkown",
+			"unknown":    "$avgunknown",
 			"up":         "$avgup",
 			"down":       "$avgdown",
 			"avgup":      1,
-			"avgunkown":  1,
+			"avgunknown": 1,
 			"avgdown":    1,
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunkown"}}}},
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
 					100}},
 			"reliability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunkown"}}, "$avgdown"}}}},
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
 			{"report", 1},

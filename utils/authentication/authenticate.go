@@ -42,6 +42,11 @@ type Auth struct {
 func Authenticate(h http.Header, cfg config.Config) bool {
 
 	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		panic(err)
+	}
 
 	query := bson.M{
 		"apiKey": h.Get("x-api-key"),
@@ -66,10 +71,11 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 
 	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
 	if err != nil {
 		panic(err)
 	}
-	defer mongo.CloseSession(session)
 
 	query := bson.M{"api_key": h.Get("x-api-key")}
 	projection := bson.M{"_id": 0, "name": 0, "email": 0}

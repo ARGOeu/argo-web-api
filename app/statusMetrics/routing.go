@@ -81,6 +81,7 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 	session, err := mongo.OpenSession(tenantcfg)
+	defer mongo.CloseSession(session)
 	if err != nil {
 		return code, h, output, err
 	}
