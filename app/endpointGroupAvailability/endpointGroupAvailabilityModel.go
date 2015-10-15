@@ -175,7 +175,7 @@ func Monthly(input EndpointGroupAvailabilityInput) []bson.M {
 				"supergroup": "$supergroup",
 				"job":        "$job"},
 			"avguptime": bson.M{"$avg": "$uptime"},
-			"avgunkown": bson.M{"$avg": "$unknown"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
 			"avgdown":   bson.M{"$avg": "$downtime"}}},
 		{"$project": bson.M{
 			"date":       "$_id.date",
@@ -183,17 +183,17 @@ func Monthly(input EndpointGroupAvailabilityInput) []bson.M {
 			"job":        "$_id.job",
 			"supergroup": "$_id.supergroup",
 			"avguptime":  1,
-			"avgunkown":  1,
+			"avgunknown":  1,
 			"avgdown":    1,
 			"availability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{1.00000001, "$avgunkown"}}}},
+						"$avguptime", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
 					100}},
 			"reliability": bson.M{
 				"$multiply": list{
 					bson.M{"$divide": list{
-						"$avguptime", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunkown"}}, "$avgdown"}}}},
+						"$avguptime", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
 			{"job", 1},
