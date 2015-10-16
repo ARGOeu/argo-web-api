@@ -80,7 +80,7 @@ type Links struct {
 func (mp *MetricProfile) validateUUID(session *mgo.Session, db string, col string) error {
 	var results []MetricProfile
 	filter := bson.M{"uuid": mp.UUID}
-	err := mongo.Find(session, db, "aggregation_profiles", filter, "name", &results)
+	err := mongo.Find(session, db, "metric_profiles", filter, "name", &results)
 	if err != nil {
 		return err
 	}

@@ -710,7 +710,7 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
    "metric_operation": "AND",
    "profile_operation": "AND",
    "metric_profile": {
-    "name": "critical",
+    "name": "ch.cern.SAM.ROC_CRITICAL",
     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
@@ -990,7 +990,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
    "metric_operation": "AND",
    "profile_operation": "AND",
    "metric_profile": {
-    "name": "critical",
+    "name": "ch.cern.SAM.ROC_CRITICAL",
     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
    },
    "groups": [
@@ -1059,6 +1059,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
+
 }
 
 func (suite *AggregationProfilesTestSuite) TestDeleteNotFound() {
