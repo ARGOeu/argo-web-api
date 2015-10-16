@@ -104,9 +104,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	if vars["lgroup_type"] != report.GetEndpointType() {
+	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
-		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointType() + " instead."
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -231,9 +231,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	if vars["lgroup_type"] != report.GetEndpointType() {
+	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
-		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointType() + " instead."
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err

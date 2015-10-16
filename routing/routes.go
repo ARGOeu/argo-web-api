@@ -82,12 +82,6 @@ var routesV1 = []RouteV1{
 	{"reports list", "GET", "/reports", reports.List},
 	{"reports list one", "GET", "/reports/{name}", reports.ListOne},
 
-	//Metric Profiles
-	{"list metric profile", "GET", "/metric_profiles", metricProfiles.List},
-	{"metric profile create", "POST", "/metric_profiles", metricProfiles.Create},
-	{"metric profile delete", "DELETE", "/metric_profiles/{id}", metricProfiles.Delete},
-	{"metric profile update", "PUT", "/metric_profiles/{id}", metricProfiles.Update},
-
 	//Recalculations
 	{"recomputation create", "POST", "/recomputations", recomputations.Create},
 	{"recomputation list", "GET", "/recomputations", recomputations.List},

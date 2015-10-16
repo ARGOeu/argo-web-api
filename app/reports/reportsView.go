@@ -26,12 +26,10 @@
 
 package reports
 
-import (
-	"encoding/xml"
+import "github.com/ARGOeu/argo-web-api/respond"
 
-	"github.com/ARGOeu/argo-web-api/respond"
-)
-
+// SubmitSuccesful marshals a response struct when a report is successfully inserted in the
+// database
 func SubmitSuccesful(inserted MongoInterface, contentType string, link string) ([]byte, error) {
 	docRoot := respond.ResponseMessage{
 		Status: respond.StatusResponse{
@@ -47,10 +45,8 @@ func SubmitSuccesful(inserted MongoInterface, contentType string, link string) (
 	return output, err
 }
 
-func RequestSuccessful(message string, contentType string) {
-
-}
-
+// ReportNotFound consructs marshals a response struct when the requested
+// report is not found
 func ReportNotFound(contentType string) ([]byte, error) {
 	docRoot := respond.ResponseMessage{
 		Status: respond.StatusResponse{
@@ -59,13 +55,6 @@ func ReportNotFound(contentType string) ([]byte, error) {
 		},
 	}
 	output, err := respond.MarshalContent(docRoot, contentType, "", " ")
-	return output, err
-}
-
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &Message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
 }
 

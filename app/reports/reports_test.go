@@ -75,7 +75,7 @@ func (suite *ReportTestSuite) SetupTest() {
     cache = false
     lrucache = 700000000
     gzip = true
-	reqsizelimit = 1073741824
+    reqsizelimit = 1073741824
 
     [mongodb]
     host = "127.0.0.1"
@@ -149,7 +149,9 @@ func (suite *ReportTestSuite) SetupTest() {
 	}
 	defer session.Close()
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{
+		Config: suite.cfg,
+	}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 

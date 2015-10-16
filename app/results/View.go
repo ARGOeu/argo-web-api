@@ -51,7 +51,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report repo
 			prevServiceFlavorGroup = row.SuperGroup
 			serviceFlavorGroup = &ServiceFlavorGroup{
 				Name: row.SuperGroup,
-				Type: report.GetEndpointType(), // Endpoint groups are parents of SFs
+				Type: report.GetEndpointGroupType(), // Endpoint groups are parents of SFs
 			}
 			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
 			prevServiceFlavor = ""
@@ -117,7 +117,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report repo
 			prevEndpointGroup = row.Name
 			endpointGroup = &Group{
 				Name: row.Name,
-				Type: report.GetEndpointType(),
+				Type: report.GetEndpointGroupType(),
 			}
 			superGroup.Endpoints = append(superGroup.Endpoints, endpointGroup)
 		}

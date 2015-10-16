@@ -32,6 +32,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -90,7 +91,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// Check if json body is malformed
 	if err != nil {
 
-		output, _ := respond.MarshalContent(respond.MalformedJsonInput, contentType, "", " ")
+		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -136,7 +137,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		out := respond.ResponseMessage{
 			Status: respond.StatusResponse{
 				Message: "Report with the same name already exists",
-				Code:    "409",
+				Code:    strconv.Itoa(http.StatusConflict),
 			}}
 
 		output, _ = respond.MarshalContent(out, contentType, "", " ")
@@ -352,7 +353,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err != nil {
 
 		// User provided malformed json input data
-		output, _ := respond.MarshalContent(respond.MalformedJsonInput, contentType, "", " ")
+		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err

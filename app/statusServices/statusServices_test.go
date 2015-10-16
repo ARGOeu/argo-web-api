@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -142,14 +142,34 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "ROC_CRITICAL",
-		"tenant":          "EGI",
-		"endpoint_group":  "SITES",
-		"group_of_groups": "NGI",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"info": bson.M{
+			"name":        "Report_A",
+			"description": "report aaaaa",
+			"created":     "2015-9-10 13:43:00",
+			"updated":     "2015-10-11 13:43:00",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGI",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
 		"profiles": []bson.M{
 			bson.M{
-				"name":  "metric",
-				"value": "ch.cern.SAM.ROC_CRITICAL"},
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"type": "metric",
+				"name": "profile1"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
+				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -159,11 +179,10 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
+		"report":         "Report_A",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -171,7 +190,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
+		"report":         "Report_A",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -179,7 +198,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "ROC_CRITICAL",
+		"report":         "Report_A",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -200,14 +219,34 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "EUDAT_CRITICAL",
-		"tenant":          "EUDAT",
-		"endpoint_group":  "EUDAT_SITES",
-		"group_of_groups": "EUDAT_GROUPS",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"info": bson.M{
+			"name":        "Report_B",
+			"description": "report aaaaa",
+			"created":     "2015-9-10 13:43:00",
+			"updated":     "2015-10-11 13:43:00",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "EUDAT_GROUPS",
+				"group": bson.M{
+					"type": "EUDAT_SITES",
+				},
+			},
+		},
 		"profiles": []bson.M{
 			bson.M{
-				"name":  "metric",
-				"value": "eudat.CRITICAL"},
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"type": "metric",
+				"name": "eudat.CRITICAL"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
+				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -221,7 +260,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
+		"report":         "Report_B",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -229,7 +268,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
+		"report":         "Report_B",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -237,7 +276,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "EUDAT_CRITICAL",
+		"report":         "Report_B",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -326,11 +365,11 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
    ]
  }`
 
-	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
+	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
-	fullurl2 := "/api/v2/status/EUDAT_CRITICAL/EUDAT_SITES/EL-01-AUTH" +
+	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
 		"/services/srv.typeA" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 

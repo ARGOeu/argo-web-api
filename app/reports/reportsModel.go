@@ -91,8 +91,8 @@ type RootXML struct {
 	Reports interface{}
 }
 
-// GetEndpointType retrieves the deepest type nested inside the group hierarchy
-func (report MongoInterface) GetEndpointType() string {
+// GetEndpointGroupType retrieves the deepest type nested inside the group hierarchy
+func (report MongoInterface) GetEndpointGroupType() string {
 	currentObject := report.Topology.Group
 	for currentObject.Group != nil {
 		currentObject = currentObject.Group
@@ -165,9 +165,6 @@ func GetMetricProfile(input MongoInterface) (string, error) {
 // searchName is used to create a simple query object based on name
 func searchName(name string) bson.M {
 	query := bson.M{
-		// 	"info": bson.M{
-		// 		"name": name,
-		// 	},
 		"info.name": name,
 	}
 

@@ -15,5 +15,5 @@ type RequestError struct {
 
 // HandleError accepts errors and logs the appropriate information
 func HandleError(reqErr interface{}) {
-	log.Printf("%s", reqErr.(error).Error())
+	log.Printf("%+v", reqErr.(error).Error())
 }

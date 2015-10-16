@@ -37,6 +37,7 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/logging"
 	"github.com/gorilla/mux"
 )
 
@@ -76,15 +77,14 @@ type ErrorResponse struct {
 func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// defer func() {
-		// 	if r := recover(); r != nil {
-		// 		logging.HandleError(r)
-		// 	}
-		// }()
+		defer func() {
+			if r := recover(); r != nil {
+				logging.HandleError(r)
+			}
+		}()
 
 		code, header, output, err := fn(r, confhandler.Config)
 
-		// fmt.Println(err)
 		if code == http.StatusInternalServerError {
 			log.Panic("Internal Server Error:", fmt.Sprintf("%+v", err))
 		}
@@ -160,22 +160,6 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	return []byte(answer)
 }
 
-// BadRequestBadJson is used to inform the user about malformed json body
-var BadRequestBadJSON = ResponseMessage{
-	Status: StatusResponse{
-		Message: "Bad Request",
-		Code:    "400",
-		Details: "Request Body contains malformed JSON, thus rendering the Request Bad",
-	}}
-
-// NotFound is used to inform the user about not found item
-var NotFound = ResponseMessage{
-	Status: StatusResponse{
-		Message: "Not Found",
-		Code:    "404",
-		Details: "item with the specific UUID was not found on the server",
-	}}
-
 // SelfRefence struct for self referencing resource after they are created
 type SelfReference struct {
 	UUID  string    `xml:"id" json:"id" bson:"id,omitempty"`
@@ -206,6 +190,22 @@ func (resp ResponseMessage) MarshalTo(contentType string) []byte {
 	return output
 }
 
+// BadRequestBadJson is used to inform the user about malformed json body
+var BadRequestBadJSON = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+		Details: "Request Body contains malformed JSON, thus rendering the Request Bad",
+	}}
+
+// NotFound is used to inform the user about not found item
+var NotFound = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+		Details: "item with the specific UUID was not found on the server",
+	}}
+
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
 var UnauthorizedMessage = ResponseMessage{
 	Status: StatusResponse{
@@ -222,7 +222,8 @@ var NotAcceptableContentType = ResponseMessage{
 		Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'",
 	}}
 
-var MalformedJsonInput = ResponseMessage{
+// MalformedJSONInput is used to marshal a response when user json input is malformed
+var MalformedJSONInput = ResponseMessage{
 	Status: StatusResponse{
 		Code:    "400",
 		Message: "Malformated json input data",
@@ -230,6 +231,7 @@ var MalformedJsonInput = ResponseMessage{
 	},
 }
 
+// UnprocessableEntity is used to marshal a response
 var UnprocessableEntity = ResponseMessage{
 	Status: StatusResponse{
 		Code:    "422",
