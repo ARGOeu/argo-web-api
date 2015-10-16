@@ -7,24 +7,25 @@ description: API Calls for listing existing and creating new Reports
 
 # API Calls
 
-Name                              | Description                                                    | Shortcut
---------------------------------- | -------------------------------------------------------------- | ------------------
-GET: List reports                 | This method can be used to retrieve a list of existing reports | [ Description](#1)
-POST: Create a new report         | This method can be used to create a new report.                | [ Description](#2)
-PUT: Update an existing report    | This method can be used to update an existing report.          | [ Description](#3)
-DELETE: Delete an existing Report | This method can be used to delete an existing report.          | [ Description](#4)
+Name                               | Description                                                    | Shortcut
+---------------------------------- | -------------------------------------------------------------- | ------------------
+GET: List reports or single report | This method can be used to retrieve a list of existing reports | [ Description](#1)
+POST: Create a new report          | This method can be used to create a new report.                | [ Description](#2)
+PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3)
+DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4)
 
 <a id='1'></a>
 
 # GET: List Recomputation Requests
-This method can be used to retrieve a list of existing reports.
+This method can be used to retrieve a list of existing reports or a single report according to its UUID.
 
 ## Input
-
 ### URL
 
 ```
 /reports
+or
+/reports/{uuid}
 ```
 
 ### Request headers
@@ -51,8 +52,8 @@ Json Response
         {
             "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
             "info": {
-                "name": "Report A",
-                "description": "Description of the report, which is not required",
+                "name": "Report_A",
+                "description": "report aaaaa",
                 "created": "2015-9-10 13:43:00",
                 "updated": "2015-10-11 13:43:00"
             },
@@ -66,12 +67,19 @@ Json Response
             },
             "profiles": [
                 {
+                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
                     "name": "profile1",
                     "type": "metric"
                 },
                 {
+                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
                     "name": "profile2",
-                    "type": "ops"
+                    "type": "operations"
+                },
+                {
+                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+                    "name": "profile3",
+                    "type": "aggregation"
                 }
             ],
             "filter_tags": [
@@ -86,43 +94,8 @@ Json Response
             ]
         }
     ]
-}
-```
+}```
 
-Xml Response
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<root>
-   <status>
-      <message>Success</message>
-      <code>200</code>
-   </status>
-   <data>
-      <result>
-         <id>eba61a9e-22e9-4521-9e47-ecaa4a494364</id>
-         <info>
-            <name>Report A</name>
-            <description>Description of the report, which is not required</description>
-            <created>2015-9-10 13:43:00</created>
-            <updated>2015-10-11 13:43:00</updated>
-         </info>
-         <topology_schema>
-            <group>
-               <type>NGI</type>
-               <group>
-                  <type>SITE</type>
-               </group>
-            </group>
-         </topology_schema>
-         <profile name="profile1" type="metric" />
-         <profile name="profile2" type="ops" />
-         <tag name="name1" value="value1" />
-         <tag name="name2" value="value2" />
-      </result>
-   </data>
-</root>
-```
 
 <a id='2'></a>
 
@@ -130,9 +103,7 @@ Xml Response
 This method can be used to create a new report
 
 ## Input
-
 ### URL
-
 
 ```
 /reports
@@ -151,35 +122,42 @@ Accept: application/json
 ```json
 {
     "info": {
-        "name": "Report A",
-        "description": "Description of the report, which is not required",
+        "name": "name",
+        "description": "description",
     },
     "topology_schema": {
         "group": {
-            "type": "NGI",
+            "type": "ngi",
             "group": {
-                "type": "SITE"
+                "type": "site"
             }
         }
     },
     "profiles": [
         {
-            "name": "profile1",
-            "type": "metric"
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
         },
         {
-            "name": "profile2",
-            "type": "ops"
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
         }
     ],
     "filter_tags": [
         {
-            "name": "name1",
-            "value": "value1"
+            "name": "production",
+            "value": "N"
         },
         {
-            "name": "name2",
-            "value": "value2"
+            "name": "monitored",
+            "value": "N"
         }
     ]
 }
@@ -208,11 +186,11 @@ Headers: `Status: 200 OK`
 <a id='3'></a>
 
 # PUT: Update an existing report
-This method can be used to update an existing report
+This method can be used to update an existing report. This will replace all the fields in the record so all the old fields that need to be kept must be included in the json of the update request body
 
 ## Input
-
 ### URL
+
 ```
 /reports/{uuid}
 ```
@@ -227,38 +205,44 @@ Accept: application/json
 
 ### Request Body
 
-```json
-{
+```{
     "info": {
-        "name": "Report A",
-        "description": "Description of the report, which is not required",
+        "name": "newname",
+        "description": "newdescription",
     },
     "topology_schema": {
         "group": {
-            "type": "NGI",
+            "type": "ngi",
             "group": {
-                "type": "SITE"
+                "type": "fight"
             }
         }
     },
     "profiles": [
         {
-            "name": "profile1",
-            "type": "metric"
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
         },
         {
-            "name": "profile2",
-            "type": "ops"
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
         }
     ],
     "filter_tags": [
         {
-            "name": "name1",
-            "value": "value1"
+            "name": "production",
+            "value": "N"
         },
         {
-            "name": "name2",
-            "value": "value2"
+            "name": "monitored",
+            "value": "N"
         }
     ]
 }
@@ -284,7 +268,6 @@ Headers: `Status: 200 OK`
 This method can be used to update an existing report
 
 ## Input
-
 ### URL
 
 ```
