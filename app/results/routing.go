@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -121,10 +122,11 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	result := bson.M{}
-	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
+	requestedReport := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"info.name": vars["report_name"]}, &requestedReport)
 
 	if err != nil {
+
 		code = http.StatusBadRequest
 		message := "The report with the name " + vars["report_name"] + " does not exist"
 		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
@@ -132,20 +134,22 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if vars["group_type"] == result["endpoint_group"] {
-		vars["lgroup_type"] = vars["group_type"]
-		vars["lgroup_name"] = vars["group_name"]
+	selectedGroupType := requestedReport.DetermineGroupType(vars["group_type"])
+
+	if selectedGroupType == "endpoint" {
+		if vars["lgroup_type"] == "" {
+			vars["lgroup_type"] = vars["group_type"]
+			vars["lgroup_name"] = vars["group_name"]
+		}
 		return ListEndpointGroupResults(r, cfg)
-	} else if vars["group_type"] == result["group_of_groups"] {
+	} else if selectedGroupType == "group" {
 		return ListSuperGroupResults(r, cfg)
-	} else {
-		code = http.StatusBadRequest
-		message := "The report " + vars["report_name"] + " does not define any group type: " + vars["group_type"]
-		output, err := createErrorMessage(message, format) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", format, charset))
-		return code, h, output, err
 	}
 
+	code = http.StatusBadRequest
+	message := "The report " + vars["report_name"] + " does not define any group type: " + vars["group_type"]
+	output, err = createErrorMessage(message, format) //Render the response into XML or JSON
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", format, charset))
 	return code, h, output, err
 
 }

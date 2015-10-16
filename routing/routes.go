@@ -52,6 +52,7 @@ var routesV2 = []RouteV2{
 	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Recomputations", "", recomputations2.HandleSubrouter},
 	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
+	{"Reports", "", reports.HandleSubrouter},
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
 }

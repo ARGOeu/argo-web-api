@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -142,14 +142,34 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "ROC_CRITICAL",
-		"tenant":          "EGI",
-		"endpoint_group":  "SITES",
-		"group_of_groups": "NGI",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"info": bson.M{
+			"name":        "Report_A",
+			"description": "report aaaaa",
+			"created":     "2015-9-10 13:43:00",
+			"updated":     "2015-10-11 13:43:00",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGI",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
 		"profiles": []bson.M{
 			bson.M{
-				"name":  "metric",
-				"value": "ch.cern.SAM.ROC_CRITICAL"},
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"type": "metric",
+				"name": "profile1"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
+				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -163,7 +183,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "ROC_CRITICAL",
+		"report":             "Report_A",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -179,7 +199,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "ROC_CRITICAL",
+		"report":             "Report_A",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -195,7 +215,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "ROC_CRITICAL",
+		"report":             "Report_A",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -224,14 +244,34 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"name":            "TENANT2_CRITICAL",
-		"tenant":          "TENANT2",
-		"endpoint_group":  "TENANT2_SITES",
-		"group_of_groups": "TENANT2_GROUPS",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"info": bson.M{
+			"name":        "Report_B",
+			"description": "report aaaaa",
+			"created":     "2015-9-10 13:43:00",
+			"updated":     "2015-10-11 13:43:00",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "EUDAT_GROUPS",
+				"group": bson.M{
+					"type": "EUDAT_SITES",
+				},
+			},
+		},
 		"profiles": []bson.M{
 			bson.M{
-				"name":  "metric",
-				"value": "tenant2.CRITICAL"},
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"type": "metric",
+				"name": "eudat.CRITICAL"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"type": "operations",
+				"name": "profile2"},
+			bson.M{
+				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"type": "aggregation",
+				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
 			bson.M{
@@ -245,7 +285,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "TENANT2_CRITICAL",
+		"report":             "Report_B",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -261,7 +301,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "TENANT2_CRITICAL",
+		"report":             "Report_B",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -277,7 +317,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "TENANT2_CRITICAL",
+		"report":             "Report_B",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -312,7 +352,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
  </root>`
 
 	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="TENANT2_SITES">
+   <group name="EL-01-AUTH" type="EUDAT_SITES">
      <group name="someService" type="service">
        <endpoint name="someservice.example.gr">
          <metric name="someService-FileTransfer">
@@ -373,7 +413,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
    "groups": [
      {
        "name": "EL-01-AUTH",
-       "type": "TENANT2_SITES",
+       "type": "EUDAT_SITES",
        "services": [
          {
            "name": "someService",
@@ -412,11 +452,11 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
    ]
  }`
 
-	fullurl1 := "/api/v2/status/ROC_CRITICAL/SITES/HG-03-AUTH" +
+	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
-	fullurl2 := "/api/v2/status/TENANT2_CRITICAL/TENANT2_SITES/EL-01-AUTH" +
+	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
 		"/services/someService/endpoints/someservice.example.gr/metrics/someService-FileTransfer" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 

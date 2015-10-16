@@ -53,10 +53,10 @@ type ConfHandler struct {
 
 // ResponseMessage is used to construct and marshal correctly response messages
 type ResponseMessage struct {
-	XMLName xml.Name        `xml:"root" json:"-"`
-	Status  StatusResponse  `xml:"status,omitempty" json:"status,omitempty"`
-	Data    interface{}     `xml:"data>result,omitempty" json:"data,omitempty"`
-	Errors  []ErrorResponse `xml:"errors>error,omitempty" json:"errors,omitempty"`
+	XMLName xml.Name       `xml:"root" json:"-"`
+	Status  StatusResponse `xml:"status,omitempty" json:"status,omitempty"`
+	Data    interface{}    `xml:"data>result,omitempty" json:"data,omitempty"`
+	Errors  interface{}    `xml:"errors>error,omitempty" json:"errors,omitempty"`
 }
 
 // StatusResponse accompanies the ResponseMessage struct to construct a response
@@ -82,10 +82,11 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 				logging.HandleError(r)
 			}
 		}()
+
 		code, header, output, err := fn(r, confhandler.Config)
 
 		if code == http.StatusInternalServerError {
-			log.Panic("Internal Server Error:", err)
+			log.Panic("Internal Server Error:", fmt.Sprintf("%+v", err))
 		}
 
 		//Add headers
@@ -159,6 +160,36 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	return []byte(answer)
 }
 
+// SelfRefence struct for self referencing resource after they are created
+type SelfReference struct {
+	UUID  string    `xml:"id" json:"id" bson:"id,omitempty"`
+	Links SelfLinks `xml:"links" json:"links"`
+}
+
+// SelfLinks struct to acoomodate link inside the SelfReference
+type SelfLinks struct {
+	Self string `xml:"self" json:"self"`
+}
+
+// CreateResponseMessage creates an output using the parameters given and the correct marshaller
+// according to the contetnType
+func CreateResponseMessage(message string, code string, contentType string) ([]byte, error) {
+	out := ResponseMessage{
+		Status: StatusResponse{
+			Message: message,
+			Code:    code,
+		},
+	}
+
+	output, err := MarshalContent(out, contentType, "", " ")
+	return output, err
+}
+
+func (resp ResponseMessage) MarshalTo(contentType string) []byte {
+	output, _ := MarshalContent(resp, contentType, "", " ")
+	return output
+}
+
 // BadRequestBadJson is used to inform the user about malformed json body
 var BadRequestBadJSON = ResponseMessage{
 	Status: StatusResponse{
@@ -190,3 +221,20 @@ var NotAcceptableContentType = ResponseMessage{
 		Code:    "406",
 		Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'",
 	}}
+
+// MalformedJSONInput is used to marshal a response when user json input is malformed
+var MalformedJSONInput = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "400",
+		Message: "Malformated json input data",
+		Details: "Check that your json input is valid",
+	},
+}
+
+// UnprocessableEntity is used to marshal a response
+var UnprocessableEntity = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "422",
+		Message: "Unprocessable Entity",
+	},
+}

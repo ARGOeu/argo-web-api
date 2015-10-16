@@ -26,18 +26,48 @@
 
 package reports
 
-import "encoding/xml"
+import "github.com/ARGOeu/argo-web-api/respond"
 
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &Message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
+// SubmitSuccesful marshals a response struct when a report is successfully inserted in the
+// database
+func SubmitSuccesful(inserted MongoInterface, contentType string, link string) ([]byte, error) {
+	docRoot := respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Successfully Created Report",
+			Code:    "201",
+		},
+		Data: respond.SelfReference{
+			UUID:  inserted.UUID,
+			Links: respond.SelfLinks{Self: link},
+		},
+	}
+	output, err := respond.MarshalContent(docRoot, contentType, "", " ")
 	return output, err
 }
 
-func createView(results []Report) ([]byte, error) {
-	docRoot := &RootXML{}
-	docRoot.Reports = &results
-	output, err := xml.MarshalIndent(docRoot, "", " ")
+// ReportNotFound consructs marshals a response struct when the requested
+// report is not found
+func ReportNotFound(contentType string) ([]byte, error) {
+	docRoot := respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Report Not Found",
+			Code:    "404",
+		},
+	}
+	output, err := respond.MarshalContent(docRoot, contentType, "", " ")
+	return output, err
+}
+
+func createView(results interface{}, format string) ([]byte, error) {
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: "Success",
+			Code:    "200",
+		},
+	}
+
+	docRoot.Data = &results
+	output, err := respond.MarshalContent(docRoot, format, "", " ")
+	// output, err := xml.MarshalIndent(docRoot, "", " ")
 	return output, err
 }

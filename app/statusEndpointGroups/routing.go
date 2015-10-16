@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -85,9 +86,8 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	if err != nil {
 		return code, h, output, err
 	}
-	result := bson.M{}
-	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"name": vars["report_name"]}, result)
-
+	result := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"info.name": vars["report_name"]}, &result)
 	if err != nil {
 		message := "The report with the name " + vars["report_name"] + " does not exist"
 		output, err := createMessageOUT(message, format) //Render the response into XML or JSON
@@ -95,7 +95,7 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	if vars["group_type"] != result["endpoint_group"] {
+	if vars["group_type"] != result.GetEndpointGroupType() {
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["group_type"]
 		output, err := createMessageOUT(message, format) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))

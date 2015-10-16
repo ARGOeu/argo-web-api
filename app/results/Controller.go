@@ -29,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
@@ -92,8 +93,8 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	report := ReportInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
+	report := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -103,9 +104,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	if vars["lgroup_type"] != report.EndpointGroupType {
+	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
-		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.EndpointGroupType + " instead."
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -219,8 +220,8 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	report := ReportInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
+	report := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -230,9 +231,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	if vars["lgroup_type"] != report.EndpointGroupType {
+	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
-		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.EndpointGroupType + " instead."
+		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -341,8 +342,8 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	report := ReportInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"name": vars["report_name"]}, &report)
+	report := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
 		code = http.StatusInternalServerError
