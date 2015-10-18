@@ -22,7 +22,7 @@ This method can be used to retrieve a list of current Recomputation requests.
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
+Accept: application/json
 ```
 
 ### Response
@@ -83,7 +83,7 @@ This method can be used to insert a new recomputation request onto the Compute E
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
+Accept: application/json
 ```
 
 #### Parameters
