@@ -31,6 +31,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ARGOeu/argo-web-api/respond"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -134,18 +136,23 @@ var validators = map[string]string{
 
 // ValidateProfiles ensures that the profiles in a report actually exist in the database and
 // corrects possible name inconsistencies
-func (report MongoInterface) ValidateProfiles(db *mgo.Database) []string {
-	errs := []string{}
-	for _, element := range report.Profiles {
+func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.ErrorResponse {
+	errs := []respond.ErrorResponse{}
+	for idx, element := range report.Profiles {
 		var result interface{}
 		colName := validators[element.Type]
 		if colName != "" {
 			err := db.C(colName).Find(bson.M{"uuid": element.UUID}).One(&result)
 			if err != nil {
-				errs = append(errs, fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.UUID))
+				errs = append(errs,
+					respond.ErrorResponse{
+						Message: "Profile uuid not found",
+						Code:    "422",
+						Details: fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.UUID),
+					})
 				continue
 			}
-			element.Name = result.(bson.M)["name"].(string)
+			report.Profiles[idx].Name = result.(bson.M)["name"].(string)
 		}
 	}
 	return errs

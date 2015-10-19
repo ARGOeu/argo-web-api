@@ -157,7 +157,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 // SubmitRecomputation insert a new pending recomputation in the tenants database
 func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	code := http.StatusAccepted
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

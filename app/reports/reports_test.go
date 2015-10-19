@@ -522,7 +522,7 @@ func (suite *ReportTestSuite) TestCreateReport() {
 	code := response.Code
 	output := response.Body.String()
 
-	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(201, code, "Incorrect Error Code")
 	suite.Regexp(suite.respReportCreated, output, "Response body mismatch")
 
 	// Double check that you read the newly inserted profile
@@ -809,9 +809,21 @@ func (suite *ReportTestSuite) TestWrongUUIDUpdateReport() {
   "code": "422"
  },
  "errors": [
-  "No profile in metric_profiles was found with uuid 6ac7d684-1f8e-4a02-a302-720e8f11770b",
-  "No profile in operations_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-7258f11e523",
-  "No profile in aggregation_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-720e8f1250bq"
+  {
+   "message": "Profile uuid not found",
+   "code": "422",
+   "details": "No profile in metric_profiles was found with uuid 6ac7d684-1f8e-4a02-a302-720e8f11770b"
+  },
+  {
+   "message": "Profile uuid not found",
+   "code": "422",
+   "details": "No profile in operations_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-7258f11e523"
+  },
+  {
+   "message": "Profile uuid not found",
+   "code": "422",
+   "details": "No profile in aggregation_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-720e8f1250bq"
+  }
  ]
 }`
 
@@ -1219,7 +1231,7 @@ func (suite *ReportTestSuite) TestUpdateNotFound() {
 	code := response.Code
 	output := response.Body.String()
 
-	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(404, code, "Incorrect Error Code")
 	suite.Equal(suite.respReportNotFound, output, "Response body mismatch")
 }
 
@@ -1241,7 +1253,7 @@ func (suite *ReportTestSuite) TestDeleteNotFound() {
 	code := response.Code
 	output := response.Body.String()
 
-	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(404, code, "Incorrect Error Code")
 	suite.Equal(suite.respReportNotFound, output, "Response body mismatch")
 }
 

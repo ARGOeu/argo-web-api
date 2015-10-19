@@ -344,7 +344,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
  }
 }`
 	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(202, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
 
