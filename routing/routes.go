@@ -70,11 +70,6 @@ var routesV1 = []RouteV1{
 	{"AP update", "PUT", "/AP/{id}", availabilityProfiles.Update},
 	{"AP delete", "DELETE", "/AP/{id}", availabilityProfiles.Delete},
 	{"Service Falvor Availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
-	{"tenant create", "POST", "/tenants", tenants.Create},
-	{"tenant update", "PUT", "/tenants/{name}", tenants.Update},
-	{"tenant delete", "DELETE", "/tenants/{name}", tenants.Delete},
-	{"tenant list", "GET", "/tenants", tenants.List},
-	{"tenant list one", "GET", "/tenants/{name}", tenants.ListOne},
 
 	//reports
 	{"reports create", "POST", "/reports", reports.Create},
