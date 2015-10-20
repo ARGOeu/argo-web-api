@@ -24,18 +24,13 @@ package routing
 
 import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
-	"github.com/ARGOeu/argo-web-api/app/availabilityProfiles"
-	"github.com/ARGOeu/argo-web-api/app/endpointGroupAvailability"
 	"github.com/ARGOeu/argo-web-api/app/factors"
-	"github.com/ARGOeu/argo-web-api/app/groupGroupsAvailability"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
 	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
-	"github.com/ARGOeu/argo-web-api/app/recomputations"
 	"github.com/ARGOeu/argo-web-api/app/recomputations2"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/results"
-	"github.com/ARGOeu/argo-web-api/app/serviceFlavorAvailability"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
@@ -59,28 +54,6 @@ var routesV2 = []RouteV2{
 }
 
 var routesV1 = []RouteV1{
-
-	//-----------------------------------Old requests for here on down -------------------------------------------------
-	{"Group Availability", "GET", "/group_availability", endpointGroupAvailability.List},
-	{"Group Groups Availability", "GET", "/group_groups_availability", groupGroupsAvailability.List},
-	{"Endpoint Group Availability", "GET", "/endpoint_group_availability", endpointGroupAvailability.List},
-	{"Service flavor Availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
-	{"AP List", "GET", "/AP", availabilityProfiles.List},
-	{"AP Create", "POST", "/AP", availabilityProfiles.Create},
-	{"AP update", "PUT", "/AP/{id}", availabilityProfiles.Update},
-	{"AP delete", "DELETE", "/AP/{id}", availabilityProfiles.Delete},
-	{"Service Falvor Availability", "GET", "/service_flavor_availability", serviceFlavorAvailability.List},
-
-	//reports
-	{"reports create", "POST", "/reports", reports.Create},
-	{"reports update", "PUT", "/reports/{name}", reports.Update},
-	{"reports delete", "DELETE", "/reports/{name}", reports.Delete},
-	{"reports list", "GET", "/reports", reports.List},
-	{"reports list one", "GET", "/reports/{name}", reports.ListOne},
-
-	//Recalculations
-	{"recomputation create", "POST", "/recomputations", recomputations.Create},
-	{"recomputation list", "GET", "/recomputations", recomputations.List},
 
 	{"factors list", "GET", "/factors", factors.List},
 }
