@@ -94,7 +94,8 @@ Json Response
             ]
         }
     ]
-}```
+}
+```
 
 
 <a id='2'></a>
@@ -103,6 +104,7 @@ Json Response
 This method can be used to create a new report
 
 ## Input
+
 ### URL
 
 ```
@@ -122,8 +124,8 @@ Accept: application/json
 ```json
 {
     "info": {
-        "name": "name",
-        "description": "description",
+        "name": "Report_A",
+        "description": "report aaaaa"
     },
     "topology_schema": {
         "group": {
@@ -135,19 +137,16 @@ Accept: application/json
     },
     "profiles": [
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-            "type": "metric",
-            "name": "profile1"
+            "uuid":"422985a7-6386-4964-bc99-5ebd5d7b0aef",
+            "type": "metric"
         },
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
-            "type": "operations",
-            "name": "profile2"
+            "uuid": "1aa74849-2310-4bbc-b63a-8995ac7888ea",
+            "type": "aggregation"
         },
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
-            "type": "aggregation",
-            "name": "profile3"
+            "uuid": "1eafbdd1-1bbc-4861-b849-65394840762",
+            "type": "operations"
         }
     ],
     "filter_tags": [
@@ -157,14 +156,14 @@ Accept: application/json
         },
         {
             "name": "monitored",
-            "value": "N"
+            "value": "Y"
         }
     ]
 }
 ```
 
 ## Response
-Headers: `Status: 200 OK`
+Headers: `Status: 201 Created`
 
 ### Response Body
 
@@ -205,7 +204,8 @@ Accept: application/json
 
 ### Request Body
 
-```{
+```json
+{
     "info": {
         "name": "newname",
         "description": "newdescription",

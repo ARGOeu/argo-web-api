@@ -52,7 +52,7 @@ var reportsColl = "reports"
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	code := http.StatusCreated
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -90,7 +90,6 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if json body is malformed
 	if err != nil {
-
 		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
@@ -186,6 +185,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	urlValues := r.URL.Query()
 	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
@@ -210,6 +210,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	query := bson.M{}
+
+	if urlValues.Get("name") != "" {
+		query["info.name"] = urlValues["name"]
 	}
 
 	// Create structure for storing query results
@@ -302,6 +308,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
+	code = http.StatusOK
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
@@ -394,25 +401,26 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// We search by name and update
 	query := bson.M{"id": id}
 	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, query, sanitizedInput)
-
 	if err != nil {
 		if err.Error() != "not found" {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 		//Render the response into XML
+		code = http.StatusNotFound
 		output, err = ReportNotFound(contentType)
-	} else {
-		//Render the response into XML
-		output, err = respond.CreateResponseMessage("Report was successfully updated", "200", contentType)
+		return code, h, output, err
 	}
+
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Report was successfully updated", "200", contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	code = http.StatusOK
 	return code, h, output, err
 
 }
@@ -465,7 +473,13 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	info, err := mongo.Remove(session, tenantDbConfig.Db, reportsColl, query)
 
 	if err != nil {
-		code = http.StatusInternalServerError
+		if err.Error() != "not found" {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+		//Render the response into XML
+		code = http.StatusNotFound
+		output, err = ReportNotFound(contentType)
 		return code, h, output, err
 	}
 
@@ -473,8 +487,10 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// If deletion took place we notify user accordingly.
 	// Else we notify that no tenant matched the specific name
 	if info.Removed > 0 {
+		code = http.StatusOK
 		output, err = respond.CreateResponseMessage("Report was successfully deleted", "200", contentType)
 	} else {
+		code = http.StatusNotFound
 		output, err = ReportNotFound(contentType)
 	}
 	//Render the response into XML
@@ -483,7 +499,6 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 
 }
