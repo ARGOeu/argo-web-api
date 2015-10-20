@@ -449,26 +449,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 		panic(err)
 	}
 
-	cols, err := session.DB(suite.tenantDbConf.Db).CollectionNames()
-	for _, col := range cols {
-		session.DB(suite.tenantDbConf.Db).C(col).RemoveAll(bson.M{})
-	}
-	cols, err = session.DB(suite.cfg.MongoDB.Db).CollectionNames()
-	for _, col := range cols {
-		session.DB(suite.cfg.MongoDB.Db).C(col).RemoveAll(bson.M{})
-	}
-
-}
-
-//TearDownTest to tear down every test
-func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
-
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
-	if err != nil {
-		panic(err)
-	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 
