@@ -75,7 +75,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
 		Port:     27017,
-		Db:       "AR_test_aggregation_profiles_tenant",
+		Db:       "AR_test_operations_profiles_tenant",
 		Password: "pass",
 		Username: "dbuser",
 		Store:    "ar",
