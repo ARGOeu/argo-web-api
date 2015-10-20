@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -101,7 +101,13 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"name": "EGI",
+		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"info": bson.M{
+			"name":    "EGI",
+			"email":   "email@something2",
+			"website": "www.gotg.com",
+			"created": "2015-10-20 02:08:04",
+			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "main",

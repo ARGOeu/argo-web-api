@@ -28,13 +28,16 @@ package tenants
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -49,6 +52,9 @@ type TenantTestSuite struct {
 	respTenantNotFound string
 	respUnauthorized   string
 	respBadJSON        string
+	clientkey          string
+	router             *mux.Router
+	confHandler        respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -61,40 +67,54 @@ type TenantTestSuite struct {
 func (suite *TenantTestSuite) SetupTest() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
+	[server]
+	bindip = ""
+	port = 8080
+	maxprocs = 4
+	cache = false
+	lrucache = 700000000
+	gzip = true
+	reqsizelimit = 1073741824
+
+	[mongodb]
+	host = "127.0.0.1"
+	port = 27017
     db = "argo_test_tenants"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.respTenantCreated = " <root>\n" +
-		"   <Message>Tenant was successfully created</Message>\n </root>"
-
-	suite.respTenantUpdated = " <root>\n" +
-		"   <Message>Tenant was successfully updated</Message>\n </root>"
-
-	suite.respTenantDeleted = " <root>\n" +
-		"   <Message>Tenant was successfully deleted</Message>\n </root>"
-
-	suite.respTenantNotFound = " <root>\n" +
-		"   <Message>Tenant not found</Message>\n </root>"
-
-	suite.respBadJSON = " <root>\n" +
-		"   <Message>Malformated json input data</Message>\n </root>"
-
-	suite.respUnauthorized = "Unauthorized"
+	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	suite.clientkey = "S3CR3T"
+
+	suite.respUnauthorized = `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
+	suite.respBadJSON = `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400",
+  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+ }
+}`
+
+	suite.respTenantNotFound = `{
+ "status": {
+  "message": "Not Found",
+  "code": "404",
+  "details": "item with the specific UUID was not found on the server"
+ }
+}`
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
@@ -110,7 +130,13 @@ func (suite *TenantTestSuite) SetupTest() {
 	// seed first tenant
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"name": "AVENGERS",
+		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+		"info": bson.M{
+			"name":    "AVENGERS",
+			"email":   "email@something",
+			"website": "www.avengers.com",
+			"created": "2015-10-20 02:08:04",
+			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
@@ -140,7 +166,13 @@ func (suite *TenantTestSuite) SetupTest() {
 
 	// seed second tenant
 	c.Insert(bson.M{
-		"name": "GUARDIANS",
+		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"info": bson.M{
+			"name":    "GUARDIANS",
+			"email":   "email@something2",
+			"website": "www.gotg.com",
+			"created": "2015-10-20 02:08:04",
+			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
@@ -179,7 +211,11 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	// create json input data for the request
 	postData := `
   {
-      "name": "MUTANTS",
+      "info":{
+				"name":"mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
       "db_conf": [
         {
           "store":"ar",
@@ -208,48 +244,119 @@ func (suite *TenantTestSuite) TestCreateTenant() {
             "email":"magneto@email.com",
             "api_key":"M4GN3T0"
           }]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant was succesfully created",
+  "code": "201"
+ },
+ "data": {
+  "uuid": "{{UUID}}",
+  "links": {
+   "self": "https:///api/v2/tenants/{{UUID}}"
   }
-    `
-	// Prepare the request object
-	request, _ := http.NewRequest("POST", "", strings.NewReader(postData))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+ }
+}`
 
-	// Execute the request in the controller
-	code, _, output, _ := Create(request, suite.cfg)
+	jsonCreated := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "{{UUID}}",
+   "info": {
+    "name": "mutants",
+    "email": "yo@yo",
+    "website": "website",
+    "created": "{{TIMESTAMP}}",
+    "updated": "{{TIMESTAMP}}"
+   },
+   "db_conf": [
+    {
+     "store": "ar",
+     "server": "localhost",
+     "port": 27017,
+     "database": "ar_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    },
+    {
+     "store": "status",
+     "server": "localhost",
+     "port": 27017,
+     "database": "status_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    }
+   ],
+   "users": [
+    {
+     "name": "xavier",
+     "email": "xavier@email.com",
+     "api_key": "X4V13R"
+    },
+    {
+     "name": "magneto",
+     "email": "magneto@email.com",
+     "api_key": "M4GN3T0"
+    }
+   ]
+  }
+ ]
+}`
 
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respTenantCreated, string(output), "Response body mismatch")
+	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Double check that you read the newly inserted profile
-	// Create a string literal of the expected xml Response
-	respXML := `<root>
- <tenant name="MUTANTS">
-  <db_confs>
-   <db_conf store="ar" server="localhost" port="27017" database="ar_db" username="admin" password="3NCRYPT3D"></db_conf>
-   <db_conf store="status" server="localhost" port="27017" database="status_db" username="admin" password="3NCRYPT3D"></db_conf>
-  </db_confs>
-  <users>
-   <user name="xavier" email="xavier@email.com" api_key="X4V13R"></user>
-   <user name="magneto" email="magneto@email.com" api_key="M4GN3T0"></user>
-  </users>
- </tenant>
-</root>`
+	suite.router.ServeHTTP(response, request)
 
-	// Prepare the request object using tenant name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/tenants/MUTANTS", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
-	// Pass request to controller calling List() handler method
-	code, _, output, _ = ListOne(request, suite.cfg)
+	// Grab UUID from mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	// Retrieve uuid from database
+	var result map[string]interface{}
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+
+	c.Find(bson.M{"info.name": "mutants"}).One(&result)
+	uuid := result["uuid"].(string)
+	info := result["info"].(map[string]interface{})
+	timestamp := info["created"].(string)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(201, code, "Internal Server Error")
+	// Apply uuid to output template and check
+	suite.Equal(strings.Replace(jsonOutput, "{{UUID}}", uuid, 2), output, "Response body mismatch")
+
+	// Check that actually the item has been created
+	// Call List one with the specific UUID
+	request2, _ := http.NewRequest("GET", "/api/v2/tenants/"+uuid, strings.NewReader(""))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
 	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	suite.Equal(200, code2, "Internal Server Error")
+
+	jsonCreated = strings.Replace(jsonCreated, "{{UUID}}", uuid, 1)
+	jsonCreated = strings.Replace(jsonCreated, "{{TIMESTAMP}}", timestamp, 2)
+	// Compare the expected and actual json response
+	suite.Equal(jsonCreated, output2, "Response body mismatch")
+
 }
 
 // TestUpdateTenant function implements testing the http PUT update tenant request.
@@ -260,12 +367,16 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 func (suite *TenantTestSuite) TestUpdateTenant() {
 
 	// create json input data for the request
-	postData := `
+	putData := `
   {
-      "name": "AVENGERS_modified",
+      "info":{
+				"name":"new_mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
       "db_conf": [
         {
-          "store":"ar_mod",
+          "store":"ar",
           "server":"localhost",
           "port":27017,
           "database":"ar_db",
@@ -273,7 +384,7 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
           "password":"3NCRYPT3D"
         },
         {
-          "store":"status_mod",
+          "store":"status",
           "server":"localhost",
           "port":27017,
           "database":"status_db",
@@ -282,308 +393,330 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
         }],
       "users": [
           {
-            "name":"thor",
-            "email":"thor@email.com",
-            "api_key":"TH0RK3Y"
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R"
           },
           {
-            "name":"cap",
-            "email":"cap@email.com",
-            "api_key":"C4PK3Y"
-          },
-          {
-            "name":"hulk",
-            "email":"hulk@email.com",
-            "api_key":"HULKK3Y"
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"M4GN3T0"
           }]
   }`
-	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/tenants/AVENGERS", strings.NewReader(postData))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
 
-	// Execute the request in the controller
-	code, _, output, _ := Update(request, suite.cfg)
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
 
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respTenantUpdated, string(output), "Response body mismatch")
+	request, _ := http.NewRequest("PUT", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Double check that you read the newly updated profile
-	// Create a string literal of the expected xml Response
-	respXML := `<root>
- <tenant name="AVENGERS_modified">
-  <db_confs>
-   <db_conf store="ar_mod" server="localhost" port="27017" database="ar_db" username="admin" password="3NCRYPT3D"></db_conf>
-   <db_conf store="status_mod" server="localhost" port="27017" database="status_db" username="admin" password="3NCRYPT3D"></db_conf>
-  </db_confs>
-  <users>
-   <user name="thor" email="thor@email.com" api_key="TH0RK3Y"></user>
-   <user name="cap" email="cap@email.com" api_key="C4PK3Y"></user>
-   <user name="hulk" email="hulk@email.com" api_key="HULKK3Y"></user>
-  </users>
- </tenant>
-</root>`
+	suite.router.ServeHTTP(response, request)
 
-	// Prepare the request object using tenant name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/tenants/AVENGERS_modified", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
-	// Pass request to controller calling List() handler method
-	code, _, output, _ = ListOne(request, suite.cfg)
-	// Check that we must have a 200 ok code
+	code := response.Code
+	output := response.Body.String()
+
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
 }
 
 // TestDeleteTenant function implements testing the http DELETE tenant request.
 // Request requires admin authentication and gets as input the name of the
 // tenant to be deleted. After the operation succeeds is double-checked
 // that the deleted tenant is actually missing from the datastore
-func (suite *TenantTestSuite) TestDeleteTenant() {
+func (suite *TenantTestSuite) NotTestDeleteTenant() {
 
-	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/tenants/AVENGERS", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Delete(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
 
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respTenantDeleted, string(output), "Response body mismatch")
+	code := response.Code
+	output := response.Body.String()
 
-	// Double check that the tenant is actually removed when you try
-	// to retrieve it's information by name
-	// Prepare the request object using tenant name as urlvar in url path
-	request, _ = http.NewRequest("GET", "/api/v1/tenants/AVENGERS", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
-	// Pass request to controller calling List() handler method
-	code, _, output, _ = ListOne(request, suite.cfg)
-	// Check that we must have a 200 ok code
-	suite.Equal(400, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(suite.respTenantNotFound, string(output), "Response body mismatch")
-}
-
-// TestReadOneTeanant function implements the testing
-// of the get request which retrieves information
-// about a specific tenant (using it's name as input)
-func (suite *TenantTestSuite) TestReadOneTenant() {
-
-	// Create a string literal of the expected xml Response
-	respXML := `<root>
- <tenant name="GUARDIANS">
-  <db_confs>
-   <db_conf store="ar" server="a.mongodb.org" port="27017" database="ar_db" username="admin" password="3NCRYPT3D"></db_conf>
-   <db_conf store="status" server="b.mongodb.org" port="27017" database="status_db" username="admin" password="3NCRYPT3D"></db_conf>
-  </db_confs>
-  <users>
-   <user name="groot" email="groot@email.com" api_key="GR00TK3Y"></user>
-   <user name="starlord" email="starlord@email.com" api_key="ST4RL0RDK3Y"></user>
-  </users>
- </tenant>
-</root>`
-
-	// Prepare the request object using tenant name as urlvar in url path
-	request, _ := http.NewRequest("GET", "/api/v1/tenants/GUARDIANS", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
-	// Pass request to controller calling List() handler method
-	code, _, output, _ := ListOne(request, suite.cfg)
+	metricProfileJSON := `{
+ "status": {
+  "message": "Tenant Successfully Deleted",
+  "code": "200"
+ }
+}`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result map[string]interface{}
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	suite.NotEqual(err, nil, "No not found error")
+	suite.Equal(err.Error(), "not found", "No not found error")
 }
 
 // TestReadTeanants function implements the testing
 // of the get request which retrieves all tenant information
-func (suite *TenantTestSuite) TestReadTenants() {
+func (suite *TenantTestSuite) TestListTenants() {
 
-	// Create a string literal of the expected xml Response
-	respXML := `<root>
- <tenant name="AVENGERS">
-  <db_confs>
-   <db_conf store="ar" server="a.mongodb.org" port="27017" database="ar_db" username="admin" password="3NCRYPT3D"></db_conf>
-   <db_conf store="status" server="b.mongodb.org" port="27017" database="status_db" username="admin" password="3NCRYPT3D"></db_conf>
-  </db_confs>
-  <users>
-   <user name="cap" email="cap@email.com" api_key="C4PK3Y"></user>
-   <user name="thor" email="thor@email.com" api_key="TH0RK3Y"></user>
-  </users>
- </tenant>
- <tenant name="GUARDIANS">
-  <db_confs>
-   <db_conf store="ar" server="a.mongodb.org" port="27017" database="ar_db" username="admin" password="3NCRYPT3D"></db_conf>
-   <db_conf store="status" server="b.mongodb.org" port="27017" database="status_db" username="admin" password="3NCRYPT3D"></db_conf>
-  </db_confs>
-  <users>
-   <user name="groot" email="groot@email.com" api_key="GR00TK3Y"></user>
-   <user name="starlord" email="starlord@email.com" api_key="ST4RL0RDK3Y"></user>
-  </users>
- </tenant>
-</root>`
+	request, _ := http.NewRequest("GET", "/api/v2/tenants", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Prepare the request object
-	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
-	// Pass request to controller calling List() handler method
-	code, _, output, _ := List(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "db_conf": [
+    {
+     "store": "ar",
+     "server": "a.mongodb.org",
+     "port": 27017,
+     "database": "ar_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    },
+    {
+     "store": "status",
+     "server": "b.mongodb.org",
+     "port": 27017,
+     "database": "status_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    }
+   ],
+   "users": [
+    {
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y"
+    },
+    {
+     "name": "thor",
+     "email": "thor@email.com",
+     "api_key": "TH0RK3Y"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "GUARDIANS",
+    "email": "email@something2",
+    "website": "www.gotg.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "db_conf": [
+    {
+     "store": "ar",
+     "server": "a.mongodb.org",
+     "port": 27017,
+     "database": "ar_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    },
+    {
+     "store": "status",
+     "server": "b.mongodb.org",
+     "port": 27017,
+     "database": "status_db",
+     "username": "admin",
+     "password": "3NCRYPT3D"
+    }
+   ],
+   "users": [
+    {
+     "name": "groot",
+     "email": "groot@email.com",
+     "api_key": "GR00TK3Y"
+    },
+    {
+     "name": "starlord",
+     "email": "starlord@email.com",
+     "api_key": "ST4RL0RDK3Y"
+    }
+   ]
+  }
+ ]
+}`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respXML, string(output), "Response body mismatch")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 // TestCreateUnauthorized function tests calling the create tenant request (POST) and
 // providing a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestCreateUnauthorized() {
-	// Prepare the request object (use id2 for path)
-	request, _ := http.NewRequest("POST", "", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "F00T0K3N")
+	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(""))
+	request.Header.Set("x-api-key", "FOO")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Create(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, output, "Response body mismatch")
 }
 
 // TestUpdateUnauthorized function tests calling the update tenant request (PUT)
 // and providing  a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestUpdateUnauthorized() {
-	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "", strings.NewReader("{}"))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "F00T0K3N")
+	request, _ := http.NewRequest("PUT", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request.Header.Set("x-api-key", "FOO")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Update(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, output, "Response body mismatch")
+
 }
 
 // TestDeleteUnauthorized function tests calling the remove tenant request (DELETE)
 // and providing a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestDeleteUnauthorized() {
-	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "", strings.NewReader("{}"))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "F00T0K3N")
+	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request.Header.Set("x-api-key", "FOO")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Delete(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(401, code, "Internal Server Error")
-	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
+	suite.Equal(suite.respUnauthorized, output, "Response body mismatch")
 }
 
 // TestCreateBadJson tests calling the create tenant request (POST) and providing
 // bad json input. The response should be malformed json
 func (suite *TenantTestSuite) TestCreateBadJson() {
-	// Prepare the request object
-	request, _ := http.NewRequest("POST", "/api/v1/tenants/AVENGERS", strings.NewReader("{ bad json"))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	jsonInput := "{bad json:{}"
+	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Create(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
+	suite.Equal(suite.respBadJSON, output, "Response body mismatch")
+
 }
 
 // TestUpdateBadJson tests calling the update tenant request (PUT) and providing
 // bad json input. The response should be malformed json
 func (suite *TenantTestSuite) TestUpdateBadJson() {
-	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/tenants/AVENGERS", strings.NewReader("{ bad json"))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	jsonInput := "{bad json:{}"
+	request, _ := http.NewRequest("PUT", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Update(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.respBadJSON, string(output), "Response body mismatch")
+	suite.Equal(suite.respBadJSON, output, "Response body mismatch")
 }
 
 // TestListOneNotFound tests calling the http (GET) tenant info request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestListOneNotFound() {
-	// Prepare the request object
-	request, _ := http.NewRequest("GET", "/api/v1/tenants/BADNAME", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/BADID", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := ListOne(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
 
-	suite.Equal(400, code, "Internal Server Error")
-	suite.Equal(suite.respTenantNotFound, string(output), "Response body mismatch")
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(404, code, "Internal Server Error")
+	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
 }
 
 // TestUpdateNotFound tests calling the http (PUT) update tenant request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/tenants/BADNAME", strings.NewReader("{}"))
+	request, _ := http.NewRequest("PUT", "/api/v1/tenants/BADID", strings.NewReader("{}"))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
+	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request.Header.Set("x-api-key", suite.clientkey)
 
 	// Execute the request in the controller
 	code, _, output, _ := Update(request, suite.cfg)
 
-	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(404, code, "Internal Server Error")
 	suite.Equal(suite.respTenantNotFound, string(output), "Response body mismatch")
 }
 
 // TestDeleteNotFound tests calling the http (PUT) update tenant request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestDeleteNotFound() {
-	// Prepare the request object
-	request, _ := http.NewRequest("DELETE", "/api/v1/tenants/BADNAME", strings.NewReader(""))
-	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json;")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "S3CR3T")
+	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
 
-	// Execute the request in the controller
-	code, _, output, _ := Delete(request, suite.cfg)
+	suite.router.ServeHTTP(response, request)
 
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.respTenantNotFound, string(output), "Response body mismatch")
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(404, code, "Internal Server Error")
+	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests

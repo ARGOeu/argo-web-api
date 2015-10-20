@@ -29,13 +29,18 @@ package tenants
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 // Create function is used to implement the create tenant request.
@@ -52,38 +57,36 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	// Content Negotiation
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
 	// if authentication procedure fails then
 	// return unauthorized http status
 	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
-	//Reading the json input from the request body
-	reqBody, err := ioutil.ReadAll(r.Body)
-	input := Tenant{}
-	//Unmarshalling the json input into byte form
-	err = json.Unmarshal(reqBody, &input)
-
-	// Check if json body is malformed
+	// Try ingest request body
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
-		if err != nil {
-			// Msg in xml style, to notify for malformed json
-			output, err := messageXML("Malformated json input data")
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
 
-			if err != nil {
-				code = http.StatusInternalServerError
-				return code, h, output, err
-			}
+	incoming := Tenant{}
 
-			code = http.StatusBadRequest
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		}
+	// Parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+
+		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		code = 400
+		return code, h, output, err
 	}
 
 	// Try to open the mongo session
@@ -95,56 +98,31 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Prepare structure for storing query results
-	results := []Tenant{}
+	// Check if name exists
+	sameName := []Tenant{}
+	filter := bson.M{"info.name": incoming.Info.Name}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
-	//Making sure that no profile with the requested name and namespace combination already exists in the DB
-	query := searchName(input.Name)
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+	if len(sameName) > 0 {
+		code = http.StatusConflict
+		output, err = createMsgView("Tenant with same name already exists", code)
+		return code, h, output, err
+	}
+
+	// Generate new uuid
+	incoming.ID = mongo.NewUUID()
+	incoming.Info.Created = time.Now().Format("2006-01-02 15:04:05")
+	incoming.Info.Updated = incoming.Info.Created
+	err = mongo.Insert(session, cfg.MongoDB.Db, "tenants", incoming)
 
 	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
+		panic(err)
 	}
 
-	// If results are returned for the specific name
-	// then we already have an existing tenant and we must
-	// abort creation notifing the user
-	if len(results) > 0 {
-		// Name was found so print the error message in xml
-		output, err = messageXML("Tenant with the same name already exists")
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		code = http.StatusBadRequest
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
-
-	}
-
-	// If no tenant exists with this name create a new one
-	query = createTenant(input)
-	err = mongo.Insert(session, cfg.MongoDB.Db, "tenants", query)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// Notify user that the tenant has been created. In xml style
-	output, err = messageXML("Tenant was successfully created")
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	// Create view of the results
+	output, err = createRefView(incoming, "Tenant was succesfully created", 201, r) //Render the results into JSON
+	code = 201
 	return code, h, output, err
-
 }
 
 // List function that implements the http GET request that retrieves
@@ -160,14 +138,22 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	// Content Negotiation
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// if authentication procedure fails then
 	// return unauthorized http status
 	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
@@ -192,7 +178,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
-	output, err = createView(results)
+	output, err = createListView(results, "Success", code)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -217,20 +203,26 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	vars := mux.Vars(r)
+
+	// Content Negotiation
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// if authentication procedure fails then
 	// return unauthorized http status
 	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
-
-	//Extracting urlvar "name" from url path
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -244,9 +236,9 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// Create structure to hold query results
 	results := []Tenant{}
 
-	// Create a simple query object to query by name
-	query := searchName(nameFromURL)
-	// Query collection tenants for the specific tenant name
+	// Create a simple query object to query by id
+	query := bson.M{"uuid": vars["UUID"]}
+	// Query collection tenants for the specific tenant id
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
 	if err != nil {
@@ -254,25 +246,16 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	// If query returned zero result then no tenant matched this name,
-	// abort and notify user accordingly
-	if len(results) == 0 {
-
-		output, err := messageXML("Tenant not found")
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		code = http.StatusBadRequest
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
-	output, err = createView(results)
+	output, err = createListView(results, "Success", code)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -300,42 +283,37 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
+	// Content Negotiation
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
 	// if authentication procedure fails then
 	// return unauthorized
 	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
+
 	}
 
-	//Extracting record id from url
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
+	incoming := Tenant{}
 
-	//Reading the json input
-	reqBody, err := ioutil.ReadAll(r.Body)
-
-	input := Tenant{}
-	//Unmarshalling the json input into byte form
-	err = json.Unmarshal(reqBody, &input)
-
+	// ingest body data
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
-		if err != nil {
-			// User provided malformed json input data
-			output, err := messageXML("Malformated json input data")
-
-			if err != nil {
-				code = http.StatusInternalServerError
-				return code, h, output, err
-			}
-
-			code = http.StatusBadRequest
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		}
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		code = 400
+		return code, h, output, err
 	}
 
 	// Try to open the mongo session
@@ -347,30 +325,55 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// We search by name and update
-	query := searchName(nameFromURL)
-	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", query, input)
+	// create filter to retrieve specific profile with uuid
+	filter := bson.M{"uuid": vars["UUID"]}
 
-	if err != nil {
+	incoming.ID = vars["UUID"]
 
-		if err.Error() != "not found" {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-		//Render the response into XML
-		output, err = messageXML("Tenant not found")
-
-	} else {
-		//Render the response into XML
-		output, err = messageXML("Tenant was successfully updated")
-	}
+	// Retrieve Results from database
+	results := []Tenant{}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	// Check if nothing found
+	if len(results) < 1 {
+
+		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	// Check if name exists
+	sameName := []Tenant{}
+	filter = bson.M{"info.name": incoming.Info.Name}
+
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
+
+	if len(sameName) > 1 {
+		code = http.StatusConflict
+		output, err = createMsgView("Tenant with same name already exists", code)
+		return code, h, output, err
+	}
+
+	// run the update query
+	incoming.Info.Created = results[0].Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	filter = bson.M{"uuid": vars["UUID"]}
+	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", filter, incoming)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
+	code = 200
 	return code, h, output, err
 
 }
@@ -389,20 +392,20 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS END
 
+	// Content Negotiation
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
 	// if authentication procedure fails then
 	// return unauthorized
 	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
 
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		//If wrong api key is passed we return UNAUTHORIZED http status
-		code = http.StatusUnauthorized
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
-
-	//Extracting record id from url
-	urlValues := r.URL.Path
-	nameFromURL := strings.Split(urlValues, "/")[4]
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -413,24 +416,34 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// We search by name and delete the document in db
-	query := searchName(nameFromURL)
-	info, err := mongo.Remove(session, cfg.MongoDB.Db, "tenants", query)
+	filter := bson.M{"uuid": vars["UUID"]}
+
+	// Retrieve Results from database
+	results := []Tenant{}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// info.Removed > 0 means that many documents have been removed
-	// If deletion took place we notify user accordingly.
-	// Else we notify that no tenant matched the specific name
-	if info.Removed > 0 {
-		output, err = messageXML("Tenant was successfully deleted")
-	} else {
-		output, err = messageXML("Tenant not found")
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
 	}
-	//Render the response into XML
+
+	mongo.Remove(session, cfg.MongoDB.Db, "tenants", filter)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createMsgView("Tenant Successfully Deleted", 200) //Render the results into JSON
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

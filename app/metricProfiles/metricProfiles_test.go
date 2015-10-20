@@ -97,7 +97,13 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"name": "FOO",
+		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"info": bson.M{
+				"name":    "GUARDIANS",
+				"email":   "email@something2",
+				"website": "www.gotg.com",
+				"created": "2015-10-20 02:08:04",
+				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
 				bson.M{
@@ -125,7 +131,13 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			}})
 	c.Insert(
-		bson.M{"name": "BAR",
+		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+			"info": bson.M{
+				"name":    "AVENGERS",
+				"email":   "email@something2",
+				"website": "www.gotg.com",
+				"created": "2015-10-20 02:08:04",
+				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
 				bson.M{

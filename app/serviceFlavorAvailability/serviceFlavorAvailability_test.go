@@ -78,7 +78,13 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	suite.tenantcfg.Db = "argo_EGI_test_sf"
 
 	// Add authentication token to mongo coredb
-	seed_auth := bson.M{"name": "EGI",
+	seed_auth := bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"info": bson.M{
+			"name":    "GUARDIANS",
+			"email":   "email@something2",
+			"website": "www.gotg.com",
+			"created": "2015-10-20 02:08:04",
+			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
