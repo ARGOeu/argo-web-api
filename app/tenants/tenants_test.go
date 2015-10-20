@@ -695,11 +695,15 @@ func (suite *TenantTestSuite) TestUpdateNotFound() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", suite.clientkey)
 
-	// Execute the request in the controller
-	code, _, output, _ := Update(request, suite.cfg)
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
 
 	suite.Equal(404, code, "Internal Server Error")
-	suite.Equal(suite.respTenantNotFound, string(output), "Response body mismatch")
+	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
 }
 
 // TestDeleteNotFound tests calling the http (PUT) update tenant request
