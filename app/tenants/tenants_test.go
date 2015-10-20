@@ -431,7 +431,7 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 // Request requires admin authentication and gets as input the name of the
 // tenant to be deleted. After the operation succeeds is double-checked
 // that the deleted tenant is actually missing from the datastore
-func (suite *TenantTestSuite) NotTestDeleteTenant() {
+func (suite *TenantTestSuite) TestDeleteTenant() {
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
