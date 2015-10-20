@@ -55,6 +55,7 @@ var routesV2 = []RouteV2{
 	{"Reports", "", reports.HandleSubrouter},
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
+	{"Tenants", "/admin", tenants.HandleSubrouter},
 }
 
 var routesV1 = []RouteV1{

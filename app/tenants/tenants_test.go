@@ -85,7 +85,7 @@ func (suite *TenantTestSuite) SetupTest() {
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/admin").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// Connect to mongo testdb
@@ -254,7 +254,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
  "data": {
   "uuid": "{{UUID}}",
   "links": {
-   "self": "https:///api/v2/tenants/{{UUID}}"
+   "self": "https:///api/v2/admin/tenants/{{UUID}}"
   }
  }
 }`
@@ -308,7 +308,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(postData))
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -340,7 +340,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	// Check that actually the item has been created
 	// Call List one with the specific UUID
-	request2, _ := http.NewRequest("GET", "/api/v2/tenants/"+uuid, strings.NewReader(""))
+	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/"+uuid, strings.NewReader(""))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -411,7 +411,7 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -433,7 +433,7 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 // that the deleted tenant is actually missing from the datastore
 func (suite *TenantTestSuite) NotTestDeleteTenant() {
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -474,7 +474,7 @@ func (suite *TenantTestSuite) NotTestDeleteTenant() {
 // of the get request which retrieves all tenant information
 func (suite *TenantTestSuite) TestListTenants() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/tenants", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -582,7 +582,7 @@ func (suite *TenantTestSuite) TestListTenants() {
 // TestCreateUnauthorized function tests calling the create tenant request (POST) and
 // providing a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestCreateUnauthorized() {
-	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(""))
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(""))
 	request.Header.Set("x-api-key", "FOO")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -599,7 +599,7 @@ func (suite *TenantTestSuite) TestCreateUnauthorized() {
 // TestUpdateUnauthorized function tests calling the update tenant request (PUT)
 // and providing  a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestUpdateUnauthorized() {
-	request, _ := http.NewRequest("PUT", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
 	request.Header.Set("x-api-key", "FOO")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -617,7 +617,7 @@ func (suite *TenantTestSuite) TestUpdateUnauthorized() {
 // TestDeleteUnauthorized function tests calling the remove tenant request (DELETE)
 // and providing a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestDeleteUnauthorized() {
-	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
 	request.Header.Set("x-api-key", "FOO")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -635,7 +635,7 @@ func (suite *TenantTestSuite) TestDeleteUnauthorized() {
 // bad json input. The response should be malformed json
 func (suite *TenantTestSuite) TestCreateBadJson() {
 	jsonInput := "{bad json:{}"
-	request, _ := http.NewRequest("POST", "/api/v2/tenants", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -654,7 +654,7 @@ func (suite *TenantTestSuite) TestCreateBadJson() {
 // bad json input. The response should be malformed json
 func (suite *TenantTestSuite) TestUpdateBadJson() {
 	jsonInput := "{bad json:{}"
-	request, _ := http.NewRequest("PUT", "/api/v2/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -671,7 +671,7 @@ func (suite *TenantTestSuite) TestUpdateBadJson() {
 // TestListOneNotFound tests calling the http (GET) tenant info request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestListOneNotFound() {
-	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/BADID", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/BADID", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -689,7 +689,7 @@ func (suite *TenantTestSuite) TestListOneNotFound() {
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
-	request, _ := http.NewRequest("PUT", "/api/v1/tenants/BADID", strings.NewReader("{}"))
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/BADID", strings.NewReader("{}"))
 	// add the content-type header to application/json
 	request.Header.Set("Content-Type", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -705,7 +705,7 @@ func (suite *TenantTestSuite) TestUpdateNotFound() {
 // TestDeleteNotFound tests calling the http (PUT) update tenant request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestDeleteNotFound() {
-	request, _ := http.NewRequest("DELETE", "/api/v2/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
