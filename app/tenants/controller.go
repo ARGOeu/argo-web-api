@@ -85,7 +85,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err := json.Unmarshal(body, &incoming); err != nil {
 
 		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
-		code = 400
+		code = http.StatusBadRequest
 		return code, h, output, err
 	}
 
@@ -121,7 +121,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Create view of the results
 	output, err = createRefView(incoming, "Tenant was succesfully created", 201, r) //Render the results into JSON
-	code = 201
+	code = http.StatusCreated
 	return code, h, output, err
 }
 
@@ -249,7 +249,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// Check if nothing found
 	if len(results) < 1 {
 		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
-		code = 404
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
@@ -312,7 +312,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
-		code = 400
+		code = http.StatusBadRequest
 		return code, h, output, err
 	}
 
@@ -343,20 +343,22 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if len(results) < 1 {
 
 		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
-		code = 404
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
-	// Check if name exists
-	sameName := []Tenant{}
-	filter = bson.M{"info.name": incoming.Info.Name}
+	// If user chose to change name - check if name already exists
+	if results[0].Info.Name != incoming.Info.Name {
+		sameName := []Tenant{}
+		filter = bson.M{"info.name": incoming.Info.Name}
 
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
-	if len(sameName) > 1 {
-		code = http.StatusConflict
-		output, err = createMsgView("Tenant with same name already exists", code)
-		return code, h, output, err
+		if len(sameName) > 1 {
+			code = http.StatusConflict
+			output, err = createMsgView("Tenant with same name already exists", code)
+			return code, h, output, err
+		}
 	}
 
 	// run the update query
@@ -373,7 +375,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Create view for response message
 	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
-	code = 200
+	code = http.StatusOK
 	return code, h, output, err
 
 }
@@ -430,7 +432,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// Check if nothing found
 	if len(results) < 1 {
 		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
-		code = 404
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
