@@ -262,6 +262,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -350,6 +351,8 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
@@ -381,9 +384,19 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
    <message>The report with the name Report_B does not exist</message>
  </root>`
 
-	typeError1XML := ` <root>
-   <message>The report Report_A does not define endpoint group type: Site. Try using SITE instead.</message>
- </root>`
+	typeError1XML := `<root>
+ <status>
+  <message>Bad Request</message>
+  <code>400</code>
+ </status>
+ <errors>
+  <error>
+   <message>Endpoint Group type not in report</message>
+   <code>400</code>
+   <details>Endpoint Group type Site not present in report Report_A. Try using SITE instead</details>
+  </error>
+ </errors>
+</root>`
 
 	typeError2XML := ` <root>
    <message>The report Report_A does not define any group type: Site</message>
@@ -391,6 +404,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -403,6 +417,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_B/GROUP/GROUP_A/SITE?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
@@ -415,6 +430,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
@@ -427,15 +443,17 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
+	output := response.Body.String()
 
 	// Check that we must have a 400 bad request code
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(typeError1XML, response.Body.String(), "Response body mismatch")
+	suite.Equal(typeError1XML, output, "Response body mismatch")
 
 }
 

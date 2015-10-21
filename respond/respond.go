@@ -107,7 +107,6 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 var acceptedContentTypes = []string{
 	"application/xml",
 	"application/json",
-	"*/*",
 }
 
 var defaultContentType = "application/json"
@@ -189,6 +188,13 @@ func (resp ResponseMessage) MarshalTo(contentType string) []byte {
 	output, _ := MarshalContent(resp, contentType, "", " ")
 	return output
 }
+
+// BadRequest is used to inform the user about malformed json body
+var BadRequestSimple = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+	}}
 
 // BadRequestBadJson is used to inform the user about malformed json body
 var BadRequestBadJSON = ResponseMessage{
