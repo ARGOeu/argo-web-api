@@ -34,7 +34,7 @@ type IncomingRecomputation struct {
 	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
 	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
 	Report    string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
-	Exclude   []string `xml:"excluded" json:"excluded" bson:"excluded,omitempty"`
+	Exclude   []string `xml:"exclude" json:"exclude" bson:"exclude,omitempty"`
 }
 
 type SelfReference struct {
@@ -47,7 +47,7 @@ type Links struct {
 }
 
 type MongoInterface struct {
-	XMLName        xml.Name `xml:"recomputation" json:"-"`
+	XMLName        xml.Name `bson:"-" xml:"recomputation" json:"-"`
 	UUID           string   `bson:"uuid" xml:"uuid" json:"uuid"`
 	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
 	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
