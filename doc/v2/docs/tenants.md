@@ -10,7 +10,7 @@ description: API Calls for listing existing and creating new tenant
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Tenants        | This method can be used to retrieve a list of current tenants          | [ Description](#1)
-GET: List a specific tenant         | This method can be used to retrieve a specific metric tenant based on its uuid.          | [ Description](#2)
+GET: List a specific tenant         | This method can be used to retrieve a specific metric tenant based on its id.          | [ Description](#2)
 POST: Create a new tenant  | This method can be used to create a new tenant | [ Description](#3)
 PUT: Update a tenant |This method can be used to update information on an existing tenant | [ Description](#4)
 DELETE: Delete a tenant |This method can be used to delete an existing tenant | [ Description](#5)
@@ -134,12 +134,12 @@ Json Response
 <a id='2'></a>
 
 # GET: List A Specific tenant
-This method can be used to retrieve specific tenant based on its uuid
+This method can be used to retrieve specific tenant based on its id
 
 ## Input
 
 ```
-GET /admin/tenants/{UUID}
+GET /admin/tenants/{ID}
 ```
 
 ### Request headers
@@ -283,9 +283,9 @@ Json Response
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/admin/tenants/{{UUID}}"
+   "self": "https:///api/v2/admin/tenants/{{ID}}"
   }
  }
 }
@@ -299,7 +299,7 @@ This method can be used to update information on an existing tenant
 ## Input
 
 ```
-PUT /admin/tenants/{UUID}
+PUT /admin/tenants/{ID}
 ```
 
 ### Request headers
@@ -377,7 +377,7 @@ This method can be used to delete an existing tenant
 ## Input
 
 ```
-DELETE /admin/tenants/{UUID}
+DELETE /admin/tenants/{ID}
 ```
 
 ### Request headers

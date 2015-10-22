@@ -31,7 +31,7 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	s.Methods("GET").
-		Path("/recomputations/{uuid}").
+		Path("/recomputations/{ID}").
 		Name("List Single Recomputation").
 		Handler(confhandler.Respond(ListOne))
 

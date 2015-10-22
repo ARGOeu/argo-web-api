@@ -36,7 +36,7 @@ import (
 
 // MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
-	UUID          string        `bson:"uuid" json:"uuid"`
+	ID            string        `bson:"id" json:"id"`
 	Name          string        `bson:"name" json:"name"`
 	Namespace     string        `bson:"namespace" json:"namespace"`
 	EndpointGroup string        `bson:"endpoint_group" json:"endpoint_group"`
@@ -49,7 +49,7 @@ type MongoInterface struct {
 //MetricProfile is just a reference struct holding the name and the uuid of the profile
 type MetricProfile struct {
 	Name string `bson:"name" json:"name"`
-	UUID string `bson:"uuid" json:"uuid"`
+	ID   string `bson:"id" json:"id"`
 }
 
 // Group struct to represent groupings
@@ -67,7 +67,7 @@ type Service struct {
 
 // SelfReference to hold links and uuid
 type SelfReference struct {
-	UUID  string `json:"uuid" bson:"uuid,omitempty"`
+	ID    string `json:"id" bson:"id,omitempty"`
 	Links Links  `json:"links"`
 }
 
@@ -76,10 +76,10 @@ type Links struct {
 	Self string `json:"self"`
 }
 
-// validateUUID validates the metric profile uuid
-func (mp *MetricProfile) validateUUID(session *mgo.Session, db string, col string) error {
+// validateID validates the metric profile id
+func (mp *MetricProfile) validateID(session *mgo.Session, db string, col string) error {
 	var results []MetricProfile
-	filter := bson.M{"uuid": mp.UUID}
+	filter := bson.M{"id": mp.ID}
 	err := mongo.Find(session, db, "metric_profiles", filter, "name", &results)
 	if err != nil {
 		return err

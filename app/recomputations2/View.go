@@ -56,8 +56,8 @@ func createSubmitView(inserted MongoInterface, format string, r *http.Request) (
 			Code:    "201",
 		},
 		Data: SelfReference{
-			UUID:  inserted.UUID,
-			Links: Links{Self: "https://" + r.Host + r.URL.Path + "/" + inserted.UUID},
+			ID:    inserted.ID,
+			Links: Links{Self: "https://" + r.Host + r.URL.Path + "/" + inserted.ID},
 		},
 	}
 

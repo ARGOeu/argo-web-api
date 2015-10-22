@@ -36,7 +36,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Handler(confhandler.Respond(List))
 
 	s.Methods("GET").
-		Path("/metric_profiles/{UUID}").
+		Path("/metric_profiles/{ID}").
 		Name("List One Metric Profile").
 		Handler(confhandler.Respond(ListOne))
 
@@ -46,12 +46,12 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Handler(confhandler.Respond(Create))
 
 	s.Methods("PUT").
-		Path("/metric_profiles/{UUID}").
+		Path("/metric_profiles/{ID}").
 		Name("Update Metric Profile").
 		Handler(confhandler.Respond(Update))
 
 	s.Methods("DELETE").
-		Path("/metric_profiles/{UUID}").
+		Path("/metric_profiles/{ID}").
 		Name("Delete Metric Profile").
 		Handler(confhandler.Respond(Delete))
 }

@@ -42,7 +42,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ListOne handles the listing of one specific profile based on its given uuid
+// ListOne handles the listing of one specific profile based on its given id
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -86,7 +86,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	filter := bson.M{"uuid": vars["UUID"]}
+	filter := bson.M{"id": vars["ID"]}
 
 	// Retrieve Results from database
 	results := []OpsProfile{}
@@ -254,8 +254,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Generate new uuid
-	incoming.UUID = mongo.NewUUID()
+	// Generate new id
+	incoming.ID = mongo.NewUUID()
 	err = mongo.Insert(session, tenantDbConfig.Db, "operations_profiles", incoming)
 
 	if err != nil {
@@ -321,10 +321,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// create filter to retrieve specific profile with uuid
-	filter := bson.M{"uuid": vars["UUID"]}
+	// create filter to retrieve specific profile with id
+	filter := bson.M{"id": vars["ID"]}
 
-	incoming.UUID = vars["UUID"]
+	incoming.ID = vars["ID"]
 
 	// Retrieve Results from database
 	results := []OpsProfile{}
@@ -367,7 +367,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Delete metric profile based on uuid
+//Delete metric profile based on id
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -411,7 +411,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	filter := bson.M{"uuid": vars["UUID"]}
+	filter := bson.M{"id": vars["ID"]}
 
 	// Retrieve Results from database
 	results := []OpsProfile{}

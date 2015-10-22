@@ -17,7 +17,7 @@ DELETE: Delete an existing Report  | This method can be used to delete an existi
 <a id='1'></a>
 
 # GET: List Recomputation Requests
-This method can be used to retrieve a list of existing reports or a single report according to its UUID.
+This method can be used to retrieve a list of existing reports or a single report according to its ID.
 
 ## Input
 ### URL
@@ -25,7 +25,7 @@ This method can be used to retrieve a list of existing reports or a single repor
 ```
 /reports
 or
-/reports/{uuid}
+/reports/{id}
 ```
 
 ### Request headers
@@ -67,17 +67,17 @@ Json Response
             },
             "profiles": [
                 {
-                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
                     "name": "profile1",
                     "type": "metric"
                 },
                 {
-                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
                     "name": "profile2",
                     "type": "operations"
                 },
                 {
-                    "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
                     "name": "profile3",
                     "type": "aggregation"
                 }
@@ -137,15 +137,15 @@ Accept: application/json
     },
     "profiles": [
         {
-            "uuid":"422985a7-6386-4964-bc99-5ebd5d7b0aef",
+            "id":"422985a7-6386-4964-bc99-5ebd5d7b0aef",
             "type": "metric"
         },
         {
-            "uuid": "1aa74849-2310-4bbc-b63a-8995ac7888ea",
+            "id": "1aa74849-2310-4bbc-b63a-8995ac7888ea",
             "type": "aggregation"
         },
         {
-            "uuid": "1eafbdd1-1bbc-4861-b849-65394840762",
+            "id": "1eafbdd1-1bbc-4861-b849-65394840762",
             "type": "operations"
         }
     ],
@@ -191,7 +191,7 @@ This method can be used to update an existing report. This will replace all the 
 ### URL
 
 ```
-/reports/{uuid}
+/reports/{id}
 ```
 
 ### Request headers
@@ -220,17 +220,17 @@ Accept: application/json
     },
     "profiles": [
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
             "type": "metric",
             "name": "profile1"
         },
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
             "type": "operations",
             "name": "profile2"
         },
         {
-            "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
             "type": "aggregation",
             "name": "profile3"
         }
@@ -271,7 +271,7 @@ This method can be used to update an existing report
 ### URL
 
 ```
-/reports/{uuid}
+/reports/{id}
 ```
 
 ### Request headers

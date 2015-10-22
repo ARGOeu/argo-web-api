@@ -103,7 +103,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
 				"email":   "email@something2",
@@ -137,7 +137,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				},
 			}})
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
 				"email":   "email@something2",
@@ -177,7 +177,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
 		MongoInterface{
-			UUID:           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			RequesterName:  "John Snow",
 			RequesterEmail: "jsnow@wall.com",
 			StartTime:      "2015-03-10T12:00:00Z",
@@ -191,7 +191,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	)
 	c.Insert(
 		MongoInterface{
-			UUID:           "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
 			RequesterName:  "Arya Stark",
 			RequesterEmail: "astark@shadowguild.com",
 			StartTime:      "2015-01-10T12:00:00Z",
@@ -223,7 +223,7 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
   "code": "200"
  },
  "data": {
-  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
   "requester_name": "Arya Stark",
   "requester_email": "astark@shadowguild.com",
   "reason": "power cuts",
@@ -286,7 +286,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
    "requester_name": "Arya Stark",
    "requester_email": "astark@shadowguild.com",
    "reason": "power cuts",
@@ -301,7 +301,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
    "timestamp": "2015-02-01 14:58:40"
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "requester_name": "John Snow",
    "requester_email": "jsnow@wall.com",
    "reason": "reasons",
@@ -349,7 +349,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "code": "201"
  },
  "data": {
-  "uuid": ".+",
+  "id": ".+",
   "links": {
    "self": "https://argo-web-api.grnet.gr:443/api/v2/recomputations/.+"
   }
@@ -362,7 +362,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 	dbDumpJson := `\[
  \{
-  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
   "requester_name": "Arya Stark",
   "requester_email": "astark@shadowguild.com",
   "reason": "power cuts",
@@ -377,7 +377,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "timestamp": "2015-02-01 14:58:40"
  \},
  \{
-  "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
   "requester_name": "John Snow",
   "requester_email": "jsnow@wall.com",
   "reason": "reasons",
@@ -392,7 +392,7 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
   "timestamp": "2015-04-01 14:58:40"
  \},
  \{
-  "uuid": ".+-.+-.+-.+-.+",
+  "id": ".+-.+-.+-.+-.+",
   "requester_name": "Joe Complex",
   "requester_email": "C.Joe@egi.eu",
   "reason": "Ups failure",

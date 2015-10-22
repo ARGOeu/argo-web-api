@@ -28,7 +28,7 @@ package metricProfiles
 
 // MongoInterface to retrieve and insert metricProfiles in mongo
 type MongoInterface struct {
-	UUID     string    `bson:"uuid" json:"uuid"`
+	ID       string    `bson:"id" json:"id"`
 	Name     string    `bson:"name" json:"name"`
 	Services []Service `bson:"services" json:"services"`
 }
@@ -39,9 +39,9 @@ type Service struct {
 	Metrics []string `bson:"metrics" json:"metrics"`
 }
 
-// SelfReference to hold links and uuid
+// SelfReference to hold links and id
 type SelfReference struct {
-	UUID  string `json:"uuid" bson:"uuid,omitempty"`
+	ID    string `json:"id" bson:"id,omitempty"`
 	Links Links  `json:"links"`
 }
 
