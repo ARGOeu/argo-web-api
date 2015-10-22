@@ -58,8 +58,8 @@ func createRefView(inserted MongoInterface, msg string, code int, r *http.Reques
 			Code:    strconv.Itoa(code),
 		},
 		Data: SelfReference{
-			UUID:  inserted.UUID,
-			Links: Links{Self: "https://" + r.Host + r.URL.Path + "/" + inserted.UUID},
+			ID:    inserted.ID,
+			Links: Links{Self: "https://" + r.Host + r.URL.Path + "/" + inserted.ID},
 		},
 	}
 

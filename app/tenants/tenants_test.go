@@ -112,7 +112,7 @@ func (suite *TenantTestSuite) SetupTest() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
@@ -130,7 +130,7 @@ func (suite *TenantTestSuite) SetupTest() {
 	// seed first tenant
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{
 			"name":    "AVENGERS",
 			"email":   "email@something",
@@ -166,7 +166,7 @@ func (suite *TenantTestSuite) SetupTest() {
 
 	// seed second tenant
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
 			"email":   "email@something2",
@@ -252,9 +252,9 @@ func (suite *TenantTestSuite) TestCreateTenant() {
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/admin/tenants/{{UUID}}"
+   "self": "https:///api/v2/admin/tenants/{{ID}}"
   }
  }
 }`
@@ -266,7 +266,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
  },
  "data": [
   {
-   "id": "{{UUID}}",
+   "id": "{{ID}}",
    "info": {
     "name": "mutants",
     "email": "yo@yo",
@@ -315,19 +315,19 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	suite.router.ServeHTTP(response, request)
 
-	// Grab UUID from mongodb
+	// Grab ID from mongodb
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
 
-	// Retrieve uuid from database
+	// Retrieve id from database
 	var result map[string]interface{}
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 
 	c.Find(bson.M{"info.name": "mutants"}).One(&result)
-	uuid := result["uuid"].(string)
+	id := result["id"].(string)
 	info := result["info"].(map[string]interface{})
 	timestamp := info["created"].(string)
 
@@ -335,12 +335,12 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	output := response.Body.String()
 
 	suite.Equal(201, code, "Internal Server Error")
-	// Apply uuid to output template and check
-	suite.Equal(strings.Replace(jsonOutput, "{{UUID}}", uuid, 2), output, "Response body mismatch")
+	// Apply id to output template and check
+	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", id, 2), output, "Response body mismatch")
 
 	// Check that actually the item has been created
-	// Call List one with the specific UUID
-	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/"+uuid, strings.NewReader(""))
+	// Call List one with the specific ID
+	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/"+id, strings.NewReader(""))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -352,7 +352,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code2, "Internal Server Error")
 
-	jsonCreated = strings.Replace(jsonCreated, "{{UUID}}", uuid, 1)
+	jsonCreated = strings.Replace(jsonCreated, "{{ID}}", id, 1)
 	jsonCreated = strings.Replace(jsonCreated, "{{TIMESTAMP}}", timestamp, 2)
 	// Compare the expected and actual json response
 	suite.Equal(jsonCreated, output2, "Response body mismatch")
@@ -464,7 +464,7 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 	// try to retrieve item
 	var result map[string]interface{}
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
 	suite.NotEqual(err, nil, "No not found error")
 	suite.Equal(err.Error(), "not found", "No not found error")
@@ -599,7 +599,7 @@ func (suite *TenantTestSuite) TestCreateUnauthorized() {
 // TestUpdateUnauthorized function tests calling the update tenant request (PUT)
 // and providing  a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestUpdateUnauthorized() {
-	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/id", strings.NewReader(""))
 	request.Header.Set("x-api-key", "FOO")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -617,7 +617,7 @@ func (suite *TenantTestSuite) TestUpdateUnauthorized() {
 // TestDeleteUnauthorized function tests calling the remove tenant request (DELETE)
 // and providing a wrong api-key. The response should be unauthorized
 func (suite *TenantTestSuite) TestDeleteUnauthorized() {
-	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/id", strings.NewReader(""))
 	request.Header.Set("x-api-key", "FOO")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -709,7 +709,7 @@ func (suite *TenantTestSuite) TestUpdateNotFound() {
 // TestDeleteNotFound tests calling the http (PUT) update tenant request
 // and provide a non-existing tenant name. The response should be tenant not found
 func (suite *TenantTestSuite) TestDeleteNotFound() {
-	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/uuid", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/id", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()

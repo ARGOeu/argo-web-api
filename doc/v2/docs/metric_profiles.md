@@ -10,7 +10,7 @@ description: API Calls for listing existing and creating new metric profiles
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Metric Profile Requests         | This method can be used to retrieve a list of current metric profiles.          | [ Description](#1)
-GET: List a specific Metric profile         | This method can be used to retrieve a specific metric profile based on its uuid.          | [ Description](#2)
+GET: List a specific Metric profile         | This method can be used to retrieve a specific metric profile based on its id.          | [ Description](#2)
 POST: Create a new metric profile  | This method can be used to create a new metric profile | [ Description](#3)
 PUT: Update a metric profile |This method can be used to update information on an existing metric profile | [ Description](#4)
 DELETE: Delete a metric profile |This method can be used to delete an existing metric profile | [ Description](#5)
@@ -53,7 +53,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "ch.cern.SAM.ROC",
    "services": [
     {
@@ -83,7 +83,7 @@ Json Response
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ch.cern.SAM.ROC_CRITICAL",
    "services": [
     {
@@ -117,12 +117,12 @@ Json Response
 <a id='2'></a>
 
 # GET: List A Specific Metric profile
-This method can be used to retrieve specific metric profile based on its uuid
+This method can be used to retrieve specific metric profile based on its id
 
 ## Input
 
 ```
-GET /metric_profiles/{UUID}
+GET /metric_profiles/{ID}
 ```
 
 ### Request headers
@@ -147,7 +147,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ch.cern.SAM.ROC_CRITICAL",
    "services": [
     {
@@ -236,9 +236,9 @@ Json Response
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/metric_profiles/{{UUID}}"
+   "self": "https:///api/v2/metric_profiles/{{ID}}"
   }
  }
 }
@@ -252,7 +252,7 @@ This method can be used to update information on an existing metric profile
 ## Input
 
 ```
-PUT /metric_profiles/{UUID}
+PUT /metric_profiles/{ID}
 ```
 
 ### Request headers
@@ -302,9 +302,9 @@ Json Response
   "code": "200"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/metric_profiles/{{UUID}}"
+   "self": "https:///api/v2/metric_profiles/{{ID}}"
   }
  }
 }
@@ -318,7 +318,7 @@ This method can be used to delete an existing metric profile
 ## Input
 
 ```
-DELETE /metric_profiles/{UUID}
+DELETE /metric_profiles/{ID}
 ```
 
 ### Request headers

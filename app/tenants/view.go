@@ -58,7 +58,7 @@ func createRefView(inserted Tenant, msg string, code int, r *http.Request) ([]by
 			Code:    strconv.Itoa(code),
 		},
 		Data: SelfReference{
-			UUID:  inserted.ID,
+			ID:    inserted.ID,
 			Links: Links{Self: "https://" + r.Host + r.URL.Path + "/" + inserted.ID},
 		},
 	}

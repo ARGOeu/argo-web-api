@@ -148,7 +148,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	input.Info.Created = time.Now().Format("2006-01-02 15:04:05")
 	input.Info.Updated = input.Info.Created
-	input.UUID = mongo.NewUUID()
+	input.ID = mongo.NewUUID()
 	// If no report exists with this name create a new one
 
 	err = mongo.Insert(session, tenantDbConfig.Db, reportsColl, input)
@@ -159,7 +159,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Notify user that the report has been created. In xml style
-	selfLink := "https://" + r.Host + r.URL.Path + "/" + input.UUID
+	selfLink := "https://" + r.Host + r.URL.Path + "/" + input.ID
 	output, err = SubmitSuccesful(input, contentType, selfLink)
 
 	if err != nil {

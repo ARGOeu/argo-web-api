@@ -162,7 +162,7 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 
 // SelfRefence struct for self referencing resource after they are created
 type SelfReference struct {
-	UUID  string    `xml:"id" json:"id" bson:"id,omitempty"`
+	ID    string    `xml:"id" json:"id" bson:"id,omitempty"`
 	Links SelfLinks `xml:"links" json:"links"`
 }
 
@@ -203,7 +203,7 @@ var NotFound = ResponseMessage{
 	Status: StatusResponse{
 		Message: "Not Found",
 		Code:    "404",
-		Details: "item with the specific UUID was not found on the server",
+		Details: "item with the specific ID was not found on the server",
 	}}
 
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json

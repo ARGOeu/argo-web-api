@@ -30,7 +30,7 @@ import "sort"
 
 // OpsProfile to retrieve and insert operationsProfiles in mongo
 type OpsProfile struct {
-	UUID        string        `bson:"uuid" json:"uuid"`
+	ID          string        `bson:"id" json:"id"`
 	Name        string        `bson:"name" json:"name"`
 	AvailStates []string      `bson:"available_states" json:"available_states"`
 	Defaults    DefaultStates `bson:"defaults" json:"defaults"`
@@ -57,9 +57,9 @@ type Statement struct {
 	X string `bson:"x" json:"x"`
 }
 
-// SelfReference to hold links and uuid
+// SelfReference to hold links and id
 type SelfReference struct {
-	UUID  string `json:"uuid" bson:"uuid,omitempty"`
+	ID    string `json:"id" bson:"id,omitempty"`
 	Links Links  `json:"links"`
 }
 

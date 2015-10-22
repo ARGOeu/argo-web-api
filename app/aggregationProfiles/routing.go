@@ -36,7 +36,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Handler(confhandler.Respond(List))
 
 	s.Methods("GET").
-		Path("/aggregation_profiles/{UUID}").
+		Path("/aggregation_profiles/{ID}").
 		Name("List One Aggregation Profile").
 		Handler(confhandler.Respond(ListOne))
 
@@ -46,12 +46,12 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Handler(confhandler.Respond(Create))
 
 	s.Methods("PUT").
-		Path("/aggregation_profiles/{UUID}").
+		Path("/aggregation_profiles/{ID}").
 		Name("Update Aggregation Profile").
 		Handler(confhandler.Respond(Update))
 
 	s.Methods("DELETE").
-		Path("/aggregation_profiles/{UUID}").
+		Path("/aggregation_profiles/{ID}").
 		Name("Delete Aggregation Profile").
 		Handler(confhandler.Respond(Delete))
 }

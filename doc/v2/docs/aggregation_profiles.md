@@ -10,7 +10,7 @@ description: API Calls for listing existing and creating new aggregation profile
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Aggregation Profile Requests         | This method can be used to retrieve a list of current aggregation profiles.          | [ Description](#1)
-GET: List a specific  aggregation profile         | This method can be used to retrieve a specific  aggregation profile based on its uuid.          | [ Description](#2)
+GET: List a specific  aggregation profile         | This method can be used to retrieve a specific  aggregation profile based on its id.          | [ Description](#2)
 POST: Create a new  aggregation profile  | This method can be used to create a new  aggregation profile | [ Description](#3)
 PUT: Update an aggregation profile |This method can be used to update information on an existing  aggregation profile | [ Description](#4)
 DELETE: Delete an  aggregation profile |This method can be used to delete an existing  aggregation profile | [ Description](#5)
@@ -53,7 +53,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "cloud",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -61,7 +61,7 @@ Json Response
    "profile_operation": "AND",
    "metric_profile": {
     "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
    },
    "groups": [
     {
@@ -95,7 +95,7 @@ Json Response
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "critical",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -103,7 +103,7 @@ Json Response
    "profile_operation": "AND",
    "metric_profile": {
     "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
    },
    "groups": [
     {
@@ -143,12 +143,12 @@ Json Response
 <a id='2'></a>
 
 # GET: List A Specific Aggregation profile
-This method can be used to retrieve specific aggregation profile based on its uuid
+This method can be used to retrieve specific aggregation profile based on its id
 
 ## Input
 
 ```
-GET /aggregation_profiles/{UUID}
+GET /aggregation_profiles/{ID}
 ```
 
 ### Request headers
@@ -173,7 +173,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "cloud",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -181,7 +181,7 @@ Json Response
    "profile_operation": "AND",
    "metric_profile": {
     "name": "roc.critical",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
    },
    "groups": [
     {
@@ -248,7 +248,7 @@ Accept: application/json
    "profile_operation": "AND",
    "metric_profile": {
     "name": "test.metric.profile",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
    },
    "groups": [
     {
@@ -296,9 +296,9 @@ Json Response
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/aggregation_profiles/{{UUID}}"
+   "self": "https:///api/v2/aggregation_profiles/{{ID}}"
   }
  }
 }
@@ -312,7 +312,7 @@ This method can be used to update information on an existing aggregation profile
 ## Input
 
 ```
-PUT /aggregation_profiles/{UUID}
+PUT /aggregation_profiles/{ID}
 ```
 
 ### Request headers
@@ -334,7 +334,7 @@ Accept: application/json
    "profile_operation": "AND",
    "metric_profile": {
     "name": "test.metric.profile",
-    "uuid": "5637d684-1f8e-4a02-a502-720e8f11e432"
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
    },
    "groups": [
     {
@@ -382,9 +382,9 @@ Json Response
   "code": "200"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/aggregation_profiles/{{UUID}}"
+   "self": "https:///api/v2/aggregation_profiles/{{ID}}"
   }
  }
 }
@@ -398,7 +398,7 @@ This method can be used to delete an existing aggregation profile
 ## Input
 
 ```
-DELETE /aggregation_profiles/{UUID}
+DELETE /aggregation_profiles/{ID}
 ```
 
 ### Request headers

@@ -29,7 +29,7 @@ type IncomingRequest struct {
 }
 
 type IncomingRecomputation struct {
-	UUID      string   `xml:"uuid" json:"uuid" bson:"uuid,omitempty"`
+	ID        string   `xml:"id" json:"id" bson:"id,omitempty"`
 	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
 	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
 	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
@@ -38,7 +38,7 @@ type IncomingRecomputation struct {
 }
 
 type SelfReference struct {
-	UUID  string `xml:"uuid" json:"uuid" bson:"uuid,omitempty"`
+	ID    string `xml:"id" json:"id" bson:"id,omitempty"`
 	Links Links  `xml:"links" json:"links"`
 }
 
@@ -48,7 +48,7 @@ type Links struct {
 
 type MongoInterface struct {
 	XMLName        xml.Name `bson:"-" xml:"recomputation" json:"-"`
-	UUID           string   `bson:"uuid" xml:"uuid" json:"uuid"`
+	ID             string   `bson:"id" xml:"id" json:"id"`
 	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
 	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
 	Reason         string   `bson:"reason" xml:"reason" json:"reason"`

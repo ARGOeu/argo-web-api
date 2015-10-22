@@ -10,7 +10,7 @@ description: API Calls for listing existing and creating new operations profiles
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Operations Profile Requests         | This method can be used to retrieve a list of current Operations profiles.          | [ Description](#1)
-GET: List a specific  Operations profile         | This method can be used to retrieve a specific  Operations profile based on its uuid.          | [ Description](#2)
+GET: List a specific  Operations profile         | This method can be used to retrieve a specific  Operations profile based on its id.          | [ Description](#2)
 POST: Create a new  Operations profile  | This method can be used to create a new  Operations profile | [ Description](#3)
 PUT: Update an Operations profile |This method can be used to update information on an existing  Operations profile | [ Description](#4)
 DELETE: Delete an  Operations profile |This method can be used to delete an existing  Operations profile | [ Description](#5)
@@ -53,7 +53,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -107,7 +107,7 @@ Json Response
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "ops2",
    "available_states": [
     "X,Y,Z"
@@ -167,12 +167,12 @@ Json Response
 <a id='2'></a>
 
 # GET: List A Specific Operations profile
-This method can be used to retrieve specific Operations profile based on its uuid
+This method can be used to retrieve specific Operations profile based on its id
 
 ## Input
 
 ```
-GET /operations_profiles/{UUID}
+GET /operations_profiles/{ID}
 ```
 
 ### Request headers
@@ -197,7 +197,7 @@ Json Response
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -344,9 +344,9 @@ Json Response
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/operations_profiles/{{UUID}}"
+   "self": "https:///api/v2/operations_profiles/{{ID}}"
   }
  }
 }
@@ -360,7 +360,7 @@ This method can be used to update information on an existing operations profile
 ## Input
 
 ```
-PUT /operations_profiles/{UUID}
+PUT /operations_profiles/{ID}
 ```
 
 ### Request headers
@@ -452,7 +452,7 @@ This method can be used to delete an existing aggregation profile
 ## Input
 
 ```
-DELETE /operations_profiles/{UUID}
+DELETE /operations_profiles/{ID}
 ```
 
 ### Request headers

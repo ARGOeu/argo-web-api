@@ -109,7 +109,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Generate new uuid
+	// Generate new id
 	incoming.ID = mongo.NewUUID()
 	incoming.Info.Created = time.Now().Format("2006-01-02 15:04:05")
 	incoming.Info.Updated = incoming.Info.Created
@@ -237,7 +237,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	results := []Tenant{}
 
 	// Create a simple query object to query by id
-	query := bson.M{"uuid": vars["UUID"]}
+	query := bson.M{"id": vars["ID"]}
 	// Query collection tenants for the specific tenant id
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
@@ -325,10 +325,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// create filter to retrieve specific profile with uuid
-	filter := bson.M{"uuid": vars["UUID"]}
+	// create filter to retrieve specific profile with id
+	filter := bson.M{"id": vars["ID"]}
 
-	incoming.ID = vars["UUID"]
+	incoming.ID = vars["ID"]
 
 	// Retrieve Results from database
 	results := []Tenant{}
@@ -365,7 +365,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	incoming.Info.Created = results[0].Info.Created
 
 	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
-	filter = bson.M{"uuid": vars["UUID"]}
+	filter = bson.M{"id": vars["ID"]}
 	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", filter, incoming)
 
 	if err != nil {
@@ -418,7 +418,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	filter := bson.M{"uuid": vars["UUID"]}
+	filter := bson.M{"id": vars["ID"]}
 
 	// Retrieve Results from database
 	results := []Tenant{}

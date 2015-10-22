@@ -98,7 +98,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 }
 
-// ListOne lists a single recomputation according to the given uuid
+// ListOne lists a single recomputation according to the given id
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -131,7 +131,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 
 	filter := IncomingRecomputation{
-		UUID: vars["uuid"],
+		ID: vars["ID"],
 	}
 	session, err := mongo.OpenSession(tenantDbConfig)
 
@@ -205,7 +205,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	}
 	now := time.Now()
 	recomputation := MongoInterface{
-		UUID:           mongo.NewUUID(),
+		ID:             mongo.NewUUID(),
 		RequesterName:  tenantDbConfig.User,
 		RequesterEmail: tenantDbConfig.Email,
 		StartTime:      recompSubmission.StartTime,

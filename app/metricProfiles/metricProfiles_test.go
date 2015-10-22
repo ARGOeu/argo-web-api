@@ -97,7 +97,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
 				"email":   "email@something2",
@@ -131,7 +131,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			}})
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
 				"email":   "email@something2",
@@ -171,7 +171,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 	c.Insert(
 		bson.M{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "ch.cern.SAM.ROC_CRITICAL",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -195,7 +195,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name": "ch.cern.SAM.ROC",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -241,7 +241,7 @@ func (suite *MetricProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "ch.cern.SAM.ROC",
    "services": [
     {
@@ -271,7 +271,7 @@ func (suite *MetricProfilesTestSuite) TestList() {
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ch.cern.SAM.ROC_CRITICAL",
    "services": [
     {
@@ -326,7 +326,7 @@ func (suite *MetricProfilesTestSuite) TestListQueryName() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "ch.cern.SAM.ROC",
    "services": [
     {
@@ -372,11 +372,11 @@ func (suite *MetricProfilesTestSuite) TestListOneNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -412,7 +412,7 @@ func (suite *MetricProfilesTestSuite) TestListOne() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ch.cern.SAM.ROC_CRITICAL",
    "services": [
     {
@@ -524,9 +524,9 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{id}}",
   "links": {
-   "self": "https:///api/v2/metric_profiles/{{UUID}}"
+   "self": "https:///api/v2/metric_profiles/{{id}}"
   }
  }
 }`
@@ -538,7 +538,7 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
  },
  "data": [
   {
-   "uuid": "{{UUID}}",
+   "id": "{{id}}",
    "name": "test_profile",
    "services": [
     {
@@ -575,24 +575,24 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Grab UUID from mongodb
+	// Grab id from mongodb
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
-	// Retrieve uuid from database
+	// Retrieve id from database
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 	c.Find(bson.M{"name": "test_profile"}).One(&result)
-	uuid := result["uuid"].(string)
+	id := result["id"].(string)
 
-	// Apply uuid to output template and check
-	suite.Equal(strings.Replace(jsonOutput, "{{UUID}}", uuid, 2), output, "Response body mismatch")
+	// Apply id to output template and check
+	suite.Equal(strings.Replace(jsonOutput, "{{id}}", id, 2), output, "Response body mismatch")
 
 	// Check that actually the item has been created
-	// Call List one with the specific UUID
-	request2, _ := http.NewRequest("GET", "/api/v2/metric_profiles/"+uuid, strings.NewReader(jsonInput))
+	// Call List one with the specific id
+	request2, _ := http.NewRequest("GET", "/api/v2/metric_profiles/"+id, strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -604,7 +604,7 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
-	suite.Equal(strings.Replace(jsonCreated, "{{UUID}}", uuid, 2), output2, "Response body mismatch")
+	suite.Equal(strings.Replace(jsonCreated, "{{id}}", id, 2), output2, "Response body mismatch")
 
 }
 
@@ -662,11 +662,11 @@ func (suite *MetricProfilesTestSuite) TestUpdateNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -721,7 +721,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "test_profile",
    "services": [
     {
@@ -759,7 +759,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Apply uuid to output template and check
+	// Apply id to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 	// Check that the item has actually updated
@@ -789,11 +789,11 @@ func (suite *MetricProfilesTestSuite) TestDeleteNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -843,7 +843,7 @@ func (suite *MetricProfilesTestSuite) TestDelete() {
 	// try to retrieve item
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	err = c.Find(bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
 	suite.NotEqual(err, nil, "No not found error")
 	suite.Equal(err.Error(), "not found", "No not found error")

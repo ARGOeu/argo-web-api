@@ -39,7 +39,7 @@ import (
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
 type MongoInterface struct {
-	UUID     string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	ID       string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	Info     Info      `bson:"info" json:"info" xml:"info"`
 	Topology Topology  `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles []Profile `bson:"profiles" json:"profiles" xml:"profiles"`
@@ -69,7 +69,7 @@ type TopologyLevel struct {
 // Profile holds info about the profiles included in a report definition
 type Profile struct {
 	XMLName xml.Name `bson:"-"          json:"-"     xml:"profile"`
-	UUID    string   `bson:"uuid"       json:"uuid"  xml:"uuid,attr"`
+	ID      string   `bson:"uuid"       json:"uuid"  xml:"uuid,attr"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Type    string   `bson:"type"       json:"type"  xml:"type,attr"`
 }
@@ -142,13 +142,13 @@ func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.Error
 		var result interface{}
 		colName := validators[element.Type]
 		if colName != "" {
-			err := db.C(colName).Find(bson.M{"uuid": element.UUID}).One(&result)
+			err := db.C(colName).Find(bson.M{"uuid": element.ID}).One(&result)
 			if err != nil {
 				errs = append(errs,
 					respond.ErrorResponse{
 						Message: "Profile uuid not found",
 						Code:    "422",
-						Details: fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.UUID),
+						Details: fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.ID),
 					})
 				continue
 			}

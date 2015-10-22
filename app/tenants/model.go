@@ -29,7 +29,7 @@ package tenants
 // Tenant structure holds information about tenant information
 // including db conf and users. Used in
 type Tenant struct {
-	ID     string         `bson:"uuid" json:"id"`
+	ID     string         `bson:"id" json:"id"`
 	Info   TenantInfo     `bson:"info" json:"info"`
 	DbConf []TenantDbConf `bson:"db_conf" json:"db_conf"`
 	Users  []TenantUser   `bson:"users" json:"users"`
@@ -63,9 +63,9 @@ type TenantUser struct {
 	APIkey string `bson:"api_key"    json:"api_key"`
 }
 
-// SelfReference to hold links and uuid
+// SelfReference to hold links and id
 type SelfReference struct {
-	UUID  string `json:"uuid" bson:"uuid,omitempty"`
+	ID    string `json:"id" bson:"id,omitempty"`
 	Links Links  `json:"links"`
 }
 

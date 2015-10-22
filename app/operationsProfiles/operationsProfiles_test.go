@@ -97,7 +97,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
 				"email":   "email@something2",
@@ -131,7 +131,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 				},
 			}})
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
 				"email":   "email@something2",
@@ -171,7 +171,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 	c.Insert(
 		bson.M{
-			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":             "ops1",
 			"available_states": []string{"A,B,C"},
 			"defaults": bson.M{
@@ -221,7 +221,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 	c.Insert(
 		bson.M{
-			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":             "ops2",
 			"available_states": []string{"X,Y,Z"},
 			"defaults": bson.M{
@@ -287,7 +287,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -341,7 +341,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
    ]
   },
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "ops2",
    "available_states": [
     "X,Y,Z"
@@ -422,7 +422,7 @@ func (suite *OperationsProfilesTestSuite) TestListQueryName() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -492,11 +492,11 @@ func (suite *OperationsProfilesTestSuite) TestListOneNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -532,7 +532,7 @@ func (suite *OperationsProfilesTestSuite) TestListOne() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -793,7 +793,7 @@ func (suite *OperationsProfilesTestSuite) TestInvalidCreate() {
 	// Check that we must have a 200 ok code
 	suite.Equal(422, code, "Internal Server Error")
 
-	// Apply uuid to output template and check
+	// Apply id to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
@@ -860,9 +860,9 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
   "code": "201"
  },
  "data": {
-  "uuid": "{{UUID}}",
+  "id": "{{ID}}",
   "links": {
-   "self": "https:///api/v2/operations_profiles/{{UUID}}"
+   "self": "https:///api/v2/operations_profiles/{{ID}}"
   }
  }
 }`
@@ -874,7 +874,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
  },
  "data": [
   {
-   "uuid": "{{UUID}}",
+   "id": "{{ID}}",
    "name": "tops1",
    "available_states": [
     "A",
@@ -945,26 +945,26 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Grab UUID from mongodb
+	// Grab ID from mongodb
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	defer session.Close()
 	if err != nil {
 		panic(err)
 	}
 
-	// Retrieve uuid from database
+	// Retrieve id from database
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 
 	c.Find(bson.M{"name": "tops1"}).One(&result)
-	uuid := result["uuid"].(string)
+	id := result["id"].(string)
 
-	// Apply uuid to output template and check
-	suite.Equal(strings.Replace(jsonOutput, "{{UUID}}", uuid, 2), output, "Response body mismatch")
+	// Apply id to output template and check
+	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", id, 2), output, "Response body mismatch")
 
 	// Check that actually the item has been created
-	// Call List one with the specific UUID
-	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/"+uuid, strings.NewReader(jsonInput))
+	// Call List one with the specific ID
+	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/"+id, strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -976,7 +976,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
-	suite.Equal(strings.Replace(jsonCreated, "{{UUID}}", uuid, 1), output2, "Response body mismatch")
+	suite.Equal(strings.Replace(jsonCreated, "{{ID}}", id, 1), output2, "Response body mismatch")
 }
 
 func (suite *OperationsProfilesTestSuite) TestUpdateBadJson() {
@@ -1019,11 +1019,11 @@ func (suite *OperationsProfilesTestSuite) TestUpdateNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1144,7 +1144,7 @@ func (suite *OperationsProfilesTestSuite) TestInvalidUpdate() {
 	suite.Equal(422, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Apply uuid to output template and check
+	// Apply id to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 }
 
@@ -1218,7 +1218,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
  },
  "data": [
   {
-   "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "name": "tops1",
    "available_states": [
     "A",
@@ -1290,7 +1290,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Apply uuid to output template and check
+	// Apply id to output template and check
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 	// Check that the item has actually updated
@@ -1318,11 +1318,11 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
  "status": {
   "message": "Not Found",
   "code": "404",
-  "details": "item with the specific UUID was not found on the server"
+  "details": "item with the specific ID was not found on the server"
  }
 }`
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/wrong-uuid", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1372,7 +1372,7 @@ func (suite *OperationsProfilesTestSuite) TestDelete() {
 	// try to retrieve item
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
-	err = c.Find(bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
 	suite.NotEqual(err, nil, "No not found error")
 	suite.Equal(err.Error(), "not found", "No not found error")

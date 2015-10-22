@@ -37,7 +37,7 @@ func SubmitSuccesful(inserted MongoInterface, contentType string, link string) (
 			Code:    "201",
 		},
 		Data: respond.SelfReference{
-			UUID:  inserted.UUID,
+			ID:    inserted.ID,
 			Links: respond.SelfLinks{Self: link},
 		},
 	}
