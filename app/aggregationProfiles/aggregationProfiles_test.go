@@ -1074,7 +1074,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
 
 }
 
-func (suite *AggregationProfilesTestSuite) DeleteNotFound() {
+func (suite *AggregationProfilesTestSuite) TestDeleteNotFound() {
 
 	jsonInput := `{}`
 
