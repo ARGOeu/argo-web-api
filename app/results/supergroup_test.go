@@ -92,7 +92,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
 				"email":   "email@something2",
@@ -125,7 +125,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 				},
 			}})
 	c.Insert(
-		bson.M{"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
 				"email":   "email@something2",
