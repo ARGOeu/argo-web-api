@@ -69,7 +69,7 @@ type TopologyLevel struct {
 // Profile holds info about the profiles included in a report definition
 type Profile struct {
 	XMLName xml.Name `bson:"-"          json:"-"     xml:"profile"`
-	ID      string   `bson:"uuid"       json:"uuid"  xml:"uuid,attr"`
+	ID      string   `bson:"id"         json:"id"    xml:"id,attr"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Type    string   `bson:"type"       json:"type"  xml:"type,attr"`
 }
@@ -142,13 +142,13 @@ func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.Error
 		var result interface{}
 		colName := validators[element.Type]
 		if colName != "" {
-			err := db.C(colName).Find(bson.M{"uuid": element.ID}).One(&result)
+			err := db.C(colName).Find(bson.M{"id": element.ID}).One(&result)
 			if err != nil {
 				errs = append(errs,
 					respond.ErrorResponse{
-						Message: "Profile uuid not found",
+						Message: "Profile id not found",
 						Code:    "422",
-						Details: fmt.Sprintf("No profile in %s was found with uuid %s", colName, element.ID),
+						Details: fmt.Sprintf("No profile in %s was found with id %s", colName, element.ID),
 					})
 				continue
 			}

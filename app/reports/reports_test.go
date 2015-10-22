@@ -158,7 +158,7 @@ func (suite *ReportTestSuite) SetupTest() {
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
 			"email":   "email@something2",
@@ -206,7 +206,7 @@ func (suite *ReportTestSuite) SetupTest() {
 
 	c.Insert(
 		bson.M{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "profile1",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -230,7 +230,7 @@ func (suite *ReportTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name": "ch.cern.SAM.ROC",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
@@ -258,7 +258,7 @@ func (suite *ReportTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
 	c.Insert(
 		bson.M{
-			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
 			"name":              "profile3",
 			"namespace":         "test",
 			"endpoint_group":    "sites",
@@ -266,7 +266,7 @@ func (suite *ReportTestSuite) SetupTest() {
 			"profile_operation": "AND",
 			"metric_profile": bson.M{
 				"name": "roc.critical",
-				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
+				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
 			},
 			"groups": []bson.M{
 				bson.M{"name": "compute",
@@ -296,7 +296,7 @@ func (suite *ReportTestSuite) SetupTest() {
 			}})
 	c.Insert(
 		bson.M{
-			"uuid":              "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":              "cloud",
 			"namespace":         "test",
 			"endpoint_group":    "sites",
@@ -304,7 +304,7 @@ func (suite *ReportTestSuite) SetupTest() {
 			"profile_operation": "AND",
 			"metric_profile": bson.M{
 				"name": "roc.critical",
-				"uuid": "5637d684-1f8e-4a02-a502-720e8f11e432",
+				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
 			},
 			"groups": []bson.M{
 				bson.M{"name": "compute",
@@ -336,7 +336,7 @@ func (suite *ReportTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 	c.Insert(
 		bson.M{
-			"uuid":             "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 			"name":             "profile2",
 			"available_states": []string{"A,B,C"},
 			"defaults": bson.M{
@@ -402,15 +402,15 @@ func (suite *ReportTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -441,15 +441,15 @@ func (suite *ReportTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -486,17 +486,17 @@ func (suite *ReportTestSuite) TestCreateReport() {
     },
 	"profiles": [
         {
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
             "type": "metric",
             "name": "profile1"
         },
 		{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
             "type": "operations",
             "name": "profile2"
         },
         {
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
             "type": "aggregation",
             "name": "profile3"
         }
@@ -575,17 +575,17 @@ func (suite *ReportTestSuite) TestCreateReport() {
    },
    "profiles": \[
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
      "type": "operations"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
      "name": "profile3",
      "type": "aggregation"
     }
@@ -635,17 +635,17 @@ func (suite *ReportTestSuite) TestUpdateReport() {
     },
     "profiles": [
         {
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
             "type": "metric",
             "name": "profile1"
         },
 		{
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
             "type": "operations",
             "name": "profile2"
         },
         {
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
             "type": "aggregation",
             "name": "profile3"
         }
@@ -703,17 +703,17 @@ func (suite *ReportTestSuite) TestUpdateReport() {
    },
    "profiles": \[
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
      "type": "operations"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
      "name": "profile3",
      "type": "aggregation"
     }
@@ -771,17 +771,17 @@ func (suite *ReportTestSuite) TestWrongUUIDUpdateReport() {
     },
     "profiles": [
         {
-			"uuid": "6ac7d684-1f8e-4a02-a302-720e8f11770b",
+			"id": "6ac7d684-1f8e-4a02-a302-720e8f11770b",
             "type": "metric",
             "name": "profile1"
         },
 		{
-			"uuid": "6ac7d684-1f8e-4a02-a502-7258f11e523",
+			"id": "6ac7d684-1f8e-4a02-a502-7258f11e523",
             "type": "operations",
             "name": "profile2"
         },
         {
-			"uuid": "6ac7d684-1f8e-4a02-a502-720e8f1250bq",
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f1250bq",
             "type": "aggregation",
             "name": "profile3"
         }
@@ -816,19 +816,19 @@ func (suite *ReportTestSuite) TestWrongUUIDUpdateReport() {
  },
  "errors": [
   {
-   "message": "Profile uuid not found",
+   "message": "Profile id not found",
    "code": "422",
-   "details": "No profile in metric_profiles was found with uuid 6ac7d684-1f8e-4a02-a302-720e8f11770b"
+   "details": "No profile in metric_profiles was found with id 6ac7d684-1f8e-4a02-a302-720e8f11770b"
   },
   {
-   "message": "Profile uuid not found",
+   "message": "Profile id not found",
    "code": "422",
-   "details": "No profile in operations_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-7258f11e523"
+   "details": "No profile in operations_profiles was found with id 6ac7d684-1f8e-4a02-a502-7258f11e523"
   },
   {
-   "message": "Profile uuid not found",
+   "message": "Profile id not found",
    "code": "422",
-   "details": "No profile in aggregation_profiles was found with uuid 6ac7d684-1f8e-4a02-a502-720e8f1250bq"
+   "details": "No profile in aggregation_profiles was found with id 6ac7d684-1f8e-4a02-a502-720e8f1250bq"
   }
  ]
 }`
@@ -915,17 +915,17 @@ func (suite *ReportTestSuite) TestReadOneReport() {
    },
    "profiles": [
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
      "type": "operations"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
      "name": "profile3",
      "type": "aggregation"
     }
@@ -995,17 +995,17 @@ func (suite *ReportTestSuite) TestReadReports() {
    },
    "profiles": [
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
      "type": "operations"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
      "name": "profile3",
      "type": "aggregation"
     }
@@ -1039,17 +1039,17 @@ func (suite *ReportTestSuite) TestReadReports() {
    },
    "profiles": [
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
      "name": "profile1",
      "type": "metric"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
      "name": "profile2",
      "type": "operations"
     },
     {
-     "uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
      "name": "profile3",
      "type": "aggregation"
     }
