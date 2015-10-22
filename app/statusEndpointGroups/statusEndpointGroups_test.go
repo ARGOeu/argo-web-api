@@ -94,7 +94,7 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
 			"email":   "email@something2",
@@ -118,7 +118,7 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
 			"email":   "email@something2",
@@ -171,15 +171,15 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -246,15 +246,15 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},

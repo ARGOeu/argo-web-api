@@ -101,7 +101,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
-		"uuid": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "EGI",
 			"email":   "email@something2",
