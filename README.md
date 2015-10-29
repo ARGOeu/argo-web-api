@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/ARGOeu/argo-web-api.svg?branch=devel)](https://travis-ci.org/ARGOeu/argo-web-api)
 # EGI Availability & Reliability API
 
 ## Development
@@ -24,7 +25,7 @@
 
   For a list of options use the following command:
 
-        ./ar-web-api -h
+        ./argo-web-api -h
 
 6. To run the unit-tests:
 

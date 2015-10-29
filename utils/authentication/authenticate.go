@@ -27,19 +27,26 @@
 package authentication
 
 import (
-	"github.com/argoeu/argo-web-api/utils/config"
-	"github.com/argoeu/argo-web-api/utils/mongo"
-	"labix.org/v2/mgo/bson"
+	"errors"
 	"net/http"
+
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Auth struct {
-	ApiKey string `bson:"apiKey"`
+	ApiKey string `bson:"api_key"`
 }
 
 func Authenticate(h http.Header, cfg config.Config) bool {
 
-	session, err := mongo.OpenSession(cfg)
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		panic(err)
+	}
 
 	query := bson.M{
 		"apiKey": h.Get("x-api-key"),
@@ -56,4 +63,72 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 		return true
 	}
 	return false
+}
+
+// AuthenticateAdmin is used to authenticate and administrator of ARGO
+// and allow further CRUD ops wrt the argo_core database (i.e. add a new
+// tenant, modify another tenant's configuration etc)
+func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
+
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		panic(err)
+	}
+
+	query := bson.M{"api_key": h.Get("x-api-key")}
+	projection := bson.M{"_id": 0, "name": 0, "email": 0}
+
+	results := []Auth{}
+	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
+
+	if err != nil {
+		return false
+	}
+
+	if len(results) > 0 {
+		return true
+	}
+	return false
+}
+
+// AuthenticateTenant is used to find which tenant the user making the requests
+// belongs to and return the database configuration for that specific tenant.
+// If the api-key in the request is not found in any tenant an empty configuration is
+// returned along with an error
+func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, error) {
+
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	if err != nil {
+		return config.MongoConfig{}, err
+	}
+	defer mongo.CloseSession(session)
+
+	apiKey := h.Get("x-api-key")
+	query := bson.M{"users.api_key": apiKey}
+	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1, "users": 1}
+
+	var results []map[string][]config.MongoConfig
+	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
+
+	if len(results) == 0 {
+		return config.MongoConfig{}, errors.New("Unauthorized")
+	}
+	mongoConf := results[0]["db_conf"][0]
+	// mongoConf := config.MongoConfig{
+	// 	Host:     conf["server"].(string),
+	// 	Port:     conf["port"].(int),
+	// 	Db:       conf["database"].(string),
+	// 	Username: conf["username"].(string),
+	// 	Password: conf["password"].(string),
+	// 	Store:    conf["store"].(string),
+	// }
+	for _, user := range results[0]["users"] {
+		if user.ApiKey == apiKey {
+			mongoConf.User = user.User
+			mongoConf.Email = user.Email
+		}
+	}
+	return mongoConf, nil
 }

@@ -1,7 +1,10 @@
+#debuginfo not supported with Go
+%global debug_package %{nil}
+
 Name: argo-web-api
 Summary: A/R API
 Version: 1.6.0
-Release: 1%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -22,7 +25,7 @@ Installs the ARGO API.
 
 %build
 export GOPATH=$PWD
-cd src/github.com/argoeu/argo-web-api/
+cd src/github.com/ARGOeu/argo-web-api/
 go get
 go install
 
@@ -31,22 +34,31 @@ go install
 install --directory %{buildroot}/var/www/argo-web-api
 install --mode 755 bin/argo-web-api %{buildroot}/var/www/argo-web-api/argo-web-api
 
+install --directory %{buildroot}/etc
+install --mode 644 src/github.com/ARGOeu/argo-web-api/default.conf %{buildroot}/etc/argo-web-api.conf
+
 install --directory %{buildroot}/etc/init
-install --mode 644 src/github.com/argoeu/argo-web-api/argo-web-api.conf %{buildroot}/etc/init/
+install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.conf %{buildroot}/etc/init/
+
 
 %clean
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
-cd src/github.com/argoeu/argo-web-api/
+cd src/github.com/ARGOeu/argo-web-api/
 go clean
 
 %files
 %defattr(0644,root,root)
 %attr(0750,root,root) /var/www/argo-web-api
 %attr(0755,root,root) /var/www/argo-web-api/argo-web-api
+%attr(0644,root,root) /etc/argo-web-api.conf
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
+* Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
+- Adds service configuration file
+* Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
+- Correction in cases imports
 * Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.6.0-1%{?dist}
 - ARGO-104 Update github import urls to be consistent with the repo name changes
 * Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}

@@ -27,14 +27,15 @@
 package config
 
 import (
-	"code.google.com/p/gcfg"
 	"flag"
 	"os"
+
+	"gopkg.in/gcfg.v1"
 )
 
 //All the flags that can be added when starting the PI
 var flConfig = flag.String("conf", "", "specify configuration file")
-var flServerIp = flag.String("ip", "", "ip address the server will bind to")
+var flServerIP = flag.String("ip", "", "ip address the server will bind to")
 var flServerPort = flag.Int("port", 0, "specify the port to listen on")
 var flServerMaxProcs = flag.Int("maxprocs", 0, "specify the GOMAXPROCS")
 var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the MongoDB instance")
@@ -45,23 +46,35 @@ var flGzip = flag.String("gzip", "yes", "specify weather to use compression or n
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 var flCert = flag.String("cert", "", "speficy path to the host certificate")
 var flPrivKey = flag.String("privkey", "", "speficy path to the private key file")
+var flReqSizeLimit = flag.Int64("request-size-limit", 1073741824, "specify maximum allowed size of a request body")
 
+// MongoConfig configuration to connect to a mongodb instance
+type MongoConfig struct {
+	User     string `bson:"name"`
+	Email    string `bson:"email"`
+	Host     string `bson:"server"`
+	Port     int    `bson:"port"`
+	Db       string `bson:"database"`
+	Username string `bson:"username"`
+	Password string `bson:"password"`
+	Store    string `bson:"store"`
+	ApiKey   string `bson:"api_key"`
+}
+
+// Config configuration for the api
 type Config struct {
 	Server struct {
-		Bindip   string
-		Port     int
-		Maxprocs int
-		Cache    bool
-		Lrucache int
-		Gzip     bool
-		Cert     string
-		Privkey  string
+		Bindip       string
+		Port         int
+		Maxprocs     int
+		Cache        bool
+		Lrucache     int
+		Gzip         bool
+		Cert         string
+		Privkey      string
+		ReqSizeLimit int64
 	}
-	MongoDB struct {
-		Host string
-		Port int
-		Db   string
-	}
+	MongoDB MongoConfig
 	Profile string
 }
 
@@ -75,23 +88,25 @@ const defaultConfig = `
     gzip = true
     cert = /etc/pki/tls/certs/localhost.crt
     privkey = /etc/pki/tls/private/localhost.key
+	reqsizelimit = 1073741824
 
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "AR"
+    db = "argo_core"
 `
 
-//Loads the configurations passed either by flags or by the configuration file
+//LoadConfiguration function loads the configurations passed either by flags or by the configuration file
 func LoadConfiguration() Config {
 	flag.Parse()
-	var cfg Config
+	// var cfg Config
+	mongocfg := MongoConfig{}
+	cfg := Config{MongoDB: mongocfg}
 	if *flConfig != "" {
 		_ = gcfg.ReadFileInto(&cfg, *flConfig)
 	} else {
 		_ = gcfg.ReadStringInto(&cfg, defaultConfig)
 	}
-
 	var env = os.Getenv("EGI_AR_REST_API_ENV")
 	switch env {
 	default:
@@ -100,8 +115,8 @@ func LoadConfiguration() Config {
 	case "production":
 	}
 
-	if *flServerIp != "" {
-		cfg.Server.Bindip = *flServerIp
+	if *flServerIP != "" {
+		cfg.Server.Bindip = *flServerIP
 	}
 	if *flServerPort != 0 {
 		cfg.Server.Port = *flServerPort
@@ -118,8 +133,11 @@ func LoadConfiguration() Config {
 	if *flMongoDatabase != "" {
 		cfg.MongoDB.Db = *flMongoDatabase
 	}
+
+	//Keep cache disabled even if the option is set to "yes" via the cmd line.
+	//TODO Enable multitenant support on cache util.
 	if *flCache == "yes" {
-		cfg.Server.Cache = true
+		cfg.Server.Cache = false
 	}
 	if *flGzip == "no" {
 		cfg.Server.Gzip = false
@@ -134,6 +152,10 @@ func LoadConfiguration() Config {
 
 	if *flPrivKey != "" {
 		cfg.Server.Privkey = *flPrivKey
+	}
+
+	if *flReqSizeLimit != cfg.Server.ReqSizeLimit || cfg.Server.ReqSizeLimit != 0 {
+		cfg.Server.ReqSizeLimit = *flReqSizeLimit
 	}
 
 	return cfg
