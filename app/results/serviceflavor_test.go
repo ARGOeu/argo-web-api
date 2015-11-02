@@ -154,7 +154,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF01",
 			"supergroup":   "ST01",
@@ -171,7 +171,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF02",
 			"supergroup":   "ST01",
@@ -188,7 +188,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF03",
 			"supergroup":   "ST02",
@@ -205,7 +205,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "SF01",
 			"supergroup":   "ST01",
@@ -222,7 +222,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "SF02",
 			"supergroup":   "ST01",
@@ -242,6 +242,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
 			"description": "lalalallala",

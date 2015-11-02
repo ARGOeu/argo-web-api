@@ -136,6 +136,23 @@ func Update(session *mgo.Session, dbName string, collectionName string, query bs
 	return err
 }
 
+// GetReportID accepts a report name and returns the report's id
+func GetReportID(session *mgo.Session, dbName string, report string) (string, error) {
+	var result map[string]interface{}
+	// reports are stored to the reports collection
+	c := openCollection(session, dbName, "reports")
+	// query based on report name which is included in the info element
+	query := bson.M{"info.name": report}
+	// Execute the query and grab only the first result
+	err := c.Find(query).One(&result)
+
+	if result != nil {
+		return result["id"].(string), err
+	}
+	return "", err
+
+}
+
 func structsToInterfaces(array interface{}) []interface{} {
 
 	v := reflect.ValueOf(array)

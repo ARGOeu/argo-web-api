@@ -148,13 +148,14 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
-	// Seed database with recomputations
+
+	// Seed tenant database with data
 	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
 
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -172,7 +173,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -190,7 +191,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -208,7 +209,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -229,6 +230,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
 			"description": "lalalallala",
@@ -327,7 +329,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
-
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/xml")
@@ -344,6 +345,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(unauthorizedresponseXML, response.Body.String(), "Response body mismatch")
+
 }
 
 // TestListAllEndpointGroupAvailability test if daily results are returned correctly

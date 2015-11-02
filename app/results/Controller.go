@@ -123,9 +123,17 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	results := []ServiceFlavorInterface{}
 
 	// Construct the query to mongodb based on the input
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	filter := bson.M{
+
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
-		"report": input.Report.Info.Name,
+		"report": reportID,
 	}
 
 	if input.Name != "" {
@@ -255,9 +263,17 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	results := []EndpointGroupInterface{}
 
 	// Construct the query to mongodb based on the input
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	filter := bson.M{
+
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
-		"report": input.Report.Info.Name,
+		"report": reportID,
 	}
 
 	if input.Name != "" {
@@ -371,9 +387,17 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	results := []SuperGroupInterface{}
 
 	// Construct the query to mongodb based on the input
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	filter := bson.M{
+
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
-		"report": input.Report.Info.Name,
+		"report": reportID,
 	}
 
 	if input.Name != "" {
