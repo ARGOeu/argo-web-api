@@ -171,15 +171,15 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -194,7 +194,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -204,7 +204,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -214,7 +214,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -237,7 +237,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
 			"description": "report aaaaa",
@@ -254,15 +254,15 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -278,7 +278,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -288,7 +288,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -298,7 +298,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",

@@ -90,7 +90,14 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 	metricCollection := session.DB(tenantDbConfig.Db).C("status_services")
 
 	// Query the detailed metric results
-	err = metricCollection.Find(prepareQuery(input)).All(&results)
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -102,7 +109,7 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 	return code, h, output, err
 }
 
-func prepareQuery(input InputParams) bson.M {
+func prepareQuery(input InputParams, reportID string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -116,7 +123,7 @@ func prepareQuery(input InputParams) bson.M {
 	// prepare the match filter
 	filter := bson.M{
 		"date_integer":   bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report":         input.report,
+		"report":         reportID,
 		"endpoint_group": input.group,
 	}
 

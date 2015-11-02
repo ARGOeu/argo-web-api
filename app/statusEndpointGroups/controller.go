@@ -89,7 +89,16 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoint_groups")
 
 	// Query the detailed metric results
-	err = metricCollection.Find(prepareQuery(input)).All(&results)
+
+	// prepare the match filter
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -101,7 +110,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	return code, h, output, err
 }
 
-func prepareQuery(input InputParams) bson.M {
+func prepareQuery(input InputParams, reportID string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -112,10 +121,9 @@ func prepareQuery(input InputParams) bson.M {
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
 
-	// prepare the match filter
 	filter := bson.M{
 		"date_integer": bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report":       input.report,
+		"report":       reportID,
 	}
 
 	if len(input.group) > 0 {
