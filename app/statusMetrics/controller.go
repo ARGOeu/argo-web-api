@@ -25,13 +25,12 @@ package statusMetrics
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/argoeu/argo-web-api/respond"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -50,9 +49,24 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 
 	//STANDARD DECLARATIONS END
 
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
+
+	parsedStart, parsedEnd, errs := respond.VadlidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
+	if len(errs) > 0 {
+		code = http.StatusBadRequest
+		output = respond.CreateFailureResponseMessage("Bad Request", "400", errs).MarshalTo(contentType)
+	}
 
 	input := InputParams{
 		urlValues.Get("start_time"),
@@ -113,19 +127,10 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 
 func prepareQuery(input InputParams, reportID string) bson.M {
 
-	//Time Related
-	const zuluForm = "2006-01-02T15:04:05Z"
-	const ymdForm = "20060102"
-
-	ts, _ := time.Parse(zuluForm, input.startTime)
-	te, _ := time.Parse(zuluForm, input.endTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-
 	// prepare the match filter
 	filter := bson.M{
 		"report":         reportID,
-		"date_integer":   bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"date_integer":   bson.M{"$gte": input.startTime, "$lte": input.endTime},
 		"endpoint_group": input.group,
 		"service":        input.service,
 		"host":           input.hostname,

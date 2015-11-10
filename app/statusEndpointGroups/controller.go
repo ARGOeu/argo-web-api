@@ -25,10 +25,9 @@ package statusEndpointGroups
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
@@ -50,13 +49,28 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 
 	//STANDARD DECLARATIONS END
 
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
+	parsedStart, parsedEnd, errs := respond.VadlidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
+	if len(errs) > 0 {
+		code = http.StatusBadRequest
+		output = respond.CreateFailureResponseMessage("Bad Request", "400", errs).MarshalTo(contentType)
+	}
+
 	input := InputParams{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
+		parsedStart,
+		parsedEnd,
 		vars["report_name"],
 		vars["group_type"],
 		vars["group_name"],
@@ -71,15 +85,18 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 
 	// Call authenticateTenant to check the api key and retrieve
 	// the correct tenant db conf
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			out := respond.UnauthorizedMessage
+			output = out.MarshalTo(contentType)
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
 	// Mongo Session
 	results := []DataOutput{}
 
@@ -111,18 +128,8 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 }
 
 func prepareQuery(input InputParams, reportID string) bson.M {
-
-	//Time Related
-	const zuluForm = "2006-01-02T15:04:05Z"
-	const ymdForm = "20060102"
-
-	ts, _ := time.Parse(zuluForm, input.startTime)
-	te, _ := time.Parse(zuluForm, input.endTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
-
 	filter := bson.M{
-		"date_integer": bson.M{"$gte": tsYMD, "$lte": teYMD},
+		"date_integer": bson.M{"$gte": input.startTime, "$lte": input.endTime},
 		"report":       reportID,
 	}
 
