@@ -1,0 +1,893 @@
+---
+  swagger: "2.0"
+  info:
+    title: "Argo Web API"
+    description: ""
+    version: "2.0"
+  host: "arpi.afroditi.hellasgrid.gr:443"
+  basePath: "/api/v2"
+  schemes:
+    - "https"
+  paths:
+    /status/{report_name}/{group_type}/{group_name}:
+      get:
+        summary: "list status Endpoint groups"
+        description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
+        operationId: "statusEndpointGroupsID"
+        produces:
+          - "application/json"
+          - "application/xml"
+        parameters:
+          - $ref: "#/definitions/x-api-key"
+          - $ref: "#/definitions/start_date"
+          - $ref: "#/definitions/end_date"
+          - $ref: "#/definitions/report_name"
+          - $ref: "#/definitions/group_type"
+          - $ref: "#/definitions/group_name"
+        responses:
+          200:
+            description: "Successful retrieval of statuses"
+            examples:
+              application/json: |-
+                {
+                   "groups": [
+                     {
+                       "name": "HG-03-AUTH",
+                       "type": "SITES",
+                       "statuses": [
+                         {
+                           "timestamp": "2015-05-01T00:00:00Z",
+                           "value": "OK"
+                         },
+                         {
+                           "timestamp": "2015-05-01T01:00:00Z",
+                           "value": "CRITICAL"
+                         },
+                         {
+                           "timestamp": "2015-05-01T05:00:00Z",
+                           "value": "OK"
+                         }
+                       ]
+                     }
+                  ]
+                }
+              application/xml: |-
+                <root>
+                 <group name="HG-03-AUTH" type="SITES">
+                   <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+                   <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+                   <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+                 </group>
+                </root>
+            schema:
+              type: "string"
+    /aggregation_profiles/1ef8c0c9-f9ef-4ca1-9ee7-bb8b36332036:
+      get:
+        summary: "aggregation_profiles (list one)"
+        description: "aggregation_profiles (list one)"
+        operationId: "aggregationProfilesListOne"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/SITES:
+      get:
+        summary: "endpoint_group_ar"
+        description: "endpoint_group_ar"
+        operationId: "endpointGroupAr"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/SITES/IN-DAE-VECC-02:
+      get:
+        summary: "endpoint_group_ar_one_site"
+        description: "endpoint_group_ar_one_site"
+        operationId: "endpointGroupArOneSite"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/:
+      get:
+        summary: "endpoint_group_timeline_all"
+        description: "endpoint_group_timeline_all"
+        operationId: "endpointGroupTimelineAll"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH:
+      get:
+        summary: "endpoint_group_timeline_one_endpoint_group"
+        description: "endpoint_group_timeline_one_endpoint_group"
+        operationId: "endpointGroupTimelineOneEndpointGroup"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH/services/CREAM-CE/endpoints/cream.afroditi.hellasgrid.gr:
+      get:
+        summary: "endpoint_timeline_one_endpoint"
+        description: "endpoint_timeline_one_endpoint"
+        operationId: "endpointTimelineOneEndpoint"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/NGI:
+      get:
+        summary: "group_of_groups_ar"
+        description: "group_of_groups_ar"
+        operationId: "groupOfGroupsAr"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/NGI/NGI_NL:
+      get:
+        summary: "group_of_groups_ar_one_supergroup"
+        description: "group_of_groups_ar_one_supergroup"
+        operationId: "groupOfGroupsArOneSupergroup"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /metric_profiles:
+      post:
+        summary: "metric_profiles (create)"
+        description: "metric_profiles (create)"
+        operationId: "metricProfilesCreate"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+      get:
+        summary: "metric_profiles (list all)"
+        description: "metric_profiles (list all)"
+        operationId: "metricProfilesListAll"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /metric_profiles/24945288-a018-4903-b2db-96187286824f:
+      delete:
+        summary: "metric_profiles (delete)"
+        description: "metric_profiles (delete)"
+        operationId: "metricProfilesDelete"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+      put:
+        summary: "metric_profiles (update)"
+        description: "metric_profiles (update)"
+        operationId: "metricProfilesUpdate"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /metric_profiles/37bc47b3-86bb-4f43-abe1-1bd9e78fb9a9:
+      get:
+        summary: "metric_profiles (list one)"
+        description: "metric_profiles (list one)"
+        operationId: "metricProfilesListOne"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /metric_result/obssbdii.univ-bpclermont.fr/org.bdii.Freshness:
+      get:
+        summary: "metricResult"
+        description: "metricResult"
+        operationId: "metricResult"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "exec_time"
+            in: "query"
+            description: "the exec_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-10-20T20:49:12Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH/services/CREAM-CE/endpoints/cream.afroditi.hellasgrid.gr/metrics:
+      get:
+        summary: "metric_timeline_all_metrics"
+        description: "metric_timeline_all_metrics"
+        operationId: "metricTimelineAllMetrics"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T23:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH/services/CREAM-CE/endpoints/cream.afroditi.hellasgrid.gr/metrics/emi.cream.CREAMCE-JobSubmit:
+      get:
+        summary: "metric_timeline_one_metric"
+        description: "metric_timeline_one_metric"
+        operationId: "metricTimelineOneMetric"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T23:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /operations_profiles:
+      get:
+        summary: "operations_profiles (list all)"
+        description: "operations_profiles (list all)"
+        operationId: "operationsProfilesListAll"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /operations_profiles/17d1462f-8f91-4728-a253-1a6e8e2e848d:
+      get:
+        summary: "operations_profiles (list one)"
+        description: "operations_profiles (list one)"
+        operationId: "operationsProfilesListOne"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /recomputations:
+      get:
+        summary: "recomputations (list all)"
+        description: "recomputations (list all)"
+        operationId: "recomputationsListAll"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /reports:
+      get:
+        summary: "reports (list all)"
+        description: "reports (list all)"
+        operationId: "reportsListAll"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /reports/55e4b1cd-fb20-40a6-9c1e-eae2a9ce6b1e:
+      get:
+        summary: "reports (list one)"
+        description: "reports (list one)"
+        operationId: "reportsListOne"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/SITES/MK-01-UKIM_II/services:
+      get:
+        summary: "service_flavor_ar"
+        description: "service_flavor_ar"
+        operationId: "serviceFlavorAr"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /results/Critical/SITES/MK-01-UKIM_II/services/Site-BDII:
+      get:
+        summary: "service_flavor_ar_one_sf"
+        description: "service_flavor_ar_one_sf"
+        operationId: "serviceFlavorArOneSf"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-02T23:59:59Z"
+          -
+            name: "granularity"
+            in: "query"
+            description: "the granularity"
+            required: false
+            type: "string"
+            x-example: "daily"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH/services/:
+      get:
+        summary: "services_timeline_all_services"
+        description: "services_timeline_all_services"
+        operationId: "servicesTimelineAllServices"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T23:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /status/Critical/SITES/HG-03-AUTH/services/Site-BDII:
+      get:
+        summary: "services_timeline_one_service"
+        description: "services_timeline_one_service"
+        operationId: "servicesTimelineOneService"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "start_time"
+            in: "query"
+            description: "the start_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:00:00Z"
+          -
+            name: "end_time"
+            in: "query"
+            description: "the end_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:59:59Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+    /metric_result/node16.datagrid.cea.fr/org.nordugrid.ARC-CE-ARIS:
+      get:
+        summary: "status_detailed_result"
+        description: "status_detailed_result"
+        operationId: "statusDetailedResult"
+        produces:
+          - "application/json"
+        parameters:
+          -
+            name: "x-api-key"
+            in: "header"
+            description: "the x-api-key"
+            required: false
+            type: "string"
+            x-example: "EGIKEY"
+          -
+            name: "exec_time"
+            in: "query"
+            description: "the exec_time"
+            required: false
+            type: "string"
+            format: "date-time"
+            x-example: "2015-06-01T00:01:20Z"
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: "string"
+  definitions:
+    x-api-key:
+      name: "x-api-key"
+      in: "header"
+      description: "the x-api-key"
+      required: true
+      type: "string"
+      example: "EGIKEY"
+    report_name:
+      name: "report_name"
+      in: "path"
+      description: "report the probes belong to"
+      required: true
+      type: string
+      example: CRITICAL
+    group_type:
+      name: "group_type"
+      in: "path"
+      description: "group type of the probes"
+      required: true
+      type: string
+      example: NGI
+    group_name:
+      name: "group_name"
+      in: "path"
+      description: "group names of the probes"
+      required: false
+      type: string
+      example: SITE
+    start_date:
+      name: "start_date"
+      in: "query"
+      description: "start date of query in zulu format"
+      required: true
+      type: "string"
+      example: "2006-01-02T15:04:05Z"
+    end_date:
+      name: "end_date"
+      in: "query"
+      description: "start date of query in zulu format"
+      required: true
+      type: "string"
+      example: "2006-01-02T15:04:05Z"
+
+# securityDefinitions:
+# security:
