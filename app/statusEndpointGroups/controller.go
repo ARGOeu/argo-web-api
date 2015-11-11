@@ -85,15 +85,18 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 
 	// Call authenticateTenant to check the api key and retrieve
 	// the correct tenant db conf
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
+	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			out := respond.UnauthorizedMessage
+			output = out.MarshalTo(contentType)
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
 	// Mongo Session
 	results := []DataOutput{}
 
