@@ -22,7 +22,17 @@
 
 package results
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/respond"
+	"gopkg.in/mgo.v2"
+)
 
 type list []interface{}
 
@@ -35,24 +45,26 @@ func init() {
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
+type basicQuery struct {
+	Name         string                 `bson:"name"`
+	Granularity  string                 `bson:"-"`
+	Format       string                 `bson:"-"`
+	StartTime    string                 `bson:"-"` // UTC time in W3C format
+	EndTime      string                 `bson:"-"` // UTC time in W3C format
+	Report       reports.MongoInterface `bson:"report"`
+	StartTimeInt int                    `bson:"start_time"`
+	EndTimeInt   int                    `bson:"end_time"`
+	Vars         map[string]string      `bson:"-"`
+}
+
 type serviceFlavorResultQuery struct {
-	Name          string `bson:"name"`
-	Granularity   string `bson:"-"`
-	Format        string `bson:"-"`
-	StartTime     string `bson:"start_time"` // UTC time in W3C format
-	EndTime       string `bson:"end_time"`   // UTC time in W3C format
-	Report        string `bson:"report"`
+	basicQuery
 	EndpointGroup string `bson:"supergroup"`
 }
 
 type endpointGroupResultQuery struct {
-	Name        string `bson:"name"`
-	Granularity string `bson:"-"`
-	Format      string `bson:"-"`
-	StartTime   string `bson:"start_time"` // UTC time in W3C format
-	EndTime     string `bson:"end_time"`   // UTC time in W3C format
-	Report      string `bson:"report"`
-	Group       string `bson:"supergroup"`
+	basicQuery
+	Group string `bson:"supergroup"`
 }
 
 // ReportInterface for mongodb object exchanging
@@ -159,4 +171,79 @@ type root struct {
 type errorMessage struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Message string   `xml:"message" json:"message"`
+}
+
+// ErrorResponse shortcut to respond.ErrorResponse
+type ErrorResponse respond.ErrorResponse
+
+func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
+	errs := []ErrorResponse{}
+	query.Granularity = strings.ToLower(query.Granularity)
+	if query.Granularity == "" {
+		query.Granularity = "daily"
+	} else if query.Granularity != "daily" && query.Granularity != "monthly" {
+		errs = append(errs, ErrorResponse{
+			Message: "Wrong Granularity",
+			Code:    "400",
+			Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily or monthly", query.Granularity),
+		})
+	}
+
+	if query.StartTime == "" && query.EndTime == "" {
+		errs = append(errs, ErrorResponse{
+			Message: "No time span set",
+			Code:    "400",
+			Details: "Please use start_time and/or end_time url parameters to set the prefered time span",
+		})
+	} else {
+		if query.StartTime != "" {
+			ts, tserr := time.Parse(zuluForm, query.StartTime)
+			if tserr != nil {
+				errs = append(errs, ErrorResponse{
+					Message: "start_time parsing error",
+					Code:    "400",
+					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", query.StartTime, zuluForm),
+				})
+			}
+			query.StartTimeInt, _ = strconv.Atoi(ts.Format(ymdForm))
+		}
+		if query.EndTime != "" {
+			te, teerr := time.Parse(zuluForm, query.EndTime)
+			if teerr != nil {
+				errs = append(errs, ErrorResponse{
+					Message: "end_time parsing error",
+					Code:    "400",
+					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", query.EndTime, zuluForm),
+				})
+			}
+			query.EndTimeInt, _ = strconv.Atoi(te.Format(ymdForm))
+		}
+	}
+
+	if query.Report.DetermineGroupType(query.Vars["group_type"]) == "endpoint" {
+		query.Vars["lgroup_type"] = query.Vars["group_type"]
+		query.Vars["lgroup_name"] = query.Vars["group_name"]
+		query.Vars["group_type"] = ""
+		query.Vars["group_name"] = ""
+
+	} else if query.Vars["group_type"] != "" && query.Report.DetermineGroupType(query.Vars["group_type"]) != "group" {
+		errs = append(errs, ErrorResponse{
+			Message: "Group type not in report",
+			Code:    "400",
+			Details: fmt.Sprintf("Group type %s not present in report %s.", query.Vars["group_type"], query.Vars["report_name"]),
+		})
+	}
+
+	_, exists := query.Vars["lgroup_type"]
+
+	if exists && query.Report.DetermineGroupType(query.Vars["lgroup_type"]) != "endpoint" {
+		errs = append(errs, ErrorResponse{
+			Message: "Endpoint Group type not in report",
+			Code:    "400",
+			Details: fmt.Sprintf("Endpoint Group type %s not present in report %s. Try using %s instead",
+				query.Vars["lgroup_type"], query.Vars["report_name"], query.Report.GetEndpointGroupType()),
+		})
+	}
+
+	return errs
 }

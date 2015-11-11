@@ -356,6 +356,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -467,12 +468,23 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
    <message>The report with the name Report_B does not exist</message>
  </root>`
 
-	typeErrorXML := ` <root>
-   <message>The report Report_A does not define endpoint group type: Site. Try using SITE instead.</message>
- </root>`
+	typeErrorXML := `<root>
+ <status>
+  <message>Bad Request</message>
+  <code>400</code>
+ </status>
+ <errors>
+  <error>
+   <message>Endpoint Group type not in report</message>
+   <code>400</code>
+   <details>Endpoint Group type Site not present in report Report_A. Try using SITE instead</details>
+  </error>
+ </errors>
+</root>`
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -484,17 +496,19 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("Accept", "application/xml")
 	request.Header.Set("x-api-key", suite.clientkey)
 	//request.Header.Set("Accept", "application/json")
 
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
+	output := response.Body.String()
 
 	// Check that we must have a 400 bad request code
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(typeErrorXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(typeErrorXML, output, "Response body mismatch")
 
 }
 

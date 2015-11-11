@@ -327,7 +327,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
 	contentType, err = respond.ParseAcceptHeader(r)
