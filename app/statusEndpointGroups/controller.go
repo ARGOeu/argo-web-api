@@ -25,7 +25,6 @@ package statusEndpointGroups
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
@@ -74,18 +73,11 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		vars["report_name"],
 		vars["group_type"],
 		vars["group_name"],
-		r.Header.Get("Accept"),
-	}
-
-	// Handle response format based on Accept Header
-	// Default is application/xml
-	if strings.EqualFold(input.format, "application/json") {
-		contentType = "application/json"
+		contentType,
 	}
 
 	// Call authenticateTenant to check the api key and retrieve
 	// the correct tenant db conf
-
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
 		if err.Error() == "Unauthorized" {

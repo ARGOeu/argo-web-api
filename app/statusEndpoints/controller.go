@@ -25,12 +25,11 @@ package statusEndpoints
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/argoeu/argo-web-api/respond"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -69,20 +68,14 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 	}
 
 	input := InputParams{
-		urlValues.Get("start_time"),
-		urlValues.Get("end_time"),
+		parsedStart,
+		parsedEnd,
 		vars["report_name"],
 		vars["group_type"],
 		vars["group_name"],
 		vars["service_name"],
 		vars["endpoint_name"],
-		r.Header.Get("Accept"),
-	}
-
-	// Handle response format based on Accept Header
-	// Default is application/xml
-	if strings.EqualFold(input.format, "application/json") {
-		contentType = "application/json"
+		contentType,
 	}
 
 	// Call authenticateTenant to check the api key and retrieve
