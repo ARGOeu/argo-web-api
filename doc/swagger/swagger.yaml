@@ -26,11 +26,7 @@ paths:
           description: "id of the tenant"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list with one tenant
@@ -68,11 +64,7 @@ paths:
           description: "id of the tenant"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
         - name: "tenant"
           in: "body"
           description: "Json description of tenant definition to be updated"
@@ -122,11 +114,7 @@ paths:
           description: "id of the tenant definition"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: Tenant definition Deleted
@@ -159,11 +147,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list of all available tenants
@@ -192,11 +176,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
         - name: "tenant"
           in: "body"
           description: "Json description of the tenant to be created"
@@ -244,11 +224,7 @@ paths:
           description: "id of the report"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list with one report
@@ -286,11 +262,7 @@ paths:
           description: "id of the report"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
         - name: "report"
           in: "body"
           description: "Json description of report definition to be updated"
@@ -340,11 +312,7 @@ paths:
           description: "id of the Report definition"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: Report definition Deleted
@@ -376,11 +344,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list of all available Reports
@@ -409,11 +373,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
         - name: "report"
           in: "body"
           description: "Json description of the report to be created"
@@ -461,11 +421,7 @@ paths:
           description: "id of the operations profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list with one operations profile
@@ -498,16 +454,12 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the operations profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
         - name: "operations_profile"
           in: "body"
           description: "Json description of the operations profile to be updated"
@@ -552,16 +504,12 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the operations profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
       responses:
         '200':
           description: Operations profile Deleted
@@ -593,11 +541,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list of Operations profiles
@@ -679,11 +623,7 @@ paths:
           description: "id of the aggregation profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list with one aggregation profile
@@ -721,17 +661,13 @@ paths:
           description: "id of the aggregation profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
         - name: "aggregation_profile"
           in: "body"
           description: "Json description of the aggregation profile to be updated"
           required: true
           schema:
             $ref: '#/definitions/Aggregation_profile'
+        - $ref: "#/parameters/apiKey"
       responses:
         '201':
           description: Aggregation profile Updated
@@ -775,11 +711,7 @@ paths:
           description: "id of the aggregation profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: Aggregation profile Deleted
@@ -797,6 +729,10 @@ paths:
           description: Content Not acceptable
           schema:
             $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
         default:
           description: Unexpected error
           schema:
@@ -811,11 +747,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list of aggregation profiles
@@ -844,17 +776,13 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
         - name: "aggregation_profile"
           in: "body"
           description: "Json description of the aggregation profile to be created"
           required: true
           schema:
             $ref: '#/definitions/Aggregation_profile'
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: Aggregation profile Created
@@ -892,16 +820,12 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the metric profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
       responses:
         '200':
           description: A list with one metric profile
@@ -934,16 +858,12 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the metric profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
         - name: "metric_profile"
           in: "body"
           description: "Json description of the metric profile to be updated"
@@ -984,16 +904,12 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the metric profile"
           required: true
           type: string
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
       responses:
         '200':
           description: Metric profile Deleted
@@ -1025,11 +941,7 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: A list of metric profiles
@@ -1058,17 +970,13 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "x-api-key"
-          in: "header"
-          description: "the x-api-key"
-          required: true
-          type: "string"
         - name: "metric_profile"
           in: "body"
           description: "Json description of the metric profile to be created"
           required: true
           schema:
             $ref: '#/definitions/Metric_profile'
+        - $ref: "#/parameters/apiKey"
       responses:
         '200':
           description: Metric profile Created
@@ -1090,8 +998,491 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+  /status/{report_name}/{group_type}/{group_name}:
+    get:
+      summary: "list status Endpoint groups"
+      description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
+      operationId: statusEndpointGroupsNameFilterID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}:
+    get:
+      summary: "list status Endpoint groups"
+      description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
+      operationId: statusEndpointGroupsID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /status/{report_name}/{group_type}/{group_name}/services:
+    get:
+      summary: "List Service Status Timelines"
+      description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
+      operationId: statusServicesID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}:
+    get:
+      summary: "List Service Status Timelines"
+      description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
+      operationId: statusServicesNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints:
+    get:
+      summary: "List Service Endpoint Status Timelines"
+      description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
+      operationId: statusEndpointID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusEndpointResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List Service Endpoint Status Timelines"
+      description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
+      operationId: statusEndpointNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusEndpointResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
+    get:
+      summary: "List Metric Result"
+      description: "This method may be used to retrieve a specific and detailed metric result."
+      operationId: statusMetricID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusMetricResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
+    get:
+      summary: "List Metric Result"
+      description: "This method may be used to retrieve a specific and detailed metric result."
+      operationId: statusMetricNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+        - $ref: "#/parameters/metric_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusMetricResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+
+
+
+parameters:
+  apiKey:
+    name: "x-api-key"
+    in: "header"
+    description: "the x-api-key"
+    required: true
+    type: "string"
+    default: SecretKey123
+  reportName:
+    name: "report_name"
+    in: "path"
+    description: "report the probes belong to"
+    required: true
+    type: string
+    default: CRITICAL
+  groupType:
+    name: "group_type"
+    in: "path"
+    description: "group type of the probes"
+    required: true
+    type: string
+    default: NGI
+  groupName:
+    name: group_name
+    in: path
+    description: group names of the probes
+    required: true
+    type: string
+    default: SITE
+  service_name:
+    name: service_name
+    in: path
+    description: service name of the probes
+    required: true
+    type: string
+    default: Site-BDII
+  endpoint_name:
+    name: endpoint_name
+    in: path
+    description: endpoint_name of the probes
+    required: true
+    type: string
+    default: "cream01.afroditi.gr"
+  metric_name:
+    name: metric_name
+    in: path
+    description: name of the metric profile
+    required: true
+    type: string
+    default: "emi.cream.CREAMCE-JobSubmit"
+  startDate:
+    name: start_date
+    in: query
+    description: "start date of query in zulu format"
+    required: true
+    type: string
+    default: "2006-01-02T15:04:05Z"
+  endDate:
+    name: end_date
+    in: query
+    description: "start date of query in zulu format"
+    required: true
+    type: string
+    default: "2006-01-03T15:04:05Z"
+
+responses:
+  Unauthorized:
+    description: unauthorized
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: string
+  ServerError:
+    description: internal server error
+    schema:
+      type: string
+  404:
+    description: Item not found
+    schema:
+      $ref: '#/definitions/Status_error'
+  406:
+    description: Content Not acceptable
+    schema:
+      $ref: '#/definitions/Status_error'
+  422:
+    description: Validation Error
+    schema:
+      $ref: '#/definitions/Status_error'
 
 definitions:
+  timestamp_value:
+    type: object
+    properties:
+      timestamp:
+        type: string
+      value:
+        type: string
+
+
+  StatusEndpointResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        statuses:
+                          type: array
+                          items:
+                            $ref: "#/definitions/timestamp_value"
+
+  StatusMetricResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        metrics:
+                          type: array
+                          items:
+                            $ref: "#/definitions/timestamp_value"
+
+  StatusMetricResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  statuses:
+                    type: array
+                    items:
+                      $ref: "#/definitions/timestamp_value"
+
+  StatusResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            statuses:
+              type: array
+              items:
+                $ref: "#/definitions/timestamp_value"
+
+
+
   Status:
     type: object
     properties:
