@@ -194,7 +194,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -202,7 +202,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -210,7 +210,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -231,7 +231,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
 			"description": "report aaaaa",
@@ -272,7 +272,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_services")
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -280,7 +280,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -288,7 +288,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",

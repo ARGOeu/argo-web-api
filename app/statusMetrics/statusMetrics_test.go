@@ -171,15 +171,15 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -195,7 +195,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -211,7 +211,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -227,7 +227,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -256,7 +256,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
 			"description": "report aaaaa",
@@ -273,15 +273,15 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -297,7 +297,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -313,7 +313,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -329,7 +329,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",

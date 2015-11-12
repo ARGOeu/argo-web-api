@@ -166,7 +166,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -184,7 +184,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -202,7 +202,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -220,7 +220,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST04",
 			"supergroup":   "GROUP_B",
@@ -238,7 +238,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST05",
 			"supergroup":   "GROUP_B",
@@ -256,7 +256,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150624,
 			"name":         "ST05",
 			"supergroup":   "GROUP_B",
@@ -274,7 +274,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150625,
 			"name":         "ST05",
 			"supergroup":   "GROUP_B",
@@ -292,7 +292,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -313,6 +313,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
 			"description": "lalalallala",
