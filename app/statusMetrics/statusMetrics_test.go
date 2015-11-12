@@ -348,121 +348,121 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 }
 
 func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
-	respXML1 := ` <root>
-   <group name="HG-03-AUTH" type="SITES">
-     <group name="CREAM-CE" type="service">
-       <endpoint name="cream01.afroditi.gr">
-         <metric name="emi.cream.CREAMCE-JobSubmit">
-           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </metric>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML1 := `<root>
+ <group name="HG-03-AUTH" type="SITES">
+  <group name="CREAM-CE" type="service">
+   <endpoint name="cream01.afroditi.gr">
+    <metric name="emi.cream.CREAMCE-JobSubmit">
+     <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    </metric>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
-	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="someService" type="service">
-       <endpoint name="someservice.example.gr">
-         <metric name="someService-FileTransfer">
-           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </metric>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML2 := `<root>
+ <group name="EL-01-AUTH" type="EUDAT_SITES">
+  <group name="someService" type="service">
+   <endpoint name="someservice.example.gr">
+    <metric name="someService-FileTransfer">
+     <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    </metric>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
 	respJSON1 := `{
-   "groups": [
-     {
-       "name": "HG-03-AUTH",
-       "type": "SITES",
-       "services": [
-         {
-           "name": "CREAM-CE",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "cream01.afroditi.gr",
-               "metrics": [
-                 {
-                   "name": "emi.cream.CREAMCE-JobSubmit",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T23:59:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "metrics": [
+        {
+         "name": "emi.cream.CREAMCE-JobSubmit",
+         "statuses": [
+          {
+           "timestamp": "2015-04-30T23:59:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+          },
+          {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          }
+         ]
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	respJSON2 := `{
-   "groups": [
-     {
-       "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
-       "services": [
-         {
-           "name": "someService",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "someservice.example.gr",
-               "metrics": [
-                 {
-                   "name": "someService-FileTransfer",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T23:59:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "EL-01-AUTH",
+   "type": "EUDAT_SITES",
+   "services": [
+    {
+     "name": "someService",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "someservice.example.gr",
+       "metrics": [
+        {
+         "name": "someService-FileTransfer",
+         "statuses": [
+          {
+           "timestamp": "2015-04-30T23:59:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+          },
+          {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          }
+         ]
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
