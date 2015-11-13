@@ -186,21 +186,14 @@ func CreateResponseMessage(message string, code string, contentType string) ([]b
 
 // CreateFailureResponseMessage creates a response message struct intance to represent all
 // the errors that occured during the request
-func CreateFailureResponseMessage(message string, code string, errs []string) ResponseMessage {
-	var errorResponses []ErrorResponse
-	for _, msg := range errs {
-		errorResponses = append(errorResponses, ErrorResponse{
-			Message: msg,
-			Code:    code,
-		})
-	}
+func CreateFailureResponseMessage(message string, code string, errs []ErrorResponse) ResponseMessage {
 
 	responseMessage := ResponseMessage{
 		Status: StatusResponse{
 			Message: message,
 			Code:    code,
 		},
-		Errors: errorResponses,
+		Errors: errs,
 	}
 
 	return responseMessage

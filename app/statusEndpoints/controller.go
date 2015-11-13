@@ -61,7 +61,7 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	parsedStart, parsedEnd, errs := respond.VadlidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
+	parsedStart, parsedEnd, errs := respond.ValidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
 	if len(errs) > 0 {
 		code = http.StatusBadRequest
 		output = respond.CreateFailureResponseMessage("Bad Request", "400", errs).MarshalTo(contentType)

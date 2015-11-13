@@ -27,6 +27,7 @@
 package respond
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -40,15 +41,40 @@ func validateDate(dateStr string) (int, error) {
 	return ymdTime, err
 }
 
-func VadlidateDateRange(dateStart string, dateEnd string) (int, int, []string) {
-	parsedStart, errStart := validateDate(dateStart)
-	parsedEnd, errEnd := validateDate(dateEnd)
-	errs := []string{}
-	if errStart != nil {
-		errs = append(errs, "Start time parse error")
+func ValidateDateRange(dateStart string, dateEnd string) (int, int, []ErrorResponse) {
+	errs := []ErrorResponse{}
+	var parsedStart, parsedEnd int = 0, 0
+
+	if dateStart == "" && dateEnd == "" {
+		errs = append(errs, ErrorResponse{
+			Message: "No time span set",
+			Code:    "400",
+			Details: "Please use start_time and/or end_time url parameters to set the prefered time span",
+		})
+	} else {
+		if dateStart != "" {
+			parsedStartWG, errStart := validateDate(dateStart)
+			parsedStart = parsedStartWG
+			if errStart != nil {
+				errs = append(errs, ErrorResponse{
+					Message: "start_time parsing error",
+					Code:    "400",
+					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", dateStart, zuluForm),
+				})
+			}
+		}
+		if dateEnd != "" {
+			parsedEndWG, errEnd := validateDate(dateEnd)
+			parsedEnd = parsedEndWG
+			if errEnd != nil {
+				errs = append(errs, ErrorResponse{
+					Message: "end_time parsing error",
+					Code:    "400",
+					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", dateEnd, zuluForm),
+				})
+			}
+		}
 	}
-	if errEnd != nil {
-		errs = append(errs, "End time parse error")
-	}
+
 	return parsedStart, parsedEnd, errs
 }
