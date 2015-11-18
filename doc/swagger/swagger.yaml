@@ -10,6 +10,218 @@ basePath: /api/v2
 produces:
   - application/json
 paths:
+
+
+  /operations_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific operations profile
+      operationId: operationsProfiles.ListOne
+      description: List one specific operations profile targeted by it's unique id
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list with one operations profile
+          schema:
+            $ref: '#/definitions/Operations_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update an operations profile
+      operationId: operationsProfiles.Update
+      description: update information on a specific Operations Profile which is targeted by it's unique id
+      tags:
+        - Operations Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "operations_profile"
+          in: "body"
+          description: "Json description of the operations profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Operations_profile'
+      responses:
+        '201':
+          description: Operations profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete an operations profile
+      operationId: operationsProfiles.Delete
+      description: Delete a specific Operations Profile which is targeted by it's unique id
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: Operations profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /operations_profiles:
+    get:
+      summary: List all operations profiles
+      operationId: operationsProfiles.List
+      description: Operations Profiles provides a list of available monitoring states and logical operations defined on how to aggregate them
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list of Operations profiles
+          schema:
+            $ref: '#/definitions/Operations_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create an Operations profile
+      operationId: operationsProfiles.Create
+      description: Create a new Operations Profile
+      tags:
+        - Operations Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "operations_profile"
+          in: "body"
+          description: "Json description of the operations profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Operations_profile'
+      responses:
+        '200':
+          description: Operations profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+
   /aggregation_profiles/{PROFILE_ID}:
     get:
       summary: List a specific aggregation profile
@@ -549,4 +761,59 @@ definitions:
       name:
         type: string
       operation:
+        type: string
+
+  Operations_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Operations_profile'
+
+  Operations_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      available_states:
+        type: array
+        items:
+          type: string
+      defaults:
+        type: object
+        properties:
+          down:
+            type: string
+          missing:
+            type: string
+          unknown:
+            type: string
+      operations:
+        type: array
+        items:
+          $ref: '#/definitions/Operation'
+
+  Operation:
+    type: object
+    properties:
+      name:
+        type: string
+      truth_table:
+        type: array
+        items:
+          $ref: '#/definitions/Truth_statement'
+
+  Truth_statement:
+    type: object
+    properties:
+      a:
+        type: string
+      b:
+        type: string
+      x:
         type: string
