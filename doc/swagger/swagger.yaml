@@ -3,13 +3,223 @@ info:
   title: argo web api
   description: argo web api
   version: 1.0.0
-host: arpi.afroditi.hellasgrid.gr
+host: localhost
 schemes:
   - https
 basePath: /api/v2
 produces:
   - application/json
 paths:
+  /aggregation_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific aggregation profile
+      operationId: aggregationProfiles.ListOne
+      description: List one specific aggregation profile targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list with one aggregation profile
+          schema:
+            $ref: '#/definitions/Aggregation_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update an aggregation profile
+      operationId: aggregationProfiles.Update
+      description: update information on a specific aggregation Profile which is targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "aggregation_profile"
+          in: "body"
+          description: "Json description of the aggregation profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Aggregation_profile'
+      responses:
+        '201':
+          description: Aggregation profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete an aggregation profile
+      operationId: aggregationProfiles.Delete
+      description: Delete a specific aggregation Profile which is targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: Aggregation profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /aggregation_profiles:
+    get:
+      summary: List all aggregation profiles
+      operationId: aggregationProfiles.List
+      description: Aggregation Profiles provide a hiearchy structure of how different services are being aggregated during computations
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list of aggregation profiles
+          schema:
+            $ref: '#/definitions/Aggregation_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create an aggregation profile
+      operationId: aggregationProfiles.Create
+      description: Create a new aggregation Profile
+      tags:
+        - Metric Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "aggregation_profile"
+          in: "body"
+          description: "Json description of the aggregation profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Aggregation_profile'
+      responses:
+        '200':
+          description: Aggregation profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+
   /metric_profiles/{PROFILE_ID}:
     get:
       summary: List a specific metric profile
@@ -122,12 +332,6 @@ paths:
           description: "the x-api-key"
           required: true
           type: "string"
-        - name: "metric_profile"
-          in: "body"
-          description: "Json description of the metric profile to be deleted"
-          required: true
-          schema:
-            $ref: '#/definitions/Metric_profile'
       responses:
         '200':
           description: Metric profile Deleted
@@ -280,7 +484,6 @@ definitions:
         items:
           type: string
 
-
   Status_error:
     type: object
     properties:
@@ -289,4 +492,61 @@ definitions:
       code:
         type: string
       details:
+        type: string
+
+  Aggregation_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Aggregation_profile'
+
+  Aggregation_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+      endpoint_group:
+        type: string
+      metric_operation:
+        type: string
+      profile_operation:
+        type: string
+      metric_profile:
+        type: object
+        properties:
+          name:
+            type: string
+          id:
+            type: string
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/Service_group'
+
+  Service_group:
+    type: object
+    properties:
+      name:
+        type: string
+      operation:
+        type: string
+      services:
+        type: array
+        items:
+           $ref: '#/definitions/Service_ops'
+
+  Service_ops:
+    type: object
+    properties:
+      name:
+        type: string
+      operation:
         type: string
