@@ -473,6 +473,7 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
 }
 
 // This function is actually called in the end of all tests
