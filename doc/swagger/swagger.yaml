@@ -72,7 +72,7 @@ paths:
           description: "the x-api-key"
           required: true
           type: "string"
-        - name: "metric_profile"
+        - name: "aggregation_profile"
           in: "body"
           description: "Json description of the aggregation profile to be updated"
           required: true
@@ -191,7 +191,7 @@ paths:
           description: "the x-api-key"
           required: true
           type: "string"
-        - name: "metric_profile"
+        - name: "aggregation_profile"
           in: "body"
           description: "Json description of the aggregation profile to be created"
           required: true
