@@ -1,0 +1,292 @@
+swagger: '2.0'
+info:
+  title: argo web api
+  description: argo web api
+  version: 1.0.0
+host: arpi.afroditi.hellasgrid.gr
+schemes:
+  - https
+basePath: /api/v2
+produces:
+  - application/json
+paths:
+  /metric_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific metric profile
+      operationId: metricProfiles.ListOne
+      description: List one specific metric profile targeted by it's unique id
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list with one metric profile
+          schema:
+            $ref: '#/definitions/Metric_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update a metric profile
+      operationId: metricProfiles.Update
+      description: update information on a specific metric Profile which is targeted by it's unique id
+      tags:
+        - Metric Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "metric_profile"
+          in: "body"
+          description: "Json description of the metric profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Metric_profile'
+      responses:
+        '201':
+          description: Metric profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a metric profile
+      operationId: metricProfiles.Delete
+      description: Delete a specific metric Profile which is targeted by it's unique id
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "metric_profile"
+          in: "body"
+          description: "Json description of the metric profile to be deleted"
+          required: true
+          schema:
+            $ref: '#/definitions/Metric_profile'
+      responses:
+        '200':
+          description: Metric profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /metric_profiles:
+    get:
+      summary: List all metric profiles
+      operationId: metricProfiles.List
+      description: Metric Profiles provide a list of relevant services/metrics to be accounted during a computation
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list of metric profiles
+          schema:
+            $ref: '#/definitions/Metric_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a metric profile
+      operationId: metricProfiles.Create
+      description: Create a new metric Profile which includes a list of relevant services and metrics to be accounted during a computation
+      tags:
+        - Metric Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "metric_profile"
+          in: "body"
+          description: "Json description of the metric profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Metric_profile'
+      responses:
+        '200':
+          description: Metric profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+definitions:
+  Status:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+
+  Self_reference:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/Status'
+      data:
+        type: object
+        properties:
+          id:
+            type: string
+          links:
+            type: object
+            properties:
+              self:
+                type: string
+
+  Metric_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Metric_profile'
+
+  Metric_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
+
+  Service:
+    type: object
+    properties:
+      name:
+        type: string
+      metrics:
+        type: array
+        items:
+          type: string
+
+
+  Status_error:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+      details:
+        type: string
