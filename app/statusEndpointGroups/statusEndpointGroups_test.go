@@ -361,6 +361,9 @@ func (suite *StatusEndpointGroupsTestSuite) TestListStatusEndpointGroups() {
 	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
+	fullurl3 := "/api/v2/status/Report_B/EUDAT_SITES" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
 	// 1. EGI XML REQUEST
 	// init the response placeholder
 	response := httptest.NewRecorder()
@@ -414,6 +417,22 @@ func (suite *StatusEndpointGroupsTestSuite) TestListStatusEndpointGroups() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+	// 5. EUDAT ALL JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl3, strings.NewReader(""))
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb

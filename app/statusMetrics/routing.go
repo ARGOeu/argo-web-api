@@ -39,19 +39,14 @@ import (
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	// Goes up to /report/REPORT_NAME/group_type
-	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
-
 	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics/memory_used
-	groupSubrouter.
-		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
+	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
 		Methods("GET").
 		Name("metric name").
 		Handler(confhandler.Respond(routeCheckGroup))
 
 	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics
-	groupSubrouter.
-		Path("/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
+	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
 		Methods("GET").
 		Name("all metrics").
 		Handler(confhandler.Respond(routeCheckGroup))
