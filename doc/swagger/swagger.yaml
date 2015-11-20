@@ -11,6 +11,224 @@ produces:
   - application/json
 paths:
 
+  /admin/tenants/{TENANT_ID}:
+    get:
+      summary: List a specific tenant
+      operationId: tenants.ListOne
+      description: List one specific tenant designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list with one tenant
+          schema:
+            $ref: '#/definitions/Tenant_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a tenant
+      operationId: tenants.Update
+      description: update information on a specific tenant definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of tenant definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant'
+      responses:
+        '201':
+          description: Tenant definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a tenant
+      operationId: tenant.Delete
+      description: Delete a specific tenant which is targeted by it's unique id
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant definition"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: Tenant definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /admin/tenants:
+    get:
+      summary: List all available tenants
+      operationId: tenants.List
+      description: List all available tenants in the system
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list of all available tenants
+          schema:
+            $ref: '#/definitions/Tenant_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a tenant definition
+      operationId: tenants.Create
+      description: Create a new tenant definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of the tenant to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant'
+      responses:
+        '200':
+          description: Tenant definition created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
   /reports/{REPORT_ID}:
     get:
       summary: List a specific report
@@ -65,7 +283,7 @@ paths:
       parameters:
         - name: "REPORT_ID"
           in: "path"
-          description: "id of the operations profile"
+          description: "id of the report"
           required: true
           type: string
         - name: "x-api-key"
@@ -1118,4 +1336,59 @@ definitions:
             name:
               type: string
             value:
+              type: string
+
+  Tenant_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Tenant'
+
+  Tenant:
+    type: object
+    properties:
+      id:
+        type: string
+      info:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+          website:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+      db_conf:
+        type: array
+        items:
+          type: object
+          properties:
+            store:
+              type: string
+            server:
+              type: string
+            port:
+              type: integer
+            username:
+              type: string
+            password:
+              type: string
+      users:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            api-key:
               type: string
