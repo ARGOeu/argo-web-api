@@ -11,6 +11,222 @@ produces:
   - application/json
 paths:
 
+  /reports/{REPORT_ID}:
+    get:
+      summary: List a specific report
+      operationId: reports.ListOne
+      description: List one specific report designated by its unique id
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the report"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list with one report
+          schema:
+            $ref: '#/definitions/Report_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a report
+      operationId: reports.Update
+      description: update information on a specific report definition
+      tags:
+        - Reports
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "report"
+          in: "body"
+          description: "Json description of report definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '201':
+          description: Report definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a report
+      operationId: reports.Delete
+      description: Delete a specific report which is targeted by it's unique id
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the Report definition"
+          required: true
+          type: string
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: Report definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /reports:
+    get:
+      summary: List all available reports
+      operationId: reports.List
+      description: Reports provide a collection
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: A list of all available Reports
+          schema:
+            $ref: '#/definitions/Report_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a report definition
+      operationId: reports.Create
+      description: Create a new Report definition
+      tags:
+        - Reports
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "report"
+          in: "body"
+          description: "Json description of the report to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '200':
+          description: Report definition created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /operations_profiles/{PROFILE_ID}:
     get:
@@ -99,6 +315,10 @@ paths:
             $ref: '#/definitions/Status_error'
         '406':
           description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
           schema:
             $ref: '#/definitions/Status_error'
         default:
@@ -216,6 +436,10 @@ paths:
           description: Content Not acceptable
           schema:
             $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
         default:
           description: Unexpected error
           schema:
@@ -309,6 +533,10 @@ paths:
             $ref: '#/definitions/Status_error'
         '406':
           description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
           schema:
             $ref: '#/definitions/Status_error'
         default:
@@ -424,6 +652,10 @@ paths:
             $ref: '#/definitions/Status_error'
         '406':
           description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
           schema:
             $ref: '#/definitions/Status_error'
         default:
@@ -705,6 +937,17 @@ definitions:
         type: string
       details:
         type: string
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            message:
+              type: string
+            code:
+              type: string
+            details:
+              type: string
 
   Aggregation_profile_list:
     type: object
@@ -817,3 +1060,62 @@ definitions:
         type: string
       x:
         type: string
+
+  Report_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Report'
+
+  Report:
+    type: object
+    properties:
+      info:
+        type: object
+        properties:
+          name:
+            type: string
+          description:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+      topology_schema:
+        type: object
+        properties:
+          group:
+            type: object
+            properties:
+              type:
+                type: string
+              group:
+                type: object
+                properties:
+                  type:
+                    type: string
+      profiles:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+
+      filter_tags:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type: string
