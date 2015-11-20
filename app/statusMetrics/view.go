@@ -110,11 +110,6 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 	}
 
 	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
-	// if strings.EqualFold(input.format, "application/json") {
-	// 	output, err = json.MarshalIndent(docRoot, " ", "  ")
-	// } else {
-	// 	output, err = xml.MarshalIndent(docRoot, " ", "  ")
-	// }
 	return output, err
 
 }
@@ -128,10 +123,5 @@ func createMessageOUT(message string, format string) ([]byte, error) {
 	docRoot.Message = message
 
 	output, err = respond.MarshalContent(docRoot, format, "", " ")
-	// if strings.EqualFold(format, "application/json") {
-	// 	output, err = json.MarshalIndent(docRoot, " ", "  ")
-	// } else {
-	// 	output, err = xml.MarshalIndent(docRoot, " ", "  ")
-	// }
 	return output, err
 }
