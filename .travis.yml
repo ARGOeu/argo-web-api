@@ -25,6 +25,8 @@ install:
  - go get github.com/ARGOeu/go-lru-cache
  - go get gopkg.in/gcfg.v1
  - go get github.com/twinj/uuid
+ - go get github.com/axw/gocov/...
+ - go get github.com/AlekSi/gocov-xml
 
 before_script:
 # Standard mongodb 2.6 installation procedure (mongo docs)
@@ -37,6 +39,7 @@ before_script:
 # Check mongodb version
   - mongo --version
 
+
 # Run all unittests sequentally in order to not push mongodb resources
 script:
- - go test -v -p=1 ./...
+ - gocov test ./... | gocov-xml > coverage.xml
