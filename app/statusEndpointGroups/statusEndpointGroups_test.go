@@ -294,66 +294,66 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 }
 
 func (suite *StatusEndpointGroupsTestSuite) TestListStatusEndpointGroups() {
-	respXML1 := ` <root>
-   <group name="HG-03-AUTH" type="SITES">
-     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-   </group>
- </root>`
+	respXML1 := `<root>
+ <group name="HG-03-AUTH" type="SITES">
+  <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+  <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+  <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+ </group>
+</root>`
 
-	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-   </group>
- </root>`
+	respXML2 := `<root>
+ <group name="EL-01-AUTH" type="EUDAT_SITES">
+  <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+  <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+  <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+ </group>
+</root>`
 
 	respJSON1 := `{
-   "groups": [
-     {
-       "name": "HG-03-AUTH",
-       "type": "SITES",
-       "statuses": [
-         {
-           "timestamp": "2015-05-01T00:00:00Z",
-           "value": "OK"
-         },
-         {
-           "timestamp": "2015-05-01T01:00:00Z",
-           "value": "CRITICAL"
-         },
-         {
-           "timestamp": "2015-05-01T05:00:00Z",
-           "value": "OK"
-         }
-       ]
-     }
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    }
    ]
- }`
+  }
+ ]
+}`
 	respJSON2 := `{
-   "groups": [
-     {
-       "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
-       "statuses": [
-         {
-           "timestamp": "2015-05-01T00:00:00Z",
-           "value": "OK"
-         },
-         {
-           "timestamp": "2015-05-01T01:00:00Z",
-           "value": "CRITICAL"
-         },
-         {
-           "timestamp": "2015-05-01T05:00:00Z",
-           "value": "OK"
-         }
-       ]
-     }
+ "groups": [
+  {
+   "name": "EL-01-AUTH",
+   "type": "EUDAT_SITES",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"

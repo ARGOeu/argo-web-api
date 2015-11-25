@@ -299,83 +299,83 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 }
 
 func (suite *StatusServicesTestSuite) TestListStatusServices() {
-	respXML1 := ` <root>
-   <group name="HG-03-AUTH" type="SITES">
-     <group name="CREAM-CE" type="service">
-       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-     </group>
-   </group>
- </root>`
+	respXML1 := `<root>
+ <group name="HG-03-AUTH" type="SITES">
+  <group name="CREAM-CE" type="service">
+   <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+   <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+   <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+  </group>
+ </group>
+</root>`
 
-	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="srv.typeA" type="service">
-       <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-       <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-       <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-     </group>
-   </group>
- </root>`
+	respXML2 := `<root>
+ <group name="EL-01-AUTH" type="EUDAT_SITES">
+  <group name="srv.typeA" type="service">
+   <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+   <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+   <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+  </group>
+ </group>
+</root>`
 
 	respJSON1 := `{
-   "groups": [
-     {
-       "name": "HG-03-AUTH",
-       "type": "SITES",
-       "services": [
-         {
-           "name": "CREAM-CE",
-           "type": "service",
-           "statuses": [
-             {
-               "timestamp": "2015-05-01T00:00:00Z",
-               "value": "OK"
-             },
-             {
-               "timestamp": "2015-05-01T01:00:00Z",
-               "value": "CRITICAL"
-             },
-             {
-               "timestamp": "2015-05-01T05:00:00Z",
-               "value": "OK"
-             }
-           ]
-         }
-       ]
-     }
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "statuses": [
+      {
+       "timestamp": "2015-05-01T00:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T01:00:00Z",
+       "value": "CRITICAL"
+      },
+      {
+       "timestamp": "2015-05-01T05:00:00Z",
+       "value": "OK"
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	respJSON2 := `{
-   "groups": [
-     {
-       "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
-       "services": [
-         {
-           "name": "srv.typeA",
-           "type": "service",
-           "statuses": [
-             {
-               "timestamp": "2015-05-01T00:00:00Z",
-               "value": "OK"
-             },
-             {
-               "timestamp": "2015-05-01T01:00:00Z",
-               "value": "CRITICAL"
-             },
-             {
-               "timestamp": "2015-05-01T05:00:00Z",
-               "value": "OK"
-             }
-           ]
-         }
-       ]
-     }
+ "groups": [
+  {
+   "name": "EL-01-AUTH",
+   "type": "EUDAT_SITES",
+   "services": [
+    {
+     "name": "srv.typeA",
+     "type": "service",
+     "statuses": [
+      {
+       "timestamp": "2015-05-01T00:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T01:00:00Z",
+       "value": "CRITICAL"
+      },
+      {
+       "timestamp": "2015-05-01T05:00:00Z",
+       "value": "OK"
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE" +

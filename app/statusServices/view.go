@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"strings"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 )
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
@@ -78,11 +80,7 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 	}
 
-	if strings.EqualFold(input.format, "application/json") {
-		output, err = json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		output, err = xml.MarshalIndent(docRoot, " ", "  ")
-	}
+	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
 	return output, err
 
 }
@@ -94,10 +92,7 @@ func createMessageOUT(message string, format string) ([]byte, error) {
 	docRoot := &messageOUT{}
 
 	docRoot.Message = message
-	if strings.EqualFold(format, "application/json") {
-		output, err = json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		output, err = xml.MarshalIndent(docRoot, " ", "  ")
-	}
+
+	output, err = respond.MarshalContent(docRoot, format, "", " ")
 	return output, err
 }

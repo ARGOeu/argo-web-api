@@ -26,8 +26,8 @@ import "encoding/xml"
 
 // InputParams struct holds as input all the url params of the request
 type InputParams struct {
-	startTime string // UTC time in W3C format
-	endTime   string
+	startTime int // UTC time in W3C format
+	endTime   int
 	report    string
 	groupType string
 	group     string
@@ -69,9 +69,9 @@ type serviceOUT struct {
 }
 
 type endpointOUT struct {
-	XMLName   xml.Name     `xml:"endpoint" json:"-"`
-	Name      string       `xml:"name,attr" json:"name"`
-	Statuses  []*statusOUT `json:"statuses"`
+	XMLName  xml.Name     `xml:"endpoint" json:"-"`
+	Name     string       `xml:"name,attr" json:"name"`
+	Statuses []*statusOUT `json:"statuses"`
 }
 
 type statusOUT struct {
