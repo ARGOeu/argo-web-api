@@ -113,7 +113,7 @@ paths:
       operationId: tenant.Delete
       description: Delete a specific tenant which is targeted by it's unique id
       tags:
-        - Reports
+        - Tenants
       produces:
         - "application/json"
       parameters:
@@ -838,7 +838,7 @@ paths:
       operationId: aggregationProfiles.Create
       description: Create a new aggregation Profile
       tags:
-        - Metric Profiles
+        - Aggregation Profiles
       consumes:
         - "application/json"
       produces:
