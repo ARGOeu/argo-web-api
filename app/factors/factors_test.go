@@ -119,12 +119,12 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	request, _ := http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "secret")
+	request.Header.Set("Accept", "application/xml")
 	// Execute the request in the controller
 	response := httptest.NewRecorder()
 	suite.router.ServeHTTP(response, request)
 	code := response.Code
 	output := response.Body.String()
-
 	suite.Equal(200, code, "Something went wrong")
 	suite.Equal(suite.respFactorsList, string(output), "Response body mismatch")
 
@@ -132,6 +132,7 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	request, _ = http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "wrongkey")
+	request.Header.Set("Accept", "application/xml")
 	// Execute the request in the controller
 	response = httptest.NewRecorder()
 	suite.router.ServeHTTP(response, request)

@@ -27,12 +27,13 @@
 package factors
 
 import (
-	"encoding/xml"
 	"fmt"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 )
 
 // createView returns an XML view of the results to the controller
-func createView(results []FactorsOutput) ([]byte, error) {
+func createView(results []FactorsOutput, format string) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -43,7 +44,7 @@ func createView(results []FactorsOutput) ([]byte, error) {
 		docRoot.Factor = append(docRoot.Factor, f)
 	}
 
-	output, err := xml.MarshalIndent(docRoot, "", " ")
+	output, err := respond.MarshalContent(docRoot, format, "", " ")
 	return output, err
 
 }

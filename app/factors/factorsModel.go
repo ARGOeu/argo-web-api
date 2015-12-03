@@ -27,12 +27,12 @@
 package factors
 
 type Factor struct {
-	Site   string `xml:"site,attr"`
-	Weight string `xml:"weight,attr"`
+	Site   string `xml:"site,attr" json:"site"`
+	Weight string `xml:"weight,attr" json:"weight"`
 }
 
 type root struct {
-	Factor []*Factor
+	Factor []*Factor `xml:"Factor" json:"factors"`
 }
 
 // FactorsOutput struct to represent Name/Factor pair

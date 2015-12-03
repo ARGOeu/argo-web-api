@@ -29,10 +29,12 @@ package factors
 import (
 	"fmt"
 
+	"net/http"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"net/http"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)
@@ -48,6 +50,15 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
+
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
@@ -74,7 +85,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	output, err = createView(results) //Render the results into XML format
+	output, err = createView(results, contentType) //Render the results into XML format
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -82,6 +93,5 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	mongo.CloseSession(session)
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
