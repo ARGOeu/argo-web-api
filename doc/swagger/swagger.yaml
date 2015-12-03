@@ -10,7 +10,6 @@ basePath: /api/v2
 produces:
   - application/json
 paths:
-
   /admin/tenants/{TENANT_ID}:
     get:
       summary: List a specific tenant
@@ -1264,7 +1263,228 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
+    get:
+      summary: "List Availability and Reliability results for Service Flavors"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpointGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpointGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpointGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointGroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpointGroupWithoutSuperGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/GroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointGroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
 
 
@@ -1297,6 +1517,20 @@ parameters:
     required: true
     type: string
     default: SITE
+  lgroupName:
+    name: lgroup_name
+    in: path
+    description: endpoint group names of the probes
+    required: true
+    type: string
+    default: SITE
+  lgroupType:
+    name: lgroup_type
+    in: path
+    description: endpoing group type of the probes
+    required: true
+    type: string
+    default: NGI
   service_name:
     name: service_name
     in: path
@@ -1371,6 +1605,95 @@ definitions:
       value:
         type: string
 
+  results:
+    type: array
+    items:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        availability:
+          type: string
+        reliability:
+          type: string
+        unknown:
+          type: string
+        uptime:
+          type: string
+        downtime:
+          type: string
+
+  GroupResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  availability:
+                    type: string
+                  reliability:
+                    type: string
+
+  EndpointGroupResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            endpoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  results:
+                    $ref: "#/definitions/results"
+
+  ServiceResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            serviceflavors:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  results:
+                    $ref: "#/definitions/results"
 
   StatusEndpointResponse:
     type: object
