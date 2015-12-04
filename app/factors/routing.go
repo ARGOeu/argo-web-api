@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 GRNET S.A., SRCE, IN2P3 CNRS Computing Centre
+ * Copyright (c) 2015 GRNET S.A.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the
@@ -16,35 +16,19 @@
  * The views and conclusions contained in the software and
  * documentation are those of the authors and should not be
  * interpreted as representing official policies, either expressed
- * or implied, of either GRNET S.A., SRCE or IN2P3 CNRS Computing
- * Centre
+ * or implied, of GRNET S.A.
  *
- * The work represented by this source file is partially funded by
- * the EGI-InSPIRE project through the European Commission's 7th
- * Framework Programme (contract # INFSO-RI-261323)
  */
 
 package factors
 
 import (
-	"fmt"
-
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
-// createView returns an XML view of the results to the controller
-func createView(results []FactorsOutput, format string) ([]byte, error) {
-
-	docRoot := &root{}
-
-	for _, row := range results {
-		f := &Factor{}
-		f.Site = row.Site
-		f.Weight = fmt.Sprintf("%g", row.Weight)
-		docRoot.Factor = append(docRoot.Factor, f)
-	}
-
-	output, err := respond.MarshalContent(docRoot, format, "", " ")
-	return output, err
-
+func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
+	s.Methods("GET").
+		Name("List Factors").
+		Handler(confhandler.Respond(List))
 }

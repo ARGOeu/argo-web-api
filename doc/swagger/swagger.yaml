@@ -1486,7 +1486,33 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-
+  /factors:
+    get:
+      summary: "List Factors Requests"
+      description: "This method can be used to retrieve a list of factors."
+      operationId: factorsId
+      tags:
+        - Factors
+      produces:
+        - "application/xml"
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful retrieval of factors"
+          schema:
+            $ref: "#/definitions/FactorsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
 parameters:
   apiKey:
@@ -1597,6 +1623,20 @@ responses:
       $ref: '#/definitions/Status_error'
 
 definitions:
+
+  FactorsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            site:
+              type: string
+            weight:
+              type: string
+
   timestamp_value:
     type: object
     properties:
