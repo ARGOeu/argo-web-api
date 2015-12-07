@@ -13,15 +13,6 @@ addons:
 
 # install all third party go packages that we use
 install:
- - go get github.com/gorilla/handlers
- - go get github.com/gorilla/mux
- - go get github.com/gorilla/context
- - go get github.com/stretchr/testify
- - go get gopkg.in/mgo.v2
- - go get gopkg.in/mgo.v2/bson
- - go get github.com/ARGOeu/go-lru-cache
- - go get gopkg.in/gcfg.v1
- - go get github.com/twinj/uuid
  - go get github.com/axw/gocov/...
  - go get github.com/AlekSi/gocov-xml
  - go get github.com/tools/godep
