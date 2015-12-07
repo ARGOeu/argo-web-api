@@ -24,8 +24,9 @@ install:
  - go get github.com/twinj/uuid
  - go get github.com/axw/gocov/...
  - go get github.com/AlekSi/gocov-xml
-
+ - go get github.com/tools/godep
 
 # Run all unittests sequentally in order to not push mongodb resources
 script:
+ - godep update ... # Using Godep.json update and create a local _workspace directory
  - gocov test ./... | gocov-xml > coverage.xml
