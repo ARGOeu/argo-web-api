@@ -31,9 +31,9 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/twinj/uuid"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/twinj/uuid"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 )
 
 type Id struct {

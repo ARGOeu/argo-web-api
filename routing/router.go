@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 
-	"github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 )
 
 // RouteV2 represents the new style of routes that are handled by each package respectively

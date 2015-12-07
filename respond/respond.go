@@ -35,10 +35,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/logging"
-	"github.com/gorilla/mux"
 )
 
 type list []interface{}

@@ -23,8 +23,8 @@
 package factors
 
 import (
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/gorilla/mux"
 )
 
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {

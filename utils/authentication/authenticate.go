@@ -30,9 +30,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Auth struct {
