@@ -4,22 +4,27 @@
 ## Development
 
 1. Install Golang and bzr library
-2. Create a new work space:
+
+2. Install godep tool
+
+        go get github.com/tools/godep
+
+3. Create a new work space:
 
         mkdir ~/go-workspace
         export GOPATH=~/go-workspace
 
-  You may add the last `export` line into the `~/.bashrc` or the `~/.bash_profile` file to have `GOPATH` environment variable properly setup upon every login. 
+  You may add the last `export` line into the `~/.bashrc` or the `~/.bash_profile` file to have `GOPATH` environment variable properly setup upon every login.
 
-3. Get the latest version and all dependencies:
+4. Get the latest version and all dependencies (Using Godep):
 
-        go get github.com/ARGOeu/argo-web-api
+        godep update ...
 
-4. To build the service use the following command:
+5. To build the service use the following command:
 
         go build
 
-5. To run the service use the following command:
+6. To run the service use the following command:
 
         ./argo-web-api
 
@@ -27,10 +32,10 @@
 
         ./argo-web-api -h
 
-6. To run the unit-tests:
+7. To run the unit-tests with coverage results:
 
-        go test ./...
+        gocov test ./... | gocov-xml > coverage.xml
 
-7. To generate and serve godoc (@port 6060)
+8. To generate and serve godoc (@port 6060)
 
         godoc -http=:6060

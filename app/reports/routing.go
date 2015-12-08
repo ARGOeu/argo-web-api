@@ -27,8 +27,8 @@
 package reports
 
 import (
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts

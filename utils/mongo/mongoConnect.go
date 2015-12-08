@@ -29,8 +29,8 @@ package mongo
 import (
 	"fmt"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"gopkg.in/mgo.v2"
 )
 
 // OpenSession to mongodb
