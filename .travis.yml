@@ -19,5 +19,6 @@ install:
 
 # Run all unittests sequentally in order to not push mongodb resources
 script:
+ - godep restore
  - godep update ... # Using Godep.json update and create a local _workspace directory
  - gocov test ./... | gocov-xml > coverage.xml
