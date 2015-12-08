@@ -50,24 +50,23 @@ type OperationsProfilesTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *OperationsProfilesTestSuite) SetupTest() {
+func (suite *OperationsProfilesTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-	reqsizelimit = 1073741824
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+		reqsizelimit = 1073741824
 
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "AR_test_op_profiles"
-    `
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "AR_test_op_profiles"
+	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -85,6 +84,10 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *OperationsProfilesTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -1380,6 +1383,29 @@ func (suite *OperationsProfilesTestSuite) TestDelete() {
 
 //TearDownTest to tear down every test
 func (suite *OperationsProfilesTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *OperationsProfilesTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {

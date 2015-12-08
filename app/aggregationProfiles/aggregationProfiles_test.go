@@ -49,10 +49,8 @@ type AggregationProfilesTestSuite struct {
 	respUnauthorized          string
 }
 
-// Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *AggregationProfilesTestSuite) SetupTest() {
-
+// SetupSuite Setup the Test Environment
+func (suite *AggregationProfilesTestSuite) SetupSuite() {
 	const testConfig = `
     [server]
     bindip = ""
@@ -82,9 +80,13 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 	}
 	suite.clientkey = "123456"
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *AggregationProfilesTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -1144,6 +1146,29 @@ func (suite *AggregationProfilesTestSuite) TestDelete() {
 
 //TearDownTest to tear down every test
 func (suite *AggregationProfilesTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *AggregationProfilesTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
