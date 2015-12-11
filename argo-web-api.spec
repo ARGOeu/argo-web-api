@@ -4,7 +4,7 @@
 Name: argo-web-api
 Summary: A/R API
 Version: 1.6.0
-Release: 4%{?dist}
+Release: 3%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -57,8 +57,6 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
-* Tue Dec 8 2015 Konstantinos Kagkelidis <kaggis@gmail.com> 1.6.0-4%{?dist}
-- Introduce godep mechanism for dependencies
 * Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
 - Adds service configuration file
 * Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
