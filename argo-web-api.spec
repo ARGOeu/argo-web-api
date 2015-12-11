@@ -26,7 +26,9 @@ Installs the ARGO API.
 %build
 export GOPATH=$PWD
 cd src/github.com/ARGOeu/argo-web-api/
-go get
+go get github.com/tools/godep
+godep restore
+godep update ...
 go install
 
 %install
@@ -74,13 +76,13 @@ go clean
 * Tue Jun 3 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.3.0-1%{?dist}
 - Major code refactoring, proper error handling, http headers
 * Mon May 12 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.5-1%{?dist}
-- POEM profile retrieval support 
+- POEM profile retrieval support
 * Wed May 7 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-2%{?dist}
 - VO and SF resutls fix
 * Wed Apr 30 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-1%{?dist}
 - Various changes and bug fixes
 * Thu Apr 24 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.3-1%{?dist}
-- Added support for service flavor result querying 
+- Added support for service flavor result querying
 * Wed Apr 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
 - Fixed sites result querying
 * Wed Apr 09 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
