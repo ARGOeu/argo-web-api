@@ -60,28 +60,23 @@ type ReportTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-// A test configuration object is instantiated using a reference
-// to testdb: argo_test_reports. Also here is are instantiated some expected
-// xml response validation messages (authorization,crud responses).
-// Also the testdb is seeded with two reports
-func (suite *ReportTestSuite) SetupTest() {
+func (suite *ReportTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    reqsizelimit = 1073741824
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+	    reqsizelimit = 1073741824
 
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "argo_test_reports2"
-`
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "argo_test_reports2"
+	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -134,6 +129,19 @@ func (suite *ReportTestSuite) SetupTest() {
   "details": "You need to provide a correct authentication token using the header 'x-api-key'"
  }
 }`
+	suite.confHandler = respond.ConfHandler{
+		Config: suite.cfg,
+	}
+	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+// A test configuration object is instantiated using a reference
+// to testdb: argo_test_reports. Also here is are instantiated some expected
+// xml response validation messages (authorization,crud responses).
+// Also the testdb is seeded with two reports
+func (suite *ReportTestSuite) SetupTest() {
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
@@ -148,12 +156,6 @@ func (suite *ReportTestSuite) SetupTest() {
 		panic(err)
 	}
 	defer session.Close()
-
-	suite.confHandler = respond.ConfHandler{
-		Config: suite.cfg,
-	}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2").Subrouter()
-	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// seed a tenant to use
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
@@ -170,14 +172,14 @@ func (suite *ReportTestSuite) SetupTest() {
 				"store":    "ar",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argo_test_reports2_db1",
+				"database": "argo_test_tenant_reports2_db1",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
 			bson.M{
 				"store":    "status",
 				"server":   "b.mongodb.org",
 				"port":     27017,
-				"database": "status_db",
+				"database": "reports_db_tenant",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
 		},
@@ -1268,10 +1270,35 @@ func (suite *ReportTestSuite) TestDeleteNotFound() {
 // Mainly it's purpose is to drop the testdb
 func (suite *ReportTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
 
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *ReportTestSuite) TearDownSuite() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 }
 
 // This is the first function called when go test is issued

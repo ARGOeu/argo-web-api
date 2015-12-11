@@ -50,22 +50,21 @@ type serviceFlavorAvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
+func (suite *serviceFlavorAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "ARGO_test_serviceFlavor_availability"
-    `
+	[server]
+	bindip = ""
+	port = 8080
+	maxprocs = 4
+	cache = false
+	lrucache = 700000000
+	gzip = true
+	[mongodb]
+	host = "127.0.0.1"
+	port = 27017
+	db = "ARGO_test_serviceFlavor_availability"
+	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -79,6 +78,10 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -517,19 +520,21 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 func (suite *serviceFlavorAvailabilityTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 
-	cols, err := session.DB(suite.tenantDbConf.Db).CollectionNames()
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		session.DB(suite.tenantDbConf.Db).C(col).RemoveAll(bson.M{})
+		tenantDB.C(col).RemoveAll(nil)
 	}
-	cols, err = session.DB(suite.cfg.MongoDB.Db).CollectionNames()
+
+	cols, err = mainDB.CollectionNames()
 	for _, col := range cols {
-		session.DB(suite.cfg.MongoDB.Db).C(col).RemoveAll(bson.M{})
+		mainDB.C(col).RemoveAll(nil)
 	}
 
 }
@@ -538,14 +543,11 @@ func (suite *serviceFlavorAvailabilityTestSuite) TearDownTest() {
 func (suite *serviceFlavorAvailabilityTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-
 }
 
 // TestServiceFlavorAvailabilityTestSuite is responsible for calling the tests

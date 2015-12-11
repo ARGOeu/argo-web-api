@@ -50,22 +50,21 @@ type endpointGroupAvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
+func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "ARGO_test_endpointGroup_availability"
-    `
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "ARGO_test_endpointGroup_availability"
+	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -79,6 +78,10 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -463,15 +466,34 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests

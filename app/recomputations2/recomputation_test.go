@@ -53,24 +53,23 @@ type RecomputationsProfileTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *RecomputationsProfileTestSuite) SetupTest() {
+func (suite *RecomputationsProfileTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-	reqsizelimit = 1073741824
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+		reqsizelimit = 1073741824
 
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "AR_test_recomputations2"
-    `
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "AR_test_recomputations2"
+	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -91,6 +90,11 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+
+}
+
+// This function runs before any test and setups the environment
+func (suite *RecomputationsProfileTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -419,6 +423,29 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 //TearDownTest to tear down every test
 func (suite *RecomputationsProfileTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *RecomputationsProfileTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
