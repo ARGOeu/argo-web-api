@@ -1,6 +1,12 @@
+---
+title: Web API documentation | ARGO
+page_title: API Installation
+font_title: 'fa fa-cogs'
+description: This document describes the Web API.
+---
 
 
-# Prerequisites
+## Prerequisites
 
 - You will need a RHEL 6.x or similar OS (base installation) to proceed. Note that the following instructions have been tested against CentOS 6.x OSes. 
 - Make sure that on your host an ntp client service is configured properly. 
@@ -13,13 +19,13 @@ The first step is to install (as root user) the `epel` and `argo` release packag
 
 These packages will configure on the host the necessary repository files under `/etc/yum.repos.d`.
 
-# Installation
+## Installation
 
 Install the ARGO web API service with the following command:
 
     # yum install argo-web-api
 
-# Configuration
+## Configuration
 
 Edit the `/etc/argo-web-api.conf` configuration file and 
 
@@ -28,7 +34,7 @@ Edit the `/etc/argo-web-api.conf` configuration file and
 
 Optionally, you may further configure service parameters (i.e. interface to bind to, port number etc). 
 
-# Services
+## Services
 
 Start the service using the following command:
 

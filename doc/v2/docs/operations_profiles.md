@@ -14,12 +14,13 @@ GET: List a specific  Operations profile         | This method can be used to re
 POST: Create a new  Operations profile  | This method can be used to create a new  Operations profile | [ Description](#3)
 PUT: Update an Operations profile |This method can be used to update information on an existing  Operations profile | [ Description](#4)
 DELETE: Delete an  Operations profile |This method can be used to delete an existing  Operations profile | [ Description](#5)
+
 <a id='1'></a>
 
-# GET: List AOperations Profiles
+## [GET]: List AOperations Profiles
 This method can be used to retrieve a list of current  Operations profiles
 
-## Input
+### Input
 
 ```
 GET /operations_profiles
@@ -31,7 +32,7 @@ Type            | Description                                                   
 --------------- | ----------------------------------------------------------------------------------------------- | --------
 `name`  | Operations profile name to be used as query                                                                          | NO      
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -39,10 +40,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -166,16 +167,16 @@ Json Response
 
 <a id='2'></a>
 
-# GET: List A Specific Operations profile
+## [GET]: List A Specific Operations profile
 This method can be used to retrieve specific Operations profile based on its id
 
-## Input
+### Input
 
 ```
 GET /operations_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -183,10 +184,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -256,16 +257,16 @@ Json Response
 
 <a id='3'></a>
 
-# POST: Create a new Operations Profile
+## [POST]: Create a new Operations Profile
 This method can be used to insert a new operations profile
 
-## Input
+### Input
 
 ```
 POST /operations_profiles
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -273,7 +274,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### POST BODY
+#### POST BODY
 
 ```json
 {
@@ -331,10 +332,10 @@ Accept: application/json
   }
 ```
 
-## Response
+### Response
 Headers: `Status: 201 Created`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -354,16 +355,16 @@ Json Response
 
 <a id='4'></a>
 
-# PUT: Update information on an existing operations profile
+## [PUT]: Update information on an existing operations profile
 This method can be used to update information on an existing operations profile
 
-## Input
+### Input
 
 ```
 PUT /operations_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -371,7 +372,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### PUT BODY
+#### PUT BODY
 
 ```json
 {
@@ -429,10 +430,10 @@ Accept: application/json
 	}
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -446,16 +447,16 @@ Json Response
 
 <a id='5'></a>
 
-# DELETE: Delete an existing aggregation profile
+## [DELETE]: Delete an existing aggregation profile
 This method can be used to delete an existing aggregation profile
 
-## Input
+### Input
 
 ```
 DELETE /operations_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -464,10 +465,10 @@ Accept: application/json
 ```
 
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -479,7 +480,7 @@ Json Response
 }
 ```
 
-# Validation Checks
+## Validation Checks
 When submitting or updating a new operations profile, validation checks are performed on json POST/PUT body for the following cases:
  - Check if user has defined more than once a state name in available states list
  - Check if user has defined more than once an operation name in operations list
@@ -488,7 +489,7 @@ When submitting or updating a new operations profile, validation checks are perf
 
 When an invalid operations profile is submitted the api responds with a validation error list:
 
-### Example invalid profile
+#### Example invalid profile
 
 ```json
 {
@@ -568,10 +569,10 @@ When an invalid operations profile is submitted the api responds with a validati
 
   The above profile definiton contains errors like: duplicate states, undefined states and unadequate statements in truth tables. Api response is the following:
 
-## Response
+### Response
 Headers: `Status: 422 Unprocessable Entity`
 
-### Response body
+#### Response body
 
  ```json
  {

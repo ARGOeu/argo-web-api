@@ -16,11 +16,11 @@ DELETE: Delete an existing Report  | This method can be used to delete an existi
 
 <a id='1'></a>
 
-# GET: List Recomputation Requests
+## [GET]: List Recomputation Requests
 This method can be used to retrieve a list of existing reports or a single report according to its ID.
 
-## Input
-### URL
+### Input
+#### URL
 
 ```
 /reports
@@ -28,7 +28,7 @@ or
 /reports/{id}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -36,10 +36,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -100,18 +100,18 @@ Json Response
 
 <a id='2'></a>
 
-# POST: Create a new report
+## [POST]: Create a new report
 This method can be used to create a new report
 
-## Input
+### Input
 
-### URL
+#### URL
 
 ```
 /reports
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -119,7 +119,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### Request Body
+#### Request Body
 
 ```json
 {
@@ -162,10 +162,10 @@ Accept: application/json
 }
 ```
 
-## Response
+### Response
 Headers: `Status: 201 Created`
 
-### Response Body
+#### Response Body
 
 ```json
 {
@@ -184,17 +184,17 @@ Headers: `Status: 201 Created`
 
 <a id='3'></a>
 
-# PUT: Update an existing report
+## [PUT]: Update an existing report
 This method can be used to update an existing report. This will replace all the fields in the record so all the old fields that need to be kept must be included in the json of the update request body
 
-## Input
-### URL
+### Input
+#### URL
 
 ```
 /reports/{id}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -202,7 +202,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### Request Body
+#### Request Body
 
 ```json
 {
@@ -248,10 +248,10 @@ Accept: application/json
 }
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response Body
+#### Response Body
 
 ```json
 {
@@ -264,17 +264,17 @@ Headers: `Status: 200 OK`
 
 <a id='4'></a>
 
-# DELETE: Delete an existing report
+## [DELETE]: Delete an existing report
 This method can be used to update an existing report
 
-## Input
-### URL
+### Input
+#### URL
 
 ```
 /reports/{id}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -282,10 +282,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response Body
+#### Response Body
 
 ```json
 {
