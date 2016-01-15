@@ -17,7 +17,7 @@ DELETE: Delete a tenant |This method can be used to delete an existing tenant | 
 
 <a id='1'></a>
 
-## GET: List Tenants
+## [GET]: List Tenants
 This method can be used to retrieve a list of current tenants
 
 ### Input
@@ -134,7 +134,7 @@ Json Response
 
 <a id='2'></a>
 
-## GET: List A Specific tenant
+## [GET]: List A Specific tenant
 This method can be used to retrieve specific tenant based on its id
 
 ### Input
@@ -210,7 +210,7 @@ Json Response
 
 <a id='3'></a>
 
-## POST: Create a new Tenant
+## [POST]: Create a new Tenant
 This method can be used to insert a new tenant
 
 ### Input
@@ -294,7 +294,7 @@ Json Response
 
 <a id='4'></a>
 
-## PUT: Update information on an existing tenant
+## [PUT]: Update information on an existing tenant
 This method can be used to update information on an existing tenant
 
 ### Input
@@ -372,7 +372,7 @@ Json Response
 
 <a id='5'></a>
 
-## DELETE: Delete an existing tenant
+## [DELETE]: Delete an existing tenant
 This method can be used to delete an existing tenant
 
 ### Input

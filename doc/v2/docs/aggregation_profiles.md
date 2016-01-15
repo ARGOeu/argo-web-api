@@ -16,10 +16,10 @@ PUT: Update an aggregation profile |This method can be used to update informatio
 DELETE: Delete an  aggregation profile |This method can be used to delete an existing  aggregation profile | [ Description](#5)
 <a id='1'></a>
 
-# GET: List Aggregation Profiles
+## [GET]: List Aggregation Profiles
 This method can be used to retrieve a list of current  aggregation profiles
 
-## Input
+### Input
 
 ```
 GET /aggregation_profiles
@@ -31,7 +31,7 @@ Type            | Description                                                   
 --------------- | ----------------------------------------------------------------------------------------------- | --------
 `name`  | aggregation profile name to be used as query                                                                          | NO      
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -39,10 +39,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -142,16 +142,16 @@ Json Response
 
 <a id='2'></a>
 
-# GET: List A Specific Aggregation profile
+## [GET]: List A Specific Aggregation profile
 This method can be used to retrieve specific aggregation profile based on its id
 
-## Input
+### Input
 
 ```
 GET /aggregation_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -159,10 +159,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -220,16 +220,16 @@ Json Response
 
 <a id='3'></a>
 
-# POST: Create a new Aggregation Profile
+## [POST]: Create a new Aggregation Profile
 This method can be used to insert a new aggregation profile
 
-## Input
+### Input
 
 ```
 POST /aggregation_profiles
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -237,7 +237,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### POST BODY
+#### POST BODY
 
 ```json
 {
@@ -283,10 +283,10 @@ Accept: application/json
   }
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -306,16 +306,16 @@ Json Response
 
 <a id='4'></a>
 
-# PUT: Update information on an existing aggregation profile
+## [PUT]: Update information on an existing aggregation profile
 This method can be used to update information on an existing aggregation profile
 
-## Input
+### Input
 
 ```
 PUT /aggregation_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -323,7 +323,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### PUT BODY
+#### PUT BODY
 
 ```json
 {
@@ -369,10 +369,10 @@ Accept: application/json
   }
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -392,16 +392,16 @@ Json Response
 
 <a id='5'></a>
 
-# DELETE: Delete an existing aggregation profile
+## [DELETE]: Delete an existing aggregation profile
 This method can be used to delete an existing aggregation profile
 
-## Input
+### Input
 
 ```
 DELETE /aggregation_profiles/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -410,10 +410,10 @@ Accept: application/json
 ```
 
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
