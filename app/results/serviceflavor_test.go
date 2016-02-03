@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type serviceFlavorAvailabilityTestSuite struct {
@@ -50,22 +50,21 @@ type serviceFlavorAvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
+func (suite *serviceFlavorAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "ARGO_test_serviceFlavor_availability"
-    `
+	[server]
+	bindip = ""
+	port = 8080
+	maxprocs = 4
+	cache = false
+	lrucache = 700000000
+	gzip = true
+	[mongodb]
+	host = "127.0.0.1"
+	port = 27017
+	db = "ARGO_test_serviceFlavor_availability"
+	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -79,6 +78,10 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -154,7 +157,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF01",
 			"supergroup":   "ST01",
@@ -171,7 +174,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF02",
 			"supergroup":   "ST01",
@@ -188,7 +191,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "SF03",
 			"supergroup":   "ST02",
@@ -205,7 +208,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "SF01",
 			"supergroup":   "ST01",
@@ -222,7 +225,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "SF02",
 			"supergroup":   "ST01",
@@ -242,6 +245,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
 			"description": "lalalallala",
@@ -356,6 +360,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -467,12 +472,23 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
    <message>The report with the name Report_B does not exist</message>
  </root>`
 
-	typeErrorXML := ` <root>
-   <message>The report Report_A does not define endpoint group type: Site. Try using SITE instead.</message>
- </root>`
+	typeErrorXML := `<root>
+ <status>
+  <message>Bad Request</message>
+  <code>400</code>
+ </status>
+ <errors>
+  <error>
+   <message>Endpoint Group type not in report</message>
+   <code>400</code>
+   <details>Endpoint Group type Site not present in report Report_A. Try using SITE instead</details>
+  </error>
+ </errors>
+</root>`
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -484,17 +500,19 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("Accept", "application/xml")
 	request.Header.Set("x-api-key", suite.clientkey)
 	//request.Header.Set("Accept", "application/json")
 
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
+	output := response.Body.String()
 
 	// Check that we must have a 400 bad request code
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(typeErrorXML, response.Body.String(), "Response body mismatch")
+	suite.Equal(typeErrorXML, output, "Response body mismatch")
 
 }
 
@@ -502,19 +520,21 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 func (suite *serviceFlavorAvailabilityTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 
-	cols, err := session.DB(suite.tenantDbConf.Db).CollectionNames()
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		session.DB(suite.tenantDbConf.Db).C(col).RemoveAll(bson.M{})
+		tenantDB.C(col).RemoveAll(nil)
 	}
-	cols, err = session.DB(suite.cfg.MongoDB.Db).CollectionNames()
+
+	cols, err = mainDB.CollectionNames()
 	for _, col := range cols {
-		session.DB(suite.cfg.MongoDB.Db).C(col).RemoveAll(bson.M{})
+		mainDB.C(col).RemoveAll(nil)
 	}
 
 }
@@ -523,14 +543,11 @@ func (suite *serviceFlavorAvailabilityTestSuite) TearDownTest() {
 func (suite *serviceFlavorAvailabilityTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-
 }
 
 // TestServiceFlavorAvailabilityTestSuite is responsible for calling the tests

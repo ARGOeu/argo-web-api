@@ -27,31 +27,26 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	// Goes up to /report/REPORT_NAME/group_type
-	groupSubrouter := s.PathPrefix("/{report_name}/{group_type}").Subrouter()
-
 	// eg. timelines/critical/SITE/mysite/services/apache
-	groupSubrouter.
-		Path("/{group_name}/services/{service_name}").
+	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}").
 		Methods("GET").
 		Name("service name").
 		Handler(confhandler.Respond(routeCheckGroup))
 
 	// eg. timelines/critical/SITE/mysite/services
-	groupSubrouter.
-		Path("/{group_name}/services/").
+	s.Path("/{report_name}/{group_type}/{group_name}/services").
 		Methods("GET").
 		Name("all services").
 		Handler(confhandler.Respond(routeCheckGroup))

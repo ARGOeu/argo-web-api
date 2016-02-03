@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -49,10 +49,8 @@ type AggregationProfilesTestSuite struct {
 	respUnauthorized          string
 }
 
-// Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *AggregationProfilesTestSuite) SetupTest() {
-
+// SetupSuite Setup the Test Environment
+func (suite *AggregationProfilesTestSuite) SetupSuite() {
 	const testConfig = `
     [server]
     bindip = ""
@@ -82,9 +80,13 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 	}
 	suite.clientkey = "123456"
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *AggregationProfilesTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -1144,6 +1146,29 @@ func (suite *AggregationProfilesTestSuite) TestDelete() {
 
 //TearDownTest to tear down every test
 func (suite *AggregationProfilesTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *AggregationProfilesTestSuite) TearDownSuite() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {

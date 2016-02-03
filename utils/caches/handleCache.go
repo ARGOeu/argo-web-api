@@ -29,8 +29,8 @@ package caches
 import (
 	"fmt"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/ARGOeu/go-lru-cache"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache

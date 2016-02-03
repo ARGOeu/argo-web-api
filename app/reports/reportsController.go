@@ -35,13 +35,13 @@ import (
 	"strconv"
 	"time"
 
-	"gopkg.in/mgo.v2/bson"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/mux"
 )
 
 var reportsColl = "reports"
@@ -327,7 +327,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err := error(nil)
 	contentType := "text/xml"
 	charset := "utf-8"
-
 	//STANDARD DECLARATIONS END
 
 	contentType, err = respond.ParseAcceptHeader(r)

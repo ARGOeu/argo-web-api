@@ -28,15 +28,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -171,15 +171,15 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -195,7 +195,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -211,7 +211,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -227,7 +227,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_A",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -256,7 +256,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
 			"description": "report aaaaa",
@@ -273,15 +273,15 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -297,7 +297,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T00:00:00Z",
@@ -313,7 +313,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -329,7 +329,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"message":            "someService data upload test failed",
 	})
 	c.Insert(bson.M{
-		"report":             "Report_B",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -348,121 +348,121 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 }
 
 func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
-	respXML1 := ` <root>
-   <group name="HG-03-AUTH" type="SITES">
-     <group name="CREAM-CE" type="service">
-       <endpoint name="cream01.afroditi.gr">
-         <metric name="emi.cream.CREAMCE-JobSubmit">
-           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </metric>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML1 := `<root>
+ <group name="HG-03-AUTH" type="SITES">
+  <group name="CREAM-CE" type="service">
+   <endpoint name="cream01.afroditi.gr">
+    <metric name="emi.cream.CREAMCE-JobSubmit">
+     <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    </metric>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
-	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="someService" type="service">
-       <endpoint name="someservice.example.gr">
-         <metric name="someService-FileTransfer">
-           <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-           <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-           <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-         </metric>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML2 := `<root>
+ <group name="EL-01-AUTH" type="EUDAT_SITES">
+  <group name="someService" type="service">
+   <endpoint name="someservice.example.gr">
+    <metric name="someService-FileTransfer">
+     <status timestamp="2015-04-30T23:59:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+     <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    </metric>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
 	respJSON1 := `{
-   "groups": [
-     {
-       "name": "HG-03-AUTH",
-       "type": "SITES",
-       "services": [
-         {
-           "name": "CREAM-CE",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "cream01.afroditi.gr",
-               "metrics": [
-                 {
-                   "name": "emi.cream.CREAMCE-JobSubmit",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T23:59:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "metrics": [
+        {
+         "name": "emi.cream.CREAMCE-JobSubmit",
+         "statuses": [
+          {
+           "timestamp": "2015-04-30T23:59:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+          },
+          {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          }
+         ]
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	respJSON2 := `{
-   "groups": [
-     {
-       "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
-       "services": [
-         {
-           "name": "someService",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "someservice.example.gr",
-               "metrics": [
-                 {
-                   "name": "someService-FileTransfer",
-                   "statuses": [
-                     {
-                       "timestamp": "2015-04-30T23:59:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T00:00:00Z",
-                       "value": "OK"
-                     },
-                     {
-                       "timestamp": "2015-05-01T01:00:00Z",
-                       "value": "CRITICAL"
-                     },
-                     {
-                       "timestamp": "2015-05-01T05:00:00Z",
-                       "value": "OK"
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "EL-01-AUTH",
+   "type": "EUDAT_SITES",
+   "services": [
+    {
+     "name": "someService",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "someservice.example.gr",
+       "metrics": [
+        {
+         "name": "someService-FileTransfer",
+         "statuses": [
+          {
+           "timestamp": "2015-04-30T23:59:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T00:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T01:00:00Z",
+           "value": "CRITICAL"
+          },
+          {
+           "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          }
+         ]
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
@@ -470,6 +470,10 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 
 	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
 		"/services/someService/endpoints/someservice.example.gr/metrics/someService-FileTransfer" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	fullurl3 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
+		"/services/someService/endpoints/someservice.example.gr/metrics" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
@@ -525,6 +529,22 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
 	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+	// 5. TENANT2 ALL JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl3, strings.NewReader(""))
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb

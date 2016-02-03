@@ -3,8 +3,8 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.6.0
-Release: 3%{?dist}
+Version: 1.6.3
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -25,8 +25,11 @@ Installs the ARGO API.
 
 %build
 export GOPATH=$PWD
+export PATH=$GOPATH/bin:$PATH
 cd src/github.com/ARGOeu/argo-web-api/
-go get
+go get github.com/tools/godep
+godep restore
+godep update ...
 go install
 
 %install
@@ -55,6 +58,26 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
+* Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.3-1%{?dist}
+- ARGO-292 Use godep tool for 3rd party pkg management
+- ARGO-291 use mongodb 3.x in travis
+- ARGO-284 Implement factors in APIv2
+- Improved documentation
+* Thu Dec 3 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-1%{?dist}
+- ARGO-259 results swagger definitions
+- ARGO-257 Swagger documentation for status requests
+- ARGO-289 Fix swagger tag misplacement
+- ARGO-279 Add test coverage metrics
+- Fix routes to not require trailing slash
+- ARGO-260 Swagger definition for tenants
+- Add check for existence of time range
+- ARGO-261 Swagger definitions for report calls
+- ARGO-264 Swagger yaml definitions for operations profiles
+- ARGO-263 Swagger definition for aggregation profiles
+- ARGO-262 Swagger yaml definitions for metric profiles
+* Thu Nov 12 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.1-1%{?dist}
+- ARGO-256 fixes for status reponses
+- ARGO-245 Reference and tag results using report uuid
 * Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
 - Adds service configuration file
 * Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
@@ -74,13 +97,13 @@ go clean
 * Tue Jun 3 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.3.0-1%{?dist}
 - Major code refactoring, proper error handling, http headers
 * Mon May 12 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.5-1%{?dist}
-- POEM profile retrieval support 
+- POEM profile retrieval support
 * Wed May 7 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-2%{?dist}
 - VO and SF resutls fix
 * Wed Apr 30 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.4-1%{?dist}
 - Various changes and bug fixes
 * Thu Apr 24 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.3-1%{?dist}
-- Added support for service flavor result querying 
+- Added support for service flavor result querying
 * Wed Apr 16 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}
 - Fixed sites result querying
 * Wed Apr 09 2014 Nikos Triantafyllidis <ntrianta@grid.auth.gr> - 1.2.2-1%{?dist}

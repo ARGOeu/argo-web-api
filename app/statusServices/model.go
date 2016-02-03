@@ -26,8 +26,8 @@ import "encoding/xml"
 
 // InputParams struct holds as input all the url params of the request
 type InputParams struct {
-	startTime string // UTC time in W3C format
-	endTime   string
+	startTime int // UTC time in W3C format
+	endTime   int
 	report    string
 	groupType string
 	group     string

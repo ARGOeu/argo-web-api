@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type endpointGroupAvailabilityTestSuite struct {
@@ -50,22 +50,21 @@ type endpointGroupAvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-// This function runs before any test and setups the environment
-func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
+func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "ARGO_test_endpointGroup_availability"
-    `
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "ARGO_test_endpointGroup_availability"
+	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -79,6 +78,10 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 	suite.confHandler = respond.ConfHandler{suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
+}
+
+// This function runs before any test and setups the environment
+func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -148,13 +151,14 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
-	// Seed database with recomputations
+
+	// Seed tenant database with data
 	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
 
 	// Insert seed data
 	c.Insert(
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -172,7 +176,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -190,7 +194,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST01",
 			"supergroup":   "GROUP_A",
@@ -208,7 +212,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		bson.M{
-			"report":       "Report_A",
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
 			"name":         "ST02",
 			"supergroup":   "GROUP_A",
@@ -229,6 +233,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
 			"description": "lalalallala",
@@ -262,6 +267,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -326,7 +332,6 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
-
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/xml")
@@ -343,6 +348,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(unauthorizedresponseXML, response.Body.String(), "Response body mismatch")
+
 }
 
 // TestListAllEndpointGroupAvailability test if daily results are returned correctly
@@ -350,6 +356,8 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
@@ -381,9 +389,19 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
    <message>The report with the name Report_B does not exist</message>
  </root>`
 
-	typeError1XML := ` <root>
-   <message>The report Report_A does not define endpoint group type: Site. Try using SITE instead.</message>
- </root>`
+	typeError1XML := `<root>
+ <status>
+  <message>Bad Request</message>
+  <code>400</code>
+ </status>
+ <errors>
+  <error>
+   <message>Endpoint Group type not in report</message>
+   <code>400</code>
+   <details>Endpoint Group type Site not present in report Report_A. Try using SITE instead</details>
+  </error>
+ </errors>
+</root>`
 
 	typeError2XML := ` <root>
    <message>The report Report_A does not define any group type: Site</message>
@@ -391,6 +409,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response := httptest.NewRecorder()
 
@@ -403,6 +422,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_B/GROUP/GROUP_A/SITE?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
@@ -415,6 +435,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
@@ -427,15 +448,17 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
 
 	response = httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
+	output := response.Body.String()
 
 	// Check that we must have a 400 bad request code
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(typeError1XML, response.Body.String(), "Response body mismatch")
+	suite.Equal(typeError1XML, output, "Response body mismatch")
 
 }
 
@@ -443,15 +466,34 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-
 	if err != nil {
 		panic(err)
 	}
 
+	tenantDB := session.DB(suite.tenantDbConf.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests

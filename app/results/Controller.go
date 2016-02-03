@@ -25,18 +25,17 @@ package results
 import (
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
-	"time"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
 )
 
+// ListServiceFlavorResults is responsible for handling request to list service flavor results
 func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -47,38 +46,25 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
-
-	input := serviceFlavorResultQuery{
-		Name:          vars["service_type"],
-		EndpointGroup: vars["lgroup_name"],
-		Granularity:   urlValues.Get("granularity"),
-		Format:        r.Header.Get("Accept"),
-		StartTime:     urlValues.Get("start_time"),
-		EndTime:       urlValues.Get("end_time"),
-		Report:        vars["report_name"],
-	}
-
-	if input.Granularity == "" {
-		input.Granularity = "daily"
-	}
-
-	if input.Format == "application/xml" {
-		contentType = "application/xml"
-	} else if input.Format == "application/json" {
-		contentType = "application/json"
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
-			message := err.Error()
-			output, err = createErrorMessage(message, contentType)
+			out := respond.UnauthorizedMessage
+			output = out.MarshalTo(contentType)
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
@@ -104,6 +90,29 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
+	input := serviceFlavorResultQuery{
+		basicQuery: basicQuery{
+			Name:        vars["service_type"],
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start_time"),
+			EndTime:     urlValues.Get("end_time"),
+			Report:      report,
+			Vars:        vars,
+		},
+		EndpointGroup: vars["lgroup_name"],
+	}
+
+	tenantDB := session.DB(tenantDbConfig.Db)
+	errs := input.Validate(tenantDB)
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
+
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
@@ -114,32 +123,32 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 
 	results := []ServiceFlavorInterface{}
 
-	ts, _ := time.Parse(zuluForm, input.StartTime)
-	te, _ := time.Parse(zuluForm, input.EndTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
-		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report": input.Report,
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
 	}
 
-	if len(input.Name) > 0 {
+	if input.Name != "" {
 		filter["name"] = input.Name
 	}
 
-	if len(input.EndpointGroup) > 0 {
+	if input.EndpointGroup != "" {
 		filter["supergroup"] = input.EndpointGroup
 	}
 
 	// Select the granularity of the search daily/monthly
-	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := DailyServiceFlavor(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, "service_ar", query, &results)
-	} else if strings.ToLower(input.Granularity) == "monthly" {
+	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := MonthlyServiceFlavor(filter)
@@ -175,37 +184,25 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
-
-	input := endpointGroupResultQuery{
-		Name:        vars["lgroup_name"],
-		Granularity: urlValues.Get("granularity"),
-		Format:      r.Header.Get("Accept"),
-		StartTime:   urlValues.Get("start_time"),
-		EndTime:     urlValues.Get("end_time"),
-		Report:      vars["report_name"],
-	}
-
-	if input.Granularity == "" {
-		input.Granularity = "daily"
-	}
-
-	if input.Format == "application/xml" {
-		contentType = "application/xml"
-	} else if input.Format == "application/json" {
-		contentType = "application/json"
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
-			message := err.Error()
-			output, err = createErrorMessage(message, contentType)
+			out := respond.UnauthorizedMessage
+			output = out.MarshalTo(contentType)
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
@@ -231,6 +228,28 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
+	input := endpointGroupResultQuery{
+		basicQuery{
+			Name:        vars["lgroup_name"],
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start_time"),
+			EndTime:     urlValues.Get("end_time"),
+			Report:      report,
+			Vars:        vars,
+		}, "",
+	}
+
+	tenantDB := session.DB(tenantDbConfig.Db)
+	errs := input.Validate(tenantDB)
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
+
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
 		code = http.StatusBadRequest
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
@@ -241,33 +260,34 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 
 	results := []EndpointGroupInterface{}
 
-	ts, _ := time.Parse(zuluForm, input.StartTime)
-	te, _ := time.Parse(zuluForm, input.EndTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
-		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report": input.Report,
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
 	}
 
-	if len(input.Name) > 0 {
+	if input.Name != "" {
 		filter["name"] = input.Name
 	}
 
 	// Select the granularity of the search daily/monthly
-	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := DailyEndpointGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
-	} else if strings.ToLower(input.Granularity) == "monthly" {
+	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := MonthlyEndpointGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
 	}
+
 	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -296,38 +316,26 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	contentType, err = respond.ParseAcceptHeader(r)
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	if err != nil {
+		code = http.StatusNotAcceptable
+		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
+		return code, h, output, err
+	}
+
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
-
-	input := endpointGroupResultQuery{
-		Name:        vars["group_name"],
-		Granularity: urlValues.Get("granularity"),
-		Format:      r.Header.Get("Accept"),
-		StartTime:   urlValues.Get("start_time"),
-		EndTime:     urlValues.Get("end_time"),
-		Report:      vars["report_name"],
-	}
-
-	if input.Granularity == "" {
-		input.Granularity = "daily"
-	}
-
-	if input.Format == "application/xml" {
-		contentType = "application/xml"
-	} else if input.Format == "application/json" {
-		contentType = "application/json"
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
 		if err.Error() == "Unauthorized" {
 			code = http.StatusUnauthorized
-			message := err.Error()
-			output, err = createErrorMessage(message, contentType)
+			out := respond.UnauthorizedMessage
+			output = out.MarshalTo(contentType)
 			return code, h, output, err
 		}
 		code = http.StatusInternalServerError
@@ -349,31 +357,52 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	input := endpointGroupResultQuery{
+		basicQuery{
+			Name:        vars["group_name"],
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start_time"),
+			EndTime:     urlValues.Get("end_time"),
+			Report:      report,
+			Vars:        vars,
+		}, "",
+	}
+
+	tenantDB := session.DB(tenantDbConfig.Db)
+	errs := input.Validate(tenantDB)
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
 
 	results := []SuperGroupInterface{}
 
-	ts, _ := time.Parse(zuluForm, input.StartTime)
-	te, _ := time.Parse(zuluForm, input.EndTime)
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
-	teYMD, _ := strconv.Atoi(te.Format(ymdForm))
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
-		"date":   bson.M{"$gte": tsYMD, "$lte": teYMD},
-		"report": input.Report,
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
 	}
 
-	if len(input.Name) > 0 {
+	if input.Name != "" {
 		filter["supergroup"] = input.Name
 	}
 
 	// Select the granularity of the search daily/monthly
-	if len(input.Granularity) == 0 || strings.ToLower(input.Granularity) == "daily" {
+	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := DailySuperGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
-	} else if strings.ToLower(input.Granularity) == "monthly" {
+	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := MonthlySuperGroup(filter)

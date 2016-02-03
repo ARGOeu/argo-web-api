@@ -27,46 +27,67 @@
 package factors
 
 import (
-	"gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/mongo"
 )
 
 // FactorsTestSuite is a utility suite struct used in tests
 type FactorsTestSuite struct {
 	suite.Suite
-	cfg                config.Config
-	tenantcfg          config.MongoConfig
-	resp_nokeyprovided string
-	resp_unauthorized  string
-	resp_factorsList   string
+	cfg               config.Config
+	tenantcfg         config.MongoConfig
+	router            *mux.Router
+	confHandler       respond.ConfHandler
+	respNokeyprovided string
+	respUnauthorized  string
+	respFactorsList   string
+}
+
+func (suite *FactorsTestSuite) SetupSuite() {
+
+	const coreConfig = `
+	    [server]
+	    bindip = ""
+	    port = 8080
+	    maxprocs = 4
+	    cache = false
+	    lrucache = 700000000
+	    gzip = true
+		reqsizelimit = 1073741824
+
+	    [mongodb]
+	    host = "127.0.0.1"
+	    port = 27017
+	    db = "argo_core_test_factors"
+	`
+	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
+	suite.respNokeyprovided = "404 page not found"
+	suite.respUnauthorized = "Unauthorized"
+
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/factors").Subrouter()
+	HandleSubrouter(suite.router, &suite.confHandler)
+
+	// TODO: I don't like it here that I rewrite the test data.
+	// However, this is a test for factors, not for AuthenticateTenant function.
+	suite.tenantcfg.Host = "127.0.0.1"
+	suite.tenantcfg.Port = 27017
+	suite.tenantcfg.Db = "AR_test"
 }
 
 // SetupTest will bootstrap and provide the testing environment
 func (suite *FactorsTestSuite) SetupTest() {
-
-	const coreConfig = `
-    [server]
-    bindip = ""
-    port = 8080
-    maxprocs = 4
-    cache = false
-    lrucache = 700000000
-    gzip = true
-    [mongodb]
-    host = "127.0.0.1"
-    port = 27017
-    db = "argo_core_test_factors"
-`
-	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
-	suite.resp_nokeyprovided = "404 page not found"
-	suite.resp_unauthorized = "Unauthorized"
 
 	// Connect to mongo coredb
 	session, err := mongo.OpenSession(suite.cfg.MongoDB)
@@ -76,16 +97,10 @@ func (suite *FactorsTestSuite) SetupTest() {
 	}
 
 	// Add authentication token to mongo coredb
-	seed_auth := bson.M{"name": "TEST",
+	seedAuth := bson.M{"name": "TEST",
 		"db_conf": []bson.M{bson.M{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
 		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret"}}}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seed_auth)
-
-	// TODO: I don't like it here that I rewrite the test data.
-	// However, this is a test for factors, not for AuthenticateTenant function.
-	suite.tenantcfg.Host = "127.0.0.1"
-	suite.tenantcfg.Port = 27017
-	suite.tenantcfg.Db = "AR_test"
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seedAuth)
 
 	// Add a few factors in collection
 	c := session.DB(suite.tenantcfg.Db).C("weights")
@@ -98,29 +113,37 @@ func (suite *FactorsTestSuite) SetupTest() {
 // TestListFactors will run unit tests against the List function
 func (suite *FactorsTestSuite) TestListFactors() {
 
-	suite.resp_factorsList = `<root>
+	suite.respFactorsList = `<root>
  <Factor site="CETA-GRID" weight="5406"></Factor>
  <Factor site="CFP-IST" weight="1019"></Factor>
  <Factor site="CIEMAT-LCG2" weight="14595"></Factor>
 </root>`
 
 	// Prepare the request object
-	request, _ := http.NewRequest("GET", "/api/v1/factors", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "secret")
+	request.Header.Set("Accept", "application/xml")
 	// Execute the request in the controller
-	code, _, output, _ := List(request, suite.cfg)
-	suite.Equal(200, code, "Internal Server Error")
-	suite.Equal(suite.resp_factorsList, string(output), "Response body mismatch")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	code := response.Code
+	output := response.Body.String()
+	suite.Equal(200, code, "Something went wrong")
+	suite.Equal(suite.respFactorsList, string(output), "Response body mismatch")
 
 	// Prepare new request object
-	request, _ = http.NewRequest("GET", "/api/v1/tenants", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "wrongkey")
+	request.Header.Set("Accept", "application/xml")
 	// Execute the request in the controller
-	code, _, output, _ = List(request, suite.cfg)
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	code = response.Code
+	output = response.Body.String()
 	suite.Equal(401, code, "Should have gotten return code 401 (Unauthorized)")
-	suite.Equal(suite.resp_unauthorized, string(output), "Should have gotten reply Unauthorized")
+	suite.Equal(suite.respUnauthorized, string(output), "Should have gotten reply Unauthorized")
 
 	// Remove the test data from core db not to contaminate other tests
 	// Open session to core mongo
@@ -156,14 +179,31 @@ func (suite *FactorsTestSuite) TearDownTest() {
 	if err != nil {
 		panic(err)
 	}
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 
-	session, err = mgo.Dial(suite.tenantcfg.Host)
+	tenantDB := session.DB(suite.tenantcfg.Db)
+	mainDB := session.DB(suite.cfg.MongoDB.Db)
+
+	cols, err := tenantDB.CollectionNames()
+	for _, col := range cols {
+		tenantDB.C(col).RemoveAll(nil)
+	}
+
+	cols, err = mainDB.CollectionNames()
+	for _, col := range cols {
+		mainDB.C(col).RemoveAll(nil)
+	}
+
+}
+
+//TearDownTest to tear down every test
+func (suite *FactorsTestSuite) TearDownSuite() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
 	if err != nil {
 		panic(err)
 	}
 	session.DB(suite.tenantcfg.Db).DropDatabase()
-
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 }
 
 func TestFactorsTestSuite(t *testing.T) {

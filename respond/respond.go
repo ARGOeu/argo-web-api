@@ -35,10 +35,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/logging"
-	"github.com/gorilla/mux"
 )
 
 type list []interface{}
@@ -66,7 +66,7 @@ type StatusResponse struct {
 	Details string `xml:"details,omitempty" json:"details,omitempty"`
 }
 
-// ErrorReponse holds a list of error objects
+// ErrorResponse holds a list of error objects
 type ErrorResponse struct {
 	Message string `xml:"message,omitempty" json:"message,omitempty"`
 	Code    string `xml:"code,omitempty" json:"code,omitempty"`
@@ -107,7 +107,6 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 var acceptedContentTypes = []string{
 	"application/xml",
 	"application/json",
-	"*/*",
 }
 
 var defaultContentType = "application/json"
@@ -185,10 +184,35 @@ func CreateResponseMessage(message string, code string, contentType string) ([]b
 	return output, err
 }
 
+// CreateFailureResponseMessage creates a response message struct intance to represent all
+// the errors that occured during the request
+func CreateFailureResponseMessage(message string, code string, errs []ErrorResponse) ResponseMessage {
+
+	responseMessage := ResponseMessage{
+		Status: StatusResponse{
+			Message: message,
+			Code:    code,
+		},
+		Errors: errs,
+	}
+
+	return responseMessage
+
+}
+
+// MarshalTo takes a reponse message and uses the requested marshaller to render it into
+// the desired content type
 func (resp ResponseMessage) MarshalTo(contentType string) []byte {
 	output, _ := MarshalContent(resp, contentType, "", " ")
 	return output
 }
+
+// BadRequest is used to inform the user about malformed json body
+var BadRequestSimple = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+	}}
 
 // BadRequestBadJson is used to inform the user about malformed json body
 var BadRequestBadJSON = ResponseMessage{

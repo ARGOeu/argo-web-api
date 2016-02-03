@@ -14,19 +14,20 @@ GET: List a specific tenant         | This method can be used to retrieve a spec
 POST: Create a new tenant  | This method can be used to create a new tenant | [ Description](#3)
 PUT: Update a tenant |This method can be used to update information on an existing tenant | [ Description](#4)
 DELETE: Delete a tenant |This method can be used to delete an existing tenant | [ Description](#5)
+
 <a id='1'></a>
 
-# GET: List Tenants
+## [GET]: List Tenants
 This method can be used to retrieve a list of current tenants
 
-## Input
+### Input
 
 ```
 GET /admin/tenants
 ```
 
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -34,10 +35,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -133,16 +134,16 @@ Json Response
 
 <a id='2'></a>
 
-# GET: List A Specific tenant
+## [GET]: List A Specific tenant
 This method can be used to retrieve specific tenant based on its id
 
-## Input
+### Input
 
 ```
 GET /admin/tenants/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -150,10 +151,10 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -209,16 +210,16 @@ Json Response
 
 <a id='3'></a>
 
-# POST: Create a new Tenant
+## [POST]: Create a new Tenant
 This method can be used to insert a new tenant
 
-## Input
+### Input
 
 ```
 POST /admin/tenants
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -226,7 +227,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### POST BODY
+#### POST BODY
 
 ```json
 {
@@ -270,10 +271,10 @@ Accept: application/json
 }
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -293,16 +294,16 @@ Json Response
 
 <a id='4'></a>
 
-# PUT: Update information on an existing tenant
+## [PUT]: Update information on an existing tenant
 This method can be used to update information on an existing tenant
 
-## Input
+### Input
 
 ```
 PUT /admin/tenants/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -310,7 +311,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-### PUT BODY
+#### PUT BODY
 
 ```json
 {
@@ -354,10 +355,10 @@ Accept: application/json
 }
 ```
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json
@@ -371,16 +372,16 @@ Json Response
 
 <a id='5'></a>
 
-# DELETE: Delete an existing tenant
+## [DELETE]: Delete an existing tenant
 This method can be used to delete an existing tenant
 
-## Input
+### Input
 
 ```
 DELETE /admin/tenants/{ID}
 ```
 
-### Request headers
+#### Request headers
 
 ```
 x-api-key: shared_key_value
@@ -389,10 +390,10 @@ Accept: application/json
 ```
 
 
-## Response
+### Response
 Headers: `Status: 200 OK`
 
-### Response body
+#### Response body
 Json Response
 
 ```json

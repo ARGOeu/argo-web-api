@@ -20,38 +20,15 @@
  *
  */
 
-package tenants
+package factors
 
 import (
 	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-// HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
-// handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	s.Methods("GET").
-		Path("/tenants").
-		Name("List Aggregation Profiles").
+		Name("List Factors").
 		Handler(confhandler.Respond(List))
-
-	s.Methods("GET").
-		Path("/tenants/{ID}").
-		Name("List One Aggregation Profile").
-		Handler(confhandler.Respond(ListOne))
-
-	s.Methods("POST").
-		Path("/tenants").
-		Name("Create Aggregation Profile").
-		Handler(confhandler.Respond(Create))
-
-	s.Methods("PUT").
-		Path("/tenants/{ID}").
-		Name("Update Aggregation Profile").
-		Handler(confhandler.Respond(Update))
-
-	s.Methods("DELETE").
-		Path("/tenants/{ID}").
-		Name("Delete Aggregation Profile").
-		Handler(confhandler.Respond(Delete))
 }

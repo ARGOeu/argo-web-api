@@ -28,15 +28,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -171,15 +171,15 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -194,7 +194,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -204,7 +204,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -214,7 +214,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_A",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
@@ -237,7 +237,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
 			"description": "report aaaaa",
@@ -254,15 +254,15 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		},
 		"profiles": []bson.M{
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
 			bson.M{
-				"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
@@ -278,7 +278,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -288,7 +288,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "OK",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -298,7 +298,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "CRITICAL",
 	})
 	c.Insert(bson.M{
-		"report":         "Report_B",
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
@@ -311,96 +311,96 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 }
 
 func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
-	respXML1 := ` <root>
-   <group name="HG-03-AUTH" type="SITES">
-     <group name="CREAM-CE" type="service">
-       <endpoint name="cream01.afroditi.gr">
-         <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-         <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-         <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML1 := `<root>
+ <group name="HG-03-AUTH" type="SITES">
+  <group name="CREAM-CE" type="service">
+   <endpoint name="cream01.afroditi.gr">
+    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
-	respXML2 := ` <root>
-   <group name="EL-01-AUTH" type="EUDAT_SITES">
-     <group name="srv.typeA" type="service">
-       <endpoint name="host01.eudat.gr">
-         <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-         <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-         <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-       </endpoint>
-     </group>
-   </group>
- </root>`
+	respXML2 := `<root>
+ <group name="EL-01-AUTH" type="EUDAT_SITES">
+  <group name="srv.typeA" type="service">
+   <endpoint name="host01.eudat.gr">
+    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   </endpoint>
+  </group>
+ </group>
+</root>`
 
 	respJSON1 := `{
-   "groups": [
-     {
-       "name": "HG-03-AUTH",
-       "type": "SITES",
-       "services": [
-         {
-           "name": "CREAM-CE",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "cream01.afroditi.gr",
-               "statuses": [
-                 {
-                   "timestamp": "2015-05-01T00:00:00Z",
-                   "value": "OK"
-                 },
-                 {
-                   "timestamp": "2015-05-01T01:00:00Z",
-                   "value": "CRITICAL"
-                 },
-                 {
-                   "timestamp": "2015-05-01T05:00:00Z",
-                   "value": "OK"
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 	respJSON2 := `{
-   "groups": [
-     {
-       "name": "EL-01-AUTH",
-       "type": "EUDAT_SITES",
-       "services": [
-         {
-           "name": "srv.typeA",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "host01.eudat.gr",
-               "statuses": [
-                 {
-                   "timestamp": "2015-05-01T00:00:00Z",
-                   "value": "OK"
-                 },
-                 {
-                   "timestamp": "2015-05-01T01:00:00Z",
-                   "value": "CRITICAL"
-                 },
-                 {
-                   "timestamp": "2015-05-01T05:00:00Z",
-                   "value": "OK"
-                 }
-               ]
-             }
-           ]
-         }
+ "groups": [
+  {
+   "name": "EL-01-AUTH",
+   "type": "EUDAT_SITES",
+   "services": [
+    {
+     "name": "srv.typeA",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "host01.eudat.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        }
        ]
-     }
+      }
+     ]
+    }
    ]
- }`
+  }
+ ]
+}`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
@@ -473,6 +473,7 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
 }
 
 // This function is actually called in the end of all tests

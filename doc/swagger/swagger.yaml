@@ -1,0 +1,2148 @@
+swagger: '2.0'
+info:
+  title: argo web api
+  description: argo web api
+  version: 1.0.0
+host: localhost
+schemes:
+  - https
+basePath: /api/v2
+produces:
+  - application/json
+paths:
+  /admin/tenants/{TENANT_ID}:
+    get:
+      summary: List a specific tenant
+      operationId: tenants.ListOne
+      description: List one specific tenant designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one tenant
+          schema:
+            $ref: '#/definitions/Tenant_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a tenant
+      operationId: tenants.Update
+      description: update information on a specific tenant definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of tenant definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant'
+      responses:
+        '201':
+          description: Tenant definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a tenant
+      operationId: tenant.Delete
+      description: Delete a specific tenant which is targeted by it's unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant definition"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Tenant definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /admin/tenants:
+    get:
+      summary: List all available tenants
+      operationId: tenants.List
+      description: List all available tenants in the system
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of all available tenants
+          schema:
+            $ref: '#/definitions/Tenant_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a tenant definition
+      operationId: tenants.Create
+      description: Create a new tenant definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of the tenant to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant'
+      responses:
+        '200':
+          description: Tenant definition created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /reports/{REPORT_ID}:
+    get:
+      summary: List a specific report
+      operationId: reports.ListOne
+      description: List one specific report designated by its unique id
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the report"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one report
+          schema:
+            $ref: '#/definitions/Report_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a report
+      operationId: reports.Update
+      description: update information on a specific report definition
+      tags:
+        - Reports
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the report"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "report"
+          in: "body"
+          description: "Json description of report definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '201':
+          description: Report definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a report
+      operationId: reports.Delete
+      description: Delete a specific report which is targeted by it's unique id
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - name: "REPORT_ID"
+          in: "path"
+          description: "id of the Report definition"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Report definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /reports:
+    get:
+      summary: List all available reports
+      operationId: reports.List
+      description: Reports provide a collection
+      tags:
+        - Reports
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of all available Reports
+          schema:
+            $ref: '#/definitions/Report_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a report definition
+      operationId: reports.Create
+      description: Create a new Report definition
+      tags:
+        - Reports
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "report"
+          in: "body"
+          description: "Json description of the report to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      responses:
+        '200':
+          description: Report definition created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /operations_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific operations profile
+      operationId: operationsProfiles.ListOne
+      description: List one specific operations profile targeted by it's unique id
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one operations profile
+          schema:
+            $ref: '#/definitions/Operations_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update an operations profile
+      operationId: operationsProfiles.Update
+      description: update information on a specific Operations Profile which is targeted by it's unique id
+      tags:
+        - Operations Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+        - name: "operations_profile"
+          in: "body"
+          description: "Json description of the operations profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Operations_profile'
+      responses:
+        '201':
+          description: Operations profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete an operations profile
+      operationId: operationsProfiles.Delete
+      description: Delete a specific Operations Profile which is targeted by it's unique id
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the operations profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Operations profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /operations_profiles:
+    get:
+      summary: List all operations profiles
+      operationId: operationsProfiles.List
+      description: Operations Profiles provides a list of available monitoring states and logical operations defined on how to aggregate them
+      tags:
+        - Operations Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of Operations profiles
+          schema:
+            $ref: '#/definitions/Operations_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create an Operations profile
+      operationId: operationsProfiles.Create
+      description: Create a new Operations Profile
+      tags:
+        - Operations Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "x-api-key"
+          in: "header"
+          description: "the x-api-key"
+          required: true
+          type: "string"
+        - name: "operations_profile"
+          in: "body"
+          description: "Json description of the operations profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Operations_profile'
+      responses:
+        '200':
+          description: Operations profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+
+  /aggregation_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific aggregation profile
+      operationId: aggregationProfiles.ListOne
+      description: List one specific aggregation profile targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one aggregation profile
+          schema:
+            $ref: '#/definitions/Aggregation_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update an aggregation profile
+      operationId: aggregationProfiles.Update
+      description: update information on a specific aggregation Profile which is targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - name: "aggregation_profile"
+          in: "body"
+          description: "Json description of the aggregation profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Aggregation_profile'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '201':
+          description: Aggregation profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete an aggregation profile
+      operationId: aggregationProfiles.Delete
+      description: Delete a specific aggregation Profile which is targeted by it's unique id
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the aggregation profile"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Aggregation profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /aggregation_profiles:
+    get:
+      summary: List all aggregation profiles
+      operationId: aggregationProfiles.List
+      description: Aggregation Profiles provide a hiearchy structure of how different services are being aggregated during computations
+      tags:
+        - Aggregation Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of aggregation profiles
+          schema:
+            $ref: '#/definitions/Aggregation_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create an aggregation profile
+      operationId: aggregationProfiles.Create
+      description: Create a new aggregation Profile
+      tags:
+        - Aggregation Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "aggregation_profile"
+          in: "body"
+          description: "Json description of the aggregation profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Aggregation_profile'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Aggregation profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+
+  /metric_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific metric profile
+      operationId: metricProfiles.ListOne
+      description: List one specific metric profile targeted by it's unique id
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with one metric profile
+          schema:
+            $ref: '#/definitions/Metric_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update a metric profile
+      operationId: metricProfiles.Update
+      description: update information on a specific metric Profile which is targeted by it's unique id
+      tags:
+        - Metric Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+        - name: "metric_profile"
+          in: "body"
+          description: "Json description of the metric profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Metric_profile'
+      responses:
+        '201':
+          description: Metric profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a metric profile
+      operationId: metricProfiles.Delete
+      description: Delete a specific metric Profile which is targeted by it's unique id
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the metric profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Metric profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /metric_profiles:
+    get:
+      summary: List all metric profiles
+      operationId: metricProfiles.List
+      description: Metric Profiles provide a list of relevant services/metrics to be accounted during a computation
+      tags:
+        - Metric Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of metric profiles
+          schema:
+            $ref: '#/definitions/Metric_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a metric profile
+      operationId: metricProfiles.Create
+      description: Create a new metric Profile which includes a list of relevant services and metrics to be accounted during a computation
+      tags:
+        - Metric Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "metric_profile"
+          in: "body"
+          description: "Json description of the metric profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Metric_profile'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Metric profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  /status/{report_name}/{group_type}/{group_name}:
+    get:
+      summary: "list status Endpoint groups"
+      description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
+      operationId: statusEndpointGroupsNameFilterID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}:
+    get:
+      summary: "list status Endpoint groups"
+      description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
+      operationId: statusEndpointGroupsID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /status/{report_name}/{group_type}/{group_name}/services:
+    get:
+      summary: "List Service Status Timelines"
+      description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
+      operationId: statusServicesID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}:
+    get:
+      summary: "List Service Status Timelines"
+      description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
+      operationId: statusServicesNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints:
+    get:
+      summary: "List Service Endpoint Status Timelines"
+      description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
+      operationId: statusEndpointID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusEndpointResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List Service Endpoint Status Timelines"
+      description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
+      operationId: statusEndpointNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusEndpointResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
+    get:
+      summary: "List Metric Result"
+      description: "This method may be used to retrieve a specific and detailed metric result."
+      operationId: statusMetricID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusMetricResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
+    get:
+      summary: "List Metric Result"
+      description: "This method may be used to retrieve a specific and detailed metric result."
+      operationId: statusMetricNameFilteredID
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/endpoint_name"
+        - $ref: "#/parameters/metric_name"
+      responses:
+        200:
+          description: "Successful retrieval of statuses"
+          schema:
+            $ref: "#/definitions/StatusMetricResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
+    get:
+      summary: "List Availability and Reliability results for Service Flavors"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpointGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+    get:
+      summary: "List Availability and Reliability results for a Service Flavor"
+      description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpointGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/ServiceResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpointGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointGroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpointGroupWithoutSuperGroup
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/GroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List Availability and Reliability results for an endpoint group"
+      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupWithServiceFilter
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointGroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /factors:
+    get:
+      summary: "List Factors Requests"
+      description: "This method can be used to retrieve a list of factors."
+      operationId: factorsId
+      tags:
+        - Factors
+      produces:
+        - "application/xml"
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful retrieval of factors"
+          schema:
+            $ref: "#/definitions/FactorsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+parameters:
+  apiKey:
+    name: "x-api-key"
+    in: "header"
+    description: "the x-api-key"
+    required: true
+    type: "string"
+    default: SecretKey123
+  reportName:
+    name: "report_name"
+    in: "path"
+    description: "report the probes belong to"
+    required: true
+    type: string
+    default: CRITICAL
+  groupType:
+    name: "group_type"
+    in: "path"
+    description: "group type of the probes"
+    required: true
+    type: string
+    default: NGI
+  groupName:
+    name: group_name
+    in: path
+    description: group names of the probes
+    required: true
+    type: string
+    default: SITE
+  lgroupName:
+    name: lgroup_name
+    in: path
+    description: endpoint group names of the probes
+    required: true
+    type: string
+    default: SITE
+  lgroupType:
+    name: lgroup_type
+    in: path
+    description: endpoing group type of the probes
+    required: true
+    type: string
+    default: NGI
+  service_name:
+    name: service_name
+    in: path
+    description: service name of the probes
+    required: true
+    type: string
+    default: Site-BDII
+  endpoint_name:
+    name: endpoint_name
+    in: path
+    description: endpoint_name of the probes
+    required: true
+    type: string
+    default: "cream01.afroditi.gr"
+  metric_name:
+    name: metric_name
+    in: path
+    description: name of the metric profile
+    required: true
+    type: string
+    default: "emi.cream.CREAMCE-JobSubmit"
+  startDate:
+    name: start_date
+    in: query
+    description: "start date of query in zulu format"
+    required: true
+    type: string
+    default: "2006-01-02T15:04:05Z"
+  endDate:
+    name: end_date
+    in: query
+    description: "start date of query in zulu format"
+    required: true
+    type: string
+    default: "2006-01-03T15:04:05Z"
+
+responses:
+  Unauthorized:
+    description: unauthorized
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: string
+  ServerError:
+    description: internal server error
+    schema:
+      type: string
+  404:
+    description: Item not found
+    schema:
+      $ref: '#/definitions/Status_error'
+  406:
+    description: Content Not acceptable
+    schema:
+      $ref: '#/definitions/Status_error'
+  422:
+    description: Validation Error
+    schema:
+      $ref: '#/definitions/Status_error'
+
+definitions:
+
+  FactorsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            site:
+              type: string
+            weight:
+              type: string
+
+  timestamp_value:
+    type: object
+    properties:
+      timestamp:
+        type: string
+      value:
+        type: string
+
+  results:
+    type: array
+    items:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        availability:
+          type: string
+        reliability:
+          type: string
+        unknown:
+          type: string
+        uptime:
+          type: string
+        downtime:
+          type: string
+
+  GroupResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  availability:
+                    type: string
+                  reliability:
+                    type: string
+
+  EndpointGroupResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            endpoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  results:
+                    $ref: "#/definitions/results"
+
+  ServiceResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            serviceflavors:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  results:
+                    $ref: "#/definitions/results"
+
+  StatusEndpointResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        statuses:
+                          type: array
+                          items:
+                            $ref: "#/definitions/timestamp_value"
+
+  StatusMetricResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        metrics:
+                          type: array
+                          items:
+                            $ref: "#/definitions/timestamp_value"
+
+  StatusMetricResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            services:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  statuses:
+                    type: array
+                    items:
+                      $ref: "#/definitions/timestamp_value"
+
+  StatusResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            statuses:
+              type: array
+              items:
+                $ref: "#/definitions/timestamp_value"
+
+
+
+  Status:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+
+  Self_reference:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/Status'
+      data:
+        type: object
+        properties:
+          id:
+            type: string
+          links:
+            type: object
+            properties:
+              self:
+                type: string
+
+  Metric_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Metric_profile'
+
+  Metric_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
+
+  Service:
+    type: object
+    properties:
+      name:
+        type: string
+      metrics:
+        type: array
+        items:
+          type: string
+
+  Status_error:
+    type: object
+    properties:
+      message:
+        type: string
+      code:
+        type: string
+      details:
+        type: string
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            message:
+              type: string
+            code:
+              type: string
+            details:
+              type: string
+
+  Aggregation_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Aggregation_profile'
+
+  Aggregation_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+      endpoint_group:
+        type: string
+      metric_operation:
+        type: string
+      profile_operation:
+        type: string
+      metric_profile:
+        type: object
+        properties:
+          name:
+            type: string
+          id:
+            type: string
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/Service_group'
+
+  Service_group:
+    type: object
+    properties:
+      name:
+        type: string
+      operation:
+        type: string
+      services:
+        type: array
+        items:
+           $ref: '#/definitions/Service_ops'
+
+  Service_ops:
+    type: object
+    properties:
+      name:
+        type: string
+      operation:
+        type: string
+
+  Operations_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Operations_profile'
+
+  Operations_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      available_states:
+        type: array
+        items:
+          type: string
+      defaults:
+        type: object
+        properties:
+          down:
+            type: string
+          missing:
+            type: string
+          unknown:
+            type: string
+      operations:
+        type: array
+        items:
+          $ref: '#/definitions/Operation'
+
+  Operation:
+    type: object
+    properties:
+      name:
+        type: string
+      truth_table:
+        type: array
+        items:
+          $ref: '#/definitions/Truth_statement'
+
+  Truth_statement:
+    type: object
+    properties:
+      a:
+        type: string
+      b:
+        type: string
+      x:
+        type: string
+
+  Report_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Report'
+
+  Report:
+    type: object
+    properties:
+      info:
+        type: object
+        properties:
+          name:
+            type: string
+          description:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+      topology_schema:
+        type: object
+        properties:
+          group:
+            type: object
+            properties:
+              type:
+                type: string
+              group:
+                type: object
+                properties:
+                  type:
+                    type: string
+      profiles:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+            name:
+              type: string
+
+      filter_tags:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type: string
+
+  Tenant_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Tenant'
+
+  Tenant:
+    type: object
+    properties:
+      id:
+        type: string
+      info:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+          website:
+            type: string
+          created:
+            type: string
+          updated:
+            type: string
+      db_conf:
+        type: array
+        items:
+          type: object
+          properties:
+            store:
+              type: string
+            server:
+              type: string
+            port:
+              type: integer
+            username:
+              type: string
+            password:
+              type: string
+      users:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            api-key:
+              type: string
