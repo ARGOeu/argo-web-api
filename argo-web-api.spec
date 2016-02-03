@@ -4,7 +4,7 @@
 Name: argo-web-api
 Summary: A/R API
 Version: 1.6.3
-Release: 3%{?dist}
+Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -58,38 +58,26 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
-* Tue Dec 8 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.3-3%{?dist}
+* Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.3-1%{?dist}
 - ARGO-292 Use godep tool for 3rd party pkg management
-* Mon Dec 7 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.3-2%{?dist}
 - ARGO-291 use mongodb 3.x in travis
-* Fri Dec 4 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.3-1%{?dist}
 - ARGO-284 Implement factors in APIv2
-* Thu Dec 3 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-11%{?dist}
+- Improved documentation
+* Thu Dec 3 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-1%{?dist}
 - ARGO-259 results swagger definitions
-* Thu Nov 26 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-10%{?dist}
 - ARGO-257 Swagger documentation for status requests
-* Thu Nov 26 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-9%{?dist}
 - ARGO-289 Fix swagger tag misplacement
-* Mon Nov 23 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-8%{?dist}
 - ARGO-279 Add test coverage metrics
-* Fri Nov 20 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-7%{?dist}
 - Fix routes to not require trailing slash
-* Fri Nov 20 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-6%{?dist}
 - ARGO-260 Swagger definition for tenants
-* Thu Nov 19 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.2-5%{?dist}
 - Add check for existence of time range
-* Wed Nov 18 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-4%{?dist}
 - ARGO-261 Swagger definitions for report calls
-* Wed Nov 18 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-3%{?dist}
 - ARGO-264 Swagger yaml definitions for operations profiles
-* Wed Nov 18 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-2%{?dist}
 - ARGO-263 Swagger definition for aggregation profiles
-* Wed Nov 18 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.2-1%{?dist}
 - ARGO-262 Swagger yaml definitions for metric profiles
-* Thu Nov 12 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.1-2%{?dist}
+* Thu Nov 12 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.1-1%{?dist}
 - ARGO-256 fixes for status reponses
-* Thu Nov 5 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.6.1-1%{?dist}
-- ARGO-245 Reference and tag results using report uuid
+	- ARGO-245 Reference and tag results using report uuid
 * Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
 - Adds service configuration file
 * Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
