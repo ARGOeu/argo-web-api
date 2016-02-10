@@ -39,4 +39,6 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	s.Methods("DELETE").Path("/reports/{id}").Handler(confhandler.Respond(Delete))
 	s.Methods("GET").Path("/reports/{id}").Handler(confhandler.Respond(ListOne))
 	s.Methods("GET").Path("/reports").Handler(confhandler.Respond(List))
+	s.Methods("OPTIONS").Path("/reports").Handler(confhandler.Respond(Options))
+	s.Methods("OPTIONS").Path("/reports/{id}").Handler(confhandler.Respond(Options))
 }

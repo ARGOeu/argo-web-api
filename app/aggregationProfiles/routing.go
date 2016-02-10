@@ -30,10 +30,21 @@ import (
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
+
+	s.Methods("OPTIONS").
+		Path("/aggregation_profiles").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
 	s.Methods("GET").
 		Path("/aggregation_profiles").
 		Name("List Aggregation Profiles").
 		Handler(confhandler.Respond(List))
+
+	s.Methods("OPTIONS").
+		Path("/aggregation_profiles/{ID}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
 
 	s.Methods("GET").
 		Path("/aggregation_profiles/{ID}").

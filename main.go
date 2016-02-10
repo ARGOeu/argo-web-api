@@ -51,7 +51,7 @@ func main() {
 	//get_subrouter.HandleFunc("/api/v1/reset_cache", Respond("text/xml", "utf-8", ResetCache))
 
 	//TLS support only
-	config := &tls.Config{
+	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS10,
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
@@ -65,7 +65,8 @@ func main() {
 		},
 		PreferServerCipherSuites: true,
 	}
-	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: config}
+
+	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: tlsConfig}
 	//Web service binds to server. Requests served over HTTPS.
 
 	err := server.ListenAndServeTLS(cfg.Server.Cert, cfg.Server.Privkey)

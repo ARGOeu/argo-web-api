@@ -92,6 +92,12 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 		//Add headers
 		header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
 
+		if confhandler.Config.Server.EnableCors {
+			header.Set("Access-Control-Allow-Origin", "*")
+			header.Set("Access-Control-Allow-Headers", "Content-Type, Accept, x-api-key")
+			header.Set("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+		}
+
 		for name, values := range header {
 			for _, value := range values {
 				w.Header().Add(name, value)
