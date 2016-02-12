@@ -262,3 +262,11 @@ var UnprocessableEntity = ResponseMessage{
 		Message: "Unprocessable Entity",
 	},
 }
+
+// InternalServerErrorMessage is used to marshal a response
+var InternalServerErrorMessage = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "500",
+		Message: "Internal Server Error",
+	},
+}

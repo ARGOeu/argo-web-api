@@ -74,11 +74,20 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	vars := mux.Vars(r)
 	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
 	if err != nil {
+		if err.Error() == "Unauthorized" {
+			code = http.StatusUnauthorized
+			output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
 		return code, h, output, err
 	}
 	session, err := mongo.OpenSession(tenantcfg)
 	defer mongo.CloseSession(session)
 	if err != nil {
+		code = http.StatusInternalServerError
+		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
 		return code, h, output, err
 	}
 	result := reports.MongoInterface{}

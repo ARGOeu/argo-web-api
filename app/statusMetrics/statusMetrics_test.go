@@ -464,6 +464,14 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
  ]
 }`
 
+	respUnauthorized := `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
@@ -555,6 +563,22 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+	// 6. WRONG KEY REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEYISWRONG")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, response.Code, "Response code mismatch")
+	// Compare the expected and actual xml response
+	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
 
 }
 
