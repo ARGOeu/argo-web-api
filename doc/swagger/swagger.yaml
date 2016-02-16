@@ -1280,6 +1280,8 @@ paths:
         - $ref: "#/parameters/groupName"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1314,6 +1316,8 @@ paths:
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1345,6 +1349,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1376,6 +1382,8 @@ paths:
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1409,6 +1417,8 @@ paths:
         - $ref: "#/parameters/groupName"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1439,6 +1449,8 @@ paths:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1470,6 +1482,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1579,16 +1593,16 @@ parameters:
     type: string
     default: "emi.cream.CREAMCE-JobSubmit"
   startDate:
-    name: start_date
+    name: start_time
     in: query
     description: "start date of query in zulu format"
     required: true
     type: string
     default: "2006-01-02T15:04:05Z"
   endDate:
-    name: end_date
+    name: end_time
     in: query
-    description: "start date of query in zulu format"
+    description: "end date of query in zulu format"
     required: true
     type: string
     default: "2006-01-03T15:04:05Z"
