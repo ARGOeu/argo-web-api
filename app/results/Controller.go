@@ -83,9 +83,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -114,9 +114,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -158,6 +158,13 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
 		return code, h, output, err
 	}
 
@@ -221,9 +228,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -251,9 +258,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -291,6 +298,13 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
 		return code, h, output, err
 	}
 
@@ -413,6 +427,14 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
 	output, err = createSuperGroupView(results, report, input.Format)
 
 	if err != nil {

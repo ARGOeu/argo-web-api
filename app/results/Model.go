@@ -171,6 +171,7 @@ type root struct {
 type errorMessage struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Message string   `xml:"message" json:"message"`
+	Code    int      `xml:"code" json:"code"`
 }
 
 // ErrorResponse shortcut to respond.ErrorResponse
