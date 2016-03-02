@@ -1,14 +1,35 @@
 swagger: '2.0'
 info:
-  title: argo web api
-  description: argo web api
-  version: 1.0.0
+  title: ARGO web api
+  description: "ARGO is a lightweight service for Service Level Monitoring designed for medium and large sized e-Infrastructures. This swagger UI interface provides access to the ARGO web api, which in turn can be used for either retrieving Availability/Reliability and status results or for defining profiles and reports that should be used within the SLM computations. The ARGO web api is multitenant and can hence be used by multiple e-Infrastructure providers. To list, add, update or remove tenants use the Tenants resource below. Under all other resources use per given tenant the corresponding api key."
+  version: 1.6.3
+  contact:
+    name: ARGO Developers
+    url: http://argoeu.github.io/
+    email: argo-dev@lists.grnet.gr
 host: localhost
 schemes:
   - https
 basePath: /api/v2
 produces:
   - application/json
+tags:
+  - name: Tenants
+    description: ARGO tenants
+  - name: Reports
+    description: Everything about reports
+  - name: Operations Profiles
+    description: Possible states and AND/OR truth tables
+  - name: Aggregation Profiles
+    description: Service types groupings into higher groups
+  - name: Metric Profiles
+    description: Metrics associated with a given service type
+  - name: Factors
+    description: Multipliers for grouped aggregated A/R
+  - name: Results
+    description: Availability/Reliability in numbers
+  - name: Status
+    description: Status results in detail
 paths:
   /admin/tenants/{TENANT_ID}:
     get:
@@ -997,9 +1018,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /status/{report_name}/{group_type}/{group_name}:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
-      summary: "list status Endpoint groups"
+      summary: "List status results for a given endpoint group (i.e. Group_A)"
       description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
       operationId: statusEndpointGroupsNameFilterID
       tags:
@@ -1012,8 +1033,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
       responses:
         200:
           description: "Successful retrieval of statuses"
@@ -1029,9 +1050,9 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{group_type}:
+  /status/{report_name}/{lgroup_type}:
     get:
-      summary: "list status Endpoint groups"
+      summary: "List status results for all endpoint groups of a given type"
       description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
       operationId: statusEndpointGroupsID
       tags:
@@ -1044,7 +1065,7 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/lgroupType"
       responses:
         200:
           description: "Successful retrieval of statuses"
@@ -1061,9 +1082,9 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /status/{report_name}/{group_type}/{group_name}/services:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services:
     get:
-      summary: "List Service Status Timelines"
+      summary: "List status results for all services of a given endpoint group"
       description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
       operationId: statusServicesID
       tags:
@@ -1076,8 +1097,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
       responses:
         200:
           description: "Successful retrieval of statuses"
@@ -1093,9 +1114,9 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{group_type}/{group_name}/services/{service_name}:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
-      summary: "List Service Status Timelines"
+      summary: "List status results for a given service (under a given endpoint group)"
       description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
       operationId: statusServicesNameFilteredID
       tags:
@@ -1108,8 +1129,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
       responses:
         200:
@@ -1126,9 +1147,9 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
-      summary: "List Service Endpoint Status Timelines"
+      summary: "List status results for all endpoints (under a given service and endpoint group)"
       description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
       operationId: statusEndpointID
       tags:
@@ -1141,8 +1162,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
       responses:
         200:
@@ -1159,9 +1180,9 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
     get:
-      summary: "List Service Endpoint Status Timelines"
+      summary: "List status results for a given endpoint (under a given service and endpoint group)"
       description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
       operationId: statusEndpointNameFilteredID
       tags:
@@ -1174,8 +1195,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
         - $ref: "#/parameters/endpoint_name"
       responses:
@@ -1193,9 +1214,9 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
     get:
-      summary: "List Metric Result"
+      summary: "List status results for all metrics (under a given endpoint, service and endpoint group)"
       description: "This method may be used to retrieve a specific and detailed metric result."
       operationId: statusMetricID
       tags:
@@ -1208,8 +1229,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
         - $ref: "#/parameters/endpoint_name"
       responses:
@@ -1228,9 +1249,9 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /status/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
+  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
     get:
-      summary: "List Metric Result"
+      summary: "List status results for a given metric (under a given endpoint, service and endpoint group)"
       description: "This method may be used to retrieve a specific and detailed metric result."
       operationId: statusMetricNameFilteredID
       tags:
@@ -1243,8 +1264,8 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/startDate"
-        - $ref: "#/parameters/groupType"
-        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/service_name"
         - $ref: "#/parameters/endpoint_name"
         - $ref: "#/parameters/metric_name"
@@ -1263,9 +1284,10 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
     get:
-      summary: "List Availability and Reliability results for Service Flavors"
+      summary: "List A/R results of all services (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsServiceGroup
       tags:
@@ -1282,6 +1304,7 @@ paths:
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1300,7 +1323,7 @@ paths:
 
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
-      summary: "List Availability and Reliability results for a Service Flavor"
+      summary: "List A/R results of a given service (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsServiceGroupWithServiceFilter
       tags:
@@ -1318,6 +1341,7 @@ paths:
         - $ref: "#/parameters/service_name"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1336,7 +1360,7 @@ paths:
 
   /results/{report_name}/{lgroup_type}/{lgroup_name}/services:
     get:
-      summary: "List Availability and Reliability results for a Service Flavor"
+      summary: "List A/R results of all services (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsServiceEndpointGroup
       tags:
@@ -1351,6 +1375,7 @@ paths:
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1368,7 +1393,7 @@ paths:
           $ref: "#/responses/ServerError"
   /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
-      summary: "List Availability and Reliability results for a Service Flavor"
+      summary: "List A/R results of a given service (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsServiceEndpointGroupWithServiceFilter
       tags:
@@ -1384,6 +1409,7 @@ paths:
         - $ref: "#/parameters/service_name"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1402,7 +1428,7 @@ paths:
 
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
     get:
-      summary: "List Availability and Reliability results for an endpoint group"
+      summary: "List A/R results for a given endpoint group"
       description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsEndpointGroupWithServiceFilter
       tags:
@@ -1419,6 +1445,7 @@ paths:
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1437,7 +1464,7 @@ paths:
 
   /results/{report_name}/{group_type}:
     get:
-      summary: "List Availability and Reliability results for an endpoint group"
+      summary: "List A/R results for a given type of supergroup"
       description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsEndpointGroupWithoutSuperGroup
       tags:
@@ -1451,6 +1478,7 @@ paths:
         - $ref: "#/parameters/groupType"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1469,8 +1497,8 @@ paths:
 
   /results/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
-      summary: "List Availability and Reliability results for an endpoint group"
-      description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      summary: "List A/R results for a given endpoint group"
+      description: "This method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
       operationId: resultsGroupWithServiceFilter
       tags:
         - Results
@@ -1484,6 +1512,7 @@ paths:
         - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -1549,56 +1578,56 @@ parameters:
     description: "group type of the probes"
     required: true
     type: string
-    default: NGI
+    default: SuperGroup
   groupName:
     name: group_name
     in: path
     description: group names of the probes
     required: true
     type: string
-    default: SITE
+    default: ALL
   lgroupName:
     name: lgroup_name
     in: path
     description: endpoint group names of the probes
     required: true
     type: string
-    default: SITE
+    default: Group_A
   lgroupType:
     name: lgroup_type
     in: path
     description: endpoing group type of the probes
     required: true
     type: string
-    default: NGI
+    default: EndpointGroup
   service_name:
     name: service_name
     in: path
     description: service name of the probes
     required: true
     type: string
-    default: Site-BDII
+    default: "argo.test.metric.profile.service.1"
   endpoint_name:
     name: endpoint_name
     in: path
     description: endpoint_name of the probes
     required: true
     type: string
-    default: "cream01.afroditi.gr"
+    default: "example1.com"
   metric_name:
     name: metric_name
     in: path
     description: name of the metric profile
     required: true
     type: string
-    default: "emi.cream.CREAMCE-JobSubmit"
+    default: "argo.mem.check"
   startDate:
     name: start_time
     in: query
     description: "start date of query in zulu format"
     required: true
     type: string
-    default: "2006-01-02T15:04:05Z"
+    default: "2006-01-01T00:04:05Z"
   endDate:
     name: end_time
     in: query
@@ -1606,6 +1635,13 @@ parameters:
     required: true
     type: string
     default: "2006-01-03T15:04:05Z"
+  Granularity:
+    name: granularity
+    in: query
+    description: "daily or monthly granularity"
+    required: false
+    type: string
+    default: "daily"
 
 responses:
   Unauthorized:
