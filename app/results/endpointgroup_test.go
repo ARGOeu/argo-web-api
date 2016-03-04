@@ -342,6 +342,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	unauthorizedresponseXML := ` <root>
    <message>Unauthorized</message>
+   <code>401</code>
  </root>`
 
 	// Check that we must have a 401 Unauthorized code
@@ -387,6 +388,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	reportErrorXML := ` <root>
    <message>The report with the name Report_B does not exist</message>
+   <code>404</code>
  </root>`
 
 	typeError1XML := `<root>
@@ -405,7 +407,18 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	typeError2XML := ` <root>
    <message>The report Report_A does not define any group type: Site</message>
+   <code>404</code>
  </root>`
+
+	typeError3XML := ` <root>
+   <message>No results found for given query</message>
+   <code>404</code>
+ </root>`
+
+	typeError3JSON := `{
+   "message": "No results found for given query",
+   "code": 404
+ }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -415,8 +428,8 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 bad request code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
@@ -428,8 +441,8 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 bad request code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
@@ -441,8 +454,8 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(typeError2XML, response.Body.String(), "Response body mismatch")
 
@@ -459,6 +472,34 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(typeError1XML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/GROUP_A/Site?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError3XML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/GROUP_A/Site?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError3JSON, output, "Response body mismatch")
 
 }
 

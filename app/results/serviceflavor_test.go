@@ -470,6 +470,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 	reportErrorXML := ` <root>
    <message>The report with the name Report_B does not exist</message>
+   <code>404</code>
  </root>`
 
 	typeErrorXML := `<root>
@@ -486,6 +487,16 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
  </errors>
 </root>`
 
+	typeError1XML := ` <root>
+   <message>No results found for given query</message>
+   <code>404</code>
+ </root>`
+
+	typeError1JSON := `{
+   "message": "No results found for given query",
+   "code": 404
+ }`
+
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
@@ -494,15 +505,14 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("Accept", "application/xml")
 	request.Header.Set("x-api-key", suite.clientkey)
-	//request.Header.Set("Accept", "application/json")
 
 	response = httptest.NewRecorder()
 
@@ -513,6 +523,34 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(typeErrorXML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("Accept", "application/xml")
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError1XML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", suite.clientkey)
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError1JSON, output, "Response body mismatch")
 
 }
 
