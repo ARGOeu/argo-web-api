@@ -51,6 +51,15 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Name("all metrics").
 		Handler(confhandler.Respond(routeCheckGroup))
 
+	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}").
+		Methods("OPTIONS").
+		Name("List options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints").
+		Methods("OPTIONS").
+		Name("List options of Resource").
+		Handler(confhandler.Respond(Options))
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

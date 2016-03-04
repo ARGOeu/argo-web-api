@@ -726,6 +726,23 @@ func (suite *TenantTestSuite) TestDeleteNotFound() {
 	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
 }
 
+func (suite *TenantTestSuite) TestOptionsTenant() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/admin/tenants", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET,POST,PUT,DELETE,OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+}
+
 //TearDownTest to tear down every test
 func (suite *TenantTestSuite) TearDownTest() {
 

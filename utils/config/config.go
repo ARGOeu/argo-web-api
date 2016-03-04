@@ -47,6 +47,7 @@ var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
 var flCert = flag.String("cert", "", "speficy path to the host certificate")
 var flPrivKey = flag.String("privkey", "", "speficy path to the private key file")
 var flReqSizeLimit = flag.Int64("request-size-limit", 1073741824, "specify maximum allowed size of a request body")
+var flEnableCors = flag.String("enable-cors", "no", "specify weather to enable CORS support or not [yes/no]")
 
 // MongoConfig configuration to connect to a mongodb instance
 type MongoConfig struct {
@@ -73,6 +74,7 @@ type Config struct {
 		Cert         string
 		Privkey      string
 		ReqSizeLimit int64
+		EnableCors   bool
 	}
 	MongoDB MongoConfig
 	Profile string
@@ -88,7 +90,8 @@ const defaultConfig = `
     gzip = true
     cert = /etc/pki/tls/certs/localhost.crt
     privkey = /etc/pki/tls/private/localhost.key
-	reqsizelimit = 1073741824
+    reqsizelimit = 1073741824
+    enablecors = false
 
     [mongodb]
     host = "127.0.0.1"
@@ -156,6 +159,10 @@ func LoadConfiguration() Config {
 
 	if *flReqSizeLimit != cfg.Server.ReqSizeLimit || cfg.Server.ReqSizeLimit != 0 {
 		cfg.Server.ReqSizeLimit = *flReqSizeLimit
+	}
+
+	if *flEnableCors == "yes" {
+		cfg.Server.EnableCors = true
 	}
 
 	return cfg

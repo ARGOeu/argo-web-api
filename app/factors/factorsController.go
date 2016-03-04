@@ -95,3 +95,22 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	mongo.CloseSession(session)
 	return code, h, output, err
 }
+
+func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/plain"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	return code, h, output, err
+
+}

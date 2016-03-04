@@ -28,6 +28,10 @@ import (
 )
 
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
+	s.Methods("OPTIONS").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
 	s.Methods("GET").
 		Name("List Factors").
 		Handler(confhandler.Respond(List))

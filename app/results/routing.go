@@ -82,6 +82,47 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 		Methods("GET").
 		Name("Group Type").
 		Handler(confhandler.Respond(routeGroup))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{group_type}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{lgroup_type}/{lgroup_name}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{lgroup_type}/{lgroup_name}/services").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
+	s.Methods("OPTIONS").
+		Path("/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}").
+		Name("List Options of Resource").
+		Handler(confhandler.Respond(Options))
+
 }
 
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

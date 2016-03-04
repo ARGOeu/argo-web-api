@@ -1381,6 +1381,39 @@ func (suite *OperationsProfilesTestSuite) TestDelete() {
 	suite.Equal(err.Error(), "not found", "No not found error")
 }
 
+func (suite *OperationsProfilesTestSuite) TestOptionsOperationsProfiles() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/operations_profiles", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+	headers = response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
 //TearDownTest to tear down every test
 func (suite *OperationsProfilesTestSuite) TearDownTest() {
 
