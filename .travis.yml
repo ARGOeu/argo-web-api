@@ -21,4 +21,5 @@ install:
 script:
  - godep restore
  - godep update ... # Using Godep.json update and create a local _workspace directory
- - gocov test ./... | gocov-xml > coverage.xml
+ - go test -v ./...
+ - gocov test ./... 2> /dev/null | gocov report
