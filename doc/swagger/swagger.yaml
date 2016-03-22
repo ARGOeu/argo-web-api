@@ -26,6 +26,8 @@ tags:
     description: Metrics associated with a given service type
   - name: Factors
     description: Multipliers for grouped aggregated A/R
+  - name: Recomputations
+    description: A/R recomputations
   - name: Results
     description: Availability/Reliability in numbers
   - name: Status
@@ -1557,6 +1559,70 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
+  /recomputations:
+    get:
+      summary: "List Recomputation Requests"
+      description: "This method can be used to retrieve a list of recomputation requests."
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful retrieval of recomputations"
+          schema:
+            $ref: "#/definitions/RecomputationsListResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+    post:
+      summary: "Create a new recomputation"
+      description: "This method can be used to create a new recomputation request."
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "recomputation_request"
+          in: "body"
+          description: "Json description of the recomputation to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/recomputation_request'
+      responses:
+        '200':
+          description: Recomputation Request Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
 parameters:
   apiKey:
     name: "x-api-key"
@@ -1686,6 +1752,16 @@ definitions:
               type: string
             weight:
               type: string
+
+  RecomputationsListResponse:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/recomputation'
 
   timestamp_value:
     type: object
@@ -1929,6 +2005,59 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Metric_profile'
+
+  recomputation:
+    type: object
+    properties:
+      id:
+        type: string
+      requester_name:
+        type: string
+      requester_email:
+        type: string
+      reason:
+        type: string
+        description: "The reason why this request has been submitted"
+      start_time:
+        type: string
+        description: "The start date regarding this A/R recomputation"
+      end_time:
+        type: string
+        description: "The end date regarding this A/R recomputation"
+      exclude:
+        type: array
+        description: "Comma separated list of excluded endpoint groups"
+        items:
+          type: string
+      status:
+        type: string
+        description: "Can be one of pending, running or done"
+      timestamp:
+        type: string
+        description: "Timestamp of last status change"
+
+  recomputation_request:
+    type: object
+    properties:
+      reason:
+        type: string
+        description: "A reason why this request is being submitted"
+      start_time:
+        type: string
+        default: "2006-01-03T15:04:05Z"
+        description: "start date for A/R recomputation in zulu format"
+      end_time:
+        type: string
+        default: "2006-01-03T15:04:05Z"
+        description: "end date for A/R recomputation in zulu format"
+      exclude:
+        type: array
+        description: "Comma separated list of endpoint groups to exclude"
+        items:
+          type: string
+      report:
+        type: string
+        description: "Name of job report"
 
   Metric_profile:
     type: object
