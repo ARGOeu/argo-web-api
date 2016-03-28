@@ -112,4 +112,4 @@ And the API can be started by issuing the command:
 
 ## Links and further reading
 
-- [Swagger : API Demo](http://arpi.afroditi.hellasgrid.gr:8080/)
+- [Swagger : API Demo](https://api-doc.argo.grnet.gr/argo-web-api/)
