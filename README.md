@@ -2,7 +2,7 @@
 
 <img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS1Eom4AwyETgRqpMY8tgmjf-x6ugxMOVT-auzzgo1u6PrnhjQC" alt="Travis" width="25"/> [![Build Status](https://travis-ci.org/ARGOeu/argo-web-api.svg?branch=devel)](https://travis-ci.org/ARGOeu/argo-web-api)
 
-<img src="http://cdn.slidesharecdn.com/profile-photo-Swagger-API-32x32.jpg?cb=1439244971" alt="swagger ui" width="25"/> [Swagger UI](https://api-doc.argo.grnet.gr/argo-web-api/)
+<img src="http://cdn.slidesharecdn.com/profile-photo-Swagger-API-32x32.jpg?cb=1439244971" alt="swagger ui" width="25"/> ![Swagger UI](https://api-doc.argo.grnet.gr/argo-web-api/)
 
 # ARGO Web-API
 
