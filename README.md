@@ -1,8 +1,8 @@
 <img src="https://jenkins.argo.grnet.gr/static/3c75a153/images/headshot.png" alt="Jenkins" width="25"/> [![Build Status](https://jenkins.argo.grnet.gr/job/argo-web-api_devel/badge/icon)](https://jenkins.argo.grnet.gr/job/argo-web-api_devel) ![Test Coverage](http://jenkins.argo.grnet.gr:9913/jenkins/c/http/jenkins.argo.grnet.gr/job/argo-web-api_devel)
 
-<img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS1Eom4AwyETgRqpMY8tgmjf-x6ugxMOVT-auzzgo1u6PrnhjQC" alt="Travis" width="25"/> [![Build Status](https://travis-ci.org/ARGOeu/argo-web-api.svg?branch=devel)](https://travis-ci.org/ARGOeu/argo-web-api)
+<img src="https://s3.amazonaws.com/openshift-hub/production/quickstarts/26/travisci.png?1425058399" alt="Travis" width="25"/> [![Build Status](https://travis-ci.org/ARGOeu/argo-web-api.svg?branch=devel)](https://travis-ci.org/ARGOeu/argo-web-api)
 
-<img src="http://cdn.slidesharecdn.com/profile-photo-Swagger-API-32x32.jpg?cb=1439244971" alt="swagger ui" width="25"/> ![Swagger UI](https://api-doc.argo.grnet.gr/argo-web-api/)
+<img src="http://cdn.slidesharecdn.com/profile-photo-Swagger-API-32x32.jpg?cb=1439244971" alt="swagger ui" width="25"/> [Swagger UI](https://api-doc.argo.grnet.gr/argo-web-api/)
 
 # ARGO Web-API
 
