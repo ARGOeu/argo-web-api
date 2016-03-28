@@ -63,9 +63,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
 
 	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
 		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
 		return code, h, output, err
 	}
 

@@ -1743,15 +1743,18 @@ definitions:
   FactorsResponse:
     type: object
     properties:
-      root:
+      factors:
+        description: "List of endpoint groups and their relevant weights"
         type: array
         items:
           type: object
           properties:
             site:
               type: string
+              description: "The name of the endpoint group"
             weight:
               type: string
+              description: "The weighting factor of the given endpoint group. The higher the factor the more significant the contribution of the given endpoint group in the overall A/R results."
 
   RecomputationsListResponse:
     type: object
