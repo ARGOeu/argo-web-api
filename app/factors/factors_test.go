@@ -83,7 +83,7 @@ func (suite *FactorsTestSuite) SetupSuite() {
 }`
 
 	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/factors").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// TODO: I don't like it here that I rewrite the test data.
@@ -224,6 +224,22 @@ func (suite *FactorsTestSuite) TestOptionsFactors() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *FactorsTestSuite) TestTrailingSlashFactors() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/factors/", strings.NewReader(""))
+	request.Header.Set("x-api-key", "secret")
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+
+	suite.Equal(404, code, "Error in response code")
 
 }
 
