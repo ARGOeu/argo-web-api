@@ -164,7 +164,7 @@ type SuperGroup struct {
 
 type root struct {
 	XMLName xml.Name      `xml:"root" json:"-"`
-	Result  []interface{} `json:"root"`
+	Result  []interface{} `json:"results"`
 }
 
 // errorMessage struct to hold the json/xml error response

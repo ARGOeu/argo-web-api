@@ -296,7 +296,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.router.ServeHTTP(response, request)
 
 	endpointGroupAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "GROUP_A",
        "type": "GROUP",

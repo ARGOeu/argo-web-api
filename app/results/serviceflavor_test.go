@@ -310,7 +310,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	responseBody = response.Body.String()
 
 	serviceFlavorAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "ST01",
        "type": "SITE",
@@ -393,7 +393,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 	suite.router.ServeHTTP(response, request)
 
 	serviceFlavorAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "ST01",
        "type": "SITE",
