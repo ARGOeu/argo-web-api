@@ -377,7 +377,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 	suite.router.ServeHTTP(response, request)
 
 	SuperGrouAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
@@ -453,7 +453,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 	output := response.Body.String()
 
 	SuperGroupAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
