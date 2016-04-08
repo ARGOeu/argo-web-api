@@ -76,7 +76,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 
 	// Create router and confhandler for test
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
 
@@ -242,7 +242,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"group": bson.M{
 				"type": "GROUP",
 				"group": bson.M{
-					"type": "SITE",
+					"type": "SITES",
 				},
 			},
 		},
@@ -265,7 +265,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 // TestListEndpointGroupAvailability test if daily results are returned correctly
 func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailability() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITES/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -275,7 +275,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	endpointGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
-     <group name="ST01" type="SITE">
+     <group name="ST01" type="SITES">
        <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
        <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
      </group>
@@ -287,7 +287,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityXML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITES/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -303,7 +303,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
        "endpoints": [
          {
            "name": "ST01",
-           "type": "SITE",
+           "type": "SITES",
            "results": [
              {
                "timestamp": "2015-06-22",
@@ -332,7 +332,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITES/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/xml")
 
@@ -355,7 +355,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 // TestListAllEndpointGroupAvailability test if daily results are returned correctly
 func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailability() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITES?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -365,11 +365,11 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 	endpointGroupAvailabilityXML := ` <root>
    <group name="GROUP_A" type="GROUP">
-     <group name="ST01" type="SITE">
+     <group name="ST01" type="SITES">
        <results timestamp="2015-06-22" availability="66.7" reliability="54.6" unknown="0" uptime="1" downtime="0"></results>
        <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
      </group>
-     <group name="ST02" type="SITE">
+     <group name="ST02" type="SITES">
        <results timestamp="2015-06-22" availability="70" reliability="45" unknown="0" uptime="1" downtime="0"></results>
        <results timestamp="2015-06-23" availability="43.5" reliability="56" unknown="0" uptime="1" downtime="0"></results>
      </group>
@@ -400,13 +400,13 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
   <error>
    <message>Endpoint Group type not in report</message>
    <code>400</code>
-   <details>Endpoint Group type Site not present in report Report_A. Try using SITE instead</details>
+   <details>Endpoint Group type CLUSTERS not present in report Report_A. Try using SITES instead</details>
   </error>
  </errors>
 </root>`
 
 	typeError2XML := ` <root>
-   <message>The report Report_A does not define any group type: Site</message>
+   <message>The report Report_A does not define any group type: CLUSTERS</message>
    <code>404</code>
  </root>`
 
@@ -420,7 +420,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
    "code": 404
  }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/SITES?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -433,7 +433,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_B/GROUP/GROUP_A/SITE?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_B/GROUP/GROUP_A/SITES?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -446,7 +446,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/CLUSTERS?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -459,7 +459,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(typeError2XML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/Site?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/CLUSTERS?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -473,7 +473,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(typeError1XML, output, "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/GROUP_A/Site?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -487,7 +487,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	// Compare the expected and actual xml response
 	suite.Equal(typeError3XML, output, "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/GROUP_A/Site?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -503,9 +503,10 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 }
 
+// TestOptionsEndpointGroup tests responses in case the OPTIONS http verb is used
 func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 
-	request, _ := http.NewRequest("OPTIONS", "/api/v2/results/Report_A/SITE", strings.NewReader(""))
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/results/Report_A/SITES", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -520,7 +521,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
-	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/SITE/ST01", strings.NewReader(""))
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/SITES/ST01", strings.NewReader(""))
 
 	response = httptest.NewRecorder()
 
@@ -535,7 +536,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
-	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP/GROUP_A/SITE", strings.NewReader(""))
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES", strings.NewReader(""))
 
 	response = httptest.NewRecorder()
 
@@ -550,7 +551,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
-	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP/GROUP_A/SITE/ST01", strings.NewReader(""))
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES/ST01", strings.NewReader(""))
 
 	response = httptest.NewRecorder()
 
@@ -564,6 +565,39 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+// TestStrictSlashEndpointGroupResults test if not found responses are returned correctly
+func (suite *endpointGroupAvailabilityTestSuite) TestStrictSlashEndpointGroupResults() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITES/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITES/ST01/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/SITES/SITES/ST01/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 
 }
 

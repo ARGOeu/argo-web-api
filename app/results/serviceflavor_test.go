@@ -76,7 +76,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupSuite() {
 
 	// Create router and confhandler for test
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
 
@@ -554,6 +554,7 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 }
 
+// TestOptionsServiceFlavor tests responses in case the OPTIONS http verb is used
 func (suite *serviceFlavorAvailabilityTestSuite) TestOptionsServiceFlavor() {
 
 	request, _ := http.NewRequest("OPTIONS", "/api/v2/results/Report_A/SITE/ST01/services", strings.NewReader(""))
@@ -615,6 +616,25 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestOptionsServiceFlavor() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+// TestStrictSlashServiceFlavorResults test if not found responses are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestStrictSlashServiceFlavorResults() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/SF01/?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 
 }
 
