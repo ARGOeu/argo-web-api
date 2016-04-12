@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type endpointGroupAvailabilityTestSuite struct {
@@ -340,10 +340,13 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 
 	suite.router.ServeHTTP(response, request)
 
-	unauthorizedresponseXML := ` <root>
-   <message>Unauthorized</message>
-   <code>401</code>
- </root>`
+	unauthorizedresponseXML := `<root>
+ <status>
+  <message>Unauthorized</message>
+  <code>401</code>
+  <details>You need to provide a correct authentication token using the header &#39;x-api-key&#39;</details>
+ </status>
+</root>`
 
 	// Check that we must have a 401 Unauthorized code
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")

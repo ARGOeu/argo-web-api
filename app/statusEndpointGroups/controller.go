@@ -26,12 +26,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // ListEndpointGroupTimelines returns a list of metric timelines
@@ -76,19 +76,9 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		contentType,
 	}
 
-	// Call authenticateTenant to check the api key and retrieve
-	// the correct tenant db conf
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			out := respond.UnauthorizedMessage
-			output = out.MarshalTo(contentType)
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
 	// Mongo Session
 	results := []DataOutput{}
 

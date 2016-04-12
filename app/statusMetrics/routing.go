@@ -27,40 +27,27 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics/memory_used
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
-		Methods("GET").
-		Name("metric name").
-		Handler(confhandler.Respond(routeCheckGroup))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	// eg. timelines/critical/SITE/mysite/service/apache/endpoints/apache01.host/metrics
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
-		Methods("GET").
-		Name("all metrics").
-		Handler(confhandler.Respond(routeCheckGroup))
+}
 
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
-
+var appRoutesV2 = []respond.AppRoutes{
+	{"status_metrics.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}", routeCheckGroup},
+	{"status_metrics.list", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics", routeCheckGroup},
+	{"status_metrics.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}", Options},
+	{"status_metrics.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}/metrics", Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -82,17 +69,10 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	}
 
 	vars := mux.Vars(r)
-	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
-		return code, h, output, err
-	}
+
+	// Grab Tenant DB configuration from context
+	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+
 	session, err := mongo.OpenSession(tenantcfg)
 	defer mongo.CloseSession(session)
 	if err != nil {

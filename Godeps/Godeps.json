@@ -1,6 +1,9 @@
 {
 	"ImportPath": "github.com/ARGOeu/argo-web-api",
 	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/ARGOeu/go-lru-cache",
@@ -9,6 +12,14 @@
 		{
 			"ImportPath": "github.com/gorilla/context",
 			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
+		},
+		{
+			"ImportPath": "github.com/gorilla/handlers",
+			"Rev": "40694b40f4a928c062f56849989d3e9cd0570e5f"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "49c024275504f0341e5a9971eb7ba7fa3dc7af40"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
@@ -26,14 +37,6 @@
 			"Rev": "a979bdb3ad236b6a9f508e352e1202779149e8b6"
 		},
 		{
-			"ImportPath": "github.com/gorilla/handlers",
-			"Rev": "40694b40f4a928c062f56849989d3e9cd0570e5f"
-		},
-		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "49c024275504f0341e5a9971eb7ba7fa3dc7af40"
-		},
-		{
 			"ImportPath": "github.com/twinj/uuid",
 			"Rev": "70cac2bcd273ef6a371bb96cde363d28b68734c3"
 		},
@@ -42,34 +45,7 @@
 			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
 		},
 		{
-			"ImportPath": "gopkg.in/gcfg.v1/scanner",
-			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
-		},
-		{
-			"ImportPath": "gopkg.in/gcfg.v1/token",
-			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
-		},
-		{
-			"ImportPath": "gopkg.in/gcfg.v1/types",
-			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
-		},
-		{
 			"ImportPath": "gopkg.in/mgo.v2",
-			"Comment": "r2015.06.03-5-g22287ba",
-			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
-		},
-		{
-			"ImportPath": "gopkg.in/mgo.v2/bson",
-			"Comment": "r2015.06.03-5-g22287ba",
-			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
-		},
-		{
-			"ImportPath": "gopkg.in/mgo.v2/internal/sasl",
-			"Comment": "r2015.06.03-5-g22287ba",
-			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
-		},
-		{
-			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
 			"Comment": "r2015.06.03-5-g22287ba",
 			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
 		}

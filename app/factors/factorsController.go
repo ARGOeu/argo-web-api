@@ -32,9 +32,9 @@ import (
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)
@@ -60,13 +60,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 

@@ -23,27 +23,20 @@
 package recomputations2
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s.Methods("GET").
-		Path("/recomputations/{ID}").
-		Name("List Single Recomputation").
-		Handler(confhandler.Respond(ListOne))
 
-	// strictRoute := s.MatcherFunc(respond.MatchRegex("^" + confhandler.Routes.V2["recomputations"] + "$")).Subrouter()
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	s.Methods("GET").
-		Path("/recomputations").
-		Name("List Recomputations").
-		Handler(confhandler.Respond(List))
+}
 
-	s.Methods("POST").
-		Path("/recomputations").
-		Name("Recomputations").
-		Handler(confhandler.Respond(SubmitRecomputation))
+var appRoutesV2 = []respond.AppRoutes{
+	{"recomputations.list", "GET", "/recomputations", List},
+	{"recomputations.get", "GET", "/recomputations/{ID}", ListOne},
+	{"recomputations.submit", "POST", "/recomputations", SubmitRecomputation},
 }
