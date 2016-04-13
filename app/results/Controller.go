@@ -42,18 +42,12 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -77,7 +71,6 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
 		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -108,7 +101,6 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -178,18 +170,12 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -243,7 +229,6 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
 		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
@@ -308,18 +293,12 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()

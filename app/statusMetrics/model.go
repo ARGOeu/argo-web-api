@@ -24,6 +24,9 @@ package statusMetrics
 
 import "encoding/xml"
 
+const zuluForm = "2006-01-02T15:04:05Z"
+const ymdForm = "20060102"
+
 // InputParams struct holds as input all the url params of the request
 type InputParams struct {
 	startTime int // UTC time in W3C format
@@ -92,4 +95,5 @@ type statusOUT struct {
 type messageOUT struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Message string   `xml:"message" json:"message"`
+	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }

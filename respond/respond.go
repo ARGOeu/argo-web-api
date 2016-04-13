@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/utils/caches"
@@ -62,9 +63,11 @@ const (
 	//ErrAuthen is Error during authentication
 	ErrAuthen ErrEnum = iota
 	//ErrAuthor is Error during authorization
-	ErrAuthor
-	//ErrValid is Error during validation
-	ErrValid
+	ErrAuthor ErrEnum = iota
+	//ErrValidHead is Error during validation
+	ErrValidHead ErrEnum = iota
+	//ErrValidQuery is Error during validation
+	ErrValidQuery ErrEnum = iota
 )
 
 // ConfHandler Keeps all the configuration/variables required by all the requests
@@ -101,7 +104,7 @@ func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) 
 		var handler http.HandlerFunc
 
 		handler = confHandler.Respond(route.SubrouterHandler)
-		handler = WrapValidate(handler)
+		handler = WrapValidate(handler, confHandler.Config, route.Name)
 		if route.Verb != "OPTIONS" {
 			handler = WrapAuthorize(handler, confHandler.Config, route.Name)
 			handler = WrapAuthenticate(handler, confHandler.Config, route.Name)
@@ -116,10 +119,12 @@ func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) 
 }
 
 // Error responds immediately when errors arise in handler chain
-func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.Config) {
+func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.Config, errs []ErrorResponse) {
 	//Add headers
 
 	var msg ResponseMessage
+	var contentType string
+	var output []byte
 	var code int
 	header := r.Header
 
@@ -127,16 +132,30 @@ func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.C
 	case ErrAuthen:
 		msg = UnauthorizedMessage
 		code = http.StatusUnauthorized
+		contentType = r.Header.Get("Accept")
+		output, _ = MarshalContent(msg, contentType, "", " ")
 	case ErrAuthor:
 		msg = Forbidden
 		code = http.StatusForbidden
+		contentType = r.Header.Get("Accept")
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	case ErrValidHead:
+		msg = NotAcceptableContentType
+		code = http.StatusNotAcceptable
+		contentType = "application/json"
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	case ErrValidQuery:
+		msg = BadRequestSimple
+		code = http.StatusBadRequest
+		contentType = r.Header.Get("Accept")
+		output = CreateFailureResponseMessage("Bad Request", strconv.Itoa(code), errs).MarshalTo(contentType)
 	default:
 		msg = InternalServerErrorMessage
 		code = http.StatusInternalServerError
+		contentType = "application/json"
+		output, _ = MarshalContent(msg, contentType, "", " ")
 	}
 
-	contentType, _ := ParseAcceptHeader(r)
-	output, _ := MarshalContent(msg, contentType, "", " ")
 	header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
 
 	if cfg.Server.EnableCors {

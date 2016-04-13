@@ -56,18 +56,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -176,19 +170,14 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
 	urlValues := r.URL.Query()
-	contentType, err = respond.ParseAcceptHeader(r)
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -240,18 +229,12 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -310,18 +293,12 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -413,19 +390,13 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)

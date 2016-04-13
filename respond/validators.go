@@ -28,53 +28,175 @@ package respond
 
 import (
 	"fmt"
-	"strconv"
+	"net/http"
+	"net/url"
 	"time"
 )
 
-func validateDate(dateStr string) (int, error) {
-	parsedTime, err := time.Parse(zuluForm, dateStr)
+func validateDate(dateStr string) error {
+	_, err := time.Parse(zuluForm, dateStr)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	ymdTime, err := strconv.Atoi(parsedTime.Format(ymdForm))
-	return ymdTime, err
+	return nil
 }
 
-func ValidateDateRange(dateStart string, dateEnd string) (int, int, []ErrorResponse) {
-	errs := []ErrorResponse{}
-	var parsedStart, parsedEnd int = 0, 0
+func ValidateMetricParams(queries url.Values) []ErrorResponse {
 
-	if dateStart == "" && dateEnd == "" {
+	var errs []ErrorResponse
+
+	if queries["exec_time"] == nil {
 		errs = append(errs, ErrorResponse{
-			Message: "No time span set",
-			Code:    "400",
-			Details: "Please use start_time and/or end_time url parameters to set the prefered time span",
+			Message: "exec_time not set",
+			Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+			Details: fmt.Sprintf("Please use exec_time url parameter in zulu format (like %s) to indicate the exact probe execution time", zuluForm),
 		})
 	} else {
-		if dateStart != "" {
-			parsedStartWG, errStart := validateDate(dateStart)
-			parsedStart = parsedStartWG
-			if errStart != nil {
-				errs = append(errs, ErrorResponse{
-					Message: "start_time parsing error",
-					Code:    "400",
-					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", dateStart, zuluForm),
-				})
-			}
-		}
-		if dateEnd != "" {
-			parsedEndWG, errEnd := validateDate(dateEnd)
-			parsedEnd = parsedEndWG
-			if errEnd != nil {
-				errs = append(errs, ErrorResponse{
-					Message: "end_time parsing error",
-					Code:    "400",
-					Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", dateEnd, zuluForm),
-				})
-			}
+		execDate := queries.Get("exec_time")
+		errExec := validateDate(execDate)
+		if errExec != nil {
+			errs = append(errs, ErrorResponse{
+				Message: "exec_time parsing error",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", execDate, zuluForm),
+			})
 		}
 	}
 
-	return parsedStart, parsedEnd, errs
+	return errs
+
+}
+
+func ValidateResultsParams(queries url.Values) []ErrorResponse {
+
+	var errs []ErrorResponse
+
+	if queries["end_time"] == nil {
+		if queries["start_time"] == nil {
+			errs = append(errs, ErrorResponse{
+				Message: "No time span set",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: "Please use start_time and end_time url parameters to set the prefered time span",
+			})
+		} else {
+			errs = append(errs, ErrorResponse{
+				Message: "end_time not set",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Please use end_time url parameter in zulu format (like %s) to indicate the query end time", zuluForm),
+			})
+		}
+	} else {
+		endDate := queries.Get("end_time")
+		errEnd := validateDate(endDate)
+		if errEnd != nil {
+			errs = append(errs, ErrorResponse{
+				Message: "end_time parsing error",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", endDate, zuluForm),
+			})
+		}
+	}
+	if queries["start_time"] == nil {
+		errs = append(errs, ErrorResponse{
+			Message: "start_time not set",
+			Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+			Details: fmt.Sprintf("Please use start_time url parameter in zulu format (like %s) to indicate the query start time", zuluForm),
+		})
+	} else {
+		startDate := queries.Get("start_time")
+		errStart := validateDate(startDate)
+		if errStart != nil {
+			errs = append(errs, ErrorResponse{
+				Message: "start_time parsing error",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", startDate, zuluForm),
+			})
+		}
+	}
+
+	if queries["granularity"] != nil {
+		granularity := queries["granularity"][0]
+		if granularity != "daily" && granularity != "monthly" {
+			errs = append(errs, ErrorResponse{
+				Message: "Wrong Granularity",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily or monthly", granularity),
+			})
+		}
+	}
+
+	return errs
+
+}
+
+func ValidateStatusParams(queries url.Values) []ErrorResponse {
+
+	var errs []ErrorResponse
+
+	if queries["end_time"] == nil {
+		if queries["start_time"] == nil {
+			errs = append(errs, ErrorResponse{
+				Message: "No time span set",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: "Please use start_time and end_time url parameters to set the prefered time span",
+			})
+		} else {
+			errs = append(errs, ErrorResponse{
+				Message: "end_time not set",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Please use end_time url parameter in zulu format (like %s) to indicate the query end time", zuluForm),
+			})
+		}
+	} else {
+		endDate := queries.Get("end_time")
+		errEnd := validateDate(endDate)
+		if errEnd != nil {
+			errs = append(errs, ErrorResponse{
+				Message: "end_time parsing error",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", endDate, zuluForm),
+			})
+		}
+	}
+	if queries["start_time"] == nil {
+		errs = append(errs, ErrorResponse{
+			Message: "start_time not set",
+			Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+			Details: fmt.Sprintf("Please use start_time url parameter in zulu format (like %s) to indicate the query start time", zuluForm),
+		})
+	} else {
+		startDate := queries.Get("start_time")
+		errStart := validateDate(startDate)
+		if errStart != nil {
+			errs = append(errs, ErrorResponse{
+				Message: "start_time parsing error",
+				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+				Details: fmt.Sprintf("Error parsing date string %s please use zulu format like %s", startDate, zuluForm),
+			})
+		}
+	}
+
+	return errs
+
+}
+
+// ValidateAcceptHeader parses the accept header to determine the content type
+func ValidateAcceptHeader(accept string) ErrorResponse {
+
+	// err := ErrorResponse{}
+
+	if accept == acceptedContentTypes[0] {
+		return (ErrorResponse{})
+	}
+	if accept == acceptedContentTypes[1] {
+		return (ErrorResponse{})
+	}
+
+	err := ErrorResponse{
+		Message: "Not Acceptable Content Type",
+		Code:    fmt.Sprintf("%d", http.StatusNotAcceptable),
+		Details: fmt.Sprintf("Accept header provided did not contain any valid content types. Acceptable content types are '%s' and '%s'", acceptedContentTypes[0], acceptedContentTypes[1]),
+	}
+	return err
+
 }

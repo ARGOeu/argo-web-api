@@ -25,14 +25,21 @@ package statusEndpoints
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
-	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
+
+// parseZuluDate is used to parse a zulu formatted date to integer
+func parseZuluDate(dateStr string) (int, error) {
+	parsedTime, _ := time.Parse(zuluForm, dateStr)
+	return strconv.Atoi(parsedTime.Format(ymdForm))
+}
 
 // ListEndpointTimelines returns a list of metric timelines
 func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -43,29 +50,20 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 	h := http.Header{}
 	output := []byte("List Endpoint Timelines")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	parsedStart, parsedEnd, errs := respond.ValidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
-	if len(errs) > 0 {
-		code = http.StatusBadRequest
-		output = respond.CreateFailureResponseMessage("Bad Request", "400", errs).MarshalTo(contentType)
-	}
+	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
+	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
 
 	input := InputParams{
 		parsedStart,
@@ -105,7 +103,6 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 
 	output, err = createView(results, input) //Render the results into XML format
 
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
 
