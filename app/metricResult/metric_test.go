@@ -248,6 +248,24 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
 
 }
 
+// TestOptionsMetricResult is used to test the OPTIONS response
+func (suite *metricResultTestSuite) TestOptionsMetricResult() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit", strings.NewReader(""))
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
