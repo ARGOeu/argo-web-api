@@ -29,9 +29,9 @@ package aggregationProfiles
 import (
 	"errors"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // MongoInterface to retrieve and insert metricProfiles in mongo

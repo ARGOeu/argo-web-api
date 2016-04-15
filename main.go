@@ -33,8 +33,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/handlers"
 	"github.com/ARGOeu/argo-web-api/routing"
+	"github.com/gorilla/handlers"
 )
 
 func main() {

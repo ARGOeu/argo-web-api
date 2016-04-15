@@ -23,20 +23,27 @@
 package factors
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s.Methods("GET").
-		Path("/factors").
-		Name("List Factors").
-		Handler(confhandler.Respond(List))
+	// s.Methods("GET").
+	// 	Path("/factors").
+	// 	Name("List Factors").
+	// 	Handler(respond.WrapAll(confhandler.Respond(List), confhandler.Config))
+	//
+	// s.Methods("OPTIONS").
+	// 	Path("/factors").
+	// 	Name("List Options of Resource").
+	// 	Handler(confhandler.Respond(Options))
 
-	s.Methods("OPTIONS").
-		Path("/factors").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
+}
+
+var appRoutesV2 = []respond.AppRoutes{
+	{"factors.list", "GET", "/factors", List},
+	{"factors.options", "OPTIONS", "/factors", Options},
 }

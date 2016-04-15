@@ -27,39 +27,27 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	// eg. timelines/critical/SITES/mysite
-	s.Path("/{report_name}/{group_type}/{group_name}").
-		Methods("GET").
-		Name("endpoint group name").
-		Handler(confhandler.Respond(routeCheckGroup))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	// eg. timelines/critical/SITES
-	s.Path("/{report_name}/{group_type}").
-		Methods("GET").
-		Name("all endpoint groups").
-		Handler(confhandler.Respond(routeCheckGroup))
+}
 
-	s.Path("/{report_name}/{group_type}/{group_name}").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Path("/{report_name}/{group_type}").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
+var appRoutesV2 = []respond.AppRoutes{
+	{"status_endpoint_groups.get", "GET", "/{report_name}/{group_type}/{group_name}", routeCheckGroup},
+	{"status_endpoint_groups.list", "GET", "/{report_name}/{group_type}", routeCheckGroup},
+	{"status_endpoint_groups.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}", Options},
+	{"status_endpoint_groups.options", "OPTIONS", "/{report_name}/{group_type}", Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -81,17 +69,10 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	}
 
 	vars := mux.Vars(r)
-	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
-		return code, h, output, err
-	}
+
+	// Grab Tenant DB configuration from context
+	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+
 	session, err := mongo.OpenSession(tenantcfg)
 	defer mongo.CloseSession(session)
 	if err != nil {

@@ -33,15 +33,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -1267,6 +1267,8 @@ func (suite *ReportTestSuite) TestDeleteNotFound() {
 
 func (suite *ReportTestSuite) TestOptionsReports() {
 	request, _ := http.NewRequest("OPTIONS", "/api/v2/reports", strings.NewReader(""))
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
 
 	response := httptest.NewRecorder()
 

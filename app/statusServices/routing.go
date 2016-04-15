@@ -27,40 +27,27 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	// eg. timelines/critical/SITE/mysite/services/apache
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}").
-		Methods("GET").
-		Name("service name").
-		Handler(confhandler.Respond(routeCheckGroup))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	// eg. timelines/critical/SITE/mysite/services
-	s.Path("/{report_name}/{group_type}/{group_name}/services").
-		Methods("GET").
-		Name("all services").
-		Handler(confhandler.Respond(routeCheckGroup))
+}
 
-	s.Path("/{report_name}/{group_type}/{group_name}/services/{service_name}").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Path("/{report_name}/{group_type}/{group_name}/services").
-		Methods("OPTIONS").
-		Name("List options of Resource").
-		Handler(confhandler.Respond(Options))
-
+var appRoutesV2 = []respond.AppRoutes{
+	{"status_services.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}", routeCheckGroup},
+	{"status_services.list", "GET", "/{report_name}/{group_type}/{group_name}/services", routeCheckGroup},
+	{"status_services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}", Options},
+	{"status_services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services", Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -82,17 +69,10 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	}
 
 	vars := mux.Vars(r)
-	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
-		return code, h, output, err
-	}
+
+	// Grab Tenant DB configuration from context
+	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+
 	session, err := mongo.OpenSession(tenantcfg)
 	defer mongo.CloseSession(session)
 	if err != nil {

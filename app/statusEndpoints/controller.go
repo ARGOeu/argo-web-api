@@ -26,15 +26,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
-// ListMetricTimelines returns a list of metric timelines
+// ListEndpointTimelines returns a list of metric timelines
 func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -78,16 +78,8 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		contentType,
 	}
 
-	// Call authenticateTenant to check the api key and retrieve
-	// the correct tenant db conf
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
@@ -134,6 +126,7 @@ func prepareQuery(input InputParams, reportID string) bson.M {
 	return filter
 }
 
+// Options implements the option request on resource
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

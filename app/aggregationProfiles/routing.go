@@ -23,46 +23,24 @@
 package aggregationProfiles
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s.Methods("OPTIONS").
-		Path("/aggregation_profiles").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	s.Methods("GET").
-		Path("/aggregation_profiles").
-		Name("List Aggregation Profiles").
-		Handler(confhandler.Respond(List))
+}
 
-	s.Methods("OPTIONS").
-		Path("/aggregation_profiles/{ID}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Methods("GET").
-		Path("/aggregation_profiles/{ID}").
-		Name("List One Aggregation Profile").
-		Handler(confhandler.Respond(ListOne))
-
-	s.Methods("POST").
-		Path("/aggregation_profiles").
-		Name("Create Aggregation Profile").
-		Handler(confhandler.Respond(Create))
-
-	s.Methods("PUT").
-		Path("/aggregation_profiles/{ID}").
-		Name("Update Aggregation Profile").
-		Handler(confhandler.Respond(Update))
-
-	s.Methods("DELETE").
-		Path("/aggregation_profiles/{ID}").
-		Name("Delete Aggregation Profile").
-		Handler(confhandler.Respond(Delete))
+var appRoutesV2 = []respond.AppRoutes{
+	{"aggregationProfiles.list", "GET", "/aggregation_profiles", List},
+	{"aggregationProfiles.get", "GET", "/aggregation_profiles/{ID}", ListOne},
+	{"aggregationProfiles.create", "POST", "/aggregation_profiles", Create},
+	{"aggregationProfiles.update", "PUT", "/aggregation_profiles/{ID}", Update},
+	{"aggregationProfiles.delete", "DELETE", "/aggregation_profiles/{ID}", Delete},
+	{"aggregationProfiles.options", "OPTIONS", "/aggregation_profiles", Options},
+	{"aggregationProfiles.options", "OPTIONS", "/aggregation_profiles/{ID}", Options},
 }

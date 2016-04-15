@@ -28,11 +28,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // GetMetricResult returns the detailed message from a probe
@@ -47,15 +47,8 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()

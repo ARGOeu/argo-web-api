@@ -34,13 +34,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 // Create function is used to implement the create tenant request.
@@ -60,15 +59,6 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// Content Negotiation
 	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	// if authentication procedure fails then
-	// return unauthorized http status
-	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
-
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
 
 	// Try ingest request body
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -148,15 +138,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	// if authentication procedure fails then
-	// return unauthorized http status
-	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
-
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
-
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	defer session.Close()
@@ -212,15 +193,6 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	if err != nil {
 		code = http.StatusNotAcceptable
 		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// if authentication procedure fails then
-	// return unauthorized http status
-	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
-
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
 		return code, h, output, err
 	}
 
@@ -288,16 +260,6 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
-
-	// if authentication procedure fails then
-	// return unauthorized
-	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
-
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-
-	}
 
 	incoming := Tenant{}
 
@@ -399,15 +361,6 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
-
-	// if authentication procedure fails then
-	// return unauthorized
-	if authentication.AuthenticateAdmin(r.Header, cfg) == false {
-
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)

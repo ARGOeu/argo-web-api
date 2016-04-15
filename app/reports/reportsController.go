@@ -35,13 +35,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	"github.com/gorilla/context"
+	"gopkg.in/mgo.v2/bson"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 var reportsColl = "reports"
@@ -69,13 +69,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Reading the json input from the request body
 	reqBody, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -195,13 +190,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -263,13 +253,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Extracting urlvar "name" from url path
 
@@ -338,13 +323,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Extracting report name from url
 	id := mux.Vars(r)["id"]
@@ -447,13 +427,8 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Extracting record id from url
 	id := mux.Vars(r)["id"]

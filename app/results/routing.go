@@ -27,13 +27,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
@@ -41,89 +41,37 @@ import (
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 	serviceSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
-
-	serviceSubrouter.Path("/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}").
-		Methods("GET").
-		Name("Service Flavor").
-		Handler(confhandler.Respond(ListServiceFlavorResults))
-
-	serviceSubrouter.Path("/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services").
-		Methods("GET").
-		Name("Service Flavor").
-		Handler(confhandler.Respond(ListServiceFlavorResults))
-
-	serviceSubrouter.Path("/{lgroup_type}/{lgroup_name}/services/{service_type}").
-		Methods("GET").
-		Name("Service Flavor").
-		Handler(confhandler.Respond(ListServiceFlavorResults))
-
-	serviceSubrouter.Path("/{lgroup_type}/{lgroup_name}/services").
-		Methods("GET").
-		Name("Service Flavor").
-		Handler(confhandler.Respond(ListServiceFlavorResults))
+	serviceSubrouter = respond.PrepAppRoutes(serviceSubrouter, confhandler, appServiceRoutes)
 
 	groupSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
-	groupSubrouter.
-		Path("/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}").
-		Methods("GET").
-		Name("Group name").
-		Handler(confhandler.Respond(ListEndpointGroupResults))
-	groupSubrouter.
-		Path("/{group_type}/{group_name}/{lgroup_type}").
-		Methods("GET").
-		Name("Group name").
-		Handler(confhandler.Respond(ListEndpointGroupResults))
-	groupSubrouter.
-		Path("/{group_type}/{group_name}").
-		Methods("GET").
-		Name("Group name").
-		Handler(confhandler.Respond(routeGroup))
-	groupSubrouter.
-		Path("/{group_type}").
-		Methods("GET").
-		Name("Group Type").
-		Handler(confhandler.Respond(routeGroup))
+	groupSubrouter = respond.PrepAppRoutes(groupSubrouter, confhandler, appGroupRoutes)
 
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{group_type}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+}
 
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
+var appServiceRoutes = []respond.AppRoutes{
+	{"results.services.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
+	{"results.services.list", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
+	{"reports.services.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
+	{"reports.services.list", "GET", "/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
+}
 
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
+var appGroupRoutes = []respond.AppRoutes{
+	{"results.endpoint_groups.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", ListEndpointGroupResults},
+	{"reports.endpoint_groups.list", "GET", "/{group_type}/{group_name}/{lgroup_type}", ListEndpointGroupResults},
+	{"reports.groups.get", "GET", "/{group_type}/{group_name}", routeGroup},
+	{"reports.groups.list", "GET", "/{group_type}", routeGroup},
+}
 
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{lgroup_type}/{lgroup_name}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{lgroup_type}/{lgroup_name}/services").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
-	s.Methods("OPTIONS").
-		Path("/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}").
-		Name("List Options of Resource").
-		Handler(confhandler.Respond(Options))
-
+var appRoutesV2 = []respond.AppRoutes{
+	{"results.groups.options", "OPTIONS", "/{report_name}/{group_type}", Options},
+	{"results.endpoint_groups.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
+	{"results.groups.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", Options},
+	{"results.services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
+	{"results.endpoint_groups.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.services.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services", Options},
+	{"results.services.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
 }
 
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -145,18 +93,9 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	}
 
 	vars := mux.Vars(r)
-	tenantcfg, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			message := err.Error()
-			output, err = createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+
 	session, err := mongo.OpenSession(tenantcfg)
 	defer mongo.CloseSession(session)
 

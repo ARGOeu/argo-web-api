@@ -30,11 +30,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 var recomputationsColl = "recomputations"
@@ -62,13 +62,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	filter := IncomingRecomputation{
 		StartTime: urlValues.Get("start_time"),
@@ -122,13 +117,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	filter := IncomingRecomputation{
 		ID: vars["ID"],
@@ -173,13 +163,8 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 

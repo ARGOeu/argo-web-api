@@ -30,7 +30,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
+	"gopkg.in/gcfg.v1"
 )
 
 //All the flags that can be added when starting the PI
