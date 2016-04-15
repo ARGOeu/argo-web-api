@@ -130,8 +130,35 @@ func (suite *TenantTestSuite) SetupTest() {
 	}
 	defer session.Close()
 
+	c := session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "tenants.list",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.get",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.create",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.delete",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.update",
+			"roles":    []string{"super_admin"},
+		})
+
 	// seed first tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{

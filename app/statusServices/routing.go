@@ -44,10 +44,10 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"status_services.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}", routeCheckGroup},
-	{"status_services.list", "GET", "/{report_name}/{group_type}/{group_name}/services", routeCheckGroup},
-	{"status_services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}", Options},
-	{"status_services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services", Options},
+	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}", routeCheckGroup},
+	{"status.list", "GET", "/{report_name}/{group_type}/{group_name}/services", routeCheckGroup},
+	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}", Options},
+	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services", Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
+	"github.com/ARGOeu/argo-web-api/utils/authorization"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/context"
 )
@@ -42,6 +43,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			}
 			// admin api authenticated so continue serving
 			context.Set(r, "authen", true)
+			context.Set(r, "roles", []string{"super_admin"})
 
 			hfn.ServeHTTP(w, r)
 
@@ -55,6 +57,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 				return
 			}
 
+			context.Set(r, "roles", tenantConf.Roles)
 			context.Set(r, "tenant_conf", tenantConf)
 			context.Set(r, "authen", true)
 			hfn.ServeHTTP(w, r)
@@ -65,11 +68,24 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 }
 
 // WrapAuthorize handle wrapper to apply authorization
-func WrapAuthorize(hfn http.Handler) http.HandlerFunc {
+func WrapAuthorize(hfn http.Handler, cfg config.Config, routeName string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// log.Printf(" >> Authorization takes place here...")
-		hfn.ServeHTTP(w, r)
+		var roles []string
+
+		roles = context.Get(r, "roles").([]string)
+
+		if roles != nil {
+			author := authorization.HasResourceRoles(cfg, routeName, roles)
+			if author != false {
+				hfn.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		Error(w, r, ErrAuthor, cfg)
+
 	})
 }
 

@@ -128,6 +128,7 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 		if user.ApiKey == apiKey {
 			mongoConf.User = user.User
 			mongoConf.Email = user.Email
+			mongoConf.Roles = user.Roles
 		}
 	}
 	return mongoConf, nil

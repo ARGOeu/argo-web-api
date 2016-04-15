@@ -187,12 +187,41 @@ func (suite *ReportTestSuite) SetupTest() {
 			bson.M{
 				"name":    "cap",
 				"email":   "cap@email.com",
+				"roles":   []string{"editor"},
 				"api_key": "C4PK3Y"},
 			bson.M{
 				"name":    "thor",
 				"email":   "thor@email.com",
-				"api_key": "TH0RK3Y"},
+				"roles":   []string{"viewer"},
+				"api_key": "VIEWERKEY"},
 		}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "reports.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "reports.get",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "reports.create",
+			"roles":    []string{"editor"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "reports.delete",
+			"roles":    []string{"editor"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "reports.update",
+			"roles":    []string{"editor"},
+		})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -1282,6 +1311,87 @@ func (suite *ReportTestSuite) TestOptionsReports() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+}
+
+func (suite *ReportTestSuite) TestCreateForbidViewer() {
+
+	jsonInput := `{
+  "name": "test_report",
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/reports", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+}
+
+func (suite *ReportTestSuite) TestUpdateForbidViewer() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/reports/6ac7d684-1f8e-4a02-a502-720e8f11e007", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *ReportTestSuite) TestDeleteForbidViewer() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/reports/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 }
 
 // This function is actually called in the end of all tests

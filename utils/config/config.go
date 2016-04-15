@@ -51,15 +51,16 @@ var flEnableCors = flag.String("enable-cors", "no", "specify weather to enable C
 
 // MongoConfig configuration to connect to a mongodb instance
 type MongoConfig struct {
-	User     string `bson:"name"`
-	Email    string `bson:"email"`
-	Host     string `bson:"server"`
-	Port     int    `bson:"port"`
-	Db       string `bson:"database"`
-	Username string `bson:"username"`
-	Password string `bson:"password"`
-	Store    string `bson:"store"`
-	ApiKey   string `bson:"api_key"`
+	User     string   `bson:"name"`
+	Email    string   `bson:"email"`
+	Host     string   `bson:"server"`
+	Port     int      `bson:"port"`
+	Db       string   `bson:"database"`
+	Username string   `bson:"username"`
+	Password string   `bson:"password"`
+	Store    string   `bson:"store"`
+	ApiKey   string   `bson:"api_key"`
+	Roles    []string `bson:"roles"`
 }
 
 // Config configuration for the api

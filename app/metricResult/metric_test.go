@@ -99,6 +99,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 	defer session.Close()
 
 	// seed a tenant to use
+
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
@@ -121,8 +122,16 @@ func (suite *metricResultTestSuite) SetupTest() {
 			bson.M{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "metricResult.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
