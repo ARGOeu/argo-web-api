@@ -1930,32 +1930,6 @@ definitions:
                           items:
                             $ref: "#/definitions/timestamp_value"
 
-  StatusMetricResponse:
-    type: object
-    properties:
-      groups:
-        type: array
-        items:
-          type: object
-          properties:
-            name:
-              type: string
-            type:
-              type: string
-            services:
-              type: array
-              items:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  type:
-                    type: string
-                  statuses:
-                    type: array
-                    items:
-                      $ref: "#/definitions/timestamp_value"
-
   StatusResponse:
     type: object
     properties:
