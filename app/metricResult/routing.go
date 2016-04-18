@@ -37,4 +37,5 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var appRoutesV2 = []respond.AppRoutes{
 	{"metricResult.get", "GET", "/{endpoint_name}/{metric_name}", GetMetricResult},
+	{"metricResult.options", "OPTIONS", "/{endpoint_name}/{metric_name}", Options},
 }

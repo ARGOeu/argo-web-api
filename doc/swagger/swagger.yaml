@@ -32,6 +32,8 @@ tags:
     description: Availability/Reliability in numbers
   - name: Status
     description: Status results in detail
+  - name: MetricResult
+    description: Retrieve the full output of a  metric result
 paths:
   /admin/tenants/{TENANT_ID}:
     get:
@@ -1287,6 +1289,44 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
+  /metric_result/{endpoint}/{metric_name}:
+    get:
+      summary: Retrieve the full output of a metric result
+      description: Retrieve the full output of a metric result
+      tags:
+        - MetricResult
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "endpoint"
+          in: path
+          description: "The fqdn of the monitored host"
+          required: true
+          type: string
+        - name: "metric_name"
+          in: path
+          description: "The name of the probe (metric)"
+          required: true
+          type: string
+        - $ref: "#/parameters/execDate"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/MetricResult"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
     get:
       summary: "List A/R results of all services (under a given endpoint group)"
@@ -1708,6 +1748,13 @@ parameters:
     required: false
     type: string
     default: "daily"
+  execDate:
+    name: exec_time
+    in: query
+    description: "execution date of query in zulu format"
+    required: true
+    type: string
+    default: "2006-01-01T00:04:05Z"
 
 responses:
   Unauthorized:
@@ -1956,6 +2003,43 @@ definitions:
         type: string
       code:
         type: string
+
+  MetricResult:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            Name:
+              type: string
+              description: "The fqdn of the monitored endpoint"
+            Metrics:
+              type: array
+              items:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                    description: "The name of the probe (metric)"
+                  Details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Timestamp:
+                          type: string
+                          description: "The execution time of the probe (metric)"
+                        Value:
+                          type: string
+                          description: "The resulting state of the probe (metric)"
+                        Summary:
+                          type: string
+                          description: "A summary of the metric result"
+                        Message:
+                          type: string
+                          description: "The detailed output message of the probe (metric)"
 
   Self_reference:
     type: object
