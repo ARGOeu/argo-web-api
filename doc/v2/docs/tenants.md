@@ -31,7 +31,6 @@ GET /admin/tenants
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -147,7 +146,6 @@ GET /admin/tenants/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -223,7 +221,6 @@ POST /admin/tenants
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -272,7 +269,7 @@ Accept: application/json
 ```
 
 ### Response
-Headers: `Status: 200 OK`
+Headers: `Status: 201 Created`
 
 #### Response body
 Json Response
@@ -307,7 +304,6 @@ PUT /admin/tenants/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -385,7 +381,6 @@ DELETE /admin/tenants/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
