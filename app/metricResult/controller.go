@@ -43,9 +43,12 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -57,18 +60,8 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	input := metricResultQuery{
 		EndpointName: vars["endpoint_name"],
 		MetricName:   vars["metric_name"],
-		Format:       r.Header.Get("Accept"),
 		ExecTime:     urlValues.Get("exec_time"),
 	}
-
-	// TODO: Decide which format (xml or json) should be the default
-	if input.Format == "application/xml" {
-		contentType = "application/xml"
-	} else if input.Format == "application/json" {
-		contentType = "application/json"
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -85,7 +78,7 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Query the detailed metric results
 	err = metricCol.Find(prepQuery(input)).One(&result)
 
-	output, err = createMetricResultView(result, input.Format)
+	output, err = createMetricResultView(result, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError

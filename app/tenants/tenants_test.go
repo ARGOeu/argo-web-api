@@ -721,7 +721,7 @@ func (suite *TenantTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
 	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/BADID", strings.NewReader("{}"))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", suite.clientkey)
 

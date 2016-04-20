@@ -52,12 +52,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Try ingest request body
@@ -124,19 +123,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -180,21 +172,14 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
 	vars := mux.Vars(r)
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -250,13 +235,12 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
@@ -351,13 +335,12 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)

@@ -30,7 +30,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -46,21 +45,14 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	// contentType := "application/json"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	urlValues := r.URL.Query()
+	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
-
-	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
+	urlValues := r.URL.Query()
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -104,18 +96,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// urlValues := r.URL.Query()
+	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
-	vars := mux.Vars(r)
-
-	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
+	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -154,14 +139,9 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err := respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
