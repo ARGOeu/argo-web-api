@@ -43,10 +43,10 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"status_endpoints.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", routeCheckGroup},
-	{"status_endpoints.list", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", routeCheckGroup},
-	{"status_endpoints.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
-	{"status_endpoints.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", Options},
+	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", routeCheckGroup},
+	{"status.list", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", routeCheckGroup},
+	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
+	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

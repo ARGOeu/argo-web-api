@@ -103,7 +103,7 @@ func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) 
 		handler = confHandler.Respond(route.SubrouterHandler)
 		handler = WrapValidate(handler)
 		if route.Verb != "OPTIONS" {
-			handler = WrapAuthorize(handler)
+			handler = WrapAuthorize(handler, confHandler.Config, route.Name)
 			handler = WrapAuthenticate(handler, confHandler.Config, route.Name)
 		}
 		s.Methods(route.Verb).
@@ -127,6 +127,9 @@ func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.C
 	case ErrAuthen:
 		msg = UnauthorizedMessage
 		code = http.StatusUnauthorized
+	case ErrAuthor:
+		msg = Forbidden
+		code = http.StatusForbidden
 	default:
 		msg = InternalServerErrorMessage
 		code = http.StatusInternalServerError
@@ -354,5 +357,13 @@ var InternalServerErrorMessage = ResponseMessage{
 	Status: StatusResponse{
 		Code:    "500",
 		Message: "Internal Server Error",
+	},
+}
+
+// Forbidden is used to marshal a response
+var Forbidden = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "403",
+		Message: "Access to the resource is Forbidden",
 	},
 }

@@ -50,28 +50,28 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appServiceRoutes = []respond.AppRoutes{
-	{"results.services.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
-	{"results.services.list", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
-	{"reports.services.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
-	{"reports.services.list", "GET", "/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
+	{"results.list", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
+	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
+	{"results.list", "GET", "/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
 }
 
 var appGroupRoutes = []respond.AppRoutes{
-	{"results.endpoint_groups.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", ListEndpointGroupResults},
-	{"reports.endpoint_groups.list", "GET", "/{group_type}/{group_name}/{lgroup_type}", ListEndpointGroupResults},
-	{"reports.groups.get", "GET", "/{group_type}/{group_name}", routeGroup},
-	{"reports.groups.list", "GET", "/{group_type}", routeGroup},
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", ListEndpointGroupResults},
+	{"results.list", "GET", "/{group_type}/{group_name}/{lgroup_type}", ListEndpointGroupResults},
+	{"results.get", "GET", "/{group_type}/{group_name}", routeGroup},
+	{"results.list", "GET", "/{group_type}", routeGroup},
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"results.groups.options", "OPTIONS", "/{report_name}/{group_type}", Options},
-	{"results.endpoint_groups.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
-	{"results.groups.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
-	{"results.services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", Options},
-	{"results.services.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
-	{"results.endpoint_groups.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}", Options},
-	{"results.services.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services", Options},
-	{"results.services.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
 }
 
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

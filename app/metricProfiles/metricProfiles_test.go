@@ -125,11 +125,13 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
+					"roles":   []string{"editor"},
 				},
 				bson.M{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
+					"roles":   []string{"editor"},
 				},
 			}})
 	c.Insert(
@@ -162,13 +164,43 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
+					"roles":   []string{"editor"},
 				},
 				bson.M{
 					"name":    "user4",
 					"email":   "user4@email.com",
-					"api_key": "USER4KEY",
+					"api_key": "VIEWERKEY",
+					"roles":   []string{"viewer"},
 				},
 			}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "metricProfiles.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "metricProfiles.get",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "metricProfiles.create",
+			"roles":    []string{"editor"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "metricProfiles.delete",
+			"roles":    []string{"editor"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "metricProfiles.update",
+			"roles":    []string{"editor"},
+		})
+
 	// Seed database with metric profiles
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 	c.Insert(
@@ -882,6 +914,88 @@ func (suite *MetricProfilesTestSuite) TestOptionsMetricProfiles() {
 	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
+}
+
+func (suite *MetricProfilesTestSuite) TestCreateForbidViewer() {
+
+	jsonInput := `{
+  "name": "test_profile",
+  "namespace [
+    `
+
+	jsonOutput := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdateForbidViewer() {
+
+	jsonInput := `{}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e007", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestDeleteForbidViewer() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	metricProfileJSON := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 }
 
 //TearDownTest to tear down every test

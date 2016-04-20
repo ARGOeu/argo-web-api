@@ -114,11 +114,13 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
+					"roles":   []string{"viewer"},
 				},
 				bson.M{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
+					"roles":   []string{"viewer"},
 				},
 			}})
 	c.Insert(
@@ -144,13 +146,27 @@ func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
+					"roles":   []string{"viewer"},
 				},
 				bson.M{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
+					"roles":   []string{"viewer"},
 				},
 			}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "results.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "results.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("service_ar")
 

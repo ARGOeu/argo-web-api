@@ -114,6 +114,7 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			bson.M{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
@@ -138,9 +139,20 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			bson.M{
 				"name":    "eudat_user",
 				"email":   "eudat_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
-
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "status.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "status.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
