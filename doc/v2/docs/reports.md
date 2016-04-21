@@ -32,7 +32,6 @@ or
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -108,14 +107,13 @@ This method can be used to create a new report
 #### URL
 
 ```
-/reports
+POST /reports
 ```
 
 #### Request headers
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -198,7 +196,6 @@ This method can be used to update an existing report. This will replace all the 
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -271,14 +268,13 @@ This method can be used to update an existing report
 #### URL
 
 ```
-/reports/{id}
+DELETE /reports/{id}
 ```
 
 #### Request headers
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 

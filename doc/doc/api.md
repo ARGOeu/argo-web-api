@@ -50,10 +50,9 @@ Then you can install the ARGO Web API using yum:
 
         mkdir ~/go-workspace
         export GOPATH=~/go-workspace
+        export PATH=$PATH:GOPATH
 
-  You may add the last `export` line into the `~/.bashrc` or the
-  `~/.bash_profile` file to have `GOPATH` environment variable properly setup
-  upon  every login.
+  You may add the `export` lines into the `~/.bashrc` or the `~/.bash_profile` file to have the `GOPATH` and `PATH` environment variables properly setup upon every login.
 
 4. Get the latest version and all dependencies (Using Godep):
 
@@ -74,7 +73,7 @@ Then you can install the ARGO Web API using yum:
 8. To generate and serve godoc (@port 6060)
 
         godoc -http=:6060
-        
+
 ## Configuration
 
 The ARGO Web API uses TLS connections and it requires the existence of valid
@@ -100,6 +99,7 @@ corresponding private key in `/etc/pki/tls/certs/priv.key`.
     cert = /etc/pki/tls/certs/localhost.crt
     privkey = /etc/pki/tls/private/localhost.key
     reqsizelimit = 1073741824
+    enable_cors = false
 
     [mongodb]
     host = "127.0.0.1"

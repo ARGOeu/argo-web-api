@@ -21,12 +21,13 @@ The ARGO Web API provides the Serving Layer of ARGO. It is comprised of a high p
 
         go get github.com/tools/godep
 
-3. Create a new work space:
+3. Create a new work space and setup your environment:
 
         mkdir ~/go-workspace
         export GOPATH=~/go-workspace
+        export PATH=$PATH:GOPATH
 
-  You may add the last `export` line into the `~/.bashrc` or the `~/.bash_profile` file to have `GOPATH` environment variable properly setup upon every login.
+  You may add the `export` lines into the `~/.bashrc` or the `~/.bash_profile` file to have the `GOPATH` and `PATH` environment variables properly setup upon every login.
 
 4. Get the latest version and all dependencies (Using Godep):
 

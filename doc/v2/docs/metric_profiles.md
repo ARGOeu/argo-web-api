@@ -30,13 +30,12 @@ GET /metric_profiles
 
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
-`name`  | metric profile name to be used as query                                                                          | NO      
+`name`          | metric profile name to be used as query                                                         | NO      
 
 ### Request headers
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -130,7 +129,6 @@ GET /metric_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -194,7 +192,6 @@ POST /metric_profiles
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -225,7 +222,7 @@ Accept: application/json
 ```
 
 ### Response
-Headers: `Status: 200 OK`
+Headers: `Status: 201 Created`
 
 #### Response body
 Json Response
@@ -260,7 +257,6 @@ PUT /metric_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -326,7 +322,6 @@ DELETE /metric_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 

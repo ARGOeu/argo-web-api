@@ -29,13 +29,12 @@ GET /aggregation_profiles
 
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
-`name`  | aggregation profile name to be used as query                                                                          | NO      
+`name`          | aggregation profile name to be used as query                                                    | NO      
 
 #### Request headers
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -155,7 +154,6 @@ GET /aggregation_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -233,7 +231,6 @@ POST /aggregation_profiles
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -284,7 +281,7 @@ Accept: application/json
 ```
 
 ### Response
-Headers: `Status: 200 OK`
+Headers: `Status: 201 Created`
 
 #### Response body
 Json Response
@@ -319,7 +316,6 @@ PUT /aggregation_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 

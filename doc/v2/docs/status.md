@@ -49,8 +49,8 @@ when `metric_name` is supplied, the request returns results for a specific metri
 
 #### Headers
 ```
-x-api-key: "tenant_key_value"
-Accept: "application/xml" or "application/json"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 ```
 
 #### Response Code
@@ -69,8 +69,8 @@ URL:
 ```
 Headers:
 ```
-x-api-key:"INSERTTENANTKEYHERE"
-Accept:"application/xml"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 
 ```
 ###### Example Response:
@@ -177,8 +177,8 @@ when `hostname` is supplied, the request returns results for a specific endpoint
 
 #### Headers
 ```
-x-api-key: "tenant_key_value"
-Accept: "application/xml" or "application/json"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 ```
 
 #### Response Code
@@ -197,8 +197,8 @@ URL:
 ```
 Headers:
 ```
-x-api-key:"INSERTTENANTKEYHERE"
-Accept:"application/xml"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 
 ```
 ###### Example Response:
@@ -237,8 +237,8 @@ URL:
 ```
 Headers:
 ```
-x-api-key:"INSERTTENANTKEYHERE"
-Accept:"application/xml"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 
 ```
 ##### Example Response:
@@ -302,8 +302,8 @@ when `service_name` is supplied, the request returns results for a specific serv
 
 #### Headers
 ```
-x-api-key: "tenant_key_value"
-Accept: "application/xml" or "application/json"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 ```
 
 #### Response Code
@@ -323,8 +323,8 @@ URL:
 
 Headers:
 ```
-x-api-key:"INSERTTENANTKEYHERE"
-Accept:"application/xml"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 
 ```
 ###### Example Response:
@@ -361,8 +361,8 @@ URL:
 ```
 Headers:
 ```
-x-api-key:"INSERTTENANTKEYHERE"
-Accept:"application/xml"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 
 ```
 ###### Example Response:
@@ -422,8 +422,8 @@ when `group_name` is supplied, the request returns results for a specific endpoi
 
 #### Headers
 ```
-x-api-key: "tenant_key_value"
-Accept: "application/xml" or "application/json"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 ```
 
 #### Response Code
@@ -527,8 +527,8 @@ Type            | Description             | Required | Default value
 #### Headers
 
 ```
-x-api-key: "tenant_key_value"
-Accept: "application/xml" or "application/json"
+x-api-key: shared_key_value
+Accept: application/json or application/xml
 ```
 
 
