@@ -1782,7 +1782,7 @@ parameters:
   execDate:
     name: exec_time
     in: query
-    description: "execution date of query in zulu format"
+    description: "The execution date of query in zulu format. In order to get the correct execution time get status results for all metrics (under a given endpoint, service and endpoint group). ( GET /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics List) "
     required: true
     type: string
     default: "2006-01-01T00:04:05Z"
@@ -1843,7 +1843,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/recomputation'
-
+          
   timestamp_value:
     type: object
     properties:
