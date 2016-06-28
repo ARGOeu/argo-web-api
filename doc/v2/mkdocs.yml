@@ -17,5 +17,6 @@ pages:
   - Tenants : tenants.md
   - Error Codes: errors.md
   - Validation Checks: validations.md
+  - Metrics: metrics.md
 
 theme: readthedocs
