@@ -1598,7 +1598,38 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-
+          
+  /recomputations/{ID}:
+    get:
+      summary: "Get Recomputation details"
+      description: "Get details of a recomputation with id ID."
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful retrieval of recomputation details"
+          schema:
+            $ref: "#/definitions/RecomputationsListResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
   /recomputations:
     get:
       summary: "List Recomputation Requests"
