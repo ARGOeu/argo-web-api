@@ -16,7 +16,7 @@ Name          | Affected Resources      | Verb   | Shortcut
 
 ### `start_time`
 
-The `start_time` query parameter is used under the `/results` and `/status` resources to define the starting time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`. 
+The `start_time` query parameter is used under the `/results` and `/status` resources to define the starting time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`.
 
 In case the parameter is not provided the following response is returned
 
@@ -58,7 +58,7 @@ In case the parameter value is malformed (not in zulu expected format) the follo
 
 ### `end_time`
 
-The `end_time` query parameter is used under the `/results` and `/status` resources to define the ending time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`. 
+The `end_time` query parameter is used under the `/results` and `/status` resources to define the ending time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`.
 
 In case the parameter is not provided the following response is returned
 
@@ -163,7 +163,7 @@ In case the parameter value is malformed (not in zulu expected format) the follo
 
 ### `granularity`
 
-The `granularity` query parameter is used *optionally* under the `/results` resource to indicate the granularity level. It's value may be either monthly or daily. If not set by the user `monthly` is used. 
+The `granularity` query parameter is used *optionally* under the `/results` resource to indicate the granularity level. It's value may be either monthly or daily. If not set by the user `monthly` is used.
 
 In case the parameter value is malformed (neither `daily` nor `monthly`) the following response is returned:
 
@@ -183,6 +183,23 @@ In case the parameter value is malformed (neither `daily` nor `monthly`) the fol
 }
 ```
 
+The Granularity parameter is only relevant for a/r result requests. For status requests granularity is not supported. In order to avoid confusion, if a user provides granularity parameter during status requests the following response is returned:
+```json
+{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Granularity parameter should not be used in status results",
+   "code": "400",
+   "details": "Granularity parameter is valid only for a/r result requests, not for status results"
+  }
+ ]
+}
+```
+
 ## Headers validations
 
 Name          | Affected Resources      | Shortcut         
@@ -193,7 +210,7 @@ Name          | Affected Resources      | Shortcut
 
 ### `Accept`
 
-The `Accept` header is compulsory to use under all api resources. Its value may be either `application/json` or `application/xml`. 
+The `Accept` header is compulsory to use under all api resources. Its value may be either `application/json` or `application/xml`.
 
 In case the Accept header is not provided or is provided but is malformed the following error response is returned by the api:
 

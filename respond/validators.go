@@ -133,6 +133,14 @@ func ValidateStatusParams(queries url.Values) []ErrorResponse {
 
 	var errs []ErrorResponse
 
+	if queries["granularity"] != nil {
+		errs = append(errs, ErrorResponse{
+			Message: "Granularity parameter should not be used in status results",
+			Code:    fmt.Sprintf("%d", http.StatusBadRequest),
+			Details: "Granularity parameter is valid only for a/r result requests, not for status results",
+		})
+	}
+
 	if queries["end_time"] == nil {
 		if queries["start_time"] == nil {
 			errs = append(errs, ErrorResponse{
