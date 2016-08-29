@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/ARGOeu/argo-web-api",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
@@ -15,7 +16,8 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",
-			"Rev": "40694b40f4a928c062f56849989d3e9cd0570e5f"
+			"Comment": "v1.1-11-ga577578",
+			"Rev": "a5775781a543af3c6b9f5baf10995e4d14168950"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
@@ -38,16 +40,58 @@
 		},
 		{
 			"ImportPath": "github.com/twinj/uuid",
-			"Rev": "70cac2bcd273ef6a371bb96cde363d28b68734c3"
+			"Comment": "0.10.0-94-gb505f2c",
+			"Rev": "b505f2cca343b7b21416b27b1f2ad88469800892"
 		},
 		{
 			"ImportPath": "gopkg.in/gcfg.v1",
-			"Rev": "0ef1a8547f99b94fac9af5377dd72febba18f37c"
+			"Comment": "v1.2.0",
+			"Rev": "27e4946190b4a327b539185f2b5b1f7c84730728"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/scanner",
+			"Comment": "v1.2.0",
+			"Rev": "27e4946190b4a327b539185f2b5b1f7c84730728"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/token",
+			"Comment": "v1.2.0",
+			"Rev": "27e4946190b4a327b539185f2b5b1f7c84730728"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1/types",
+			"Comment": "v1.2.0",
+			"Rev": "27e4946190b4a327b539185f2b5b1f7c84730728"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
-			"Comment": "r2015.06.03-5-g22287ba",
-			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
+			"Comment": "r2016.08.01-5-g3f83fa5",
+			"Rev": "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/bson",
+			"Comment": "r2016.08.01-5-g3f83fa5",
+			"Rev": "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/json",
+			"Comment": "r2016.08.01-5-g3f83fa5",
+			"Rev": "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/sasl",
+			"Comment": "r2016.08.01-5-g3f83fa5",
+			"Rev": "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
+			"Comment": "r2016.08.01-5-g3f83fa5",
+			"Rev": "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+		},
+		{
+			"ImportPath": "gopkg.in/warnings.v0",
+			"Comment": "v0.1.1",
+			"Rev": "8a331561fe74dadba6edfc59f3be66c22c3b065d"
 		}
 	]
 }
