@@ -32,14 +32,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -130,8 +130,35 @@ func (suite *TenantTestSuite) SetupTest() {
 	}
 	defer session.Close()
 
+	c := session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "tenants.list",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.get",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.create",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.delete",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.update",
+			"roles":    []string{"super_admin"},
+		})
+
 	// seed first tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{
@@ -694,7 +721,7 @@ func (suite *TenantTestSuite) TestUpdateNotFound() {
 	// Prepare the request object
 	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/BADID", strings.NewReader("{}"))
 	// add the content-type header to application/json
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", suite.clientkey)
 
@@ -724,6 +751,23 @@ func (suite *TenantTestSuite) TestDeleteNotFound() {
 
 	suite.Equal(404, code, "Internal Server Error")
 	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
+}
+
+func (suite *TenantTestSuite) TestOptionsTenant() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/admin/tenants", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET,POST,PUT,DELETE,OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 }
 
 //TearDownTest to tear down every test

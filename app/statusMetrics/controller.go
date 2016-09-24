@@ -25,14 +25,21 @@ package statusMetrics
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
-	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
+
+// parseZuluDate is used to parse a zulu formatted date to integer
+func parseZuluDate(dateStr string) (int, error) {
+	parsedTime, _ := time.Parse(zuluForm, dateStr)
+	return strconv.Atoi(parsedTime.Format(ymdForm))
+}
 
 // ListMetricTimelines returns a list of metric timelines
 func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -43,29 +50,20 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	h := http.Header{}
 	output := []byte("List Metric Timelines")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	parsedStart, parsedEnd, errs := respond.ValidateDateRange(urlValues.Get("start_time"), urlValues.Get("end_time"))
-	if len(errs) > 0 {
-		code = http.StatusBadRequest
-		output = respond.CreateFailureResponseMessage("Bad Request", "400", errs).MarshalTo(contentType)
-	}
+	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
+	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
 
 	input := InputParams{
 		parsedStart,
@@ -79,16 +77,8 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 		contentType,
 	}
 
-	// Call authenticateTenant to check the api key and retrieve
-	// the correct tenant db conf
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
@@ -114,7 +104,6 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 
 	output, err = createView(results, input) //Render the results into XML format
 
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
 
@@ -134,4 +123,24 @@ func prepareQuery(input InputParams, reportID string) bson.M {
 	}
 
 	return filter
+}
+
+// Options implements the option request on resource
+func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/plain"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	return code, h, output, err
+
 }

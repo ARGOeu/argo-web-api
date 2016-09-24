@@ -26,13 +26,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // ListServiceFlavorResults is responsible for handling request to list service flavor results
@@ -42,34 +42,19 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			out := respond.UnauthorizedMessage
-			output = out.MarshalTo(contentType)
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -83,10 +68,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		return code, h, output, err
 	}
 
@@ -114,10 +98,9 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		return code, h, output, err
 	}
 
@@ -161,6 +144,13 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
 	output, err = createServiceFlavorResultView(results, report, input.Format)
 
 	if err != nil {
@@ -180,34 +170,19 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			out := respond.UnauthorizedMessage
-			output = out.MarshalTo(contentType)
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -221,9 +196,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
 	if err != nil {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -251,10 +226,9 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	}
 
 	if vars["lgroup_type"] != report.GetEndpointGroupType() {
-		code = http.StatusBadRequest
+		code = http.StatusNotFound
 		message := "The report " + vars["report_name"] + " does not define endpoint group type: " + vars["lgroup_type"] + ". Try using " + report.GetEndpointGroupType() + " instead."
-		output, err := createErrorMessage(message, contentType) //Render the response into XML or JSON
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 		return code, h, output, err
 	}
 
@@ -294,6 +268,13 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
 	output, err = createEndpointGroupResultView(results, report, input.Format)
 
 	if err != nil {
@@ -312,35 +293,19 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "application/xml"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		if err.Error() == "Unauthorized" {
-			code = http.StatusUnauthorized
-			out := respond.UnauthorizedMessage
-			output = out.MarshalTo(contentType)
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -413,6 +378,14 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
 	output, err = createSuperGroupView(results, report, input.Format)
 
 	if err != nil {
@@ -631,23 +604,38 @@ func DailySuperGroup(filter bson.M) []bson.M {
 
 // MonthlySuperGroup function to build the MongoDB aggregation query for monthly calculations
 func MonthlySuperGroup(filter bson.M) []bson.M {
-	filter["availability"] = bson.M{"$gte": 0}
-	filter["reliability"] = bson.M{"$gte": 0}
-	// Mongo aggregation pipeline
-	// Select all the records that match q
-	// Project the results to add 1 to every weights to avoid having 0 as a weights
-	// Group them by the first 8 digits of datetime (YYYYMMDD) and each group find
-	// availability = sum(availability*weights)
-	// reliability = sum(reliability*weights)
-	// weights = sum(weights)
-	// Project to a better format and do these computations
-	// availability = availability/weights
-	// reliability = reliability/weights
-	// Group by the first 6 digits of the datetime (YYYYMM) and by ngi,site,profile and for each group find
-	// availability = average(availability)
-	// reliability = average(reliability)
-	// Project the results to a better format
-	// Sort by namespace->report->supergroup->datetime
+
+	// The following aggregation query consists of 5 grand steps
+	// 1. Match   : records for the specific date and report and supergroup(optional)
+	// 2. Project : all necessary fields (date,availability,reliability,report) etc but also
+	//              if avail >= 0 set an availability-weigh = weight + 1, else = 0
+	//							if rel >=0 set a reliability-weight = weight + 1, else = 0
+	//              keep also weight = weight + 1 (to compensate for zero values)
+	//
+	//              Keeping two extra weights (a/r) has the following result:
+	//               - If an item has undef availab. then it will have an weightAv=0 and will not affect sums
+	//                    for eg. avg_daily_supergroup_availability = (av1*w1 + av2*w2 + undefAv3*0) / (w1 + w1 + 0)
+	//               - If an item has undef reliab. then it will have an weightRel=0 and will not affect sums
+	//                    for eg. avg_daily_supergroup_reliability = (rel1*w2 + rel2*w2 + undefRel3*0) / (w1 + w1 + 0)
+	//
+	// 3. Group   : by supergroup and day and calculate the sum of weighted daily availabilites (and reliabilities also)
+	//              - availability(weighted_sum) = av1*w1 + av2*w2 + undefAv3*0 etc...
+	//              - reliability(weighted_sum) = rel1*w1 + rel2*w2 + undefRel3*0 etc...
+	//
+	// 4. Match   : assertion step - keep only items that have a valid weight > 0
+	// 5. Project : the previous results and try to find the weighted average of daily avail. and reliability by:
+	//              - divide the previous sum of weighted availabilities by the total weightAv
+	//                SPECIAL CASE: If total weightAv remains : 0 that means that total daily supergroup avail = undef
+	//                              so instead of a numeric value, add a "nan" string (will not be counted in monthly average)
+	//              - divide the previous sum of weighted availabilities by the total weightAv
+	//								SPECIAL CASE: If total weightRem remains : 0 that means that total daily supergroup rel = undef
+	//                              so instead of a numeric value, add a "nan" string (will not be counted in monthly average)
+	// 6. Group   : by first date part (month, eg: 201608) to calculate monthly average avail and rel.
+	//							- monthly availability avg = avg(daily_availabilities) ~ but items with "nan" values will be neglected
+	//						  - monthly reliability avg = avg(daily_reliabilities) ~ but items with "nan" values will be neglected
+	//
+	// 7. Project : the relevant fields to form the appropriate final response (date,supergroup,report,avail,rel)
+	// 8. Sort    : the final results by report, supergroup and then date
 
 	query := []bson.M{
 		{"$match": filter},
@@ -657,6 +645,8 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 			"reliability":  1,
 			"report":       1,
 			"supergroup":   1,
+			"weightAv":     bson.M{"$cond": list{bson.M{"$gte": list{"$availability", 0}}, bson.M{"$add": list{"$weight", 1}}, 0}},
+			"weightRel":    bson.M{"$cond": list{bson.M{"$gte": list{"$reliability", 0}}, bson.M{"$add": list{"$weight", 1}}, 0}},
 			"weight": bson.M{
 				"$add": list{"$weight", 1}}},
 		},
@@ -665,8 +655,10 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
 				"supergroup": "$supergroup",
 				"report":     "$report"},
-			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weight"}}},
-			"reliability":  bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weight"}}},
+			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weightAv"}}},
+			"reliability":  bson.M{"$sum": bson.M{"$multiply": list{"$reliability", "$weightRel"}}},
+			"weightAv":     bson.M{"$sum": "$weightAv"},
+			"weightRel":    bson.M{"$sum": "$weightRel"},
 			"weight":       bson.M{"$sum": "$weight"}},
 		},
 		{"$match": bson.M{
@@ -676,8 +668,8 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 			"date":         "$_id.date",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report",
-			"availability": bson.M{"$divide": list{"$availability", "$weight"}},
-			"reliability":  bson.M{"$divide": list{"$reliability", "$weight"}}},
+			"availability": bson.M{"$cond": list{bson.M{"$gt": list{"$weightAv", 0}}, bson.M{"$divide": list{"$availability", "$weightAv"}}, "nan"}},
+			"reliability":  bson.M{"$cond": list{bson.M{"$gt": list{"$weightRel", 0}}, bson.M{"$divide": list{"$reliability", "$weightRel"}}, "nan"}}},
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
@@ -700,4 +692,23 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 		}}
 
 	return query
+}
+
+func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/plain"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	return code, h, output, err
+
 }

@@ -33,18 +33,42 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/logging"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
+
+// AppRoutes holds
+type AppRoutes struct {
+	Name             string
+	Verb             string
+	Path             string
+	SubrouterHandler func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)
+}
 
 type list []interface{}
 
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
+
+//ErrEnum used as type for enumerations of errors
+type ErrEnum int
+
+const (
+	//ErrAuthen is Error during authentication
+	ErrAuthen ErrEnum = iota
+	//ErrAuthor is Error during authorization
+	ErrAuthor ErrEnum = iota
+	//ErrValidHead is Error during validation
+	ErrValidHead ErrEnum = iota
+	//ErrValidQuery is Error during validation
+	ErrValidQuery ErrEnum = iota
+)
 
 // ConfHandler Keeps all the configuration/variables required by all the requests
 type ConfHandler struct {
@@ -73,6 +97,83 @@ type ErrorResponse struct {
 	Details string `xml:"details,omitempty" json:"details,omitempty"`
 }
 
+// PrepAppRoutes is used in apps to prepare app's routes
+func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) *mux.Router {
+	for _, route := range routes {
+		// prepare handle wrappers
+		var handler http.HandlerFunc
+
+		handler = confHandler.Respond(route.SubrouterHandler)
+		handler = WrapValidate(handler, confHandler.Config, route.Name)
+		if route.Verb != "OPTIONS" {
+			handler = WrapAuthorize(handler, confHandler.Config, route.Name)
+			handler = WrapAuthenticate(handler, confHandler.Config, route.Name)
+		}
+		s.Methods(route.Verb).
+			Path(route.Path).
+			Handler(context.ClearHandler(handler))
+	}
+
+	return s
+
+}
+
+// Error responds immediately when errors arise in handler chain
+func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.Config, errs []ErrorResponse) {
+	//Add headers
+
+	var msg ResponseMessage
+	var contentType string
+	var output []byte
+	var code int
+	header := r.Header
+
+	switch errType {
+	case ErrAuthen:
+		msg = UnauthorizedMessage
+		code = http.StatusUnauthorized
+		contentType = r.Header.Get("Accept")
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	case ErrAuthor:
+		msg = Forbidden
+		code = http.StatusForbidden
+		contentType = r.Header.Get("Accept")
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	case ErrValidHead:
+		msg = NotAcceptableContentType
+		code = http.StatusNotAcceptable
+		contentType = "application/json"
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	case ErrValidQuery:
+		msg = BadRequestSimple
+		code = http.StatusBadRequest
+		contentType = r.Header.Get("Accept")
+		output = CreateFailureResponseMessage("Bad Request", strconv.Itoa(code), errs).MarshalTo(contentType)
+	default:
+		msg = InternalServerErrorMessage
+		code = http.StatusInternalServerError
+		contentType = "application/json"
+		output, _ = MarshalContent(msg, contentType, "", " ")
+	}
+
+	header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
+
+	if cfg.Server.EnableCors {
+		header.Set("Access-Control-Allow-Origin", "*")
+		header.Set("Access-Control-Allow-Headers", "Content-Type, Accept, x-api-key")
+		header.Set("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+	}
+
+	for name, values := range header {
+		for _, value := range values {
+			w.Header().Add(name, value)
+		}
+	}
+
+	w.WriteHeader(code)
+	w.Write(output)
+}
+
 // Respond will be called to answer to http requests to the PI
 func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -91,6 +192,12 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 
 		//Add headers
 		header.Set("Content-Length", fmt.Sprintf("%d", len(output)))
+
+		if confhandler.Config.Server.EnableCors {
+			header.Set("Access-Control-Allow-Origin", "*")
+			header.Set("Access-Control-Allow-Headers", "Content-Type, Accept, x-api-key")
+			header.Set("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+		}
 
 		for name, values := range header {
 			for _, value := range values {
@@ -124,9 +231,10 @@ func ParseAcceptHeader(r *http.Request) (string, error) {
 		return "application/xml", nil
 	} else if strings.Contains(contentType, "*/*") {
 		return "application/json", nil
-	} else {
-		return defaultContentType, errors.New("Not Acceptable ContentType")
 	}
+
+	return defaultContentType, errors.New("Not Acceptable ContentType")
+
 }
 
 // MarshalContent marshals content using the marshaler that corresponds to the contentType parameter
@@ -159,7 +267,7 @@ func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byt
 	return []byte(answer)
 }
 
-// SelfRefence struct for self referencing resource after they are created
+// SelfReference struct for self referencing resource after they are created
 type SelfReference struct {
 	ID    string    `xml:"id" json:"id" bson:"id,omitempty"`
 	Links SelfLinks `xml:"links" json:"links"`
@@ -260,5 +368,21 @@ var UnprocessableEntity = ResponseMessage{
 	Status: StatusResponse{
 		Code:    "422",
 		Message: "Unprocessable Entity",
+	},
+}
+
+// InternalServerErrorMessage is used to marshal a response
+var InternalServerErrorMessage = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "500",
+		Message: "Internal Server Error",
+	},
+}
+
+// Forbidden is used to marshal a response
+var Forbidden = ResponseMessage{
+	Status: StatusResponse{
+		Code:    "403",
+		Message: "Access to the resource is Forbidden",
 	},
 }

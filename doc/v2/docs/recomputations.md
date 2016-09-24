@@ -14,7 +14,7 @@ This method can be used to retrieve a list of current Recomputation requests.
 ### Input
 
 ```
-/recomputations
+GET /recomputations
 ```
 
 
@@ -76,7 +76,7 @@ This method can be used to insert a new recomputation request onto the Compute E
 ### Input
 
 ```
-/recomputations
+POST /recomputations
 ```
 
 #### Request headers
@@ -97,4 +97,4 @@ Type         | Description                                                      
 `exclude`    | Groups to be excluded from recomputation. If more than one group are to be excluded use the parameter as many times as needed within the same API call | NO       |
 
 ### Response
-Headers: `Status: 200 OK`
+Headers: `Status: 201 Created`

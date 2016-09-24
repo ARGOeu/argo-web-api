@@ -27,16 +27,24 @@
 package reports
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s.Methods("POST").Path("/reports").Handler(confhandler.Respond(Create))
-	s.Methods("PUT").Path("/reports/{id}").Handler(confhandler.Respond(Update))
-	s.Methods("DELETE").Path("/reports/{id}").Handler(confhandler.Respond(Delete))
-	s.Methods("GET").Path("/reports/{id}").Handler(confhandler.Respond(ListOne))
-	s.Methods("GET").Path("/reports").Handler(confhandler.Respond(List))
+
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+
+}
+
+var appRoutesV2 = []respond.AppRoutes{
+	{"reports.list", "GET", "/reports", List},
+	{"reports.get", "GET", "/reports/{id}", ListOne},
+	{"reports.create", "POST", "/reports", Create},
+	{"reports.update", "PUT", "/reports/{id}", Update},
+	{"reports.delete", "DELETE", "/reports/{id}", Delete},
+	{"reports.options", "OPTIONS", "/reports", Options},
+	{"reports.options", "OPTIONS", "/reports/{id}", Options},
 }

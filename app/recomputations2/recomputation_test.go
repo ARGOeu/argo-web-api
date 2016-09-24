@@ -30,14 +30,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -133,11 +133,13 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
+					"roles":   []string{"editor"},
 				},
 				bson.M{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
+					"roles":   []string{"editor"},
 				},
 			}})
 	c.Insert(
@@ -170,13 +172,32 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
+					"roles":   []string{"editor"},
 				},
 				bson.M{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
-					"api_key": "itsamysterytoyou",
+					"api_key": "VIEWERKEY",
+					"roles":   []string{"viewer"},
 				},
 			}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.get",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.submit",
+			"roles":    []string{"editor"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
@@ -442,6 +463,35 @@ func (suite *RecomputationsProfileTestSuite) TearDownTest() {
 		mainDB.C(col).RemoveAll(nil)
 	}
 
+}
+
+func (suite *RecomputationsProfileTestSuite) TestSubmitForbidViewer() {
+
+	jsonInput := `{
+  "name": "test",
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Access to the resource is Forbidden",
+  "code": "403"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/recomputations", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", "VIEWERKEY")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(403, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 }
 
 //TearDownTest to tear down every test

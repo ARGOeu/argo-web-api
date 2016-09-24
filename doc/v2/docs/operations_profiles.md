@@ -17,7 +17,8 @@ DELETE: Delete an  Operations profile |This method can be used to delete an exis
 
 <a id='1'></a>
 
-## [GET]: List AOperations Profiles
+## [GET]: List Operations Profiles
+
 This method can be used to retrieve a list of current  Operations profiles
 
 ### Input
@@ -30,13 +31,12 @@ GET /operations_profiles
 
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
-`name`  | Operations profile name to be used as query                                                                          | NO      
+`name`          | Operations profile name to be used as query                                                     | NO      
 
 #### Request headers
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -180,7 +180,6 @@ GET /operations_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -270,7 +269,6 @@ POST /operations_profiles
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -368,7 +366,6 @@ PUT /operations_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 
@@ -460,7 +457,6 @@ DELETE /operations_profiles/{ID}
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json
 Accept: application/json
 ```
 

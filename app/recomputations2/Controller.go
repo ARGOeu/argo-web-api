@@ -30,11 +30,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 var recomputationsColl = "recomputations"
@@ -46,29 +45,17 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	// contentType := "application/json"
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	urlValues := r.URL.Query()
+	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
-
-	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
+	urlValues := r.URL.Query()
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	filter := IncomingRecomputation{
 		StartTime: urlValues.Get("start_time"),
@@ -109,26 +96,14 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// urlValues := r.URL.Query()
+	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
-	vars := mux.Vars(r)
-
-	contentType, err = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
+	vars := mux.Vars(r)
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	filter := IncomingRecomputation{
 		ID: vars["ID"],
@@ -164,22 +139,12 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err := respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 

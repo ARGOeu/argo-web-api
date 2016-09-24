@@ -15,5 +15,8 @@ pages:
   - Operations Profiles : operations_profiles.md
   - Reports : reports.md
   - Tenants : tenants.md
+  - Error Codes: errors.md
+  - Validation Checks: validations.md
+  - Metrics: metrics.md
 
 theme: readthedocs

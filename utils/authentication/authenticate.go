@@ -30,9 +30,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Auth struct {
@@ -128,6 +128,7 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 		if user.ApiKey == apiKey {
 			mongoConf.User = user.User
 			mongoConf.Email = user.Email
+			mongoConf.Roles = user.Roles
 		}
 	}
 	return mongoConf, nil

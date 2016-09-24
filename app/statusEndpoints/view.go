@@ -25,6 +25,7 @@ package statusEndpoints
 import (
 	"encoding/json"
 	"encoding/xml"
+	"strconv"
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
@@ -95,14 +96,14 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 }
 
-func createMessageOUT(message string, format string) ([]byte, error) {
+func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
 	output := []byte("message placeholder")
 	err := error(nil)
 	docRoot := &messageOUT{}
 
 	docRoot.Message = message
-
+	docRoot.Code = strconv.Itoa(code)
 	output, err = respond.MarshalContent(docRoot, format, "", " ")
 	return output, err
 }

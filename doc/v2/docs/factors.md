@@ -25,8 +25,7 @@ GET /factors
 
 ```
 x-api-key: shared_key_value
-Content-Type: application/json or application/xml
-Accept: application/json
+Accept: application/json or application/xml
 ```
 
 ## Response

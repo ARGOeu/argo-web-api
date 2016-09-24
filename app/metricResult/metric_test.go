@@ -28,15 +28,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -99,6 +99,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 	defer session.Close()
 
 	// seed a tenant to use
+
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
@@ -121,8 +122,16 @@ func (suite *metricResultTestSuite) SetupTest() {
 			bson.M{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "metricResult.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -245,6 +254,24 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal("<root></root>", response.Body.String(), "Response body mismatch")
+
+}
+
+// TestOptionsMetricResult is used to test the OPTIONS response
+func (suite *metricResultTestSuite) TestOptionsMetricResult() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit", strings.NewReader(""))
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
 }
 

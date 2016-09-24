@@ -27,7 +27,6 @@ import "encoding/xml"
 type metricResultQuery struct {
 	EndpointName string `bson:"hostname"`
 	MetricName   string `bson:"metric_name"`
-	Format       string `bson:"-"`
 	ExecTime     string `bson:"exec_time"` // UTC time in W3C format
 }
 

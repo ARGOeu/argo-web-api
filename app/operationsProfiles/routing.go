@@ -23,35 +23,24 @@
 package operationsProfiles
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s.Methods("GET").
-		Path("/operations_profiles").
-		Name("List Operations Profiles").
-		Handler(confhandler.Respond(List))
 
-	s.Methods("GET").
-		Path("/operations_profiles/{ID}").
-		Name("List One Operations Profile").
-		Handler(confhandler.Respond(ListOne))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	s.Methods("POST").
-		Path("/operations_profiles").
-		Name("Create Operations Profile").
-		Handler(confhandler.Respond(Create))
+}
 
-	s.Methods("PUT").
-		Path("/operations_profiles/{ID}").
-		Name("Update Operations Profile").
-		Handler(confhandler.Respond(Update))
-
-	s.Methods("DELETE").
-		Path("/operations_profiles/{ID}").
-		Name("Delete Operations Profile").
-		Handler(confhandler.Respond(Delete))
+var appRoutesV2 = []respond.AppRoutes{
+	{"operationsProfiles.list", "GET", "/operations_profiles", List},
+	{"operationsProfiles.get", "GET", "/operations_profiles/{ID}", ListOne},
+	{"operationsProfiles.create", "POST", "/operations_profiles", Create},
+	{"operationsProfiles.update", "PUT", "/operations_profiles/{ID}", Update},
+	{"operationsProfiles.delete", "DELETE", "/operations_profiles/{ID}", Delete},
+	{"operationsProfiles.options", "OPTIONS", "/operations_profiles", Options},
+	{"operationsProfiles.options", "OPTIONS", "/operations_profiles/{ID}", Options},
 }

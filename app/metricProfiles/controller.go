@@ -33,13 +33,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	"github.com/gorilla/context"
+	"gopkg.in/mgo.v2/bson"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
 )
 
 // ListOne handles the listing of one specific profile based on its given id
@@ -51,31 +51,18 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// Tenant Authentication
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Open session to tenant database
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -126,31 +113,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	urlValues := r.URL.Query()
 
-	// Tenant Authentication
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Open session to tenant database
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -200,22 +174,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	contentType, err := respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -268,22 +232,12 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	vars := mux.Vars(r)
 
-	contentType, err := respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := MongoInterface{}
 
@@ -351,25 +305,18 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
 
-	// Content Negotiation
-	contentType, err = respond.ParseAcceptHeader(r)
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
 
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// Tenant Authentication
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	if err != nil {
 		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
@@ -421,4 +368,23 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/plain"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	return code, h, output, err
+
 }

@@ -28,13 +28,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type SuperGroupAvailabilityTestSuite struct {
@@ -77,7 +77,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupSuite() {
 
 	// Create router and confhandler for test
 	suite.confHandler = respond.ConfHandler{suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/results").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
 
@@ -120,11 +120,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
+					"roles":   []string{"viewer"},
 				},
 				bson.M{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
+					"roles":   []string{"viewer"},
 				},
 			}})
 	c.Insert(
@@ -156,13 +158,27 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
+					"roles":   []string{"viewer"},
 				},
 				bson.M{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
+					"roles":   []string{"viewer"},
 				},
 			}})
+
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "results.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "results.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
 
@@ -377,7 +393,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailability() {
 	suite.router.ServeHTTP(response, request)
 
 	SuperGrouAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
@@ -453,7 +469,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 	output := response.Body.String()
 
 	SuperGroupAvailabilityJSON := `{
-   "root": [
+   "results": [
      {
        "name": "GROUP_A",
        "type": "GROUP",
@@ -506,11 +522,23 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailabilityErro
 
 	reportErrorXML := ` <root>
    <message>The report with the name Report_B does not exist</message>
+   <code>404</code>
  </root>`
 
 	typeErrorXML := ` <root>
    <message>The report Report_A does not define any group type: supergroup</message>
+   <code>404</code>
  </root>`
+
+	typeError1XML := ` <root>
+   <message>No results found for given query</message>
+   <code>404</code>
+ </root>`
+
+	typeError1JSON := `{
+   "message": "No results found for given query",
+   "code": 404
+ }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_B/supergroup?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -520,8 +548,8 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailabilityErro
 
 	suite.router.ServeHTTP(response, request)
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 bad request code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(reportErrorXML, response.Body.String(), "Response body mismatch")
 
@@ -535,10 +563,92 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListSuperGroupAvailabilityErro
 	suite.router.ServeHTTP(response, request)
 	output := response.Body.String()
 
-	// Check that we must have a 400 bad request code
-	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Check that we must have a 404 bad request code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(typeErrorXML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	//request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError1XML, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2025-06-22T00:00:00Z&end_time=2025-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	//request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(typeError1JSON, output, "Response body mismatch")
+
+}
+
+func (suite *SuperGroupAvailabilityTestSuite) TestOptionsSuperGroup() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/results/Report_A/GROUP/GROUP_A", strings.NewReader(""))
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+	headers = response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+// TestStrictSlashSuperGroupResults test if not found responses are returned correctly
+func (suite *SuperGroupAvailabilityTestSuite) TestStrictSlashSuperGroupResults() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/GROUP/GROUP_A/?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 
 }
 

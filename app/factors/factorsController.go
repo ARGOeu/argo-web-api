@@ -32,9 +32,9 @@ import (
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)
@@ -60,14 +60,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	tenantDbConfig, err := authentication.AuthenticateTenant(r.Header, cfg)
-
-	if err != nil {
-		output = []byte(http.StatusText(http.StatusUnauthorized))
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
-	}
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 
@@ -94,4 +88,23 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	mongo.CloseSession(session)
 	return code, h, output, err
+}
+
+func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	contentType := "text/plain"
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	return code, h, output, err
+
 }

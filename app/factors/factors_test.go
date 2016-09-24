@@ -32,26 +32,27 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // FactorsTestSuite is a utility suite struct used in tests
 type FactorsTestSuite struct {
 	suite.Suite
-	cfg               config.Config
-	tenantcfg         config.MongoConfig
-	router            *mux.Router
-	confHandler       respond.ConfHandler
-	respNokeyprovided string
-	respUnauthorized  string
-	respFactorsList   string
+	cfg                 config.Config
+	tenantcfg           config.MongoConfig
+	router              *mux.Router
+	confHandler         respond.ConfHandler
+	respNokeyprovided   string
+	respUnauthorized    string
+	respFactorsListXML  string
+	respFactorsListJSON string
 }
 
 func (suite *FactorsTestSuite) SetupSuite() {
@@ -73,10 +74,16 @@ func (suite *FactorsTestSuite) SetupSuite() {
 	`
 	_ = gcfg.ReadStringInto(&suite.cfg, coreConfig)
 	suite.respNokeyprovided = "404 page not found"
-	suite.respUnauthorized = "Unauthorized"
+	suite.respUnauthorized = `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
 
 	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/factors").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// TODO: I don't like it here that I rewrite the test data.
@@ -99,7 +106,7 @@ func (suite *FactorsTestSuite) SetupTest() {
 	// Add authentication token to mongo coredb
 	seedAuth := bson.M{"name": "TEST",
 		"db_conf": []bson.M{bson.M{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
-		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret"}}}
+		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret", "roles": []string{"viewer"}}}}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seedAuth)
 
 	// Add a few factors in collection
@@ -108,16 +115,40 @@ func (suite *FactorsTestSuite) SetupTest() {
 	c.Insert(bson.M{"hepspec": 1019, "name": "CFP-IST"})
 	c.Insert(bson.M{"hepspec": 5406, "name": "CETA-GRID"})
 
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "factors.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+
 }
 
 // TestListFactors will run unit tests against the List function
 func (suite *FactorsTestSuite) TestListFactors() {
 
-	suite.respFactorsList = `<root>
+	suite.respFactorsListXML = `<root>
  <Factor site="CETA-GRID" weight="5406"></Factor>
  <Factor site="CFP-IST" weight="1019"></Factor>
  <Factor site="CIEMAT-LCG2" weight="14595"></Factor>
 </root>`
+
+	suite.respFactorsListJSON = `{
+ "factors": [
+  {
+   "site": "CETA-GRID",
+   "weight": "5406"
+  },
+  {
+   "site": "CFP-IST",
+   "weight": "1019"
+  },
+  {
+   "site": "CIEMAT-LCG2",
+   "weight": "14595"
+  }
+ ]
+}`
 
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
@@ -129,21 +160,34 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	suite.router.ServeHTTP(response, request)
 	code := response.Code
 	output := response.Body.String()
-	suite.Equal(200, code, "Something went wrong")
-	suite.Equal(suite.respFactorsList, string(output), "Response body mismatch")
+	suite.Equal(200, code, "Return status code mismatch")
+	suite.Equal(suite.respFactorsListXML, string(output), "Response body mismatch")
 
 	// Prepare new request object
 	request, _ = http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
 	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "wrongkey")
-	request.Header.Set("Accept", "application/xml")
+	request.Header.Set("x-api-key", "secret")
+	request.Header.Set("Accept", "application/json")
 	// Execute the request in the controller
 	response = httptest.NewRecorder()
 	suite.router.ServeHTTP(response, request)
 	code = response.Code
 	output = response.Body.String()
-	suite.Equal(401, code, "Should have gotten return code 401 (Unauthorized)")
-	suite.Equal(suite.respUnauthorized, string(output), "Should have gotten reply Unauthorized")
+	suite.Equal(200, code, "Return status code mismatch")
+	suite.Equal(suite.respFactorsListJSON, string(output), "Response body mismatch")
+
+	// Prepare new request object
+	request, _ = http.NewRequest("GET", "/api/v2/factors", strings.NewReader(""))
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "wrongkey")
+	request.Header.Set("Accept", "application/json")
+	// Execute the request in the controller
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	code = response.Code
+	output = response.Body.String()
+	suite.Equal(401, code, "Return status code mismatch")
+	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 
 	// Remove the test data from core db not to contaminate other tests
 	// Open session to core mongo
@@ -170,6 +214,40 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	c.Remove(bson.M{"name": "CIEMAT-LCG2"})
 	c.Remove(bson.M{"name": "CFP-IST"})
 	c.Remove(bson.M{"name": "CETA-GRID"})
+}
+
+func (suite *FactorsTestSuite) TestOptionsFactors() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/factors", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *FactorsTestSuite) TestTrailingSlashFactors() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/factors/", strings.NewReader(""))
+	request.Header.Set("x-api-key", "secret")
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+
+	suite.Equal(404, code, "Error in response code")
+
 }
 
 //TearDownTest to tear down every test

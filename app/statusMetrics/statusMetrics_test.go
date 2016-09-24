@@ -28,15 +28,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/stretchr/testify/suite"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/gcfg.v1"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -114,6 +114,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 			bson.M{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
@@ -138,9 +139,20 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 			bson.M{
 				"name":    "tenant2_user",
 				"email":   "tenant2_user@email.com",
+				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
-
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "status.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "status.get",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -464,6 +476,14 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
  ]
 }`
 
+	respUnauthorized := `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
 		"/services/CREAM-CE/endpoints/cream01.afroditi.gr/metrics/emi.cream.CREAMCE-JobSubmit" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
@@ -555,6 +575,55 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+	// 6. WRONG KEY REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEYISWRONG")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, response.Code, "Response code mismatch")
+	// Compare the expected and actual xml response
+	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *StatusMetricsTestSuite) TestOptionsStatusMetrics() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints/endpoint_a/metrics", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints/endpoint_a/metrics/metric_a", strings.NewReader(""))
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+	headers = response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
 }
 

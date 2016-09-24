@@ -23,35 +23,24 @@
 package metricProfiles
 
 import (
-	"github.com/ARGOeu/argo-web-api/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/gorilla/mux"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s.Methods("GET").
-		Path("/metric_profiles").
-		Name("List Metric Profiles").
-		Handler(confhandler.Respond(List))
 
-	s.Methods("GET").
-		Path("/metric_profiles/{ID}").
-		Name("List One Metric Profile").
-		Handler(confhandler.Respond(ListOne))
+	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
-	s.Methods("POST").
-		Path("/metric_profiles").
-		Name("Create Metric Profile").
-		Handler(confhandler.Respond(Create))
+}
 
-	s.Methods("PUT").
-		Path("/metric_profiles/{ID}").
-		Name("Update Metric Profile").
-		Handler(confhandler.Respond(Update))
-
-	s.Methods("DELETE").
-		Path("/metric_profiles/{ID}").
-		Name("Delete Metric Profile").
-		Handler(confhandler.Respond(Delete))
+var appRoutesV2 = []respond.AppRoutes{
+	{"metricProfiles.list", "GET", "/metric_profiles", List},
+	{"metricProfiles.get", "GET", "/metric_profiles/{ID}", ListOne},
+	{"metricProfiles.create", "POST", "/metric_profiles", Create},
+	{"metricProfiles.update", "PUT", "/metric_profiles/{ID}", Update},
+	{"metricProfiles.delete", "DELETE", "/metric_profiles/{ID}", Delete},
+	{"metricProfiles.options", "OPTIONS", "/metric_profiles", Options},
+	{"metricProfiles.options", "OPTIONS", "/metric_profiles/{ID}", Options},
 }
