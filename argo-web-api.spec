@@ -3,7 +3,7 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.6.3
+Version: 1.6.4
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -58,6 +58,8 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
+* Sat Sep 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.4-1%{?dist}
+- Update to the latest GOLang version (1.7.1).
 * Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.3-1%{?dist}
 - ARGO-292 Use godep tool for 3rd party pkg management
 - ARGO-291 use mongodb 3.x in travis
