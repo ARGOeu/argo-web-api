@@ -58,7 +58,7 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
-* Web Oct 12 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.5-1%{?dist}
+* Wed Oct 12 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.5-1%{?dist}
 - New RPM package release.
 * Sat Sep 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.4-1%{?dist}
 - Update to the latest GOLang version (1.7.1).
