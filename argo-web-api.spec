@@ -3,7 +3,7 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.6.5
+Version: 1.6.5 
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -59,7 +59,7 @@ go clean
 
 %changelog
 * Wed Oct 12 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.5-1%{?dist}
-- New RPM package release
+- New RPM package release. 
 * Sat Sep 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.4-1%{?dist}
 - Update to the latest GOLang version (1.7.1).
 * Wed Feb 3 2016 Christos Kanellopoulos <skanct@gmail.com> - 1.6.3-1%{?dist}
