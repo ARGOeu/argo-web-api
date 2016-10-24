@@ -4,7 +4,7 @@
 Name: argo-web-api
 Summary: A/R API
 Version: 1.6.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     EGI/SA4
@@ -58,6 +58,8 @@ go clean
 %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
+* Mon Oct 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.5-2%{?dist}
+- New RPM package release.
 * Wed Oct 12 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.5-1%{?dist}
 - New RPM package release.
 * Sat Sep 24 2016 Themis Zamani <themiszamani@gmail.com> - 1.6.4-1%{?dist}
