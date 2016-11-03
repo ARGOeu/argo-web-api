@@ -28,6 +28,8 @@ package reports
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -142,6 +144,8 @@ func (suite *ReportTestSuite) SetupSuite() {
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with two reports
 func (suite *ReportTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)

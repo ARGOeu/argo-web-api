@@ -27,6 +27,8 @@
 package mongo
 
 import (
+	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -46,6 +48,8 @@ type mongoTestSuite struct {
 // Setup the Test Environment
 // This function runs before any test and setups the environment
 func (suite *mongoTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const testConfig = `
     [server]
