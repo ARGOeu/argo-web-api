@@ -23,6 +23,8 @@
 package statusEndpointGroups
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -55,6 +57,8 @@ type StatusEndpointGroupsTestSuite struct {
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const testConfig = `
     [server]

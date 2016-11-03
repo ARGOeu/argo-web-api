@@ -23,6 +23,8 @@
 package operationsProfiles
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -51,6 +53,8 @@ type OperationsProfilesTestSuite struct {
 
 // Setup the Test Environment
 func (suite *OperationsProfilesTestSuite) SetupSuite() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const testConfig = `
 	    [server]

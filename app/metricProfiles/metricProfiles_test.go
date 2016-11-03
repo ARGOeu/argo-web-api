@@ -23,6 +23,8 @@
 package metricProfiles
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -87,6 +89,8 @@ func (suite *MetricProfilesTestSuite) SetupSuite() {
 
 // This function runs before any test and setups the environment
 func (suite *MetricProfilesTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)

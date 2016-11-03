@@ -27,6 +27,8 @@
 package factors
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -56,6 +58,8 @@ type FactorsTestSuite struct {
 }
 
 func (suite *FactorsTestSuite) SetupSuite() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const coreConfig = `
 	    [server]
