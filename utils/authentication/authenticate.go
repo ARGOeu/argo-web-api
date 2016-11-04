@@ -132,6 +132,6 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 			mongoConf.Roles = user.Roles
 		}
 	}
-	log.Printf("ACCESS\tUser: %s", mongoConf.User)
+	log.Printf("ACCESS User: %s", mongoConf.User)
 	return mongoConf, nil
 }

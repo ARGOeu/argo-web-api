@@ -39,10 +39,12 @@ import (
 
 func main() {
 
+	log.SetOutput(os.Stdout)
 	//Create the server router and add the middleware
 	var mainRouter http.Handler
 	mainRouter = routing.NewRouter(cfg)
 	mainRouter = handlers.CombinedLoggingHandler(os.Stdout, mainRouter)
+
 	// mainRouter = handlers.CompressHandler(mainRouter)
 
 	http.Handle("/", mainRouter)
