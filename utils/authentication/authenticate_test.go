@@ -27,6 +27,8 @@
 package authentication
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -53,6 +55,8 @@ type AuthenticationProfileTestSuite struct {
 
 // SetupTest will bootstrap and provide the testing environment
 func (suite *AuthenticationProfileTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const testConfig = `
     [server]

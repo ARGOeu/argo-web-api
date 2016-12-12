@@ -23,6 +23,8 @@
 package statusServices
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -55,6 +57,8 @@ type StatusServicesTestSuite struct {
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *StatusServicesTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	const testConfig = `
     [server]

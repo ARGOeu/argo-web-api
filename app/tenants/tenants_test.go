@@ -27,6 +27,8 @@
 package tenants
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -115,6 +117,8 @@ func (suite *TenantTestSuite) SetupSuite() {
 // Also the testdb is seeded with two tenants
 // and with an authorization token:"S3CR3T"
 func (suite *TenantTestSuite) SetupTest() {
+
+	log.SetOutput(ioutil.Discard)
 
 	// Connect to mongo testdb
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)

@@ -28,6 +28,7 @@ package authentication
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -131,5 +132,6 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 			mongoConf.Roles = user.Roles
 		}
 	}
+	log.Printf("ACCESS User: %s", mongoConf.User)
 	return mongoConf, nil
 }
