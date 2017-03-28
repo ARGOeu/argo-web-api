@@ -165,7 +165,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
@@ -267,7 +267,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")

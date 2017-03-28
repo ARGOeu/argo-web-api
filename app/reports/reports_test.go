@@ -235,7 +235,7 @@ func (suite *ReportTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "C4PK3Y")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 

@@ -52,7 +52,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		} else {
 
 			// authenticate tenant user
-			tenantConf, tErr := authentication.AuthenticateTenant(r.Header, cfg)
+			tenantConf, name, tErr := authentication.AuthenticateTenant(r.Header, cfg)
 			// If tenant user not authenticated respond with  error
 			if tErr != nil {
 				Error(w, r, ErrAuthen, cfg, errs)
@@ -60,7 +60,9 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			}
 
 			context.Set(r, "roles", tenantConf.Roles)
+			context.Set(r, "hbase_conf", cfg.Hbase)
 			context.Set(r, "tenant_conf", tenantConf)
+			context.Set(r, "tenant_name", name)
 			context.Set(r, "authen", true)
 			hfn.ServeHTTP(w, r)
 
