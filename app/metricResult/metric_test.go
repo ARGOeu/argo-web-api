@@ -145,7 +145,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")

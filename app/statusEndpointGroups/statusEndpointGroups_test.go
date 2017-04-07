@@ -72,6 +72,8 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
     host = "127.0.0.1"
     port = 27017
     db = "argotest_egroups"
+		[hbase]
+		zkquorum = localhost
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -165,7 +167,7 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
@@ -240,7 +242,7 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the reports DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
@@ -516,6 +518,23 @@ func (suite *StatusEndpointGroupsTestSuite) TestOptionsStatusEndpointGroups() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *StatusEndpointGroupsTestSuite) TestHbase() {
+
+	// hbaseCl := hbase.CreateClient(suite.cfg.Hbase)
+	//
+	// res, _ := hbase.QueryStatusGroups(hbaseCl, "EGI", "Critical", "2016-03-10")
+	//
+	// data := hbaseToDataOutput(res)
+	//
+	// inpParams := InputParams{}
+	// inpParams.format = "application/json"
+	//
+	// text, _ := createView(data, inpParams)
+	//
+	// fmt.Println(string(text[:len(text)]))
 
 }
 

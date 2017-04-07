@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/hbase"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -74,6 +75,29 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		vars["service_name"],
 		vars["endpoint_name"],
 		contentType,
+	}
+
+	dataSrc := urlValues.Get("datasource")
+	// If hbase bypass mongo session
+	if dataSrc == "hbase" {
+		// Get hbase configuration
+		hbCfg := context.Get(r, "hbase_conf").(config.HbaseConfig)
+		// Get tenant name
+		tenantName := context.Get(r, "tenant_name").(string)
+
+		// Query Results from hbase
+		hbResults, errHb := hbase.QueryStatusEndpoints(hbCfg, tenantName, input.report, strconv.Itoa(input.startTime), input.group, input.service, input.hostname)
+		if errHb != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+		// Convert hbase results to data output format
+		doResults := hbaseToDataOutput(hbResults)
+		// Render the reults into xml
+		output, err = createView(doResults, input) //Render the results into XML format
+
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
 	}
 
 	// Grab Tenant DB configuration from context
