@@ -44,7 +44,7 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 		dOut.EndpointGroup = cellMap["endpoint_group"]
 		dOut.Report = cellMap["report"]
 		dOut.Status = cellMap["status"]
-		dOut.Timestamp = cellMap["timestamp"]
+		dOut.Timestamp = cellMap["ts_monitored"]
 		dResult = append(dResult, dOut)
 	}
 

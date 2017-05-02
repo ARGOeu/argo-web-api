@@ -41,7 +41,7 @@ var flServerMaxProcs = flag.Int("maxprocs", 0, "specify the GOMAXPROCS")
 var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the MongoDB instance")
 var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the MongoDB instance listens on")
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
-var flHbaseZk = flag.String("hbase-zk", "", "specify the hbase zookeeper quorum list")
+var flHbaseZk = flag.String("hbase-zkquorum", "", "specify the hbase zookeeper quorum list")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
@@ -116,7 +116,8 @@ func LoadConfiguration() Config {
 	flag.Parse()
 	// var cfg Config
 	mongocfg := MongoConfig{}
-	cfg := Config{MongoDB: mongocfg}
+	hbasecfg := HbaseConfig{}
+	cfg := Config{MongoDB: mongocfg, Hbase: hbasecfg}
 	if *flConfig != "" {
 		_ = gcfg.ReadFileInto(&cfg, *flConfig)
 	} else {
