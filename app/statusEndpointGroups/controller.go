@@ -42,6 +42,13 @@ func parseZuluDate(dateStr string) (int, error) {
 	return strconv.Atoi(parsedTime.Format(ymdForm))
 }
 
+// getPrevDay returns the previous day
+func getPrevDay(dateStr string) (int, error) {
+	parsedTime, _ := time.Parse(zuluForm, dateStr)
+	prevTime := parsedTime.AddDate(0, 0, -1)
+	return strconv.Atoi(prevTime.Format(ymdForm))
+}
+
 // ListEndpointGroupTimelines returns a list of metric timelines
 func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -64,6 +71,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	vars := mux.Vars(r)
 
 	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
+
 	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
 
 	input := InputParams{
@@ -125,6 +133,19 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
+
+	//if no status results yet show previous days results
+	if len(results) == 0 {
+		// Zero query results
+		input.startTime = parsedPrev
+		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	output, err = createView(results, input) //Render the results into JSON/XML format
