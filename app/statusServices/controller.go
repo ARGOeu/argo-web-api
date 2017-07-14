@@ -95,7 +95,7 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		hbResults, errHb := hbase.QueryStatusServices(hbCfg, tenantName, input.report, strconv.Itoa(input.startTime), input.group, input.service)
 		if errHb != nil {
 			code = http.StatusInternalServerError
-			return code, h, output, err
+			return code, h, output, errHb
 		}
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)
@@ -103,7 +103,7 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		output, err = createView(doResults, input) //Render the results into XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, err
+		return code, h, output, errHb
 	}
 
 	// Grab Tenant DB configuration from context

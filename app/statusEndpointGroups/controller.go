@@ -96,7 +96,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 
 		if errHb != nil {
 			code = http.StatusInternalServerError
-			return code, h, output, err
+			return code, h, output, errHb
 		}
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)

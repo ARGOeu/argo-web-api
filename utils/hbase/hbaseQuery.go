@@ -2,7 +2,8 @@ package hbase
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/tsuna/gohbase/filter"
@@ -12,12 +13,14 @@ import (
 const metricTblName = "metrics"
 const statusTblName = "status"
 const dataColumn = "data"
+const hbaseTimeout = 3
 
 // Convert bytearray values to strings
 func toString(b []byte) string {
 	return string(b[:len(b)])
 }
 
+//CellsToMap converts hbase data to map representation
 func CellsToMap(cells []*hrpc.Cell) map[string]string {
 	result := make(map[string]string)
 	for _, cell := range cells {
@@ -38,7 +41,9 @@ func queryRawMetrics(hcfg config.HbaseConfig, tenant string, hostname string, se
 	fullTblName := tenant + ":" + metricTblName
 	rowPrefix := hostname + "|" + service + "|" + metric + "|" + ts
 	pFilter := filter.NewPrefixFilter([]byte(rowPrefix))
-	scanRequest, _ := hrpc.NewScanStr(context.Background(), fullTblName, hrpc.Filters(pFilter))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(hbaseTimeout)*time.Second)
+	defer cancel()
+	scanRequest, _ := hrpc.NewScanStr(ctx, fullTblName, hrpc.Filters(pFilter))
 	scanRsp, err := client.Scan(scanRequest)
 
 	if err != nil {
@@ -53,7 +58,7 @@ func queryRawMetrics(hcfg config.HbaseConfig, tenant string, hostname string, se
 	return result, nil
 }
 
-// queryStatusMetrics queries all status metrics from hbase
+// QueryStatusMetrics queries all status metrics from hbase
 func QueryStatusMetrics(hcfg config.HbaseConfig, tenant string, report string, date string, group string, service string, endpoint string, metric string) ([]*hrpc.Result, error) {
 
 	client := CreateClient(hcfg)
@@ -65,17 +70,19 @@ func QueryStatusMetrics(hcfg config.HbaseConfig, tenant string, report string, d
 		filterStr = filterStr + "|" + metric
 	}
 	pFilter := filter.NewPrefixFilter([]byte(filterStr))
-
-	scanRequest, err := hrpc.NewScanStr(context.Background(), table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(hbaseTimeout)*time.Second)
+	defer cancel()
+	scanRequest, err := hrpc.NewScanStr(ctx, table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
 	if err != nil {
 		return nil, err
 	}
+	err = errors.New("hbase timeout")
 	scanRsp, err := client.Scan(scanRequest)
 
 	return scanRsp, err
 }
 
-// queryStatusEndpoints queries all status endpoints from hbase
+// QueryStatusEndpoints queries all status endpoints from hbase
 func QueryStatusEndpoints(hcfg config.HbaseConfig, tenant string, report string, date string, group string, service string, endpoint string) ([]*hrpc.Result, error) {
 	client := CreateClient(hcfg)
 	defer CloseClient(client)
@@ -87,15 +94,18 @@ func QueryStatusEndpoints(hcfg config.HbaseConfig, tenant string, report string,
 	}
 
 	pFilter := filter.NewPrefixFilter([]byte(filterStr))
-	scanRequest, err := hrpc.NewScanStr(context.Background(), table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(hbaseTimeout)*time.Second)
+	defer cancel()
+	scanRequest, err := hrpc.NewScanStr(ctx, table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
 	if err != nil {
 		return nil, err
 	}
+	err = errors.New("hbase timeout")
 	scanRsp, err := client.Scan(scanRequest)
 	return scanRsp, err
 }
 
-// queryStatusServices queries all status services from hbase
+// QueryStatusServices queries all status services from hbase
 func QueryStatusServices(hcfg config.HbaseConfig, tenant string, report string, date string, group string, service string) ([]*hrpc.Result, error) {
 	client := CreateClient(hcfg)
 	defer CloseClient(client)
@@ -106,15 +116,18 @@ func QueryStatusServices(hcfg config.HbaseConfig, tenant string, report string, 
 		filterStr = filterStr + "|" + service
 	}
 	pFilter := filter.NewPrefixFilter([]byte(filterStr))
-	scanRequest, err := hrpc.NewScanStr(context.Background(), table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(hbaseTimeout)*time.Second)
+	defer cancel()
+	scanRequest, err := hrpc.NewScanStr(ctx, table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
 	if err != nil {
 		return nil, err
 	}
+	err = errors.New("hbase timeout")
 	scanRsp, err := client.Scan(scanRequest)
 	return scanRsp, err
 }
 
-// queryStatusGroups queries all status endpoint groups from hbase
+// QueryStatusGroups queries all status endpoint groups from hbase
 func QueryStatusGroups(hcfg config.HbaseConfig, tenant string, report string, date string, group string) ([]*hrpc.Result, error) {
 	client := CreateClient(hcfg)
 	defer CloseClient(client)
@@ -126,11 +139,15 @@ func QueryStatusGroups(hcfg config.HbaseConfig, tenant string, report string, da
 	}
 
 	pFilter := filter.NewPrefixFilter([]byte(filterStr))
-	scanRequest, err := hrpc.NewScanStr(context.Background(), table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(hbaseTimeout)*time.Second)
+	defer cancel()
+	scanRequest, err := hrpc.NewScanStr(ctx, table, hrpc.Filters(pFilter), hrpc.NumberOfRows(100000))
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(filterStr)
+
+	err = errors.New("hbase timeout")
 	scanRsp, err := client.Scan(scanRequest)
+
 	return scanRsp, err
 }
