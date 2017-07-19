@@ -187,7 +187,11 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 		code, header, output, err := fn(r, confhandler.Config)
 
 		if code == http.StatusInternalServerError {
-			log.Panic("Internal Server Error:", fmt.Sprintf("%+v", err))
+			log.Println("Internal Server Error:", fmt.Sprintf("%+v", err))
+
+			errResponse := ErrorResponse{Message: err.Error(), Code: "500", Details: err.Error()}
+			errMsg := CreateFailureResponseMessage(err.Error(), "500", []ErrorResponse{errResponse})
+			output = errMsg.MarshalTo("application/json")
 		}
 
 		//Add headers
