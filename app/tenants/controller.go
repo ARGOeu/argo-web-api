@@ -39,8 +39,24 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
+
+func isAdminRestricted(roles []string) bool {
+	return len(roles) > 0 && roles[0] == "super_admin_restricted"
+}
+
+func restrictTenantOutput(results []Tenant) []Tenant {
+	restricted := []Tenant{}
+	for _, tenant := range results {
+		rItem := Tenant{}
+		rItem.ID = tenant.ID
+		rItem.Info = tenant.Info
+		restricted = append(restricted, rItem)
+	}
+	return restricted
+}
 
 // Create function is used to implement the create tenant request.
 // The request is an http POST request with the tenant description
@@ -134,6 +150,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	defer session.Close()
 
+	roles := context.Get(r, "roles").([]string)
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -149,6 +167,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	// Quicky check if super admin is restricted to remove restricted info
+	if isAdminRestricted(roles) {
+		results = restrictTenantOutput(results)
+	}
+
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
 	output, err = createListView(results, "Success", code)

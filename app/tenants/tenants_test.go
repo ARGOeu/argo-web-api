@@ -125,7 +125,9 @@ func (suite *TenantTestSuite) SetupTest() {
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
+	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAuth)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -138,7 +140,7 @@ func (suite *TenantTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{
 			"resource": "tenants.list",
-			"roles":    []string{"super_admin"},
+			"roles":    []string{"super_admin", "super_admin_restricted"},
 		})
 	c.Insert(
 		bson.M{
@@ -502,6 +504,56 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 
 	suite.NotEqual(err, nil, "No not found error")
 	suite.Equal(err.Error(), "not found", "No not found error")
+}
+
+// TestReadTeanants function implements the testing
+// of the get request which retrieves all tenant information
+func (suite *TenantTestSuite) TestListRestrictedTenants() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants", strings.NewReader(""))
+	// emulate a restricted super admin user
+	request.Header.Set("x-api-key", "R3STRICT3D")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "GUARDIANS",
+    "email": "email@something2",
+    "website": "www.gotg.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 // TestReadTeanants function implements the testing

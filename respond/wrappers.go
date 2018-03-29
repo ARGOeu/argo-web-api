@@ -37,15 +37,22 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		// check if api admin authentication is needed (for tenants etc...)
 		if needsAPIAdmin(routeName) {
 
-			// Authenticate admin api and check
 			if (authentication.AuthenticateAdmin(r.Header, cfg)) == false {
 				// Because not authenticated respond with error
 				Error(w, r, ErrAuthen, cfg, errs)
 				return
 			}
+
 			// admin api authenticated so continue serving
 			context.Set(r, "authen", true)
-			context.Set(r, "roles", []string{"super_admin"})
+			// Add admin restricted or not information -- used in get tenants
+
+			// Check if admin is restricted
+			if authentication.IsAdminRestricted(r.Header, cfg) {
+				context.Set(r, "roles", []string{"super_admin_restricted"})
+			} else {
+				context.Set(r, "roles", []string{"super_admin"})
+			}
 
 			hfn.ServeHTTP(w, r)
 

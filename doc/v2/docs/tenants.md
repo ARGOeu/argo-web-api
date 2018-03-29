@@ -20,6 +20,9 @@ DELETE: Delete a tenant |This method can be used to delete an existing tenant | 
 ## [GET]: List Tenants
 This method can be used to retrieve a list of current tenants
 
+__Note__: This method restricts tenant database and user information when the x-api-key token holder is a __restricted__ super admin
+
+
 ### Input
 
 ```
@@ -37,7 +40,7 @@ Accept: application/json
 ### Response
 Headers: `Status: 200 OK`
 
-#### Response body
+#### Response body for super admin users
 Json Response
 
 ```json
@@ -126,6 +129,40 @@ Json Response
      "api_key": "ST4RL0RDK3Y"
     }
    ]
+  }
+ ]
+}
+```
+
+#### Response body for restricted super admin users:
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "Tenant1",
+    "email": "email1@tenant1.com",
+    "website": "www.tenant1.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "tenant2",
+    "email": "tenant2@email.com",
+    "website": "www.tenant2.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
   }
  ]
 }
