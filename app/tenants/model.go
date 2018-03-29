@@ -31,8 +31,8 @@ package tenants
 type Tenant struct {
 	ID     string         `bson:"id" json:"id"`
 	Info   TenantInfo     `bson:"info" json:"info"`
-	DbConf []TenantDbConf `bson:"db_conf" json:"db_conf"`
-	Users  []TenantUser   `bson:"users" json:"users"`
+	DbConf []TenantDbConf `bson:"db_conf" json:"db_conf,omitempty"`
+	Users  []TenantUser   `bson:"users" json:"users,omitempty"`
 }
 
 // TenantInfo struct holds information about tenant name, contact details

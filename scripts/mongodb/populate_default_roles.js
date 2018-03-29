@@ -46,7 +46,7 @@ function populate_default_roles()
   {"resource" : "status.list", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "factors.list", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "tenants.get", "roles" : [ "super_admin"] },
-  {"resource" : "tenants.list", "roles" : [ "super_admin" ]},
+  {"resource" : "tenants.list", "roles" : [ "super_admin", "super_admin_restricted" ]},
   {"resource" : "tenants.create", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.delete", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.update", "roles" : [ "super_admin" ] },

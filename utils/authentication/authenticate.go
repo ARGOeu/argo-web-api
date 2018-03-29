@@ -37,7 +37,8 @@ import (
 )
 
 type Auth struct {
-	ApiKey string `bson:"api_key"`
+	ApiKey     string `bson:"api_key"`
+	Restricted bool   `bson:"restricted"`
 }
 
 type Tenant struct {
@@ -98,6 +99,32 @@ func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 
 	if len(results) > 0 {
 		return true
+	}
+	return false
+}
+
+// IsAdminRestricted resturns a boolean value if an admin user is in restricted mode or not.
+// Admin user in restricted mode has read only access to certain calls
+func IsAdminRestricted(h http.Header, cfg config.Config) bool {
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		panic(err)
+	}
+
+	query := bson.M{"api_key": h.Get("x-api-key")}
+	projection := bson.M{"_id": 0, "name": 0, "email": 0}
+
+	results := []Auth{}
+	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
+
+	if err != nil {
+		return false
+	}
+
+	if len(results) > 0 {
+		return results[0].Restricted
 	}
 	return false
 }
