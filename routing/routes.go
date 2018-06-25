@@ -36,6 +36,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
+	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
 )
 
 var routesV2 = []RouteV2{
@@ -50,6 +51,7 @@ var routesV2 = []RouteV2{
 	{"Reports", "", reports.HandleSubrouter},
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
+	{"Thresholds Profiles", "", thresholdsProfiles.HandleSubrouter},
 	{"Tenants", "/admin", tenants.HandleSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 }
