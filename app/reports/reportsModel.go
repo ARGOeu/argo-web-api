@@ -40,6 +40,9 @@ import (
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
 type MongoInterface struct {
 	ID       string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	Tenant   string    `json:"tenant" xml:"tenant"`
+	Weight   string    `bson:"weight,omitempty"  json:"weight,omitempty"  xml:"weight,omitempty"`
+	Disabled bool      `bson:"disabled" json:"disabled" xml:"disabled"`
 	Info     Info      `bson:"info" json:"info" xml:"info"`
 	Topology Topology  `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles []Profile `bson:"profiles" json:"profiles" xml:"profiles"`
@@ -79,6 +82,7 @@ type Tag struct {
 	XMLName xml.Name `bson:",omitempty" json:"-"     xml:"tag"`
 	Name    string   `bson:"name"       json:"name"  xml:"name,attr"`
 	Value   string   `bson:"value"      json:"value" xml:"value,attr"`
+	Context string   `bson:"context"    json:"context" xml:"context,attr"`
 }
 
 // Message struct for xml message response
@@ -132,6 +136,7 @@ var validators = map[string]string{
 	"metric":      "metric_profiles",
 	"aggregation": "aggregation_profiles",
 	"operations":  "operations_profiles",
+	"thresholds":  "thresholds_profiles",
 }
 
 // ValidateProfiles ensures that the profiles in a report actually exist in the database and

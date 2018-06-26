@@ -181,6 +181,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := context.Get(r, "tenant_name").(string)
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -205,6 +206,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	for indx, _ := range results {
+		results[indx].Tenant = tenantName
 	}
 
 	// After successfully retrieving the db results
@@ -238,6 +243,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := context.Get(r, "tenant_name").(string)
 
 	//Extracting urlvar "name" from url path
 
@@ -266,6 +272,9 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
+
+	// Enrich report with tenant name -- used in argo engine
+	result.Tenant = tenantName
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
@@ -328,6 +337,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			"info.name":        input.Info.Name,
 			"info.description": input.Info.Description,
 			"info.updated":     time.Now().Format("2006-01-02 15:04:05"),
+			"weight":           input.Weight,
+			"disabled":         input.Disabled,
 			// },
 			"profiles":        input.Profiles,
 			"filter_tags":     input.Tags,
