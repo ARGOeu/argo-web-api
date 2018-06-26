@@ -1022,6 +1022,197 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+
+  /thresholds_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific threhsolds profile
+      operationId: thresholdsProfiles.ListOne
+      description: List one specific thresholds profile targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with one thresholds profile
+          schema:
+            $ref: '#/definitions/Thresholds_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update a threhsolds profile
+      operationId: threhsoldsProfiles.Update
+      description: update information on a specific thresholds Profile which is targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+        - name: "thresholds_profile"
+          in: "body"
+          description: "Json description of the thresholds profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Thresholds_profile'
+      responses:
+        '201':
+          description: Thresholds profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a thresholds profile
+      operationId: thresholdsProfiles.Delete
+      description: Delete a specific thresholds Profile which is targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Thresholds profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /thresholds_profiles:
+    get:
+      summary: List all threhsolds profiles
+      operationId: thresholdsProfiles.List
+      description: Thresholds profiles provide a list of threshold rules to be accounted during a computation
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of thresholds profiles
+          schema:
+            $ref: '#/definitions/Thresholds_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a thresholds profile
+      operationId: thresholdsProfiles.Create
+      description: Create a new thresholds profile which includes a list of threshold ruels to be accounted during a computation
+      tags:
+        - Thresholds Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "thresholds_profile"
+          in: "body"
+          description: "Json description of the thresholds profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Thresholds_profile'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Thresholds profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
   /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List status results for a given endpoint group (i.e. Group_A)"
@@ -1598,7 +1789,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-          
+
   /recomputations/{ID}:
     get:
       summary: "Get Recomputation details"
@@ -1843,7 +2034,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/recomputation'
-          
+
   timestamp_value:
     type: object
     properties:
@@ -2192,6 +2383,41 @@ definitions:
             details:
               type: string
 
+  Thresholds_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Thresholds_profile'
+
+  Thresholds_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      rules:
+        type: array
+        items:
+          $ref: '#/definitions/Threshold_rule'
+
+  Threshold_rule:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      host:
+        type: string
+      metric:
+        type: string
+      threshold:
+        type: string
+
+
   Aggregation_profile_list:
     type: object
     properties:
@@ -2248,6 +2474,7 @@ definitions:
         type: string
       operation:
         type: string
+
 
   Operations_profile_list:
     type: object
