@@ -2544,6 +2544,14 @@ definitions:
   Report:
     type: object
     properties:
+      id:
+        type: string
+      tenant:
+        type: string
+      disabled:
+        type: string
+      weight:
+        type: string
       info:
         type: object
         properties:
@@ -2588,6 +2596,8 @@ definitions:
             name:
               type: string
             value:
+              type: string
+            context:
               type: string
 
   Tenant_list:

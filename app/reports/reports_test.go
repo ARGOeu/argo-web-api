@@ -594,6 +594,8 @@ func (suite *ReportTestSuite) TestCreateReport() {
  "data": \[
   {
    "id": ".*-.*-.*-.*-.*",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Foo_Report",
     "description": "olalala",
@@ -628,11 +630,13 @@ func (suite *ReportTestSuite) TestCreateReport() {
    "filter_tags": \[
     {
      "name": "production",
-     "value": "Y"
+     "value": "Y",
+     "context": ""
     },
     {
      "name": "monitored",
-     "value": "Y"
+     "value": "Y",
+     "context": ""
     }
    \]
   }
@@ -722,6 +726,8 @@ func (suite *ReportTestSuite) TestUpdateReport() {
  "data": \[
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "newname",
     "description": "newdescription",
@@ -756,11 +762,13 @@ func (suite *ReportTestSuite) TestUpdateReport() {
    "filter_tags": \[
     {
      "name": "production",
-     "value": "N"
+     "value": "N",
+     "context": ""
     },
     {
      "name": "monitored",
-     "value": "N"
+     "value": "N",
+     "context": ""
     }
    \]
   }
@@ -934,6 +942,8 @@ func (suite *ReportTestSuite) TestReadOneReport() {
  "data": [
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_A",
     "description": "report aaaaa",
@@ -968,11 +978,13 @@ func (suite *ReportTestSuite) TestReadOneReport() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   }
@@ -998,6 +1010,7 @@ func (suite *ReportTestSuite) TestReadOneReport() {
 
 	// Compare the expected and actual xml response
 	suite.Equal(respondJSON, output, "Response body mismatch")
+
 }
 
 // TestReadReport function implements the testing
@@ -1014,6 +1027,8 @@ func (suite *ReportTestSuite) TestReadReports() {
  "data": [
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_B",
     "description": "report bbb",
@@ -1048,16 +1063,20 @@ func (suite *ReportTestSuite) TestReadReports() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   },
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_A",
     "description": "report aaaaa",
@@ -1092,11 +1111,13 @@ func (suite *ReportTestSuite) TestReadReports() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   }
@@ -1121,6 +1142,7 @@ func (suite *ReportTestSuite) TestReadReports() {
 	suite.Equal(200, code, "Incorrect Error Code")
 	// Compare the expected and actual xml response
 	suite.Equal(respondJSON, string(output), "Response body mismatch")
+
 }
 
 // TestCreateUnauthorized function tests calling the create report request (POST) and
