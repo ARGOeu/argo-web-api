@@ -334,13 +334,35 @@ var BadRequestBadJSON = ResponseMessage{
 		Details: "Request Body contains malformed JSON, thus rendering the Request Bad",
 	}}
 
+var BadRequestInvalidJSON = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+	},
+	Errors: []StatusResponse{
+		{Message:"Bad Request", Code:"400", Details: "Request Body contains malformed JSON, thus rendering the Request Bad"},
+	},
+}
+
 // NotFound is used to inform the user about not found item
 var NotFound = ResponseMessage{
 	Status: StatusResponse{
 		Message: "Not Found",
 		Code:    "404",
 		Details: "item with the specific ID was not found on the server",
-	}}
+	},
+}
+
+// NotFound is used to inform the user about not found item
+var ErrNotFound = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+	},
+	Errors: []StatusResponse{
+		{Message:"Not Found", Code:"404", Details: "item with the specific ID was not found on the server"},
+	},
+}
 
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
 var UnauthorizedMessage = ResponseMessage{
