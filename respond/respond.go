@@ -397,6 +397,18 @@ var UnprocessableEntity = ResponseMessage{
 	},
 }
 
+var ErrUnproccessableEntity = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Unprocessable Entity",
+			Code:    "422",
+		},
+		Errors: []StatusResponse{
+			{Message: "Unprocessable Entity", Code: "422", Details: details},
+		},
+	}
+}
+
 // InternalServerErrorMessage is used to marshal a response
 var InternalServerErrorMessage = ResponseMessage{
 	Status: StatusResponse{
