@@ -54,8 +54,8 @@ go clean
 %defattr(0644,root,root)
 %attr(0750,root,root) /var/www/argo-web-api
 %attr(0755,root,root) /var/www/argo-web-api/argo-web-api
-%attr(0644,root,root) /etc/argo-web-api.conf
-%attr(0644,root,root) /etc/init/argo-web-api.conf
+%config(noreplace) %attr(0644,root,root) /etc/argo-web-api.conf
+%config(noreplace) %attr(0644,root,root) /etc/init/argo-web-api.conf
 
 %changelog
 * Mon Dec 12 2016 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.1-1%{dist}
