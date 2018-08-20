@@ -20,6 +20,10 @@ Obsoletes: ar-web-api
 %description
 Installs the ARGO API.
 
+%pre
+/usr/bin/getent group argo-web-api || /usr/sbin/groupadd -r argo-web-api
+/usr/bin/getent passwd argo-web-api || /usr/sbin/useradd -r -s /sbin/nologin -d /var/www/argo-web-api -g argo-web-api argo-web-api
+
 %prep
 %setup
 
@@ -43,6 +47,7 @@ install --mode 644 src/github.com/ARGOeu/argo-web-api/default.conf %{buildroot}/
 install --directory %{buildroot}/etc/init
 install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.conf %{buildroot}/etc/init/
 
+install --directory %{buildroot}/var/www/argo-web-api/certs
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -51,11 +56,13 @@ cd src/github.com/ARGOeu/argo-web-api/
 go clean
 
 %files
-%defattr(0644,root,root)
-%attr(0750,root,root) /var/www/argo-web-api
-%attr(0755,root,root) /var/www/argo-web-api/argo-web-api
-%config(noreplace) %attr(0644,root,root) /etc/argo-web-api.conf
-%config(noreplace) %attr(0644,root,root) /etc/init/argo-web-api.conf
+%defattr(0644,argo-web-api,argo-web-api)
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api/certs
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api/argo-web-api
+%caps(cap_net_bind_service=+ep) /var/www/argo-web-api/argo-web-api
+%config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/argo-web-api.conf
+%config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/init/argo-web-api.conf
 
 %changelog
 * Mon Dec 12 2016 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.1-1%{dist}
