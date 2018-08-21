@@ -3,11 +3,11 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.7.1
+Version: 1.7.2
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
-Group:     EGI/SA4
+Group:     ARGO
 Source0: %{name}-%{version}.tar.gz
 BuildRequires: golang
 BuildRequires: bzr
@@ -49,6 +49,9 @@ install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.conf %{buildr
 
 install --directory %{buildroot}/var/www/argo-web-api/certs
 
+install --directory %{buildroot}/usr/lib/systemd/system
+install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.service %{buildroot}/usr/lib/systemd/system/
+
 %clean
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
@@ -65,6 +68,18 @@ go clean
 %config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/init/argo-web-api.conf
 
 %changelog
+* Tue Aug 21 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.2-1%{dist}
+- ARGO-1351 Refactor error messages in the aggregation profiles package
+- ARGO-1349 Refactor error messages in the metric profiles package
+- ARGO-1346 Refactor error messages in the opperations package
+- ARGO-1275 Refactor Report resource schema
+- ARGO-1260 Implement CRUD on threshold profiles resource
+- ARGO-1099 Add read-only super-admin
+- ARGO-894 Fix error handling for internal server errors
+- ARGO-835 Set timeout to hbase related requests
+- ARGO-776 Show latest status results if no data are present for the be…
+- ARGO-794 Hbase zkquorum config fix. Hbase query minor fixes
+- ARGO-723 Add hbase support to argo-web-api
 * Mon Dec 12 2016 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.1-1%{dist}
 - Set log output to stdout
 - ARGO-606 Add WEB API username to logging
