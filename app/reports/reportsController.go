@@ -32,7 +32,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/context"
@@ -79,8 +78,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if json body is malformed
 	if err != nil {
-		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
-		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = 400
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -122,14 +121,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// abort creation notifing the user
 	if len(results) > 0 {
 		// Name was found so print the error message in xml
-		out := respond.ResponseMessage{
-			Status: respond.StatusResponse{
-				Message: "Report with the same name already exists",
-				Code:    strconv.Itoa(http.StatusConflict),
-			}}
-
-		output, _ = respond.MarshalContent(out, contentType, "", " ")
-
+		output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -162,7 +154,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 }
 
 // List function that implements the http GET request that retrieves
-// all avaiable report information
+// all available report information
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -213,7 +205,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	// After successfully retrieving the db results
-	// call the createView function to render them into idented xml
+	// call the createView function to render them into indented xml
 	output, err = createView(results, contentType)
 
 	if err != nil {
@@ -226,7 +218,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 }
 
 // ListOne function that implements the http GET request that retrieves
-// all avaiable report information
+// the specified report's information
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -267,8 +259,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// If query returned zero result then no tenant matched this name,
 	// abort and notify user accordingly
 	if err != nil {
-		code = http.StatusNotFound
-		output, _ := ReportNotFound(contentType)
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -325,7 +317,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err != nil {
 
 		// User provided malformed json input data
-		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -373,9 +365,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-		//Render the response into XML
-		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		//Render the response into JSON
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -433,9 +425,9 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-		//Render the response into XML
-		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		//Render the response into JSON
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -446,8 +438,8 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = http.StatusOK
 		output, err = respond.CreateResponseMessage("Report was successfully deleted", "200", contentType)
 	} else {
-		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 	}
 	//Render the response into XML
 	if err != nil {

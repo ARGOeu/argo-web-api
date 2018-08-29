@@ -210,7 +210,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err = incoming.MetricProf.validateID(session, tenantDbConfig.Db, "metric_profiles")
 	// Respond 422 unprocessabe entity
 	if err != nil {
-		output, _ = respond.MarshalContent(respond.ErrUnproccessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrUnprocessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
 		code = 422
 		return code, h, output, err
 	}
@@ -296,7 +296,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err = incoming.MetricProf.validateID(session, tenantDbConfig.Db, "metric_profiles")
 	// Respond 422 unprocessabe entity
 	if err != nil {
-		output, _ = respond.MarshalContent(respond.ErrUnproccessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrUnprocessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
 		code = 422
 		return code, h, output, err
 	}

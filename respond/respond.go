@@ -340,7 +340,7 @@ var BadRequestInvalidJSON = ResponseMessage{
 		Code:    "400",
 	},
 	Errors: []StatusResponse{
-		{Message:"Bad Request", Code:"400", Details: "Request Body contains malformed JSON, thus rendering the Request Bad"},
+		{Message: "Bad Request", Code: "400", Details: "Request Body contains malformed JSON, thus rendering the Request Bad"},
 	},
 }
 
@@ -360,7 +360,7 @@ var ErrNotFound = ResponseMessage{
 		Code:    "404",
 	},
 	Errors: []StatusResponse{
-		{Message:"Not Found", Code:"404", Details: "item with the specific ID was not found on the server"},
+		{Message: "Not Found", Code: "404", Details: "item with the specific ID was not found on the server"},
 	},
 }
 
@@ -389,6 +389,18 @@ var MalformedJSONInput = ResponseMessage{
 	},
 }
 
+var ErrConflict = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Conflict",
+			Code:    "409",
+		},
+		Errors: []StatusResponse{
+			{Message: "Conflict", Code: "409", Details: details},
+		},
+	}
+}
+
 // UnprocessableEntity is used to marshal a response
 var UnprocessableEntity = ResponseMessage{
 	Status: StatusResponse{
@@ -397,7 +409,7 @@ var UnprocessableEntity = ResponseMessage{
 	},
 }
 
-var ErrUnproccessableEntity = func(details string) ResponseMessage {
+var ErrUnprocessableEntity = func(details string) ResponseMessage {
 	return ResponseMessage{
 		Status: StatusResponse{
 			Message: "Unprocessable Entity",

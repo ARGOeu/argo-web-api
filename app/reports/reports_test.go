@@ -59,6 +59,7 @@ type ReportTestSuite struct {
 	respReportNotFound string
 	respUnauthorized   string
 	respBadJSON        string
+	respNameConflict   string
 }
 
 // Setup the Test Environment
@@ -111,17 +112,44 @@ func (suite *ReportTestSuite) SetupSuite() {
 
 	suite.respReportNotFound = `{
  "status": {
-  "message": "Report Not Found",
+  "message": "Not Found",
   "code": "404"
- }
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+
+	suite.respNameConflict = `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Report with the same name already exists"
+  }
+ ]
 }`
 
 	suite.respBadJSON = `{
  "status": {
-  "message": "Malformated json input data",
-  "code": "400",
-  "details": "Check that your json input is valid"
- }
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	suite.respUnauthorized = `{
@@ -1418,6 +1446,72 @@ func (suite *ReportTestSuite) TestDeleteForbidViewer() {
 	suite.Equal(403, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+}
+
+// TestCreateReportAlreadyExistingName tests the case where the given report has a defined name that already exists
+func (suite *ReportTestSuite) TestCreateReportAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "Report_A",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("POST", "https://myapi.test.com/api/v2/reports", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code, "Incorrect Error Code")
+	suite.Equal(suite.respNameConflict, output, "Response body mismatch")
+
 }
 
 // This function is actually called in the end of all tests
