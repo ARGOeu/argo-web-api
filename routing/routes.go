@@ -25,6 +25,7 @@ package routing
 import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
 	"github.com/ARGOeu/argo-web-api/app/factors"
+	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
 	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
@@ -40,6 +41,7 @@ import (
 )
 
 var routesV2 = []RouteV2{
+	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},

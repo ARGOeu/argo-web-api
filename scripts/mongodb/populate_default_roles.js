@@ -20,6 +20,7 @@ function populate_default_roles()
   db = db.getSiblingDB('argo_core')
   print("INFO\tOpened argo_core db")
   db.roles.insert([
+  {"resource" : "latest.get", "roles": ["admin", "editor", "viewer"]},
   {"resource" : "reports.get", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "reports.list", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "reports.create", "roles" : [ "admin", "editor" ] },
