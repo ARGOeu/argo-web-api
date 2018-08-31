@@ -51,14 +51,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	//STANDARD DECLARATIONS END
 
-	contentType, err = respond.ParseAcceptHeader(r)
+	contentType, _ = respond.ParseAcceptHeader(r)
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	if err != nil {
-		code = http.StatusNotAcceptable
-		output, _ = respond.MarshalContent(respond.NotAcceptableContentType, contentType, "", " ")
-		return code, h, output, err
-	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
