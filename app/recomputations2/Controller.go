@@ -30,6 +30,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -119,6 +120,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	err = mongo.FindOne(session, tenantDbConfig.Db, recomputationsColl, filter, &result)
 
 	if err != nil {
+		if err.Error() == "not found" {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
@@ -164,8 +170,8 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		panic(err)
 	}
 	if err := json.Unmarshal(body, &recompSubmission); err != nil {
-		code = 422 // unprocessable entity
-		output = []byte("Unprocessable JSON")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
 		return code, h, output, err
 	}
 	now := time.Now()
