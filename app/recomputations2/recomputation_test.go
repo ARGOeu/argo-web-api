@@ -273,6 +273,35 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
 }
 
+func (suite *RecomputationsProfileTestSuite) TestListOneRecomputationNotFound() {
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations/wrong_id", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+	suite.Equal(404, code)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON, output)
+}
+
 func (suite *RecomputationsProfileTestSuite) TestListErrorRecomputations() {
 	suite.router.Methods("GET").Handler(suite.confHandler.Respond(List))
 	request, _ := http.NewRequest("GET", "/api/v2/recomputations", strings.NewReader(""))
@@ -444,6 +473,39 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	json, _ := json.MarshalIndent(results, "", " ")
 	suite.Regexp(dbDumpJson, string(json), "Database contents were not expected")
 
+}
+
+func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputationBadJSON() {
+
+	// malformed json
+	jsonSubmission := []byte("{{")
+
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer(jsonSubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
+}`
+	suite.Equal(400, code)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON, output)
 }
 
 //TearDownTest to tear down every test
