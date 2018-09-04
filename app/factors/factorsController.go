@@ -73,7 +73,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	output, err = createView(results, contentType) //Render the results into XML format
+	output, err = createView(results, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
