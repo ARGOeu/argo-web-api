@@ -1213,6 +1213,77 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
+  /latest/{report_name}/{lgroup_type}:
+    get:
+      summary: "List latest metric data for available in a specific report"
+      description: "This request lists the latest metric data  and supports filtering by status value. If user uses filter=non-ok will get all non ok statuses"
+      operationId: statusLatestList
+      tags:
+        - Latest
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/latestDate"
+        - $ref: "#/parameters/latestFilter"
+        - $ref: "#/parameters/latestLimit"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+
+  /latest/{report_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List latest metric data for a target endpoint group and filter by status"
+      description: "This request lists the latest metric data available for a specific endpoint group and supports filtering by status value. If user uses filter=non-ok will get all non ok statuses"
+      operationId: statusLatestListGroup
+      tags:
+        - Latest
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/latestDate"
+        - $ref: "#/parameters/latestFilter"
+        - $ref: "#/parameters/latestLimit"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
   /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List status results for a given endpoint group (i.e. Group_A)"
@@ -1886,6 +1957,24 @@ paths:
             $ref: '#/definitions/Status_error'
 
 parameters:
+  latestDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target day to get latest metric data"
+    default: todays_date_zulu_format
+  latestFilter:
+    name: "filter"
+    in: "query"
+    type: string
+    description: "filter by statuses: ok, non-ok, critical, warning, ok, unknown, missing, all"
+    default: all
+  latestLimit:
+    name: "limit"
+    in: "query"
+    type: string
+    description: "limit latest results by number"
+    default: 500
   apiKey:
     name: "x-api-key"
     in: "header"
