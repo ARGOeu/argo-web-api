@@ -80,7 +80,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
@@ -195,7 +195,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = 400
 		return code, h, output, err
 	}
@@ -255,7 +255,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = 400
 		return code, h, output, err
 	}
@@ -282,7 +282,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
@@ -355,7 +355,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
