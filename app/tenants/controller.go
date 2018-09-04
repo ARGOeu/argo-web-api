@@ -88,8 +88,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		return code, h, output, err
 	}
@@ -109,8 +108,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
 	if len(sameName) > 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
-		output, err = createMsgView("Tenant with same name already exists", code)
 		return code, h, output, err
 	}
 
@@ -229,7 +228,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
@@ -281,7 +280,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		return code, h, output, err
 	}
@@ -311,8 +310,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
@@ -391,7 +389,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
 	}

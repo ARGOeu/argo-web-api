@@ -47,16 +47,17 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type TenantTestSuite struct {
 	suite.Suite
-	cfg                config.Config
-	respTenantCreated  string
-	respTenantUpdated  string
-	respTenantDeleted  string
-	respTenantNotFound string
-	respUnauthorized   string
-	respBadJSON        string
-	clientkey          string
-	router             *mux.Router
-	confHandler        respond.ConfHandler
+	cfg                    config.Config
+	respTenantCreated      string
+	respTenantUpdated      string
+	respTenantDeleted      string
+	respTenantNotFound     string
+	respUnauthorized       string
+	respBadJSON            string
+	respTenantNameConflict string
+	clientkey              string
+	router                 *mux.Router
+	confHandler            respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -96,17 +97,43 @@ func (suite *TenantTestSuite) SetupSuite() {
 	suite.respBadJSON = `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	suite.respTenantNotFound = `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+
+	suite.respTenantNameConflict = `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Tenant with same name already exists"
+  }
+ ]
 }`
 }
 
@@ -392,6 +419,61 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	jsonCreated = strings.Replace(jsonCreated, "{{TIMESTAMP}}", timestamp, 2)
 	// Compare the expected and actual json response
 	suite.Equal(jsonCreated, output2, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestCreateTenantAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"GUARDIANS",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R"
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"M4GN3T0"
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantNameConflict, output)
 
 }
 
