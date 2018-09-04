@@ -380,6 +380,18 @@ var NotAcceptableContentType = ResponseMessage{
 		Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'",
 	}}
 
+var ErrNotAcceptableContentType = func() ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Not Acceptable Content Type",
+			Code:    "406",
+		},
+		Errors: []StatusResponse{
+			{Message: "Conflict", Code: "406", Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'"},
+		},
+	}
+}
+
 // MalformedJSONInput is used to marshal a response when user json input is malformed
 var MalformedJSONInput = ResponseMessage{
 	Status: StatusResponse{
