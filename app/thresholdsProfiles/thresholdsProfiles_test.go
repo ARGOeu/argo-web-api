@@ -347,9 +347,15 @@ func (suite *ThresholdsProfilesTestSuite) TestListOneNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/thresholds_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -417,9 +423,15 @@ func (suite *ThresholdsProfilesTestSuite) TestCreateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("POST", "/api/v2/thresholds_profiles", strings.NewReader(jsonInput))
@@ -542,9 +554,15 @@ func (suite *ThresholdsProfilesTestSuite) TestUpdateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/thresholds_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
@@ -571,9 +589,15 @@ func (suite *ThresholdsProfilesTestSuite) TestUpdateNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/thresholds_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -673,9 +697,15 @@ func (suite *ThresholdsProfilesTestSuite) TestDeleteNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/thresholds_profiles/wrong-id", strings.NewReader(jsonInput))
