@@ -322,9 +322,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
-		if len(sameName) > 1 {
+		if len(sameName) > 0 {
 			code = http.StatusConflict
-			output, err = createMsgView("Tenant with same name already exists", code)
+			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
 			return code, h, output, err
 		}
 	}

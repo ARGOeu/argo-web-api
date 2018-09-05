@@ -567,6 +567,61 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 
 }
 
+func (suite *TenantTestSuite) TestUpdateTenantAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"AVENGERS",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R"
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"M4GN3T0"
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantNameConflict, output)
+
+}
+
 // TestDeleteTenant function implements testing the http DELETE tenant request.
 // Request requires admin authentication and gets as input the name of the
 // tenant to be deleted. After the operation succeeds is double-checked
@@ -793,8 +848,8 @@ func (suite *TenantTestSuite) TestCreateUnauthorized() {
 
 	code := response.Code
 	output := response.Body.String()
-
 	suite.Equal(401, code, "Internal Server Error")
+
 	suite.Equal(suite.respUnauthorized, output, "Response body mismatch")
 }
 
