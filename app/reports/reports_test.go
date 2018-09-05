@@ -1514,6 +1514,72 @@ func (suite *ReportTestSuite) TestCreateReportAlreadyExistingName() {
 
 }
 
+// TestCreateReportAlreadyExistingName tests the case where the given report has a defined name that already exists
+func (suite *ReportTestSuite) TestUpdateReportAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "Report_A",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("PUT", "https://myapi.test.com/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494360", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code, "Incorrect Error Code")
+	suite.Equal(suite.respNameConflict, output, "Response body mismatch")
+
+}
+
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
