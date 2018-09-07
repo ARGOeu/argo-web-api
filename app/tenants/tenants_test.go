@@ -220,11 +220,13 @@ func (suite *TenantTestSuite) SetupTest() {
 			bson.M{
 				"name":    "cap",
 				"email":   "cap@email.com",
-				"api_key": "C4PK3Y"},
+				"api_key": "C4PK3Y",
+				"roles":   []string{"admin"}},
 			bson.M{
 				"name":    "thor",
 				"email":   "thor@email.com",
-				"api_key": "TH0RK3Y"},
+				"api_key": "TH0RK3Y",
+				"roles":   []string{"admin"}},
 		}})
 
 	// seed second tenant
@@ -256,11 +258,13 @@ func (suite *TenantTestSuite) SetupTest() {
 			bson.M{
 				"name":    "groot",
 				"email":   "groot@email.com",
-				"api_key": "GR00TK3Y"},
+				"api_key": "GR00TK3Y",
+				"roles":   []string{"admin"}},
 			bson.M{
 				"name":    "starlord",
 				"email":   "starlord@email.com",
-				"api_key": "ST4RL0RDK3Y"},
+				"api_key": "ST4RL0RDK3Y",
+				"roles":   []string{"admin"}},
 		}})
 }
 
@@ -300,12 +304,18 @@ func (suite *TenantTestSuite) TestCreateTenant() {
           {
             "name":"xavier",
             "email":"xavier@email.com",
-            "api_key":"X4V13R"
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
           },
           {
             "name":"magneto",
             "email":"magneto@email.com",
-            "api_key":"M4GN3T0"
+            "api_key":"M4GN3T0",
+            "roles": [
+                "admin"
+            ]
           }]
   }`
 
@@ -359,12 +369,18 @@ func (suite *TenantTestSuite) TestCreateTenant() {
     {
      "name": "xavier",
      "email": "xavier@email.com",
-     "api_key": "X4V13R"
+     "api_key": "X4V13R",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "magneto",
      "email": "magneto@email.com",
-     "api_key": "M4GN3T0"
+     "api_key": "M4GN3T0",
+     "roles": [
+      "admin"
+     ]
     }
    ]
   }
@@ -513,12 +529,18 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
           {
             "name":"xavier",
             "email":"xavier@email.com",
-            "api_key":"X4V13R"
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
           },
           {
             "name":"magneto",
             "email":"magneto@email.com",
-            "api_key":"M4GN3T0"
+            "api_key":"M4GN3T0",
+            "roles": [
+                "admin"
+            ]
           }]
   }`
 
@@ -689,12 +711,18 @@ func (suite *TenantTestSuite) TestListTenants() {
     {
      "name": "cap",
      "email": "cap@email.com",
-     "api_key": "C4PK3Y"
+     "api_key": "C4PK3Y",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "thor",
      "email": "thor@email.com",
-     "api_key": "TH0RK3Y"
+     "api_key": "TH0RK3Y",
+     "roles": [
+      "admin"
+     ]
     }
    ]
   },
@@ -729,12 +757,18 @@ func (suite *TenantTestSuite) TestListTenants() {
     {
      "name": "groot",
      "email": "groot@email.com",
-     "api_key": "GR00TK3Y"
+     "api_key": "GR00TK3Y",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "starlord",
      "email": "starlord@email.com",
-     "api_key": "ST4RL0RDK3Y"
+     "api_key": "ST4RL0RDK3Y",
+     "roles": [
+      "admin"
+     ]
     }
    ]
   }

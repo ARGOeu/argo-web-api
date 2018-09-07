@@ -58,9 +58,10 @@ type TenantDbConf struct {
 // TenantUser structure holds information about tenant's
 // database configuration
 type TenantUser struct {
-	Name   string `bson:"name"       json:"name"`
-	Email  string `bson:"email"      json:"email"`
-	APIkey string `bson:"api_key"    json:"api_key"`
+	Name   string   `bson:"name"       json:"name"`
+	Email  string   `bson:"email"      json:"email"`
+	APIkey string   `bson:"api_key"    json:"api_key"`
+	Roles  []string `bson:"roles,omitempty"      json:"roles,omitempty"`
 }
 
 // SelfReference to hold links and id

@@ -81,12 +81,18 @@ Json Response
     {
      "name": "cap",
      "email": "cap@email.com",
-     "api_key": "C4PK3Y"
+     "api_key": "C4PK3Y",
+     "roles": [
+        "admin"
+     ]
     },
     {
      "name": "thor",
      "email": "thor@email.com",
-     "api_key": "TH0RK3Y"
+     "api_key": "TH0RK3Y",
+     "roles": [
+        "viewer"
+     ]
     }
    ]
   },
@@ -121,12 +127,18 @@ Json Response
     {
      "name": "groot",
      "email": "groot@email.com",
-     "api_key": "GR00TK3Y"
+     "api_key": "GR00TK3Y",
+     "roles": [
+         "admin"
+      ]
     },
     {
      "name": "starlord",
      "email": "starlord@email.com",
-     "api_key": "ST4RL0RDK3Y"
+     "api_key": "ST4RL0RDK3Y",
+     "roles": [
+         "admin"
+      ]
     }
    ]
   }
@@ -230,12 +242,18 @@ Json Response
     {
      "name": "cap",
      "email": "cap@email.com",
-     "api_key": "C4PK3Y"
+     "api_key": "C4PK3Y",
+     "roles": [
+         "admin"
+      ]
     },
     {
      "name": "thor",
      "email": "thor@email.com",
-     "api_key": "TH0RK3Y"
+     "api_key": "TH0RK3Y",
+     "roles": [
+         "viewer"
+      ]
     }
    ]
   }
@@ -294,12 +312,18 @@ Accept: application/json
     {
       "name": "cap",
       "email": "cap@email.com",
-      "api_key": "C4PK3Y"
+      "api_key": "C4PK3Y",
+      "roles": [
+        "admin"
+     ]
     },
     {
       "name": "thor",
       "email": "thor@email.com",
-      "api_key": "TH0RK3Y"
+      "api_key": "TH0RK3Y",
+      "roles": [
+        "admin"
+     ]
     }
   ]
 }
@@ -377,12 +401,18 @@ Accept: application/json
     {
       "name": "cap",
       "email": "cap@email.com",
-      "api_key": "C4PK3Y"
+      "api_key": "C4PK3Y",
+      "roles": [
+        "admin"
+     ]
     },
     {
       "name": "thor",
       "email": "thor@email.com",
-      "api_key": "TH0RK3Y"
+      "api_key": "TH0RK3Y",
+      "roles": [
+        "admin"
+     ]
     }
   ]
 }

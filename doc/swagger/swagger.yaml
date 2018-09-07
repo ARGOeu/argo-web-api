@@ -2743,3 +2743,7 @@ definitions:
               type: string
             api-key:
               type: string
+            roles:
+              type: array
+              items:
+                type: string
