@@ -35,6 +35,48 @@ type Tenant struct {
 	Users  []TenantUser   `bson:"users" json:"users,omitempty"`
 }
 
+type TenantStatus struct {
+	ID     string       `bson:"id" json:"id"`
+	Info   TenantInfo   `bson:"info" json:"info"`
+	Status StatusDetail `bson:"status" json:"status,omitempty"`
+}
+
+type StatusDetail struct {
+	AMS          DetailsAMS  `bson:"ams" json:"ams"`
+	HDFS         DetailsHDFS `bson:"hdfs" json:"hdfs"`
+	EngineConfig bool        `bson:"engine_config" json:"engine_config"`
+	LastCheck    string      `bson:"last_check" json:"last_check"`
+}
+
+type DetailsAMS struct {
+	MetricData NodeAMS `bson:"metric_data" json:"metric_data"`
+	SyncData   NodeAMS `bson:"sync_data" json:"sync_data"`
+}
+
+type DetailsHDFS struct {
+	MetricData bool                    `bson:"metric_data" json:"metric_data"`
+	SyncData   map[string]SyncDataHDFS `bson:"sync_data" json:"sync_data,omitempty"`
+}
+
+type SyncDataHDFS struct {
+	AggregationProf bool `bson:"aggregation_profile" json:"aggregation_profile"`
+	Recomp          bool `bson:"blank_recomputation" json:"blank_recomputation"`
+	ConfigProf      bool `bson:"configuration_profile" json: "configuration_profile"`
+	Donwtimes       bool `bson:"downtimes" json:"downtimes"`
+	GroupEndpoints  bool `bson:"group_endpoints" json:"group_endpoints"`
+	GroupGroups     bool `bson:"group_groups" json:"group_groups"`
+	MetricProf      bool `bson:"metric_profile" json:"metric_profile"`
+	OpsProf         bool `bson:"operations_profile" json:"operations_profile"`
+	Weight          bool `bson:"weights" json:"weights"`
+}
+
+type NodeAMS struct {
+	Ingestion       bool  `bson:"ingestion" json:"ingestion"`
+	Publishing      bool  `bson:"publishing" json:"publishing"`
+	StatusStreaming bool  `bson:"status_streaming" json:"status_streaming"`
+	MsgArrived      int64 `bson:"messages_arrived" json:"messages_arrived"`
+}
+
 // TenantInfo struct holds information about tenant name, contact details
 type TenantInfo struct {
 	Name    string `bson:"name" json:"name"`

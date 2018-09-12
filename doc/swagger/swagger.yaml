@@ -35,6 +35,8 @@ tags:
   - name: MetricResult
     description: Retrieve the full output of a  metric result
 paths:
+
+
   /admin/tenants/{TENANT_ID}:
     get:
       summary: List a specific tenant
@@ -218,6 +220,96 @@ paths:
             $ref: '#/definitions/Status_error'
         '401':
           description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /admin/tenants/{TENANT_ID}/status:
+    get:
+      summary: List a specific tenant's argo-engine status
+      operationId: tenants.ListStatus
+      description: List one specific tenant's status designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one tenant's argo-engine status
+          schema:
+            $ref: '#/definitions/Tenant_status_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a tenant's status
+      operationId: tenants.UpdateStatus
+      description: update information on a specific tenant's argo-engine status definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of tenant's argo-engine status definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant_status'
+      responses:
+        '201':
+          description: Tenant's status definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -2574,6 +2666,96 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Operations_profile'
+
+  Tenant_status_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Tenant_status'
+
+  Tenant_status:
+    type: object
+    properties:
+      ams:
+        type: object
+        properties:
+          metric_data:
+            type: object
+            properties:
+              ingestion:
+                type: boolean
+              publishing:
+                type: boolean
+              status_streaming:
+                type: boolean
+              messages_arrived:
+                type: integer
+          sync_data:
+            type: object
+            properties:
+              ingestion:
+                type: boolean
+              publishing:
+                type: boolean
+              status_streaming:
+                type: boolean
+              messages_arrived:
+                type: integer
+      hdfs:
+        type: object
+        properties:
+          metric_data:
+            type: boolean
+          sync_data:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                downtimes:
+                  type: boolean
+                group_endpoints:
+                  type: boolean
+                blank_recomputation:
+                  type: boolean
+                group_groups:
+                  type: boolean
+                weights:
+                  type: boolean
+                operations_profile:
+                  type: boolean
+                metric_profile:
+                  type: boolean
+                aggregation_profile:
+                  type: boolean
+
+      engine_config:
+        type: boolean
+      last_check:
+        type: string
+
+      name:
+        type: string
+      available_states:
+        type: array
+        items:
+          type: string
+      defaults:
+        type: object
+        properties:
+          down:
+            type: string
+          missing:
+            type: string
+          unknown:
+            type: string
+      operations:
+        type: array
+        items:
+          $ref: '#/definitions/Operation'
 
   Operations_profile:
     type: object

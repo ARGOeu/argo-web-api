@@ -189,7 +189,16 @@ func (suite *TenantTestSuite) SetupTest() {
 			"resource": "tenants.update",
 			"roles":    []string{"super_admin"},
 		})
-
+	c.Insert(
+		bson.M{
+			"resource": "tenants.update_status",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.get_status",
+			"roles":    []string{"super_admin"},
+		})
 	// seed first tenant
 	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
@@ -490,6 +499,136 @@ func (suite *TenantTestSuite) TestCreateTenantAlreadyExistingName() {
 
 	suite.Equal(409, code)
 	suite.Equal(suite.respTenantNameConflict, output)
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantStatus() {
+
+	// create json input data for the request
+	putData := `
+	{
+      "ams": {
+          "metric_data": {
+              "ingestion": true,
+              "publishing": true,
+              "status_streaming": false,
+              "messages_arrived": 100
+          },
+          "sync_data": {
+              "ingestion": true,
+              "publishing": false,
+              "status_streaming": true,
+              "messages_arrived": 200
+          }
+      },
+      "hdfs": {
+          "metric_data": true,
+          "sync_data": {
+          	"Critical": {
+          			"downtimes": true,
+          			"group_endpoints": true,
+          			"blank_recompuation": true,
+          			"group_groups": true,
+          			"weights": true,
+          			"operations_profile": true,
+          			"metric_profile": true,
+          			"aggregation_profile": true
+
+          	}
+          	}
+
+      },
+      "engine_config": true,
+      "last_check": "2018-08-10T12:32:45Z"
+
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
+
+	jsonUpdatedTenant := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "GUARDIANS",
+    "email": "email@something2",
+    "website": "www.gotg.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "status": {
+    "ams": {
+     "metric_data": {
+      "ingestion": true,
+      "publishing": true,
+      "status_streaming": false,
+      "messages_arrived": 100
+     },
+     "sync_data": {
+      "ingestion": true,
+      "publishing": false,
+      "status_streaming": true,
+      "messages_arrived": 200
+     }
+    },
+    "hdfs": {
+     "metric_data": true,
+     "sync_data": {
+      "Critical": {
+       "aggregation_profile": true,
+       "blank_recomputation": false,
+       "ConfigProf": false,
+       "downtimes": true,
+       "group_endpoints": true,
+       "group_groups": true,
+       "metric_profile": true,
+       "operations_profile": true,
+       "weights": true
+      }
+     }
+    },
+    "engine_config": true,
+    "last_check": "2018-08-10T12:32:45Z"
+   }
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/status", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Wrong code in response")
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+	// Retrieve updated information
+	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/status", strings.NewReader(""))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	suite.Equal(200, code2, "Wrong code in response")
+	suite.Equal(jsonUpdatedTenant, output2, "Response body mismatch")
 
 }
 
@@ -826,6 +965,64 @@ func (suite *TenantTestSuite) TestListTenants() {
      ]
     }
    ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestListTenantStatus() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "status": {
+    "ams": {
+     "metric_data": {
+      "ingestion": false,
+      "publishing": false,
+      "status_streaming": false,
+      "messages_arrived": 0
+     },
+     "sync_data": {
+      "ingestion": false,
+      "publishing": false,
+      "status_streaming": false,
+      "messages_arrived": 0
+     }
+    },
+    "hdfs": {
+     "metric_data": false
+    },
+    "engine_config": false,
+    "last_check": ""
+   }
   }
  ]
 }`
