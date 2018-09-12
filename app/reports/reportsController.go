@@ -120,13 +120,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// then we already have an existing report and we must
 	// abort creation notifing the user
 	if len(results) > 0 {
-		// Name was found so print the error message in xml
 		output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
-
 	}
+
 	input.Info.Created = time.Now().Format("2006-01-02 15:04:05")
 	input.Info.Updated = input.Info.Created
 	input.ID = mongo.NewUUID()
@@ -357,17 +355,45 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// We search by name and update
-	query := bson.M{"id": id}
-	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, query, sanitizedInput)
-	if err != nil {
+	queryById := bson.M{"id": id}
+
+	// before updating, check if the report exists and the name is unique
+	result := MongoInterface{}
+
+	if err = mongo.FindOne(session, tenantDbConfig.Db, reportsColl, queryById, &result); err != nil {
+
 		if err.Error() != "not found" {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-		//Render the response into JSON
+
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if result.Info.Name != input.Info.Name {
+
+		results := []MongoInterface{}
+		queryByName := bson.M{"info.name": input.Info.Name}
+
+		if err = mongo.Find(session, tenantDbConfig.Db, reportsColl, queryByName, "", &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		if len(results) > 0 {
+			output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
+			code = http.StatusConflict
+			return code, h, output, err
+		}
+
+	}
+
+	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, queryById, sanitizedInput)
+
+	if err != nil {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
