@@ -206,8 +206,30 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// check if the metric profile's name is unique
+
+	results := []MongoInterface{}
+	query := bson.M{"name": incoming.Name}
+
+	err = mongo.Find(session, tenantDbConfig.Db, "metric_profiles", query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// If results are returned for the specific name
+	// then we already have an existing report and we must
+	// abort creation notifying the user
+	if len(results) > 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Metric profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
+		return code, h, output, err
+	}
+
 	// Generate new id
 	incoming.ID = mongo.NewUUID()
+
 	err = mongo.Insert(session, tenantDbConfig.Db, "metric_profiles", incoming)
 
 	if err != nil {
@@ -282,6 +304,28 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// check if the metric profile's name is unique
+	if incoming.Name != results[0].Name {
+
+		results = []MongoInterface{}
+		query := bson.M{"name": incoming.Name}
+
+		err = mongo.Find(session, tenantDbConfig.Db, "metric_profiles", query, "", &results)
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		// If results are returned for the specific name
+		// then we already have an existing report and we must
+		// abort creation notifying the user
+		if len(results) > 0 {
+			output, _ = respond.MarshalContent(respond.ErrConflict("Metric profile with the same name already exists"), contentType, "", " ")
+			code = http.StatusConflict
+			return code, h, output, err
+		}
+	}
 	// run the update query
 	err = mongo.Update(session, tenantDbConfig.Db, "metric_profiles", filter, incoming)
 
