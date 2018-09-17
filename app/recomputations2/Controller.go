@@ -35,6 +35,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var recomputationsColl = "recomputations"
@@ -195,5 +196,71 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	}
 
 	output, err = createSubmitView(recomputation, contentType, r)
+	return code, h, output, err
+}
+
+// Delete recomputation
+func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	filter := bson.M{"id": vars["ID"]}
+
+	// Retrieve Results from database
+	results := []MongoInterface{}
+	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, filter, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	mongo.Remove(session, tenantDbConfig.Db, recomputationsColl, filter)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createMsgView("Recomputation Successfully Deleted", 200)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	return code, h, output, err
 }
