@@ -947,6 +947,148 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
 	suite.Equal(strings.Replace(jsonCreated, "{{id}}", id, 1), output2, "Response body mismatch")
 }
 
+func (suite *AggregationProfilesTestSuite) TestCreateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "critical",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Aggregation profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *AggregationProfilesTestSuite) TestUpdateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "critical",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Aggregation profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
 func (suite *AggregationProfilesTestSuite) TestInvalidUpdate() {
 
 	jsonInput := `{
