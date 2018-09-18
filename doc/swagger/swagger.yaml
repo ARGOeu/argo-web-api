@@ -1984,6 +1984,34 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+    delete:
+      summary: "Delete a specific recomputation"
+      description: "Delete a specific recomputation using its ID."
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful deletion of recomputation "
+          schema:
+            $ref: '#/definitions/Status'
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        404:
+          $ref: "#/responses/404"
+        500:
+          $ref: "#/responses/ServerError"
   /recomputations:
     get:
       summary: "List Recomputation Requests"

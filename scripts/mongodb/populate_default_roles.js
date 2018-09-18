@@ -59,6 +59,7 @@ function populate_default_roles()
   {"resource" : "metricResult.get", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "recomputations.list", "roles" : [ "admin","editor"]},
   {"resource" : "recomputations.get", "roles" : [ "admin","editor"]},
-  {"resource" : "recomputations.submit", "roles" : [ "admin","editor"]}]);
+  {"resource" : "recomputations.submit", "roles" : [ "admin","editor"]},
+  {"resource" : "recomputations.delete", "roles" : [ "admin","editor"]},]);
   print("INFO\tPolulated default roles in \'roles\' collection")
 }

@@ -202,6 +202,11 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			"resource": "recomputations.submit",
 			"roles":    []string{"editor"},
 		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
@@ -558,6 +563,72 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitForbidViewer() {
 	// Compare the expected and actual json response
 
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+}
+
+func (suite *RecomputationsProfileTestSuite) TestDeleteRecomputation() {
+
+	request, _ := http.NewRequest("DELETE", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", nil)
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	jsonOutput := `{
+ "status": {
+  "message": "Recomputation Successfully Deleted",
+  "code": "200"
+ }
+}`
+	suite.Equal(200, code)
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output)
+
+	// make sure the recomputation was really deleted from the store
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	result := MongoInterface{}
+	c := session.DB(suite.tenantDbConf.Db).C("recomputations")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	suite.Equal(err.Error(), "not found")
+
+}
+
+func (suite *RecomputationsProfileTestSuite) TestDeleteRecomputationNotFound() {
+
+	request, _ := http.NewRequest("DELETE", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/unknown_id", nil)
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+	suite.Equal(404, code)
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output)
 }
 
 //TearDownTest to tear down every test
