@@ -207,6 +207,11 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			"resource": "recomputations.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.update",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
@@ -629,6 +634,102 @@ func (suite *RecomputationsProfileTestSuite) TestDeleteRecomputationNotFound() {
 	suite.Equal(404, code)
 	// Compare the expected and actual json response
 	suite.Equal(jsonOutput, output)
+}
+
+func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputation() {
+	submission := IncomingRecomputation{
+		StartTime: "2015-01-10T12:00:00Z",
+		EndTime:   "2015-01-30T23:00:00Z",
+		Reason:    "Ups failure",
+		Report:    "EGI_Critical",
+		Exclude:   []string{"SITE5", "SITE8"},
+	}
+	jsonsubmission, _ := json.Marshal(submission)
+
+	request, _ := http.NewRequest("PUT", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", bytes.NewBuffer(jsonsubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	jsonOutput := `{
+ "status": {
+  "message": "Recomputation updated successfully",
+  "code": "200"
+ }
+}`
+
+	suite.Equal(200, code)
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputationNotFound() {
+
+	jsonSubmission := []byte("{}")
+
+	request, _ := http.NewRequest("PUT", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/unknown_id", bytes.NewBuffer(jsonSubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	jsonOutput := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+	suite.Equal(404, code)
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputationBadJSON() {
+
+	// malformed json
+	jsonSubmission := []byte("{{")
+
+	request, _ := http.NewRequest("PUT", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", bytes.NewBuffer(jsonSubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
+}`
+	suite.Equal(400, code)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON, output)
 }
 
 //TearDownTest to tear down every test
