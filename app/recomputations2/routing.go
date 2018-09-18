@@ -39,5 +39,6 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"recomputations.list", "GET", "/recomputations", List},
 	{"recomputations.get", "GET", "/recomputations/{ID}", ListOne},
 	{"recomputations.delete", "DELETE", "/recomputations/{ID}", Delete},
+	{"recomputations.update", "PUT", "/recomputations/{ID}", Update},
 	{"recomputations.submit", "POST", "/recomputations", SubmitRecomputation},
 }
