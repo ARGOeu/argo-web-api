@@ -41,6 +41,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
 )
 
 func isAdminRestricted(roles []string) bool {
@@ -102,6 +103,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	if errMsg, errCode := validateTenantUsers(incoming, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
 	// Check if name exists
 	sameName := []Tenant{}
 	filter := bson.M{"info.name": incoming.Info.Name}
@@ -124,7 +131,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view of the results
-	output, err = createRefView(incoming, "Tenant was succesfully created", 201, r) //Render the results into JSON
+	output, err = createRefView(incoming, "Tenant was successfully created", 201, r) //Render the results into JSON
 	code = http.StatusCreated
 	return code, h, output, err
 }
@@ -454,6 +461,12 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	if errMsg, errCode := validateTenantUsers(incoming, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
 	// If user chose to change name - check if name already exists
 	if results[0].Info.Name != incoming.Info.Name {
 		sameName := []Tenant{}
@@ -550,6 +563,57 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+
+}
+
+// validateTenantUsers validates the uniqueness of the tenant's users' keys
+func validateTenantUsers(tenant Tenant, session *mgo.Session, cfg config.Config) (string, int) {
+
+	usersKeys := make(map[string]bool)
+	errMsg := ""
+	errCode := 0
+
+	for _, tUser := range tenant.Users {
+
+		results := []Tenant{}
+
+		// for each of the tenant's users make sure there is no other that holds the same key across all users from all tenants
+		// check that there are no others users registered under different tenants that might have the same api key
+
+		query := bson.M{
+			"$and": []bson.M{
+				{
+					"id": bson.M{
+						"$ne": tenant.ID}},
+				{
+					"users": bson.M{
+						"$elemMatch": bson.M{
+							"api_key": tUser.APIkey}}}}}
+
+		if err := mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "", &results); err != nil {
+			return err.Error(), http.StatusInternalServerError
+		}
+
+		if len(results) > 0 {
+			errMsg = fmt.Sprintf("More than one users found using the key: %v", tUser.APIkey)
+			errCode = http.StatusConflict
+			return errMsg, errCode
+		}
+
+		// use a map with all the keys that we have evaluated to check whether or not users inside the same tenant have the same key declared
+		// when we evaluate a key, we try to see if we have seen that key again in a previous user
+
+		if _, ok := usersKeys[tUser.APIkey]; ok {
+			errMsg = fmt.Sprintf("More than one users found using the key: %v", tUser.APIkey)
+			errCode = http.StatusConflict
+			return errMsg, errCode
+		}
+
+		// if the current key isn't present inside the map, add it
+		usersKeys[tUser.APIkey] = true
+	}
+
+	return errMsg, errCode
 
 }
 
