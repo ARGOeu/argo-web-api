@@ -321,6 +321,7 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
   </group>
  </group>
 </root>`
@@ -331,6 +332,7 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+   <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
   </group>
  </group>
 </root>`
@@ -355,6 +357,10 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
       },
       {
        "timestamp": "2015-05-01T05:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T23:59:59Z",
        "value": "OK"
       }
      ]
@@ -384,6 +390,10 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
       },
       {
        "timestamp": "2015-05-01T05:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T23:59:59Z",
        "value": "OK"
       }
      ]
@@ -508,6 +518,7 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	suite.Equal(401, response.Code, "Response code mismatch")
 	// Compare the expected and actual xml response
 	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
+
 }
 
 func (suite *StatusServicesTestSuite) TestLatestResults() {
@@ -540,6 +551,10 @@ func (suite *StatusServicesTestSuite) TestLatestResults() {
       },
       {
        "timestamp": "2015-05-01T05:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T23:59:59Z",
        "value": "OK"
       }
      ]
