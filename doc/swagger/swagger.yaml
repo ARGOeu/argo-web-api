@@ -1305,6 +1305,36 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
+  /topology/{report_name}:
+    get:
+      summary: "List topology statistics for a specific report"
+      description: "This request lists number of groups and services contained in the report"
+      operationId: topology
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/topoDate"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/TopologyResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
   /latest/{report_name}/{lgroup_type}:
     get:
       summary: "List latest metric data for available in a specific report"
@@ -1314,7 +1344,6 @@ paths:
         - Latest
       produces:
         - "application/json"
-        - "application/xml"
       parameters:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/reportName"
@@ -1350,7 +1379,6 @@ paths:
         - Latest
       produces:
         - "application/json"
-        - "application/xml"
       parameters:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/reportName"
@@ -2077,6 +2105,12 @@ paths:
             $ref: '#/definitions/Status_error'
 
 parameters:
+  topoDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target day to get latest topology statistics"
+    default: todays_date in YYYY-MM-DD format
   latestDate:
     name: "date"
     in: "query"
@@ -2341,6 +2375,8 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
+
+
 
   StatusEndpointResponse:
     type: object
@@ -2898,6 +2934,32 @@ definitions:
               type: string
             context:
               type: string
+
+  TopologyResponse:
+    type: object
+    properties:
+      group_count:
+        type: integer
+      group_type:
+        type: string
+      group_list:
+        type: array
+        items:
+          type: string
+      endpoint_group_count:
+        type: integer
+      endpoint_group_type:
+        type: string
+      endpoint_group_list:
+        type: array
+        items:
+          type: string
+      service_count:
+        type: integer
+      service_list:
+        type: array
+        items:
+          type: string
 
   Tenant_list:
     type: object
