@@ -47,17 +47,18 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type TenantTestSuite struct {
 	suite.Suite
-	cfg                    config.Config
-	respTenantCreated      string
-	respTenantUpdated      string
-	respTenantDeleted      string
-	respTenantNotFound     string
-	respUnauthorized       string
-	respBadJSON            string
-	respTenantNameConflict string
-	clientkey              string
-	router                 *mux.Router
-	confHandler            respond.ConfHandler
+	cfg                         config.Config
+	respTenantCreated           string
+	respTenantUpdated           string
+	respTenantDeleted           string
+	respTenantNotFound          string
+	respUnauthorized            string
+	respBadJSON                 string
+	respTenantNameConflict      string
+	respTenantUsersKeysConflict func(string) string
+	clientkey                   string
+	router                      *mux.Router
+	confHandler                 respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -135,6 +136,24 @@ func (suite *TenantTestSuite) SetupSuite() {
   }
  ]
 }`
+
+	suite.respTenantUsersKeysConflict = func(s string) string {
+
+		resp := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "More than one users found using the key: {{key}}"
+  }
+ ]
+}`
+		return strings.Replace(resp, "{{key}}", s, 1)
+	}
 }
 
 // This function runs before any test and setups the environment
@@ -330,7 +349,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Tenant was succesfully created",
+  "message": "Tenant was successfully created",
   "code": "201"
  },
  "data": {
@@ -445,6 +464,127 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	// Compare the expected and actual json response
 	suite.Equal(jsonCreated, output2, "Response body mismatch")
 
+}
+
+func (suite *TenantTestSuite) TestCreateTenantDuplicateUsersKeys() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantUsersKeysConflict("X4V13R"), output)
+}
+
+// TestCreateTenantDuplicateUsersKeysWithDB tests the case where a duplicate key was found in the store
+func (suite *TenantTestSuite) TestCreateTenantDuplicateUsersKeysWithDB() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"GR00TK3Y",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantUsersKeysConflict("GR00TK3Y"), output)
 }
 
 func (suite *TenantTestSuite) TestCreateTenantAlreadyExistingName() {
@@ -703,6 +843,131 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantDuplicateUsersKeys() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"new_mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	// Compare the expected and actual xml response
+	suite.Equal(suite.respTenantUsersKeysConflict("X4V13R"), output)
+
+}
+
+// TestUpdateTenantDuplicateUsersKeysWithDB tests the case where a duplicate key was found in the store
+func (suite *TenantTestSuite) TestUpdateTenantDuplicateUsersKeysWithDB() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"new_mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"TH0RK3Y",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	// Compare the expected and actual xml response
+	suite.Equal(suite.respTenantUsersKeysConflict("TH0RK3Y"), output)
 
 }
 
