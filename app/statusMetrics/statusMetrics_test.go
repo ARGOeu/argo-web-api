@@ -373,6 +373,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
      <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
      <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
      <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
     </metric>
    </endpoint>
   </group>
@@ -388,6 +389,7 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
      <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
      <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
      <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+     <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
     </metric>
    </endpoint>
   </group>
@@ -424,6 +426,10 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
           },
           {
            "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T23:59:59Z",
            "value": "OK"
           }
          ]
@@ -467,6 +473,10 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
           },
           {
            "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T23:59:59Z",
            "value": "OK"
           }
          ]
@@ -638,6 +648,10 @@ func (suite *StatusMetricsTestSuite) TestLatestResults() {
           },
           {
            "timestamp": "2015-05-01T05:00:00Z",
+           "value": "OK"
+          },
+          {
+           "timestamp": "2015-05-01T23:59:59Z",
            "value": "OK"
           }
          ]
