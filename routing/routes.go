@@ -38,9 +38,11 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
+	"github.com/ARGOeu/argo-web-api/app/topology"
 )
 
 var routesV2 = []RouteV2{
+	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
