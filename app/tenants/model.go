@@ -61,7 +61,7 @@ type DetailsHDFS struct {
 type SyncDataHDFS struct {
 	AggregationProf bool `bson:"aggregation_profile" json:"aggregation_profile"`
 	Recomp          bool `bson:"blank_recomputation" json:"blank_recomputation"`
-	ConfigProf      bool `bson:"configuration_profile" json: "configuration_profile"`
+	ConfigProf      bool `bson:"configuration_profile" json:"configuration_profile"`
 	Donwtimes       bool `bson:"downtimes" json:"downtimes"`
 	GroupEndpoints  bool `bson:"group_endpoints" json:"group_endpoints"`
 	GroupGroups     bool `bson:"group_groups" json:"group_groups"`
