@@ -726,7 +726,7 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
       "Critical": {
        "aggregation_profile": true,
        "blank_recomputation": false,
-       "ConfigProf": false,
+       "configuration_profile": false,
        "downtimes": true,
        "group_endpoints": true,
        "group_groups": true,
