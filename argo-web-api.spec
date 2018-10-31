@@ -84,11 +84,11 @@ go clean
 * Thu Nov 12 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.1-1%{?dist}
 - ARGO-256 fixes for status reponses
 - ARGO-245 Reference and tag results using report uuid
-* Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
+* Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.0-3%{?dist}
 - Adds service configuration file
-* Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
+* Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> -  1.6.0-2%{?dist}
 - Correction in cases imports
-* Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.6.0-1%{?dist}
+* Thu May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> - 1.6.0-1%{?dist}
 - ARGO-104 Update github import urls to be consistent with the repo name changes
 * Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
 - Fix Av.profile update/delete responses. Add Check for valid object ids
