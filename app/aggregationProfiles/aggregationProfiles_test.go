@@ -502,9 +502,15 @@ func (suite *AggregationProfilesTestSuite) TestListOneNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -685,9 +691,15 @@ func (suite *AggregationProfilesTestSuite) TestCreateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
@@ -752,9 +764,16 @@ func (suite *AggregationProfilesTestSuite) TestInvalidCreate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Referenced metric profile ID is not found",
+  "message": "Unprocessable Entity",
   "code": "422"
- }
+ },
+ "errors": [
+  {
+   "message": "Unprocessable Entity",
+   "code": "422",
+   "details": "Referenced metric profile ID is not found"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
@@ -928,6 +947,222 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
 	suite.Equal(strings.Replace(jsonCreated, "{{id}}", id, 1), output2, "Response body mismatch")
 }
 
+func (suite *AggregationProfilesTestSuite) TestCreateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "critical",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Aggregation profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *AggregationProfilesTestSuite) TestUpdateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "critical",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Aggregation profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *AggregationProfilesTestSuite) TestInvalidUpdate() {
+
+	jsonInput := `{
+   "name": "yolo",
+   "namespace": "testing-namespace",
+   "endpoint_group": "test",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "id": "6ac7d684-1f8e-4a02-a502-720e8f110007"
+   },
+   "groups": [
+    {
+     "name": "tttcompute",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttCREAM-CE",
+       "operation": "AND"
+      },
+      {
+       "name": "tttARC-CE",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "tttstorage",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "tttSRMv2",
+       "operation": "AND"
+      },
+      {
+       "name": "tttSRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Unprocessable Entity",
+  "code": "422"
+ },
+ "errors": [
+  {
+   "message": "Unprocessable Entity",
+   "code": "422",
+   "details": "Referenced metric profile ID is not found"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(422, code, "Internal Server Error")
+
+	// Apply id to output template and check
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *AggregationProfilesTestSuite) TestUpdateBadJson() {
 
 	jsonInput := `{
@@ -938,9 +1173,15 @@ func (suite *AggregationProfilesTestSuite) TestUpdateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
@@ -967,9 +1208,15 @@ func (suite *AggregationProfilesTestSuite) TestUpdateNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -1035,9 +1282,16 @@ func (suite *AggregationProfilesTestSuite) NotTestInvalidUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Referenced metric profile id is not found",
+  "message": "Unprocessable Entity",
   "code": "422"
- }
+ },
+ "errors": [
+  {
+   "message": "Unprocessable Entity",
+   "code": "422",
+   "details": "Referenced metric profile ID is not found"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
@@ -1203,9 +1457,15 @@ func (suite *AggregationProfilesTestSuite) TestDeleteNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/aggregation_profiles/wrong-id", strings.NewReader(jsonInput))

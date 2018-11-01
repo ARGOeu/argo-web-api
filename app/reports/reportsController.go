@@ -32,7 +32,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/context"
@@ -79,8 +78,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if json body is malformed
 	if err != nil {
-		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
-		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = 400
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
@@ -121,20 +120,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// then we already have an existing report and we must
 	// abort creation notifing the user
 	if len(results) > 0 {
-		// Name was found so print the error message in xml
-		out := respond.ResponseMessage{
-			Status: respond.StatusResponse{
-				Message: "Report with the same name already exists",
-				Code:    strconv.Itoa(http.StatusConflict),
-			}}
-
-		output, _ = respond.MarshalContent(out, contentType, "", " ")
-
+		output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
-
 	}
+
 	input.Info.Created = time.Now().Format("2006-01-02 15:04:05")
 	input.Info.Updated = input.Info.Created
 	input.ID = mongo.NewUUID()
@@ -162,7 +152,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 }
 
 // List function that implements the http GET request that retrieves
-// all avaiable report information
+// all available report information
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -181,6 +171,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := context.Get(r, "tenant_name").(string)
 
 	// Try to open the mongo session
 	session, err := mongo.OpenSession(cfg.MongoDB)
@@ -207,8 +198,12 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	for indx, _ := range results {
+		results[indx].Tenant = tenantName
+	}
+
 	// After successfully retrieving the db results
-	// call the createView function to render them into idented xml
+	// call the createView function to render them into indented xml
 	output, err = createView(results, contentType)
 
 	if err != nil {
@@ -221,7 +216,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 }
 
 // ListOne function that implements the http GET request that retrieves
-// all avaiable report information
+// the specified report's information
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -238,6 +233,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := context.Get(r, "tenant_name").(string)
 
 	//Extracting urlvar "name" from url path
 
@@ -261,11 +257,14 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// If query returned zero result then no tenant matched this name,
 	// abort and notify user accordingly
 	if err != nil {
-		code = http.StatusNotFound
-		output, _ := ReportNotFound(contentType)
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
+
+	// Enrich report with tenant name -- used in argo engine
+	result.Tenant = tenantName
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
@@ -316,7 +315,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if err != nil {
 
 		// User provided malformed json input data
-		output, _ := respond.MarshalContent(respond.MalformedJSONInput, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -328,6 +327,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			"info.name":        input.Info.Name,
 			"info.description": input.Info.Description,
 			"info.updated":     time.Now().Format("2006-01-02 15:04:05"),
+			"weight":           input.Weight,
+			"disabled":         input.Disabled,
 			// },
 			"profiles":        input.Profiles,
 			"filter_tags":     input.Tags,
@@ -354,17 +355,45 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// We search by name and update
-	query := bson.M{"id": id}
-	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, query, sanitizedInput)
-	if err != nil {
+	queryById := bson.M{"id": id}
+
+	// before updating, check if the report exists and the name is unique
+	result := MongoInterface{}
+
+	if err = mongo.FindOne(session, tenantDbConfig.Db, reportsColl, queryById, &result); err != nil {
+
 		if err.Error() != "not found" {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-		//Render the response into XML
+
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		return code, h, output, err
+	}
+
+	if result.Info.Name != input.Info.Name {
+
+		results := []MongoInterface{}
+		queryByName := bson.M{"info.name": input.Info.Name}
+
+		if err = mongo.Find(session, tenantDbConfig.Db, reportsColl, queryByName, "", &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		if len(results) > 0 {
+			output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
+			code = http.StatusConflict
+			return code, h, output, err
+		}
+
+	}
+
+	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, queryById, sanitizedInput)
+
+	if err != nil {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -422,9 +451,9 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
-		//Render the response into XML
-		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		//Render the response into JSON
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -435,8 +464,8 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = http.StatusOK
 		output, err = respond.CreateResponseMessage("Report was successfully deleted", "200", contentType)
 	} else {
-		code = http.StatusNotFound
-		output, err = ReportNotFound(contentType)
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 	}
 	//Render the response into XML
 	if err != nil {

@@ -35,10 +35,10 @@ import (
 // createView returns an XML view of the results to the controller
 func createView(results []FactorsOutput, format string) ([]byte, error) {
 
-	docRoot := &root{}
+	docRoot := root{Factor: []Factor{}}
 
 	for _, row := range results {
-		f := &Factor{}
+		f := Factor{}
 		f.Site = row.Site
 		f.Weight = fmt.Sprintf("%g", row.Weight)
 		docRoot.Factor = append(docRoot.Factor, f)

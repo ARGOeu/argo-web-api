@@ -50,6 +50,8 @@ Json Response
     "data": [
         {
             "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+            "tenant": "TenantA",
+            "disabled": false,
             "info": {
                 "name": "Report_A",
                 "description": "report aaaaa",
@@ -84,11 +86,13 @@ Json Response
             "filter_tags": [
                 {
                     "name": "name1",
-                    "value": "value1"
+                    "value": "value1",
+                    "context": ""
                 },
                 {
                     "name": "name2",
-                    "value": "value2"
+                    "value": "value2",
+                    "context": ""
                 }
             ]
         }
@@ -203,6 +207,8 @@ Accept: application/json
 
 ```json
 {
+    "disabled": true,
+    "weight": "hepspec",
     "info": {
         "name": "newname",
         "description": "newdescription",

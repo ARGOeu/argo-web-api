@@ -47,16 +47,18 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type TenantTestSuite struct {
 	suite.Suite
-	cfg                config.Config
-	respTenantCreated  string
-	respTenantUpdated  string
-	respTenantDeleted  string
-	respTenantNotFound string
-	respUnauthorized   string
-	respBadJSON        string
-	clientkey          string
-	router             *mux.Router
-	confHandler        respond.ConfHandler
+	cfg                         config.Config
+	respTenantCreated           string
+	respTenantUpdated           string
+	respTenantDeleted           string
+	respTenantNotFound          string
+	respUnauthorized            string
+	respBadJSON                 string
+	respTenantNameConflict      string
+	respTenantUsersKeysConflict func(string) string
+	clientkey                   string
+	router                      *mux.Router
+	confHandler                 respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -96,18 +98,62 @@ func (suite *TenantTestSuite) SetupSuite() {
 	suite.respBadJSON = `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	suite.respTenantNotFound = `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
+
+	suite.respTenantNameConflict = `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Tenant with same name already exists"
+  }
+ ]
+}`
+
+	suite.respTenantUsersKeysConflict = func(s string) string {
+
+		resp := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "More than one users found using the key: {{key}}"
+  }
+ ]
+}`
+		return strings.Replace(resp, "{{key}}", s, 1)
+	}
 }
 
 // This function runs before any test and setups the environment
@@ -125,7 +171,9 @@ func (suite *TenantTestSuite) SetupTest() {
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
+	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAuth)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -138,7 +186,7 @@ func (suite *TenantTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{
 			"resource": "tenants.list",
-			"roles":    []string{"super_admin"},
+			"roles":    []string{"super_admin", "super_admin_restricted"},
 		})
 	c.Insert(
 		bson.M{
@@ -160,7 +208,16 @@ func (suite *TenantTestSuite) SetupTest() {
 			"resource": "tenants.update",
 			"roles":    []string{"super_admin"},
 		})
-
+	c.Insert(
+		bson.M{
+			"resource": "tenants.update_status",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.get_status",
+			"roles":    []string{"super_admin"},
+		})
 	// seed first tenant
 	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
@@ -191,11 +248,13 @@ func (suite *TenantTestSuite) SetupTest() {
 			bson.M{
 				"name":    "cap",
 				"email":   "cap@email.com",
-				"api_key": "C4PK3Y"},
+				"api_key": "C4PK3Y",
+				"roles":   []string{"admin"}},
 			bson.M{
 				"name":    "thor",
 				"email":   "thor@email.com",
-				"api_key": "TH0RK3Y"},
+				"api_key": "TH0RK3Y",
+				"roles":   []string{"admin"}},
 		}})
 
 	// seed second tenant
@@ -227,11 +286,13 @@ func (suite *TenantTestSuite) SetupTest() {
 			bson.M{
 				"name":    "groot",
 				"email":   "groot@email.com",
-				"api_key": "GR00TK3Y"},
+				"api_key": "GR00TK3Y",
+				"roles":   []string{"admin"}},
 			bson.M{
 				"name":    "starlord",
 				"email":   "starlord@email.com",
-				"api_key": "ST4RL0RDK3Y"},
+				"api_key": "ST4RL0RDK3Y",
+				"roles":   []string{"admin"}},
 		}})
 }
 
@@ -271,18 +332,24 @@ func (suite *TenantTestSuite) TestCreateTenant() {
           {
             "name":"xavier",
             "email":"xavier@email.com",
-            "api_key":"X4V13R"
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
           },
           {
             "name":"magneto",
             "email":"magneto@email.com",
-            "api_key":"M4GN3T0"
+            "api_key":"M4GN3T0",
+            "roles": [
+                "admin"
+            ]
           }]
   }`
 
 	jsonOutput := `{
  "status": {
-  "message": "Tenant was succesfully created",
+  "message": "Tenant was successfully created",
   "code": "201"
  },
  "data": {
@@ -330,12 +397,18 @@ func (suite *TenantTestSuite) TestCreateTenant() {
     {
      "name": "xavier",
      "email": "xavier@email.com",
-     "api_key": "X4V13R"
+     "api_key": "X4V13R",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "magneto",
      "email": "magneto@email.com",
-     "api_key": "M4GN3T0"
+     "api_key": "M4GN3T0",
+     "roles": [
+      "admin"
+     ]
     }
    ]
   }
@@ -393,6 +466,312 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 }
 
+func (suite *TenantTestSuite) TestCreateTenantDuplicateUsersKeys() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantUsersKeysConflict("X4V13R"), output)
+}
+
+// TestCreateTenantDuplicateUsersKeysWithDB tests the case where a duplicate key was found in the store
+func (suite *TenantTestSuite) TestCreateTenantDuplicateUsersKeysWithDB() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"GR00TK3Y",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantUsersKeysConflict("GR00TK3Y"), output)
+}
+
+func (suite *TenantTestSuite) TestCreateTenantAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"GUARDIANS",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R"
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"M4GN3T0"
+          }]
+  }`
+
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantNameConflict, output)
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantStatus() {
+
+	// create json input data for the request
+	putData := `
+	{
+      "ams": {
+          "metric_data": {
+              "ingestion": true,
+              "publishing": true,
+              "status_streaming": false,
+              "messages_arrived": 100
+          },
+          "sync_data": {
+              "ingestion": true,
+              "publishing": false,
+              "status_streaming": true,
+              "messages_arrived": 200
+          }
+      },
+      "hdfs": {
+          "metric_data": true,
+          "sync_data": {
+          	"Critical": {
+          			"downtimes": true,
+          			"group_endpoints": true,
+          			"blank_recompuation": true,
+          			"group_groups": true,
+          			"weights": true,
+          			"operations_profile": true,
+          			"metric_profile": true,
+          			"aggregation_profile": true
+
+          	}
+          	}
+
+      },
+      "engine_config": true,
+      "last_check": "2018-08-10T12:32:45Z"
+
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
+
+	jsonUpdatedTenant := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "GUARDIANS",
+    "email": "email@something2",
+    "website": "www.gotg.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "status": {
+    "ams": {
+     "metric_data": {
+      "ingestion": true,
+      "publishing": true,
+      "status_streaming": false,
+      "messages_arrived": 100
+     },
+     "sync_data": {
+      "ingestion": true,
+      "publishing": false,
+      "status_streaming": true,
+      "messages_arrived": 200
+     }
+    },
+    "hdfs": {
+     "metric_data": true,
+     "sync_data": {
+      "Critical": {
+       "aggregation_profile": true,
+       "blank_recomputation": false,
+       "configuration_profile": false,
+       "downtimes": true,
+       "group_endpoints": true,
+       "group_groups": true,
+       "metric_profile": true,
+       "operations_profile": true,
+       "weights": true
+      }
+     }
+    },
+    "engine_config": true,
+    "last_check": "2018-08-10T12:32:45Z"
+   }
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/status", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Wrong code in response")
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+	// Retrieve updated information
+	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/status", strings.NewReader(""))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	suite.Equal(200, code2, "Wrong code in response")
+	suite.Equal(jsonUpdatedTenant, output2, "Response body mismatch")
+
+}
+
 // TestUpdateTenant function implements testing the http PUT update tenant request.
 // Request requires admin authentication and gets as input the name of the
 // tenant to be updated and a json body with the update.
@@ -429,12 +808,18 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
           {
             "name":"xavier",
             "email":"xavier@email.com",
-            "api_key":"X4V13R"
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
           },
           {
             "name":"magneto",
             "email":"magneto@email.com",
-            "api_key":"M4GN3T0"
+            "api_key":"M4GN3T0",
+            "roles": [
+                "admin"
+            ]
           }]
   }`
 
@@ -458,6 +843,186 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantDuplicateUsersKeys() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"new_mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	// Compare the expected and actual xml response
+	suite.Equal(suite.respTenantUsersKeysConflict("X4V13R"), output)
+
+}
+
+// TestUpdateTenantDuplicateUsersKeysWithDB tests the case where a duplicate key was found in the store
+func (suite *TenantTestSuite) TestUpdateTenantDuplicateUsersKeysWithDB() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"new_mutants",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R",
+            "roles": [
+                "admin"
+            ]
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"TH0RK3Y",
+            "roles": [
+                "admin"
+            ]
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	// Compare the expected and actual xml response
+	suite.Equal(suite.respTenantUsersKeysConflict("TH0RK3Y"), output)
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `
+  {
+      "info":{
+				"name":"AVENGERS",
+				"email":"yo@yo",
+				"website":"website"
+			},
+      "db_conf": [
+        {
+          "store":"ar",
+          "server":"localhost",
+          "port":27017,
+          "database":"ar_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        },
+        {
+          "store":"status",
+          "server":"localhost",
+          "port":27017,
+          "database":"status_db",
+          "username":"admin",
+          "password":"3NCRYPT3D"
+        }],
+      "users": [
+          {
+            "name":"xavier",
+            "email":"xavier@email.com",
+            "api_key":"X4V13R"
+          },
+          {
+            "name":"magneto",
+            "email":"magneto@email.com",
+            "api_key":"M4GN3T0"
+          }]
+  }`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(suite.respTenantNameConflict, output)
 
 }
 
@@ -502,6 +1067,56 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 
 	suite.NotEqual(err, nil, "No not found error")
 	suite.Equal(err.Error(), "not found", "No not found error")
+}
+
+// TestReadTeanants function implements the testing
+// of the get request which retrieves all tenant information
+func (suite *TenantTestSuite) TestListRestrictedTenants() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants", strings.NewReader(""))
+	// emulate a restricted super admin user
+	request.Header.Set("x-api-key", "R3STRICT3D")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "GUARDIANS",
+    "email": "email@something2",
+    "website": "www.gotg.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 // TestReadTeanants function implements the testing
@@ -555,12 +1170,18 @@ func (suite *TenantTestSuite) TestListTenants() {
     {
      "name": "cap",
      "email": "cap@email.com",
-     "api_key": "C4PK3Y"
+     "api_key": "C4PK3Y",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "thor",
      "email": "thor@email.com",
-     "api_key": "TH0RK3Y"
+     "api_key": "TH0RK3Y",
+     "roles": [
+      "admin"
+     ]
     }
    ]
   },
@@ -595,14 +1216,78 @@ func (suite *TenantTestSuite) TestListTenants() {
     {
      "name": "groot",
      "email": "groot@email.com",
-     "api_key": "GR00TK3Y"
+     "api_key": "GR00TK3Y",
+     "roles": [
+      "admin"
+     ]
     },
     {
      "name": "starlord",
      "email": "starlord@email.com",
-     "api_key": "ST4RL0RDK3Y"
+     "api_key": "ST4RL0RDK3Y",
+     "roles": [
+      "admin"
+     ]
     }
    ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestListTenantStatus() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "status": {
+    "ams": {
+     "metric_data": {
+      "ingestion": false,
+      "publishing": false,
+      "status_streaming": false,
+      "messages_arrived": 0
+     },
+     "sync_data": {
+      "ingestion": false,
+      "publishing": false,
+      "status_streaming": false,
+      "messages_arrived": 0
+     }
+    },
+    "hdfs": {
+     "metric_data": false
+    },
+    "engine_config": false,
+    "last_check": ""
+   }
   }
  ]
 }`
@@ -625,8 +1310,8 @@ func (suite *TenantTestSuite) TestCreateUnauthorized() {
 
 	code := response.Code
 	output := response.Body.String()
-
 	suite.Equal(401, code, "Internal Server Error")
+
 	suite.Equal(suite.respUnauthorized, output, "Response body mismatch")
 }
 

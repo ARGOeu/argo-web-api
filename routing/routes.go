@@ -25,6 +25,7 @@ package routing
 import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
 	"github.com/ARGOeu/argo-web-api/app/factors"
+	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
 	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
@@ -36,9 +37,13 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
+	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
+	"github.com/ARGOeu/argo-web-api/app/topology"
 )
 
 var routesV2 = []RouteV2{
+	{"Topology", "/topology", topology.HandleSubrouter},
+	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
@@ -50,6 +55,7 @@ var routesV2 = []RouteV2{
 	{"Reports", "", reports.HandleSubrouter},
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
+	{"Thresholds Profiles", "", thresholdsProfiles.HandleSubrouter},
 	{"Tenants", "/admin", tenants.HandleSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 }

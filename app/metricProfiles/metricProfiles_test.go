@@ -409,9 +409,15 @@ func (suite *MetricProfilesTestSuite) TestListOneNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -510,9 +516,15 @@ func (suite *MetricProfilesTestSuite) TestCreateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
@@ -646,6 +658,112 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 
 }
 
+func (suite *MetricProfilesTestSuite) TestCreateNameAlreadyExists() {
+
+	jsonInput := `{
+  "name": "ch.cern.SAM.ROC_CRITICAL",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+      ]
+    }
+  ]
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Metric profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+
+}
+
+func (suite *MetricProfilesTestSuite) TestUpdateNameAlreadyExists() {
+
+	jsonInput := `{
+  "name": "ch.cern.SAM.ROC_CRITICAL",
+  "services": [
+    {
+      "service": "Service-A",
+      "metrics": [
+        "metric.A.1",
+        "metric.A.2",
+        "metric.A.3",
+        "metric.A.4"
+      ]
+    },
+    {
+      "service": "Service-B",
+      "metrics": [
+        "metric.B.1",
+        "metric.B.2"
+      ]
+    }
+  ]
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Metric profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+
+}
+
 func (suite *MetricProfilesTestSuite) TestUpdateBadJson() {
 
 	jsonInput := `{
@@ -670,9 +788,15 @@ func (suite *MetricProfilesTestSuite) TestUpdateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
@@ -699,9 +823,15 @@ func (suite *MetricProfilesTestSuite) TestUpdateNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -826,9 +956,15 @@ func (suite *MetricProfilesTestSuite) TestDeleteNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/metric_profiles/wrong-id", strings.NewReader(jsonInput))

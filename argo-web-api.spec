@@ -3,11 +3,11 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.7.1
+Version: 1.7.2
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
-Group:     EGI/SA4
+Group:     ARGO
 Source0: %{name}-%{version}.tar.gz
 BuildRequires: golang
 BuildRequires: bzr
@@ -19,6 +19,10 @@ Obsoletes: ar-web-api
 
 %description
 Installs the ARGO API.
+
+%pre
+/usr/bin/getent group argo-web-api || /usr/sbin/groupadd -r argo-web-api
+/usr/bin/getent passwd argo-web-api || /usr/sbin/useradd -r -s /sbin/nologin -d /var/www/argo-web-api -g argo-web-api argo-web-api
 
 %prep
 %setup
@@ -43,6 +47,10 @@ install --mode 644 src/github.com/ARGOeu/argo-web-api/default.conf %{buildroot}/
 install --directory %{buildroot}/etc/init
 install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.conf %{buildroot}/etc/init/
 
+install --directory %{buildroot}/var/www/argo-web-api/certs
+
+install --directory %{buildroot}/usr/lib/systemd/system
+install --mode 644 src/github.com/ARGOeu/argo-web-api/argo-web-api.service %{buildroot}/usr/lib/systemd/system/
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -51,13 +59,28 @@ cd src/github.com/ARGOeu/argo-web-api/
 go clean
 
 %files
-%defattr(0644,root,root)
-%attr(0750,root,root) /var/www/argo-web-api
-%attr(0755,root,root) /var/www/argo-web-api/argo-web-api
-%attr(0644,root,root) /etc/argo-web-api.conf
-%attr(0644,root,root) /etc/init/argo-web-api.conf
+%defattr(0644,argo-web-api,argo-web-api)
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api/certs
+%attr(0755,argo-web-api,argo-web-api) /var/www/argo-web-api/argo-web-api
+%caps(cap_net_bind_service=+ep) /var/www/argo-web-api/argo-web-api
+%config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/argo-web-api.conf
+%config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/init/argo-web-api.conf
+%attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
+* Tue Aug 21 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.2-1%{dist}
+- ARGO-1351 Refactor error messages in the aggregation profiles package
+- ARGO-1349 Refactor error messages in the metric profiles package
+- ARGO-1346 Refactor error messages in the opperations package
+- ARGO-1275 Refactor Report resource schema
+- ARGO-1260 Implement CRUD on threshold profiles resource
+- ARGO-1099 Add read-only super-admin
+- ARGO-894 Fix error handling for internal server errors
+- ARGO-835 Set timeout to hbase related requests
+- ARGO-776 Show latest status results if no data are present for the be…
+- ARGO-794 Hbase zkquorum config fix. Hbase query minor fixes
+- ARGO-723 Add hbase support to argo-web-api
 * Mon Dec 12 2016 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.1-1%{dist}
 - Set log output to stdout
 - ARGO-606 Add WEB API username to logging
@@ -87,11 +110,11 @@ go clean
 * Thu Nov 12 2015 Avraam Tsantekidis <avraamt@lab.grid.auth.gr> - 1.6.1-1%{?dist}
 - ARGO-256 fixes for status reponses
 - ARGO-245 Reference and tag results using report uuid
-* Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-3%{?dist}
+* Wed Oct 14 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> - 1.6.0-3%{?dist}
 - Adds service configuration file
-* Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> 1.6.0-2%{?dist}
+* Mon Aug 10 2015 Paschalis Korosoglou <pkoro@grid.auth.gr> -  1.6.0-2%{?dist}
 - Correction in cases imports
-* Fri May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> 1.6.0-1%{?dist}
+* Thu May 28 2015 Pavlos Daoglou <pdaog@grid.auth.gr> - 1.6.0-1%{?dist}
 - ARGO-104 Update github import urls to be consistent with the repo name changes
 * Wed May 6 2015 Konstantinos Kagkelidis <kaggis@gmail.com> - 1.5.1-5%{?dist}
 - Fix Av.profile update/delete responses. Add Check for valid object ids

@@ -35,6 +35,8 @@ tags:
   - name: MetricResult
     description: Retrieve the full output of a  metric result
 paths:
+
+
   /admin/tenants/{TENANT_ID}:
     get:
       summary: List a specific tenant
@@ -218,6 +220,96 @@ paths:
             $ref: '#/definitions/Status_error'
         '401':
           description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /admin/tenants/{TENANT_ID}/status:
+    get:
+      summary: List a specific tenant's argo-engine status
+      operationId: tenants.ListStatus
+      description: List one specific tenant's status designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one tenant's argo-engine status
+          schema:
+            $ref: '#/definitions/Tenant_status_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update a tenant's status
+      operationId: tenants.UpdateStatus
+      description: update information on a specific tenant's argo-engine status definition
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "tenant"
+          in: "body"
+          description: "Json description of tenant's argo-engine status definition to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Tenant_status'
+      responses:
+        '201':
+          description: Tenant's status definition updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -1022,6 +1114,296 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+
+  /thresholds_profiles/{PROFILE_ID}:
+    get:
+      summary: List a specific threhsolds profile
+      operationId: thresholdsProfiles.ListOne
+      description: List one specific thresholds profile targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with one thresholds profile
+          schema:
+            $ref: '#/definitions/Thresholds_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update a threhsolds profile
+      operationId: threhsoldsProfiles.Update
+      description: update information on a specific thresholds Profile which is targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+        - name: "thresholds_profile"
+          in: "body"
+          description: "Json description of the thresholds profile to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Thresholds_profile'
+      responses:
+        '201':
+          description: Thresholds profile Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a thresholds profile
+      operationId: thresholdsProfiles.Delete
+      description: Delete a specific thresholds Profile which is targeted by it's unique id
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the thresholds profile"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Thresholds profile Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /thresholds_profiles:
+    get:
+      summary: List all threhsolds profiles
+      operationId: thresholdsProfiles.List
+      description: Thresholds profiles provide a list of threshold rules to be accounted during a computation
+      tags:
+        - Thresholds Profiles
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of thresholds profiles
+          schema:
+            $ref: '#/definitions/Thresholds_profile_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a thresholds profile
+      operationId: thresholdsProfiles.Create
+      description: Create a new thresholds profile which includes a list of threshold ruels to be accounted during a computation
+      tags:
+        - Thresholds Profiles
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "thresholds_profile"
+          in: "body"
+          description: "Json description of the thresholds profile to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Thresholds_profile'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Thresholds profile Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /topology/{report_name}:
+    get:
+      summary: "List topology statistics for a specific report"
+      description: "This request lists number of groups and services contained in the report"
+      operationId: topology
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/topoDate"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/TopologyResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /latest/{report_name}/{lgroup_type}:
+    get:
+      summary: "List latest metric data for available in a specific report"
+      description: "This request lists the latest metric data  and supports filtering by status value. If user uses filter=non-ok will get all non ok statuses"
+      operationId: statusLatestList
+      tags:
+        - Latest
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/latestDate"
+        - $ref: "#/parameters/latestFilter"
+        - $ref: "#/parameters/latestLimit"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+
+  /latest/{report_name}/{lgroup_type}/{lgroup_name}:
+    get:
+      summary: "List latest metric data for a target endpoint group and filter by status"
+      description: "This request lists the latest metric data available for a specific endpoint group and supports filtering by status value. If user uses filter=non-ok will get all non ok statuses"
+      operationId: statusLatestListGroup
+      tags:
+        - Latest
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/latestDate"
+        - $ref: "#/parameters/latestFilter"
+        - $ref: "#/parameters/latestLimit"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
   /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List status results for a given endpoint group (i.e. Group_A)"
@@ -1598,7 +1980,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-          
+
   /recomputations/{ID}:
     get:
       summary: "Get Recomputation details"
@@ -1628,6 +2010,34 @@ paths:
           $ref: "#/responses/406"
         422:
           $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+    delete:
+      summary: "Delete a specific recomputation"
+      description: "Delete a specific recomputation using its ID."
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful deletion of recomputation "
+          schema:
+            $ref: '#/definitions/Status'
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        404:
+          $ref: "#/responses/404"
         500:
           $ref: "#/responses/ServerError"
   /recomputations:
@@ -1695,6 +2105,30 @@ paths:
             $ref: '#/definitions/Status_error'
 
 parameters:
+  topoDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target day to get latest topology statistics"
+    default: todays_date in YYYY-MM-DD format
+  latestDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target day to get latest metric data"
+    default: todays_date_zulu_format
+  latestFilter:
+    name: "filter"
+    in: "query"
+    type: string
+    description: "filter by statuses: ok, non-ok, critical, warning, ok, unknown, missing, all"
+    default: all
+  latestLimit:
+    name: "limit"
+    in: "query"
+    type: string
+    description: "limit latest results by number"
+    default: 500
   apiKey:
     name: "x-api-key"
     in: "header"
@@ -1843,7 +2277,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/recomputation'
-          
+
   timestamp_value:
     type: object
     properties:
@@ -1941,6 +2375,8 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
+
+
 
   StatusEndpointResponse:
     type: object
@@ -2192,6 +2628,41 @@ definitions:
             details:
               type: string
 
+  Thresholds_profile_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Thresholds_profile'
+
+  Thresholds_profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      rules:
+        type: array
+        items:
+          $ref: '#/definitions/Threshold_rule'
+
+  Threshold_rule:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      host:
+        type: string
+      metric:
+        type: string
+      threshold:
+        type: string
+
+
   Aggregation_profile_list:
     type: object
     properties:
@@ -2249,6 +2720,7 @@ definitions:
       operation:
         type: string
 
+
   Operations_profile_list:
     type: object
     properties:
@@ -2258,6 +2730,96 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Operations_profile'
+
+  Tenant_status_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Tenant_status'
+
+  Tenant_status:
+    type: object
+    properties:
+      ams:
+        type: object
+        properties:
+          metric_data:
+            type: object
+            properties:
+              ingestion:
+                type: boolean
+              publishing:
+                type: boolean
+              status_streaming:
+                type: boolean
+              messages_arrived:
+                type: integer
+          sync_data:
+            type: object
+            properties:
+              ingestion:
+                type: boolean
+              publishing:
+                type: boolean
+              status_streaming:
+                type: boolean
+              messages_arrived:
+                type: integer
+      hdfs:
+        type: object
+        properties:
+          metric_data:
+            type: boolean
+          sync_data:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                downtimes:
+                  type: boolean
+                group_endpoints:
+                  type: boolean
+                blank_recomputation:
+                  type: boolean
+                group_groups:
+                  type: boolean
+                weights:
+                  type: boolean
+                operations_profile:
+                  type: boolean
+                metric_profile:
+                  type: boolean
+                aggregation_profile:
+                  type: boolean
+
+      engine_config:
+        type: boolean
+      last_check:
+        type: string
+
+      name:
+        type: string
+      available_states:
+        type: array
+        items:
+          type: string
+      defaults:
+        type: object
+        properties:
+          down:
+            type: string
+          missing:
+            type: string
+          unknown:
+            type: string
+      operations:
+        type: array
+        items:
+          $ref: '#/definitions/Operation'
 
   Operations_profile:
     type: object
@@ -2317,6 +2879,14 @@ definitions:
   Report:
     type: object
     properties:
+      id:
+        type: string
+      tenant:
+        type: string
+      disabled:
+        type: string
+      weight:
+        type: string
       info:
         type: object
         properties:
@@ -2362,6 +2932,34 @@ definitions:
               type: string
             value:
               type: string
+            context:
+              type: string
+
+  TopologyResponse:
+    type: object
+    properties:
+      group_count:
+        type: integer
+      group_type:
+        type: string
+      group_list:
+        type: array
+        items:
+          type: string
+      endpoint_group_count:
+        type: integer
+      endpoint_group_type:
+        type: string
+      endpoint_group_list:
+        type: array
+        items:
+          type: string
+      service_count:
+        type: integer
+      service_list:
+        type: array
+        items:
+          type: string
 
   Tenant_list:
     type: object
@@ -2417,3 +3015,7 @@ definitions:
               type: string
             api-key:
               type: string
+            roles:
+              type: array
+              items:
+                type: string

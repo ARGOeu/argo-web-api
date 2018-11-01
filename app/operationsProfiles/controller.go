@@ -84,7 +84,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
@@ -199,7 +199,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = 400
 		return code, h, output, err
 	}
@@ -213,6 +213,26 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	if len(errList) > 0 {
 		output, err = createErrView("Validation Error", 422, errList)
 		code = 422
+		return code, h, output, err
+	}
+
+	// check if the operations profile's name is unique
+	results := []OpsProfile{}
+	query := bson.M{"name": incoming.Name}
+
+	err = mongo.Find(session, tenantDbConfig.Db, "operations_profiles", query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// If results are returned for the specific name
+	// then we already have an existing report and we must
+	// abort creation notifying the user
+	if len(results) > 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Operations profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
 		return code, h, output, err
 	}
 
@@ -261,7 +281,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = 400
 		return code, h, output, err
 	}
@@ -288,7 +308,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
@@ -303,6 +323,29 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		output, err = createErrView("Validation Error", 422, errList)
 		code = 422
 		return code, h, output, err
+	}
+
+	// check if the operations profile's name is unique
+	if incoming.Name != results[0].Name {
+
+		results = []OpsProfile{}
+		query := bson.M{"name": incoming.Name}
+
+		err = mongo.Find(session, tenantDbConfig.Db, "operations_profiles", query, "", &results)
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		// If results are returned for the specific name
+		// then we already have an existing report and we must
+		// abort creation notifying the user
+		if len(results) > 0 {
+			output, _ = respond.MarshalContent(respond.ErrConflict("Operations profile with the same name already exists"), contentType, "", " ")
+			code = http.StatusConflict
+			return code, h, output, err
+		}
 	}
 
 	// run the update query
@@ -363,7 +406,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}

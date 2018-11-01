@@ -78,7 +78,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
@@ -88,11 +88,13 @@ Reponse body:
 					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 				</metric>
 				<metric name="emi.wn.WN-Bi">
 					<status timestamp="2015-04-30T22:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T03:00:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 				</metric>
 			</endpoint>
 		</group>
@@ -100,8 +102,74 @@ Reponse body:
 </root>
 ```
 
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "metrics": [
+                {
+                  "name": "emi.cream.CREAMCE-JobSubmit",
+                  "statuses": [
+                    {
+                      "timestamp": "2015-04-30T23:59:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T01:00:00Z",
+                      "value": "CRITICAL"
+                    },
+                    {
+                      "timestamp": "2015-05-01T02:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T23:59:59Z",
+                      "value": "OK"
+                    }
+                  ]
+                },
+                {
+                  "name": "emi.wn.WN-Bi",
+                  "statuses": [
+                    {
+                      "timestamp": "2015-04-30T22:59:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-02T00:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-03T01:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T23:59:59Z",
+                      "value": "OK"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
-#### List specific metric 
+#### List specific metric
 (`metric_name=emi.cream.CREAM-CE-JobSubmit`):
 
 ##### Example Request:
@@ -120,7 +188,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 
 ```
 <root>
@@ -131,11 +199,58 @@ Reponse body:
 					<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 					<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 					<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+					<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 				</metric>
 			</endpoint>
 		</group>
 	</group>
 </root>
+```
+
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "metrics": [
+                {
+                  "name": "emi.cream.CREAMCE-JobSubmit",
+                  "statuses": [
+                    {
+                      "timestamp": "2015-04-30T23:59:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T01:00:00Z",
+                      "value": "CRITICAL"
+                    },
+                    {
+                      "timestamp": "2015-05-02T01:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T23:59:59Z",
+                      "value": "OK"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 <a id="2"></a>
@@ -206,7 +321,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
@@ -215,15 +330,79 @@ Reponse body:
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+				<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 			</endpoint>
 			<endpoint name="cream02.afroditi.gr">
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+				<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 			</endpoint>
 		</group>
 	</group>
 </root>
+```
+
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL"
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            },
+                        {
+              "name": "cream02.afroditi.gr",
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL"
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 
@@ -246,7 +425,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 
 ```
 <root>
@@ -256,12 +435,53 @@ Reponse body:
 				<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 				<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 				<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+				<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 			</endpoint>
 		</group>
 	</group>
 </root>
 ```
 
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL"
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
 
 
@@ -332,7 +552,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
@@ -340,18 +560,78 @@ Reponse body:
 			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 		</group>
 		<group name="SRMv2" type="service">
 			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 		</group>
 	</group>
 </root>
 ```
 
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "statuses": [
+            {
+              "timestamp": "2015-04-30T23:59:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T01:00:00Z",
+              "value": "CRITICAL"
+            },
+            {
+              "timestamp": "2015-05-01T02:00:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T23:59:59Z",
+              "value": "OK"
+            }
+          ]
+        },
+        {
+          "name": "SRMv2",
+          "type": "service",
+          "statuses": [
+            {
+              "timestamp": "2015-04-30T23:59:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T01:00:00Z",
+              "value": "CRITICAL"
+            },
+            {
+              "timestamp": "2015-05-01T02:00:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T23:59:59Z",
+              "value": "OK"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
-##### List specific service type 
+
+##### List specific service type
 (`service_type=CREAM-CE`):
 
 ###### Example Request:
@@ -370,7 +650,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 
 ```
 <root>
@@ -379,9 +659,46 @@ Reponse body:
 			<status timestamp="2015-04-30T23:59:00Z" status="OK"></status>
 			<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
 			<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+			<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 		</group>
 	</group>
 </root>
+```
+
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "statuses": [
+            {
+              "timestamp": "2015-04-30T23:59:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T01:00:00Z",
+              "value": "CRITICAL"
+            },
+            {
+              "timestamp": "2015-05-01T02:00:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T23:59:59Z",
+              "value": "OK"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 <a id="4"></a>
@@ -450,24 +767,78 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
-		<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
-		<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T00:00:00Z" status="CRITICAL"></status>
+		<status timestamp="2015-05-01T01:00:00Z" status="WARNING"></status>
 		<status timestamp="2015-05-01T05:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 	</group>
 	<group name="HG-01-AUTH" type="SITES">
-		<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
-		<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T00:00:00Z" status="CRITICAL"></status>
+		<status timestamp="2015-05-01T02:00:00Z" status="UNKNOWN"></status>
 		<status timestamp="2015-05-01T05:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 	</group>
 </root>
 ```
 
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "CRITICAL"
+        },
+        {
+          "timestamp": "2015-05-01T01:00:00Z",
+          "value": "WARNING"
+        },
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T23:59:59Z",
+          "value": "OK"
+        }
+      ]
+    },
+    {
+      "name": "HG-01-AUTH",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "CRITICAL"
+        },
+        {
+          "timestamp": "2015-05-01T02:00:00Z",
+          "value": "UNKNOWN"
+        },
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T23:59:59Z",
+          "value": "OK"
+        }
+      ]
+    }
+  ]
+}
+```
 
-##### List specific endpoint group 
+
+##### List specific endpoint group
 (`group_name=HG-03-AUTH`):
 
 ###### Example Request:
@@ -486,16 +857,47 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
-		<status timestamp="2015-05-01T01:00:00Z" status="CRITICAL"></status>
-		<status timestamp="2015-05-01T02:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T00:00:00Z" status="CRITICAL"></status>
+		<status timestamp="2015-05-01T02:00:00Z" status="WARNING"></status>
 		<status timestamp="2015-05-01T05:00:00Z" status="OK"></status>
+		<status timestamp="2015-05-01T23:59:59Z" status="OK"></status>
 	</group>
 </root>
+```
+
+Response body (JSON):
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "CRITICAL"
+        },
+        {
+          "timestamp": "2015-05-01T02:00:00Z",
+          "value": "WARNING"
+        },
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T23:59:59Z",
+          "value": "OK"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 <a id="5"></a>
@@ -555,7 +957,7 @@ Code:
 ```
 Status: 200 OK
 ```
-Reponse body:
+Response body (XML):
 ```
  <root>
    <host name="www.example.com">
@@ -569,4 +971,26 @@ Reponse body:
  </root>
 ```
 
-
+Response body (JSON):
+```
+{
+  "root": [
+    {
+      "Name": "www.example.com",
+      "Metrics": [
+        {
+          "Name": "httpd_check",
+          "Details": [
+            {
+              "Timestamp": "2015-06-20T12:00:00Z",
+              "Value": "CRITICAL",
+              "Summary": "httpd status is CRITICAL",
+              "Message": "httpd service seems down. Failed to connect to port 80."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```

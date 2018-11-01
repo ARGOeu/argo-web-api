@@ -27,9 +27,57 @@ import (
 	"encoding/xml"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils/hbase"
+	"github.com/tsuna/gohbase/hrpc"
 )
+
+func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
+
+	dResult := make([]DataOutput, 0)
+
+	for i := range hResults {
+		res := hResults[i]
+		cellMap := hbase.CellsToMap(res.Cells)
+		dOut := DataOutput{}
+		dOut.DateInt = cellMap["date"]
+		dOut.EndpointGroup = cellMap["endpoint_group"]
+		dOut.Status = cellMap["status"]
+		dOut.Timestamp = cellMap["ts_monitored"]
+		dOut.Service = cellMap["service"]
+		dOut.Hostname = cellMap["hostname"]
+		dOut.Metric = cellMap["metric"]
+		dOut.PrevStatus = cellMap["prev_status"]
+		dOut.PrevTimestamp = cellMap["prev_ts"]
+		dResult = append(dResult, dOut)
+	}
+
+	return dResult
+}
+
+// closeTimeline accepts a list of status item and an endDate parameter
+// and tries to close the status timeline by providing a final status item
+// at the end of the date (if the endDate parameter refers to a past date)
+// or at the current time (if the endDate parameter refers to the current date)
+func closeTimeline(results []DataOutput, endDate string) []DataOutput {
+	if len(results) == 0 {
+		return results
+	}
+
+	extra := results[len(results)-1]
+	tsNow := time.Now().UTC()
+	today := tsNow.Format("2006-01-02")
+	if strings.Split(endDate, "T")[0] == today {
+		extra.Timestamp = tsNow.Format(zuluForm)
+	} else {
+		extra.Timestamp = strings.Split(extra.Timestamp, "T")[0] + "T23:59:59Z"
+	}
+
+	results = append(results, extra)
+	return results
+}
 
 func createView(results []DataOutput, input InputParams) ([]byte, error) {
 

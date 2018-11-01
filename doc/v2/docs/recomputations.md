@@ -5,6 +5,7 @@ Name                                     | Description                          
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Recomputation Requests         | This method can be used to retrieve a list of current Recomputation requests.          | [ Description](#1)
 POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#2)
+DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#3)
 
 <a id='1'></a>
 
@@ -98,3 +99,21 @@ Type         | Description                                                      
 
 ### Response
 Headers: `Status: 201 Created`
+
+<a id='3'></a>
+
+## [DELETE]: Delete a specific recomputation
+
+```
+DELETE /recomputations/{ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+`Status 200 OK`

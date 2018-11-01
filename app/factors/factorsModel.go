@@ -32,7 +32,7 @@ type Factor struct {
 }
 
 type root struct {
-	Factor []*Factor `xml:"Factor" json:"factors"`
+	Factor []Factor `xml:"Factor" json:"factors"`
 }
 
 // FactorsOutput struct to represent Name/Factor pair

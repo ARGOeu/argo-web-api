@@ -37,7 +37,16 @@ import (
 )
 
 type Auth struct {
-	ApiKey string `bson:"api_key"`
+	ApiKey     string `bson:"api_key"`
+	Restricted bool   `bson:"restricted"`
+}
+
+type Tenant struct {
+	Info InfoStruct `bson:"info"`
+}
+
+type InfoStruct struct {
+	Name string `bson:"name"`
 }
 
 func Authenticate(h http.Header, cfg config.Config) bool {
@@ -94,15 +103,41 @@ func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 	return false
 }
 
+// IsAdminRestricted resturns a boolean value if an admin user is in restricted mode or not.
+// Admin user in restricted mode has read only access to certain calls
+func IsAdminRestricted(h http.Header, cfg config.Config) bool {
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		panic(err)
+	}
+
+	query := bson.M{"api_key": h.Get("x-api-key")}
+	projection := bson.M{"_id": 0, "name": 0, "email": 0}
+
+	results := []Auth{}
+	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
+
+	if err != nil {
+		return false
+	}
+
+	if len(results) > 0 {
+		return results[0].Restricted
+	}
+	return false
+}
+
 // AuthenticateTenant is used to find which tenant the user making the requests
 // belongs to and return the database configuration for that specific tenant.
 // If the api-key in the request is not found in any tenant an empty configuration is
 // returned along with an error
-func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, error) {
+func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, string, error) {
 
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	if err != nil {
-		return config.MongoConfig{}, err
+		return config.MongoConfig{}, "", err
 	}
 	defer mongo.CloseSession(session)
 
@@ -111,10 +146,12 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1, "users": 1}
 
 	var results []map[string][]config.MongoConfig
+	var tname Tenant
 	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
+	mongo.FindOne(session, cfg.MongoDB.Db, "tenants", query, &tname)
 
 	if len(results) == 0 {
-		return config.MongoConfig{}, errors.New("Unauthorized")
+		return config.MongoConfig{}, "", errors.New("Unauthorized")
 	}
 	mongoConf := results[0]["db_conf"][0]
 	// mongoConf := config.MongoConfig{
@@ -132,6 +169,8 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, e
 			mongoConf.Roles = user.Roles
 		}
 	}
+
 	log.Printf("ACCESS User: %s", mongoConf.User)
-	return mongoConf, nil
+	log.Printf("ACESSS Tenant: %s", tname.Info.Name)
+	return mongoConf, tname.Info.Name, nil
 }

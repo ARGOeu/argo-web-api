@@ -59,6 +59,7 @@ type ReportTestSuite struct {
 	respReportNotFound string
 	respUnauthorized   string
 	respBadJSON        string
+	respNameConflict   string
 }
 
 // Setup the Test Environment
@@ -111,17 +112,44 @@ func (suite *ReportTestSuite) SetupSuite() {
 
 	suite.respReportNotFound = `{
  "status": {
-  "message": "Report Not Found",
+  "message": "Not Found",
   "code": "404"
- }
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+
+	suite.respNameConflict = `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Report with the same name already exists"
+  }
+ ]
 }`
 
 	suite.respBadJSON = `{
  "status": {
-  "message": "Malformated json input data",
-  "code": "400",
-  "details": "Check that your json input is valid"
- }
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	suite.respUnauthorized = `{
@@ -235,7 +263,7 @@ func (suite *ReportTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "C4PK3Y")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
 
@@ -594,6 +622,8 @@ func (suite *ReportTestSuite) TestCreateReport() {
  "data": \[
   {
    "id": ".*-.*-.*-.*-.*",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Foo_Report",
     "description": "olalala",
@@ -628,11 +658,13 @@ func (suite *ReportTestSuite) TestCreateReport() {
    "filter_tags": \[
     {
      "name": "production",
-     "value": "Y"
+     "value": "Y",
+     "context": ""
     },
     {
      "name": "monitored",
-     "value": "Y"
+     "value": "Y",
+     "context": ""
     }
    \]
   }
@@ -722,6 +754,8 @@ func (suite *ReportTestSuite) TestUpdateReport() {
  "data": \[
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "newname",
     "description": "newdescription",
@@ -756,11 +790,13 @@ func (suite *ReportTestSuite) TestUpdateReport() {
    "filter_tags": \[
     {
      "name": "production",
-     "value": "N"
+     "value": "N",
+     "context": ""
     },
     {
      "name": "monitored",
-     "value": "N"
+     "value": "N",
+     "context": ""
     }
    \]
   }
@@ -934,6 +970,8 @@ func (suite *ReportTestSuite) TestReadOneReport() {
  "data": [
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_A",
     "description": "report aaaaa",
@@ -968,11 +1006,13 @@ func (suite *ReportTestSuite) TestReadOneReport() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   }
@@ -998,6 +1038,7 @@ func (suite *ReportTestSuite) TestReadOneReport() {
 
 	// Compare the expected and actual xml response
 	suite.Equal(respondJSON, output, "Response body mismatch")
+
 }
 
 // TestReadReport function implements the testing
@@ -1014,6 +1055,8 @@ func (suite *ReportTestSuite) TestReadReports() {
  "data": [
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_B",
     "description": "report bbb",
@@ -1048,16 +1091,20 @@ func (suite *ReportTestSuite) TestReadReports() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   },
   {
    "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
    "info": {
     "name": "Report_A",
     "description": "report aaaaa",
@@ -1092,11 +1139,13 @@ func (suite *ReportTestSuite) TestReadReports() {
    "filter_tags": [
     {
      "name": "name1",
-     "value": "value1"
+     "value": "value1",
+     "context": ""
     },
     {
      "name": "name2",
-     "value": "value2"
+     "value": "value2",
+     "context": ""
     }
    ]
   }
@@ -1121,6 +1170,7 @@ func (suite *ReportTestSuite) TestReadReports() {
 	suite.Equal(200, code, "Incorrect Error Code")
 	// Compare the expected and actual xml response
 	suite.Equal(respondJSON, string(output), "Response body mismatch")
+
 }
 
 // TestCreateUnauthorized function tests calling the create report request (POST) and
@@ -1396,6 +1446,138 @@ func (suite *ReportTestSuite) TestDeleteForbidViewer() {
 	suite.Equal(403, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
+}
+
+// TestCreateReportAlreadyExistingName tests the case where the given report has a defined name that already exists
+func (suite *ReportTestSuite) TestCreateReportAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "Report_A",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("POST", "https://myapi.test.com/api/v2/reports", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code, "Incorrect Error Code")
+	suite.Equal(suite.respNameConflict, output, "Response body mismatch")
+
+}
+
+// TestCreateReportAlreadyExistingName tests the case where the given report has a defined name that already exists
+func (suite *ReportTestSuite) TestUpdateReportAlreadyExistingName() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "Report_A",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric",
+            "name": "profile1"
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations",
+            "name": "profile2"
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation",
+            "name": "profile3"
+        }
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("PUT", "https://myapi.test.com/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494360", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code, "Incorrect Error Code")
+	suite.Equal(suite.respNameConflict, output, "Response body mismatch")
+
 }
 
 // This function is actually called in the end of all tests

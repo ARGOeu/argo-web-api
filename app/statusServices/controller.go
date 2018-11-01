@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/hbase"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -39,6 +40,13 @@ import (
 func parseZuluDate(dateStr string) (int, error) {
 	parsedTime, _ := time.Parse(zuluForm, dateStr)
 	return strconv.Atoi(parsedTime.Format(ymdForm))
+}
+
+// getPrevDay returns the previous day
+func getPrevDay(dateStr string) (int, error) {
+	parsedTime, _ := time.Parse(zuluForm, dateStr)
+	prevTime := parsedTime.AddDate(0, 0, -1)
+	return strconv.Atoi(prevTime.Format(ymdForm))
 }
 
 // ListMetricTimelines returns a list of metric timelines
@@ -75,6 +83,29 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		contentType,
 	}
 
+	dataSrc := urlValues.Get("datasource")
+	// If hbase bypass mongo session
+	if dataSrc == "hbase" {
+		// Get hbase configuration
+		hbCfg := context.Get(r, "hbase_conf").(config.HbaseConfig)
+		// Get tenant name
+		tenantName := context.Get(r, "tenant_name").(string)
+
+		// Query Results from hbase
+		hbResults, errHb := hbase.QueryStatusServices(hbCfg, tenantName, input.report, strconv.Itoa(input.startTime), input.group, input.service)
+		if errHb != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, errHb
+		}
+		// Convert hbase results to data output format
+		doResults := hbaseToDataOutput(hbResults)
+		// Render the reults into xml
+		output, err = createView(doResults, input) //Render the results into XML format
+
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, errHb
+	}
+
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
@@ -100,6 +131,20 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		return code, h, output, err
 	}
 
+	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
+
+	//if no status results yet show previous days results
+	if len(results) == 0 {
+		// Zero query results
+		input.startTime = parsedPrev
+		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+	// close the timeline by adding a final status point at the end of the day or at the current time
+	results = closeTimeline(results, urlValues.Get("end_time"))
 	output, err = createView(results, input) //Render the results into XML format
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))

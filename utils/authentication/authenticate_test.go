@@ -185,7 +185,7 @@ func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 
-	tenantdbconfig, err := AuthenticateTenant(request.Header, suite.cfg)
+	tenantdbconfig, _, err := AuthenticateTenant(request.Header, suite.cfg)
 	// Check that we must have a 200 ok code
 	suite.Equal(nil, err, "authetication problem")
 

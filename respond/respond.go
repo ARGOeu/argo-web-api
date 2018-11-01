@@ -187,7 +187,11 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 		code, header, output, err := fn(r, confhandler.Config)
 
 		if code == http.StatusInternalServerError {
-			log.Panic("Internal Server Error:", fmt.Sprintf("%+v", err))
+			log.Println("Internal Server Error:", fmt.Sprintf("%+v", err))
+
+			errResponse := ErrorResponse{Message: err.Error(), Code: "500", Details: err.Error()}
+			errMsg := CreateFailureResponseMessage(err.Error(), "500", []ErrorResponse{errResponse})
+			output = errMsg.MarshalTo("application/json")
 		}
 
 		//Add headers
@@ -330,13 +334,35 @@ var BadRequestBadJSON = ResponseMessage{
 		Details: "Request Body contains malformed JSON, thus rendering the Request Bad",
 	}}
 
+var BadRequestInvalidJSON = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Bad Request",
+		Code:    "400",
+	},
+	Errors: []StatusResponse{
+		{Message: "Bad Request", Code: "400", Details: "Request Body contains malformed JSON, thus rendering the Request Bad"},
+	},
+}
+
 // NotFound is used to inform the user about not found item
 var NotFound = ResponseMessage{
 	Status: StatusResponse{
 		Message: "Not Found",
 		Code:    "404",
 		Details: "item with the specific ID was not found on the server",
-	}}
+	},
+}
+
+// NotFound is used to inform the user about not found item
+var ErrNotFound = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+	},
+	Errors: []StatusResponse{
+		{Message: "Not Found", Code: "404", Details: "item with the specific ID was not found on the server"},
+	},
+}
 
 // UnauthorizedMessage is used to inform the user about incorrect api key and can be marshaled to xml and json
 var UnauthorizedMessage = ResponseMessage{
@@ -354,6 +380,18 @@ var NotAcceptableContentType = ResponseMessage{
 		Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'",
 	}}
 
+var ErrNotAcceptableContentType = func() ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Not Acceptable Content Type",
+			Code:    "406",
+		},
+		Errors: []StatusResponse{
+			{Message: "Conflict", Code: "406", Details: "Accept header provided did not contain any valid content types. Acceptable content types are 'application/xml' and 'application/json'"},
+		},
+	}
+}
+
 // MalformedJSONInput is used to marshal a response when user json input is malformed
 var MalformedJSONInput = ResponseMessage{
 	Status: StatusResponse{
@@ -363,12 +401,36 @@ var MalformedJSONInput = ResponseMessage{
 	},
 }
 
+var ErrConflict = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Conflict",
+			Code:    "409",
+		},
+		Errors: []StatusResponse{
+			{Message: "Conflict", Code: "409", Details: details},
+		},
+	}
+}
+
 // UnprocessableEntity is used to marshal a response
 var UnprocessableEntity = ResponseMessage{
 	Status: StatusResponse{
 		Code:    "422",
 		Message: "Unprocessable Entity",
 	},
+}
+
+var ErrUnprocessableEntity = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Unprocessable Entity",
+			Code:    "422",
+		},
+		Errors: []StatusResponse{
+			{Message: "Unprocessable Entity", Code: "422", Details: details},
+		},
+	}
 }
 
 // InternalServerErrorMessage is used to marshal a response

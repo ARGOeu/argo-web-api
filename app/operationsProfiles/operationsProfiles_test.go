@@ -530,9 +530,15 @@ func (suite *OperationsProfilesTestSuite) TestListOneNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -643,9 +649,15 @@ func (suite *OperationsProfilesTestSuite) TestCreateBadJson() {
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
@@ -1018,19 +1030,190 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	suite.Equal(strings.Replace(jsonCreated, "{{ID}}", id, 1), output2, "Response body mismatch")
 }
 
+func (suite *OperationsProfilesTestSuite) TestCreateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "ops1",
+   "available_states": [
+    "A","B","C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
+   },
+   "operations": [
+    {
+     "name": "AND",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "B"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
+      }
+     ]
+    },
+    {
+     "name": "OR",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "A"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
+      }
+     ]
+    }
+   ]
+  }`
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Operations profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
+func (suite *OperationsProfilesTestSuite) TestUpdateNameAlreadyExists() {
+
+	jsonInput := `{
+   "name": "ops1",
+   "available_states": [
+    "A","B","C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
+   },
+   "operations": [
+    {
+     "name": "AND",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "B"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
+      }
+     ]
+    },
+    {
+     "name": "OR",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "A"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
+      }
+     ]
+    }
+   ]
+  }`
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Operations profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(409, code)
+	suite.Equal(jsonOutput, output)
+}
+
 func (suite *OperationsProfilesTestSuite) TestUpdateBadJson() {
 
 	jsonInput := `{
    "name": "yolo",
    "namespace": "testin
     `
-
 	jsonOutput := `{
  "status": {
   "message": "Bad Request",
-  "code": "400",
-  "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
- }
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
@@ -1057,9 +1240,15 @@ func (suite *OperationsProfilesTestSuite) TestUpdateNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))
@@ -1356,9 +1545,15 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 	jsonOutput := `{
  "status": {
   "message": "Not Found",
-  "code": "404",
-  "details": "item with the specific ID was not found on the server"
- }
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
 }`
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/wrong-id", strings.NewReader(jsonInput))

@@ -20,6 +20,8 @@ function populate_default_roles()
   db = db.getSiblingDB('argo_core')
   print("INFO\tOpened argo_core db")
   db.roles.insert([
+  {"resource" : "topology.list", "roles": ["admin", "editor", "viewer"]},
+  {"resource" : "latest.get", "roles": ["admin", "editor", "viewer"]},
   {"resource" : "reports.get", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "reports.list", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "reports.create", "roles" : [ "admin", "editor" ] },
@@ -40,19 +42,28 @@ function populate_default_roles()
   {"resource" : "aggregationProfiles.create", "roles" : [ "admin", "editor" ] },
   {"resource" : "aggregationProfiles.delete", "roles" : [ "admin", "editor" ] },
   {"resource" : "aggregationProfiles.update", "roles" : [ "admin", "editor" ] },
+  {"resource" : "thresholdsProfiles.get", "roles" : [ "admin", "editor", "viewer" ] },
+  {"resource" : "thresholdsProfiles.list", "roles" : [ "admin", "editor", "viewer" ] },
+  {"resource" : "thresholdsProfiles.update", "roles" : [ "admin", "editor" ] },
+  {"resource" : "thresholdsProfiles.create", "roles" : [ "admin", "editor" ] },
+  {"resource" : "thresholdsProfiles.delete", "roles" : [ "admin", "editor" ] },
   {"resource" : "results.get", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "results.list", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "status.get", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "status.list", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "factors.list", "roles" : [ "admin", "editor","viewer"] },
   {"resource" : "tenants.get", "roles" : [ "super_admin"] },
-  {"resource" : "tenants.list", "roles" : [ "super_admin" ]},
+  {"resource" : "tenants.list", "roles" : [ "super_admin", "super_admin_restricted" ]},
   {"resource" : "tenants.create", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.delete", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.update", "roles" : [ "super_admin" ] },
+  {"resource" : "tenants.get_status", "roles": ["super_admin", "super_admin_restricted"]},
+  {"resource" : "tenants.update_status", "roles": ["super_admin"]},
   {"resource" : "metricResult.get", "roles" : [ "admin", "editor","viewer" ]},
   {"resource" : "recomputations.list", "roles" : [ "admin","editor"]},
   {"resource" : "recomputations.get", "roles" : [ "admin","editor"]},
-  {"resource" : "recomputations.submit", "roles" : [ "admin","editor"]}]);
+  {"resource" : "recomputations.submit", "roles" : [ "admin","editor"]},
+  {"resource" : "recomputations.delete", "roles" : [ "admin","editor"]},
+  {"resource" : "recomputations.update", "roles" : [ "admin","editor"]},]);
   print("INFO\tPolulated default roles in \'roles\' collection")
 }

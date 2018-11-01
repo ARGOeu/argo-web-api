@@ -28,6 +28,7 @@ import (
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"strconv"
 )
 
 func createListView(results interface{}, format string) ([]byte, error) {
@@ -65,6 +66,19 @@ func createSubmitView(inserted MongoInterface, format string, r *http.Request) (
 	// 	Message: "Recomputations successfully submitted",
 	// 	Status:  "202",
 	// }
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}
+
+// createMsgView constructs a simple message response without data
+func createMsgView(msg string, code int) ([]byte, error) {
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
 
 	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err

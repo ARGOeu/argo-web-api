@@ -18,5 +18,7 @@ pages:
   - Error Codes: errors.md
   - Validation Checks: validations.md
   - Metrics: metrics.md
+  - Latest results: latest.md
+  - Topology statistics: topology.md
 
 theme: readthedocs

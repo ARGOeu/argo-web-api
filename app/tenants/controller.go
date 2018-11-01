@@ -39,8 +39,25 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
 )
+
+func isAdminRestricted(roles []string) bool {
+	return len(roles) > 0 && roles[0] == "super_admin_restricted"
+}
+
+func restrictTenantOutput(results []Tenant) []Tenant {
+	restricted := []Tenant{}
+	for _, tenant := range results {
+		rItem := Tenant{}
+		rItem.ID = tenant.ID
+		rItem.Info = tenant.Info
+		restricted = append(restricted, rItem)
+	}
+	return restricted
+}
 
 // Create function is used to implement the create tenant request.
 // The request is an http POST request with the tenant description
@@ -72,8 +89,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		return code, h, output, err
 	}
@@ -87,14 +103,20 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	if errMsg, errCode := validateTenantUsers(incoming, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
 	// Check if name exists
 	sameName := []Tenant{}
 	filter := bson.M{"info.name": incoming.Info.Name}
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
 	if len(sameName) > 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
-		output, err = createMsgView("Tenant with same name already exists", code)
 		return code, h, output, err
 	}
 
@@ -109,7 +131,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Create view of the results
-	output, err = createRefView(incoming, "Tenant was succesfully created", 201, r) //Render the results into JSON
+	output, err = createRefView(incoming, "Tenant was successfully created", 201, r) //Render the results into JSON
 	code = http.StatusCreated
 	return code, h, output, err
 }
@@ -134,6 +156,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	defer session.Close()
 
+	roles := context.Get(r, "roles").([]string)
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -149,9 +173,74 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	// Quicky check if super admin is restricted to remove restricted info
+	if isAdminRestricted(roles) {
+		results = restrictTenantOutput(results)
+	}
+
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
 	output, err = createListView(results, "Success", code)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
+// ShowStatus show tenant status
+func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	vars := mux.Vars(r)
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create structure to hold query results
+	results := []TenantStatus{}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+	// Query collection tenants for the specific tenant id
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// After successfully retrieving the db results
+	// call the createView function to render them into idented xml
+	output, err = createStatusView(results, "Success", code)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -205,7 +294,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
@@ -221,6 +310,86 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+func UpdateStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incomingStatus := StatusDetail{}
+
+	// ingest body data
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incomingStatus); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// create filter to retrieve specific profile with id
+	filter := bson.M{"id": vars["ID"]}
+
+	// Retrieve Results from database
+	results := []Tenant{}
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	filter = bson.M{"id": vars["ID"]}
+
+	// update and set only the status field
+	setIncoming := bson.M{"$set": bson.M{"status": incomingStatus}}
+	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", filter, setIncoming)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
 }
 
 // Update function used to implement update tenant request.
@@ -257,7 +426,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestBadJSON, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		return code, h, output, err
 	}
@@ -287,9 +456,14 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := validateTenantUsers(incoming, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
 		return code, h, output, err
 	}
 
@@ -300,9 +474,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", filter, "name", &sameName)
 
-		if len(sameName) > 1 {
+		if len(sameName) > 0 {
 			code = http.StatusConflict
-			output, err = createMsgView("Tenant with same name already exists", code)
+			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
 			return code, h, output, err
 		}
 	}
@@ -367,7 +541,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Check if nothing found
 	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
@@ -389,6 +563,57 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+
+}
+
+// validateTenantUsers validates the uniqueness of the tenant's users' keys
+func validateTenantUsers(tenant Tenant, session *mgo.Session, cfg config.Config) (string, int) {
+
+	usersKeys := make(map[string]bool)
+	errMsg := ""
+	errCode := 0
+
+	for _, tUser := range tenant.Users {
+
+		results := []Tenant{}
+
+		// for each of the tenant's users make sure there is no other that holds the same key across all users from all tenants
+		// check that there are no others users registered under different tenants that might have the same api key
+
+		query := bson.M{
+			"$and": []bson.M{
+				{
+					"id": bson.M{
+						"$ne": tenant.ID}},
+				{
+					"users": bson.M{
+						"$elemMatch": bson.M{
+							"api_key": tUser.APIkey}}}}}
+
+		if err := mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "", &results); err != nil {
+			return err.Error(), http.StatusInternalServerError
+		}
+
+		if len(results) > 0 {
+			errMsg = fmt.Sprintf("More than one users found using the key: %v", tUser.APIkey)
+			errCode = http.StatusConflict
+			return errMsg, errCode
+		}
+
+		// use a map with all the keys that we have evaluated to check whether or not users inside the same tenant have the same key declared
+		// when we evaluate a key, we try to see if we have seen that key again in a previous user
+
+		if _, ok := usersKeys[tUser.APIkey]; ok {
+			errMsg = fmt.Sprintf("More than one users found using the key: %v", tUser.APIkey)
+			errCode = http.StatusConflict
+			return errMsg, errCode
+		}
+
+		// if the current key isn't present inside the map, add it
+		usersKeys[tUser.APIkey] = true
+	}
+
+	return errMsg, errCode
 
 }
 
