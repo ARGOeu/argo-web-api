@@ -66,6 +66,7 @@ go clean
 %caps(cap_net_bind_service=+ep) /var/www/argo-web-api/argo-web-api
 %config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/argo-web-api.conf
 %config(noreplace) %attr(0644,argo-web-api,argo-web-api) /etc/init/argo-web-api.conf
+%attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
 * Tue Aug 21 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.2-1%{dist}
