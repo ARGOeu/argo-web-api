@@ -3,8 +3,8 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.7.2
-Release: 1%{?dist}
+Version: 1.7.8
+Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     ARGO
@@ -69,6 +69,32 @@ go clean
 %attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
+* Wed Nov 7 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.8-2%{dist}
+- ARGO-1435 Fix configuration_profile json field in tenant status call
+- ARGO-1433 Add tenant status roles to init db script
+- ARGO-1268 Serve topology statistics per report
+- ARGO-451 Close status timelines with latest daily result
+* Tue Sep 18 2018 Angelos Tsalapatis <agelos.tsal@gmail.com> 1.7.7-1%{dist}
+- ARGO-1390 API CALL - Update recomputation
+- ARGO-1389 API CALL - Delete Recomputation
+- ARGO-1395 Operations profile name field should be unique
+- ARGO-1396 Metric profile name field should be unique
+- ARGO-1394 Aggregation profile name field should be unique
+* Wed Sep 12 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.6-1%{dist}
+- ARGO-1298 Show/Update tenant's argo-engine status
+* Wed Sep 12 2018 Angelos Tsalapatis <agelos.tsal@gmail.com> 1.7.5-1%{dist}
+- ARGO-1381 Api call update report name field not unique
+- ARGO-1388 Api call update tenant name field
+- ARGO-1345 update Tenant model to handle field roles
+- ARGO-1391 Wrong response for empty factors list
+- ARGO-1381 Refactor error messages in argo-web-api thresholds package
+* Tue Sep 4 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.4-1%{dist}
+- ARGO-545 Add api call for latest non-ok entries
+* Tue Sep 4 2018 Angelos Tsalapatis <agelos.tsal@gmail.com> 1.7.3-1%{dist}
+- ARGO-1380 Refactor error messages in argo-web-api tenants package
+- ARGO-1337 Refactor error messages in argo-web-api factors package
+- ARGO-445 Recomputation details error
+- ARGO-1379 Refactor error messages in the reports package
 * Tue Aug 21 2018 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.2-1%{dist}
 - ARGO-1351 Refactor error messages in the aggregation profiles package
 - ARGO-1349 Refactor error messages in the metric profiles package
