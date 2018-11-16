@@ -2744,6 +2744,8 @@ definitions:
   Tenant_status:
     type: object
     properties:
+      total_status:
+        type: boolean
       ams:
         type: object
         properties:
