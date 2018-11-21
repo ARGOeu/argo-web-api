@@ -42,6 +42,7 @@ type TenantStatus struct {
 }
 
 type StatusDetail struct {
+	TotalStatus  bool        `json:"total_status"`
 	AMS          DetailsAMS  `bson:"ams" json:"ams"`
 	HDFS         DetailsHDFS `bson:"hdfs" json:"hdfs"`
 	EngineConfig bool        `bson:"engine_config" json:"engine_config"`
