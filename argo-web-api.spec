@@ -31,9 +31,6 @@ Installs the ARGO API.
 export GOPATH=$PWD
 export PATH=$GOPATH/bin:$PATH
 cd src/github.com/ARGOeu/argo-web-api/
-go get github.com/tools/godep
-godep restore
-godep update ...
 go install
 
 %install
