@@ -1,7 +1,7 @@
 # this container should be prepared for golang
 language: go
 go:
- - 1.7
+ - 1.10.2
 
 # mongodb should be running
 services: mongodb
@@ -17,11 +17,8 @@ addons:
 install:
  - go get github.com/axw/gocov/...
  - go get github.com/AlekSi/gocov-xml
- - go get github.com/tools/godep
 
 # Run all unittests sequentally in order to not push mongodb resources
 script:
- - godep restore
- - godep update ... # Using Godep.json update and create a local _workspace directory
- - go test -v ./...
+ - go test ./...
  - gocov test ./... 2> /dev/null | gocov report
