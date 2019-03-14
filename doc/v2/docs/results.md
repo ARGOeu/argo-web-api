@@ -132,6 +132,89 @@ Status: 200 OK
 
 <a id="3"></a>
 
+# [GET]: List Availabilities and Reliabilities for Endpoints
+The following methods can be used to obtain a tenant's Availability and Reliability result metrics for endpoints under a specific service or group. The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single service flavor results or a bulk of endpoint results.
+
+## [GET] Endpoints A/R
+### Input
+
+Request endpoint a/r under specific service:
+```
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+```
+Request endpoint a/r under specific endpoint group:
+```
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]
+or
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+```
+
+#### Query Parameters
+
+Type            | Description                                                                                     | Required | Default value
+--------------- | ----------------------------------------------------------------------------------------------- | -------- | -------------
+`[start_time]`  | UTC time in W3C format                                                                          | YES      |
+`[end_time]`    | UTC time in W3C format                                                                          | YES      |
+`[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly` or `daily` | NO       | `daily`
+
+#### Path Parameters
+
+Name                    | Description                                                                                                                           | Required | Default value
+----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------
+`{report_name}`         | Name of the report that contains all the information about the profile, filter tags, group types etc.                                 | YES      |
+`{group_type}`          | Type of the Group of Endpoint Groups.                                                                                                 | NO       |
+`{group_name}`          | Name of the Group of Endpoint Groups.                                                                                                 | NO       |
+`{endpoint_group_type}` | Type of the the Endpoint Group.                                                                                                       | YES      |
+`{endpoint_group_name}` | Name of the the Endpoint Group.                                                                                                       | YES      |
+`{service_name}` | Name of the specific service. | NO       |
+`{endpoint_name}` | Name of the specific endpoint. | NO       |
+
+#### Headers
+##### Request
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
+
+##### Response
+
+```
+Status: 200 OK
+```
+
+#### URL
+`/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily`
+
+#### Response Body
+
+```
+<root>
+  <group name="ST01" type="SITE">
+    <group name="SF01" type="service">
+      <results timestamp="2015-06-22" availability="98.26389" reliability="98.26389" unknown="0" uptime="0.98264" downtime="0"></results>
+      <results timestamp="2015-06-23" availability="54.03509" reliability="81.48148" unknown="0.01042" uptime="0.53472" downtime="0.33333"></results>
+    </group>
+    <group name="SF02" type="service">
+      <results timestamp="2015-06-22" availability="96.875" reliability="96.875" unknown="0" uptime="0.96875" downtime="0"></results>
+      <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
+    </group>
+  </group>
+</root>
+```
+
+
+
 # [GET]: List Availabilities and Reliabilities for Service Flavors
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per given Service Flavor(s). The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single service flavor results or a bulk of service flavor results.
 
@@ -181,22 +264,191 @@ Accept: "application/xml" or "application/json"
 Status: 200 OK
 ```
 
+## Request endpoint a/r under service: `service_a`
+
 #### URL
-`/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily`
+`/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily`
 
 #### Response Body
 
 ```
-<root>
-  <group name="ST01" type="SITE">
-    <group name="SF01" type="service">
-      <results timestamp="2015-06-22" availability="98.26389" reliability="98.26389" unknown="0" uptime="0.98264" downtime="0"></results>
-      <results timestamp="2015-06-23" availability="54.03509" reliability="81.48148" unknown="0.01042" uptime="0.53472" downtime="0.33333"></results>
-    </group>
-    <group name="SF02" type="service">
-      <results timestamp="2015-06-22" availability="96.875" reliability="96.875" unknown="0" uptime="0.96875" downtime="0"></results>
-      <results timestamp="2015-06-23" availability="100" reliability="100" unknown="0" uptime="1" downtime="0"></results>
-    </group>
-  </group>
-</root>
+{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "service_a",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "e01",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "timestamp": "2015-06-22",
+                   "availability": "98.26389",
+                   "reliability": "98.26389",
+                   "unknown": "0",
+                   "uptime": "0.98264",
+                   "downtime": "0"
+                 },
+                 {
+                   "timestamp": "2015-06-23",
+                   "availability": "54.03509",
+                   "reliability": "81.48148",
+                   "unknown": "0.01042",
+                   "uptime": "0.53472",
+                   "downtime": "0.33333"
+                 }
+               ]
+             },
+             {
+               "name": "e02",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "timestamp": "2015-06-22",
+                   "availability": "96.875",
+                   "reliability": "96.875",
+                   "unknown": "0",
+                   "uptime": "0.96875",
+                   "downtime": "0"
+                 },
+                 {
+                   "timestamp": "2015-06-23",
+                   "availability": "100",
+                   "reliability": "100",
+                   "unknown": "0",
+                   "uptime": "1",
+                   "downtime": "0"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }
 ```
+
+## Request endpoint a/r under endpoint group: `ST01`
+
+#### URL
+`/api/v2/results/Report_A/SITE/ST01/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily`
+
+#### Response Body
+
+```
+{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "service_a",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "e01",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "timestamp": "2015-06-22",
+                   "availability": "98.26389",
+                   "reliability": "98.26389",
+                   "unknown": "0",
+                   "uptime": "0.98264",
+                   "downtime": "0"
+                 },
+                 {
+                   "timestamp": "2015-06-23",
+                   "availability": "54.03509",
+                   "reliability": "81.48148",
+                   "unknown": "0.01042",
+                   "uptime": "0.53472",
+                   "downtime": "0.33333"
+                 }
+               ]
+             },
+             {
+               "name": "e02",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "timestamp": "2015-06-22",
+                   "availability": "96.875",
+                   "reliability": "96.875",
+                   "unknown": "0",
+                   "uptime": "0.96875",
+                   "downtime": "0"
+                 },
+                 {
+                   "timestamp": "2015-06-23",
+                   "availability": "100",
+                   "reliability": "100",
+                   "unknown": "0",
+                   "uptime": "1",
+                   "downtime": "0"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }
+```
+
+## Request endpoint a/r for specific endpoint `e01` under endpoint group: `ST01`
+
+#### URL
+`/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints/e01?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily`
+
+#### Response Body
+
+```
+{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "service_a",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "e01",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "timestamp": "2015-06-22",
+                   "availability": "98.26389",
+                   "reliability": "98.26389",
+                   "unknown": "0",
+                   "uptime": "0.98264",
+                   "downtime": "0"
+                 },
+                 {
+                   "timestamp": "2015-06-23",
+                   "availability": "54.03509",
+                   "reliability": "81.48148",
+                   "unknown": "0.01042",
+                   "uptime": "0.53472",
+                   "downtime": "0.33333"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }
+```
+

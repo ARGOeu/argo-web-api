@@ -32,6 +32,73 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
+func createEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string) ([]byte, error) {
+
+	docRoot := &root{}
+
+	prevServiceFlavorGroup := ""
+	prevServiceFlavor := ""
+	prevEndpoint := ""
+	serviceFlavorGroup := &ServiceFlavorGroup{}
+	serviceEndpointGroup := &ServiceEndpointGroup{}
+	endpoint := &Endpoint{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		//if new superGroup value does not match the previous superGroup value
+		//we create a new superGroup in the xml
+		if prevServiceFlavorGroup != row.SuperGroup {
+			prevServiceFlavorGroup = row.SuperGroup
+			serviceFlavorGroup = &ServiceFlavorGroup{
+				Name: row.SuperGroup,
+				Type: report.GetEndpointGroupType(), // Endpoint groups are parents of SFs
+			}
+			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
+			prevServiceFlavor = ""
+		}
+		//if new service flavor does not match the previous service value
+		//we create a new service flavor entry in the xml/json output
+		if prevServiceFlavor != row.Service {
+			prevServiceFlavor = row.Service
+			serviceEndpointGroup = &ServiceEndpointGroup{
+				Name: row.Service,
+				Type: fmt.Sprintf("service"),
+			}
+			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceEndpointGroup)
+			prevEndpoint = ""
+		}
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			endpoint = &Endpoint{
+				Name: row.Name,
+				Type: fmt.Sprintf("endpoint"),
+			}
+			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
+		}
+		//we append the new availability values
+		endpoint.Availability = append(endpoint.Availability,
+			&Availability{
+				Timestamp:    timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability),
+				Unknown:      fmt.Sprintf("%g", row.Unknown),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+				Downtime:     fmt.Sprintf("%g", row.Down),
+			})
+	}
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		return xml.MarshalIndent(docRoot, " ", "  ")
+	}
+
+}
+
 func createServiceFlavorResultView(results []ServiceFlavorInterface, report reports.MongoInterface, format string) ([]byte, error) {
 
 	docRoot := &root{}
