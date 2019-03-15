@@ -39,6 +39,10 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
+	// Routes for serving endpoint a/r results under services
+	endpointSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
+	endpointSubrouter = respond.PrepAppRoutes(endpointSubrouter, confhandler, appEndpointRoutes)
+
 	serviceSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
 	serviceSubrouter = respond.PrepAppRoutes(serviceSubrouter, confhandler, appServiceRoutes)
 
@@ -46,6 +50,20 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 	groupSubrouter = respond.PrepAppRoutes(groupSubrouter, confhandler, appGroupRoutes)
 
 	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+}
+
+var appEndpointRoutes = []respond.AppRoutes{
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", ListEndpointResults},
+	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
+	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", ListEndpointResults},
+	//routes to quickly get endpoints included in an endpoint group without specifing service
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", ListEndpointResults},
+	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
+	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", ListEndpointResults},
+	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
+	// normal routes to get endpoints included in a service
+
 }
 
 var appServiceRoutes = []respond.AppRoutes{
@@ -67,11 +85,19 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", Options},
+	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
 }
 
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
