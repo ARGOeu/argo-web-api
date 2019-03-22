@@ -3,7 +3,7 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.7.8
+Version: 1.7.9
 Release: 2%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
