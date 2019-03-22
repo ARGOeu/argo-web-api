@@ -509,6 +509,7 @@ Json Response
   "updated": "2015-10-20 02:08:04"
  },
  "status": {
+  "total_status": false,
   "ams": {
    "metric_data": {
     "ingestion": false,

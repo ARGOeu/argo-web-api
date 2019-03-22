@@ -48,6 +48,67 @@ func isAdminRestricted(roles []string) bool {
 	return len(roles) > 0 && roles[0] == "super_admin_restricted"
 }
 
+// Provides a global tenant status (true/false) based on tenant's status details
+func calcTotalStatus(details StatusDetail) bool {
+	// Check first tenant configuration in argo-engine
+	if details.EngineConfig == false {
+		return false
+	}
+	// Check tenant configuration statuses regarding AMS service
+	if details.AMS.MetricData.Ingestion == false {
+		return false
+	}
+	if details.AMS.MetricData.Publishing == false {
+		return false
+	}
+	if details.AMS.MetricData.StatusStreaming == false {
+		return false
+	}
+	if details.AMS.SyncData.Ingestion == false {
+		return false
+	}
+	if details.AMS.SyncData.Publishing == false {
+		return false
+	}
+	if details.AMS.SyncData.StatusStreaming == false {
+		return false
+	}
+	// Check tenant configuration statuses regarding HDFS
+	if details.HDFS.MetricData == false {
+		return false
+	}
+	for _, item := range details.HDFS.SyncData {
+		if item.AggregationProf == false {
+			return false
+		}
+		if item.ConfigProf == false {
+			return false
+		}
+		if item.Donwtimes == false {
+			return false
+		}
+		if item.GroupEndpoints == false {
+			return false
+		}
+		if item.GroupGroups == false {
+			return false
+		}
+		if item.MetricProf == false {
+			return false
+		}
+		if item.OpsProf == false {
+			return false
+		}
+		if item.Recomp == false {
+			return false
+		}
+		if item.Weight == false {
+			return false
+		}
+	}
+	return true
+}
+
 func restrictTenantOutput(results []Tenant) []Tenant {
 	restricted := []Tenant{}
 	for _, tenant := range results {
@@ -237,6 +298,8 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
+
+	results[0].Status.TotalStatus = calcTotalStatus(results[0].Status)
 
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml

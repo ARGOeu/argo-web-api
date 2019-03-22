@@ -651,12 +651,12 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
           "metric_data": {
               "ingestion": true,
               "publishing": true,
-              "status_streaming": false,
+              "status_streaming": true,
               "messages_arrived": 100
           },
           "sync_data": {
               "ingestion": true,
-              "publishing": false,
+              "publishing": true,
               "status_streaming": true,
               "messages_arrived": 200
           }
@@ -667,7 +667,8 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
           	"Critical": {
           			"downtimes": true,
           			"group_endpoints": true,
-          			"blank_recompuation": true,
+          			"blank_recomputation": true,
+								"configuration_profile": true,
           			"group_groups": true,
           			"weights": true,
           			"operations_profile": true,
@@ -706,16 +707,17 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
     "updated": "2015-10-20 02:08:04"
    },
    "status": {
+    "total_status": true,
     "ams": {
      "metric_data": {
       "ingestion": true,
       "publishing": true,
-      "status_streaming": false,
+      "status_streaming": true,
       "messages_arrived": 100
      },
      "sync_data": {
       "ingestion": true,
-      "publishing": false,
+      "publishing": true,
       "status_streaming": true,
       "messages_arrived": 200
      }
@@ -725,8 +727,8 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
      "sync_data": {
       "Critical": {
        "aggregation_profile": true,
-       "blank_recomputation": false,
-       "configuration_profile": false,
+       "blank_recomputation": true,
+       "configuration_profile": true,
        "downtimes": true,
        "group_endpoints": true,
        "group_groups": true,
@@ -769,7 +771,6 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
 
 	suite.Equal(200, code2, "Wrong code in response")
 	suite.Equal(jsonUpdatedTenant, output2, "Response body mismatch")
-
 }
 
 // TestUpdateTenant function implements testing the http PUT update tenant request.
@@ -1268,6 +1269,7 @@ func (suite *TenantTestSuite) TestListTenantStatus() {
     "updated": "2015-10-20 02:08:04"
    },
    "status": {
+    "total_status": false,
     "ams": {
      "metric_data": {
       "ingestion": false,

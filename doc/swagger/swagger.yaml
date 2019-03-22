@@ -1849,6 +1849,294 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+  
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
+    get:
+      summary: "List A/R results of all endpoints (under a given service)"
+      description: "This method retrieves the results of specified service's endpoints that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupServiceEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List A/R results of a given endpoint (under a given service)"
+      description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupServiceEndpoint
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
+    get:
+      summary: "List A/R results of all endpoints (under a given service)"
+      description: "This method retrieves the results of endpoints under a specific service that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/service_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List A/R results of a given endpoint (under a given service)"
+      description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsServiceEndpoint
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints:
+    get:
+      summary: "List A/R results of all endpoints (under a given group)"
+      description: "This method retrieves the results of specified group's endpoints that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List A/R results of a given endpoint (under a given group)"
+      description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsGroupEndpoint
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/groupType"
+        - $ref: "#/parameters/groupName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints:
+    get:
+      summary: "List A/R results of all endpoints (under a given group)"
+      description: "This method retrieves the results of endpoints under a specific group that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+  /results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
+    get:
+      summary: "List A/R results of a given endpoint (under a given group)"
+      description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsEndpoint
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/lgroupType"
+        - $ref: "#/parameters/lgroupName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/endpoint_name"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/EndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
     get:
@@ -2375,7 +2663,39 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
-
+  
+  EndpointResultsResponse:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            serviceflavors:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  endpoints:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        type:
+                          type: string
+                        results:
+                          $ref: "#/definitions/results"
 
 
   StatusEndpointResponse:
@@ -2744,6 +3064,8 @@ definitions:
   Tenant_status:
     type: object
     properties:
+      total_status:
+        type: boolean
       ams:
         type: object
         properties:
