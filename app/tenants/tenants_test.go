@@ -246,11 +246,13 @@ func (suite *TenantTestSuite) SetupTest() {
 		},
 		"users": []bson.M{
 			bson.M{
+				"id":      "acb74194-553a-11e9-8647-d663bd873d93",
 				"name":    "cap",
 				"email":   "cap@email.com",
 				"api_key": "C4PK3Y",
 				"roles":   []string{"admin"}},
 			bson.M{
+				"id":      "acb74432-553a-11e9-8647-d663bd873d93",
 				"name":    "thor",
 				"email":   "thor@email.com",
 				"api_key": "TH0RK3Y",
@@ -284,11 +286,13 @@ func (suite *TenantTestSuite) SetupTest() {
 		},
 		"users": []bson.M{
 			bson.M{
+				"id":      "acb7459a-553a-11e9-8647-d663bd873d93",
 				"name":    "groot",
 				"email":   "groot@email.com",
 				"api_key": "GR00TK3Y",
 				"roles":   []string{"admin"}},
 			bson.M{
+				"id":      "acb74702-553a-11e9-8647-d663bd873d93",
 				"name":    "starlord",
 				"email":   "starlord@email.com",
 				"api_key": "ST4RL0RDK3Y",
@@ -395,6 +399,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
    ],
    "users": [
     {
+     "id": "{{UUID-1}}",
      "name": "xavier",
      "email": "xavier@email.com",
      "api_key": "X4V13R",
@@ -403,6 +408,7 @@ func (suite *TenantTestSuite) TestCreateTenant() {
      ]
     },
     {
+     "id": "{{UUID-2}}",
      "name": "magneto",
      "email": "magneto@email.com",
      "api_key": "M4GN3T0",
@@ -430,24 +436,24 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	}
 
 	// Retrieve id from database
-	var result map[string]interface{}
+	var result = Tenant{}
 	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 
 	c.Find(bson.M{"info.name": "mutants"}).One(&result)
-	id := result["id"].(string)
-	info := result["info"].(map[string]interface{})
-	timestamp := info["created"].(string)
+	//id := result["id"].(string)
+	//info := result["info"].(map[string]interface{})
+	//timestamp := info["created"].(string)
 
 	code := response.Code
 	output := response.Body.String()
 
 	suite.Equal(201, code, "Internal Server Error")
 	// Apply id to output template and check
-	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", id, 2), output, "Response body mismatch")
+	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", result.ID, 2), output, "Response body mismatch")
 
 	// Check that actually the item has been created
 	// Call List one with the specific ID
-	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/"+id, strings.NewReader(""))
+	request2, _ := http.NewRequest("GET", "/api/v2/admin/tenants/"+result.ID, strings.NewReader(""))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -459,8 +465,11 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code2, "Internal Server Error")
 
-	jsonCreated = strings.Replace(jsonCreated, "{{ID}}", id, 1)
-	jsonCreated = strings.Replace(jsonCreated, "{{TIMESTAMP}}", timestamp, 2)
+	jsonCreated = strings.Replace(jsonCreated, "{{ID}}", result.ID, 1)
+	jsonCreated = strings.Replace(jsonCreated, "{{TIMESTAMP}}", result.Info.Created, 2)
+	jsonCreated = strings.Replace(jsonCreated, "{{UUID-1}}", result.Users[0].ID, 1)
+	jsonCreated = strings.Replace(jsonCreated, "{{UUID-2}}", result.Users[1].ID, 1)
+
 	// Compare the expected and actual json response
 	suite.Equal(jsonCreated, output2, "Response body mismatch")
 
@@ -1169,6 +1178,7 @@ func (suite *TenantTestSuite) TestListTenants() {
    ],
    "users": [
     {
+     "id": "acb74194-553a-11e9-8647-d663bd873d93",
      "name": "cap",
      "email": "cap@email.com",
      "api_key": "C4PK3Y",
@@ -1177,6 +1187,7 @@ func (suite *TenantTestSuite) TestListTenants() {
      ]
     },
     {
+     "id": "acb74432-553a-11e9-8647-d663bd873d93",
      "name": "thor",
      "email": "thor@email.com",
      "api_key": "TH0RK3Y",
@@ -1215,6 +1226,7 @@ func (suite *TenantTestSuite) TestListTenants() {
    ],
    "users": [
     {
+     "id": "acb7459a-553a-11e9-8647-d663bd873d93",
      "name": "groot",
      "email": "groot@email.com",
      "api_key": "GR00TK3Y",
@@ -1223,6 +1235,7 @@ func (suite *TenantTestSuite) TestListTenants() {
      ]
     },
     {
+     "id": "acb74702-553a-11e9-8647-d663bd873d93",
      "name": "starlord",
      "email": "starlord@email.com",
      "api_key": "ST4RL0RDK3Y",

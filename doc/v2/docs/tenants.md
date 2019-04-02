@@ -80,6 +80,7 @@ Json Response
    ],
    "users": [
     {
+     "id": "acb74194-553a-11e9-8647-d663bd873d93",
      "name": "cap",
      "email": "cap@email.com",
      "api_key": "C4PK3Y",
@@ -88,6 +89,7 @@ Json Response
      ]
     },
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d94",
      "name": "thor",
      "email": "thor@email.com",
      "api_key": "TH0RK3Y",
@@ -126,6 +128,7 @@ Json Response
    ],
    "users": [
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d95",
      "name": "groot",
      "email": "groot@email.com",
      "api_key": "GR00TK3Y",
@@ -134,6 +137,7 @@ Json Response
       ]
     },
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d97",
      "name": "starlord",
      "email": "starlord@email.com",
      "api_key": "ST4RL0RDK3Y",
@@ -241,6 +245,7 @@ Json Response
    ],
    "users": [
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d93",
      "name": "cap",
      "email": "cap@email.com",
      "api_key": "C4PK3Y",
@@ -249,6 +254,7 @@ Json Response
       ]
     },
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d9f",
      "name": "thor",
      "email": "thor@email.com",
      "api_key": "TH0RK3Y",

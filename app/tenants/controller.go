@@ -170,6 +170,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// generate a unique id for each of the tenant users
+	for idx := range incoming.Users {
+		incoming.Users[idx].ID = mongo.NewUUID()
+	}
+
 	// Check if name exists
 	sameName := []Tenant{}
 	filter := bson.M{"info.name": incoming.Info.Name}
@@ -542,6 +547,26 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
 			return code, h, output, err
 		}
+	}
+
+	// save all the previous users' ids
+	// use the apikey since it is a unique field
+	ids := map[string]string{}
+	for _, u := range results[0].Users {
+		ids[u.APIkey] = u.ID
+	}
+
+	// for the old users, reuse their ids
+	// for the new ones, generate new ids
+	for idx, u := range incoming.Users {
+		// check if the user was already present
+		id, found := ids[u.APIkey]
+		if found {
+			incoming.Users[idx].ID = id
+			continue
+		}
+		// generate new uuid
+		incoming.Users[idx].ID = mongo.NewUUID()
 	}
 
 	// run the update query
