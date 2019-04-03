@@ -218,6 +218,11 @@ func (suite *TenantTestSuite) SetupTest() {
 			"resource": "tenants.get_status",
 			"roles":    []string{"super_admin"},
 		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.user_by_id",
+			"roles":    []string{"super_admin", "super_admin_restricted"},
+		})
 	// seed first tenant
 	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
 	c.Insert(bson.M{
@@ -1310,6 +1315,89 @@ func (suite *TenantTestSuite) TestListTenantStatus() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestGetUserByID() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/users:byID/acb7459a-553a-11e9-8647-d663bd873d93", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "User was successfully retrieved",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "acb7459a-553a-11e9-8647-d663bd873d93",
+   "name": "groot",
+   "email": "groot@email.com",
+   "api_key": "GR00TK3Y",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestGetUserByIDExportFlat() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/users:byID/acb7459a-553a-11e9-8647-d663bd873d93?export=flat", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "id": "acb7459a-553a-11e9-8647-d663bd873d93",
+ "name": "groot",
+ "email": "groot@email.com",
+ "api_key": "GR00TK3Y",
+ "roles": [
+  "admin"
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestGetUserByIDNotFound() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/users:byID/unknown", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(suite.respTenantNotFound, output, "Response body mismatch")
 
 }
 

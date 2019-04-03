@@ -66,6 +66,31 @@ func createListView(results []Tenant, msg string, code int) ([]byte, error) {
 
 }
 
+// createUserView constructs the list response template and exports it as json(used for user display)
+func createUserView(tenantUser TenantUser, msg string, code int, exportFilter string) ([]byte, error) {
+
+	var output []byte
+	var err error
+
+	if exportFilter == "flat" {
+		output, err = json.MarshalIndent(tenantUser, "", " ")
+	} else {
+		docRoot := &respond.ResponseMessage{
+			Status: respond.StatusResponse{
+				Message: msg,
+
+				Code: strconv.Itoa(code),
+			},
+		}
+		docRoot.Data = []TenantUser{tenantUser}
+
+		output, err = json.MarshalIndent(docRoot, "", " ")
+	}
+
+	return output, err
+
+}
+
 // createListView constructs self-reference response and exports it as json
 func createRefView(inserted Tenant, msg string, code int, r *http.Request) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{

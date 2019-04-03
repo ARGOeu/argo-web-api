@@ -35,6 +35,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
+	{"tenants.user_by_id", "GET", "/users:byID/{ID}", GetUserByID},
 	{"tenants.list", "GET", "/tenants", List},
 	{"tenants.get_status", "GET", "/tenants/{ID}/status", ListStatus},
 	{"tenants.get", "GET", "/tenants/{ID}", ListOne},
