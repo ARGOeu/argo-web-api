@@ -268,6 +268,62 @@ Json Response
 }
 ```
 
+## [GET]: List A Specific User
+This method can be used to retrieve specific user based on its id
+
+### Input
+
+```
+GET /admin/users:byID/{ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+Headers: `Status: 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+    "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+         "admin"
+      ]
+  }
+ ]
+}
+```
+
+### NOTE
+Specifying the filter, `export=flat`, it will return a flat user json object
+```json
+  {
+    "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+         "admin"
+      ]
+  }
+```
+
 <a id='3'></a>
 
 ## [POST]: Create a new Tenant

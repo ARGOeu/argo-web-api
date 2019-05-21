@@ -654,6 +654,65 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// Delete function used to implement remove tenant request
+func GetUserByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	exportFilter := r.URL.Query().Get("export")
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	query := bson.M{"users.id": vars["ID"]}
+	results := []Tenant{}
+
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	for _, user := range results[0].Users {
+		if user.ID == vars["ID"] {
+			output, err = createUserView(user, "User was successfully retrieved", 200, exportFilter)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
+	}
+
+	return code, h, output, err
+}
+
 // validateTenantUsers validates the uniqueness of the tenant's users' keys
 func validateTenantUsers(tenant Tenant, session *mgo.Session, cfg config.Config) (string, int) {
 

@@ -325,6 +325,45 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
+  /admin/users:byID/{USER_ID}:
+    get:
+      summary: List a specific user
+      operationId: tenants.user_by_id
+      description: List one specific user designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/export'
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one user
+          schema:
+            $ref: '#/definitions/Users_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
   /reports/{REPORT_ID}:
     get:
       summary: List a specific report
@@ -1849,7 +1888,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given service)"
@@ -1994,7 +2033,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given group)"
@@ -2015,7 +2054,7 @@ paths:
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/Granularity"
-        
+
       responses:
         200:
           description: "Successful retrieval of results"
@@ -2508,6 +2547,12 @@ parameters:
     required: true
     type: string
     default: "2006-01-01T00:04:05Z"
+  export:
+    name: "export"
+    in: "query"
+    type: string
+    description: "the service will respond with just a flat json user object when this parameter is given(export=flat)"
+    default: ""
 
 responses:
   Unauthorized:
@@ -2663,7 +2708,7 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
-  
+
   EndpointResultsResponse:
     type: object
     properties:
@@ -3292,6 +3337,32 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Tenant'
+
+  Users_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      api-key:
+        type: string
+      roles:
+        type: array
+        items:
+          type: string
 
   Tenant:
     type: object

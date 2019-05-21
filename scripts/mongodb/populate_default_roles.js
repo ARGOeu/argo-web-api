@@ -57,6 +57,7 @@ function populate_default_roles()
   {"resource" : "tenants.create", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.delete", "roles" : [ "super_admin" ] },
   {"resource" : "tenants.update", "roles" : [ "super_admin" ] },
+  {"resource" : "tenants.user_by_id", "roles" : [ "super_admin", "super_admin_restricted" ] },
   {"resource" : "tenants.get_status", "roles": ["super_admin", "super_admin_restricted"]},
   {"resource" : "tenants.update_status", "roles": ["super_admin"]},
   {"resource" : "metricResult.get", "roles" : [ "admin", "editor","viewer" ]},
