@@ -101,6 +101,7 @@ type TenantDbConf struct {
 // TenantUser structure holds information about tenant's
 // database configuration
 type TenantUser struct {
+	ID     string   `bson:"id" json:"id"`
 	Name   string   `bson:"name"       json:"name"`
 	Email  string   `bson:"email"      json:"email"`
 	APIkey string   `bson:"api_key"    json:"api_key"`
