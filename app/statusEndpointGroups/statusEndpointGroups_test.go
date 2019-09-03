@@ -233,6 +233,27 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
 		"endpoint_group": "HG-03-AUTH",
 		"status":         "OK",
 	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-02-AUTH",
+		"status":         "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T03:00:00Z",
+		"endpoint_group": "HG-02-AUTH",
+		"status":         "WARNING",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T17:53:00Z",
+		"endpoint_group": "HG-02-AUTH",
+		"status":         "CRITICAL",
+	})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -566,6 +587,77 @@ func (suite *StatusEndpointGroupsTestSuite) TestLatestResults() {
 	suite.Equal(200, response2.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response2.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *StatusEndpointGroupsTestSuite) TestMultipleItems() {
+
+	fullurl1 := "/api/v2/status/Report_A/SITES" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	respJSON1 := `{
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  },
+  {
+   "name": "HG-02-AUTH",
+   "type": "SITES",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T03:00:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T17:53:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ]
+}`
+
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
 
 }
 

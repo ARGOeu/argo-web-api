@@ -102,7 +102,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		doResults := hbaseToDataOutput(hbResults)
 
 		// Render the reults into xml
-		output, errHb = createView(doResults, input) //Render the results into XML format
+		output, errHb = createView(doResults, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -148,9 +148,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		}
 	}
 
-	// close the timeline by adding a final status point at the end of the day or at the current time
-	results = closeTimeline(results, urlValues.Get("end_time"))
-	output, err = createView(results, input) //Render the results into JSON/XML format
+	output, err = createView(results, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }
@@ -168,6 +166,7 @@ func prepareQuery(input InputParams, reportID string) bson.M {
 	return filter
 }
 
+//Options responds to an OPTIONS request
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

@@ -55,29 +55,19 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 	return dResult
 }
 
-// closeTimeline accepts a list of status item and an endDate parameter
-// and tries to close the status timeline by providing a final status item
-// at the end of the date (if the endDate parameter refers to a past date)
-// or at the current time (if the endDate parameter refers to the current date)
-func closeTimeline(results []DataOutput, endDate string) []DataOutput {
-	if len(results) == 0 {
-		return results
-	}
+func createView(results []DataOutput, input InputParams, endDate string) ([]byte, error) {
 
-	extra := results[len(results)-1]
+	// calculate part of the timestamp that closes the timeline of each item
+	var extraTS string
+
 	tsNow := time.Now().UTC()
 	today := tsNow.Format("2006-01-02")
+
 	if strings.Split(endDate, "T")[0] == today {
-		extra.Timestamp = tsNow.Format(zuluForm)
+		extraTS = "T" + strings.Split(tsNow.Format(zuluForm), "T")[1]
 	} else {
-		extra.Timestamp = strings.Split(extra.Timestamp, "T")[0] + "T23:59:59Z"
+		extraTS = "T23:59:59Z"
 	}
-
-	results = append(results, extra)
-	return results
-}
-
-func createView(results []DataOutput, input InputParams) ([]byte, error) {
 
 	output := []byte("reponse output")
 	err := error(nil)
@@ -123,6 +113,15 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		}
 
 		if row.Hostname != prevHostname && row.Hostname != "" {
+			// close the status timeline of item by adding a new status item at 23:59 or at current time
+			if ppHost != nil {
+				eStatus := &statusOUT{}
+				latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
+				eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
+				eStatus.Value = latestStatus.Value
+				ppHost.Statuses = append(ppHost.Statuses, eStatus)
+			}
+
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
 			ppService.Endpoints = append(ppService.Endpoints, host)
@@ -135,6 +134,14 @@ func createView(results []DataOutput, input InputParams) ([]byte, error) {
 		status.Value = row.Status
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
+	}
+	// close the status timeline of the last item by adding a new status item at 23:59 or at current time
+	if ppHost != nil {
+		eStatus := &statusOUT{}
+		latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
+		eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
+		eStatus.Value = latestStatus.Value
+		ppHost.Statuses = append(ppHost.Statuses, eStatus)
 	}
 
 	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
