@@ -34,6 +34,7 @@ type metricResultQuery struct {
 type metricResultOutput struct {
 	Timestamp string `bson:"timestamp"`
 	Hostname  string `bson:"host"`
+	Service   string `bson:"service"`
 	Metric    string `bson:"metric"`
 	Status    string `bson:"status"`
 	Summary   string `bson:"summary"`
@@ -51,6 +52,7 @@ type HostXML struct {
 type MetricXML struct {
 	XMLName xml.Name `xml:"metric" json:"-"`
 	Name    string   `xml:"name,attr"`
+	Service string   `xml:"service,attr,omitempty" json:"Service,omitempty"`
 	Details []*StatusXML
 }
 
