@@ -309,6 +309,138 @@ func (suite *metricResultTestSuite) TestMultipleMetricResults() {
 
 }
 
+func (suite *metricResultTestSuite) TestMultipleMetricResultsNonOK() {
+
+	respJSON := `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
+           "Details": [
+             {
+               "Timestamp": "2015-05-01T01:00:00Z",
+               "Value": "CRITICAL",
+               "Summary": "Cream status is CRITICAL",
+               "Message": "Cream job submission test failed"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2015-05-01T00:00:00Z&filter=non-ok", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *metricResultTestSuite) TestMultipleMetricResultsCritical() {
+
+	respJSON := `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
+           "Details": [
+             {
+               "Timestamp": "2015-05-01T01:00:00Z",
+               "Value": "CRITICAL",
+               "Summary": "Cream status is CRITICAL",
+               "Message": "Cream job submission test failed"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2015-05-01T00:00:00Z&filter=critical", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *metricResultTestSuite) TestMultipleMetricResultsWarning() {
+
+	respJSON := `{
+   "root": []
+ }`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2015-05-01T00:00:00Z&filter=warning", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *metricResultTestSuite) TestMultipleMetricResultsOK() {
+
+	respJSON := `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
+           "Details": [
+             {
+               "Timestamp": "2015-05-01T00:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok"
+             },
+             {
+               "Timestamp": "2015-05-01T05:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2015-05-01T00:00:00Z&filter=ok", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON, response.Body.String(), "Response body mismatch")
+
+}
+
 // TestOptionsMetricResult is used to test the OPTIONS response
 func (suite *metricResultTestSuite) TestOptionsMetricResult() {
 

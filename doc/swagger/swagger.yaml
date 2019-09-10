@@ -1727,6 +1727,7 @@ paths:
           required: true
           type: string
         - $ref: "#/parameters/execDate"
+        - $ref: "#/parameters/latestFilter"
       responses:
         200:
           description: "Successful retrieval of multiple metric results"
