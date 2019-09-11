@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -61,6 +62,8 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 		ExecTime:     urlValues.Get("exec_time"),
 	}
 
+	filter := urlValues.Get("filter")
+
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
@@ -72,7 +75,7 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 	results := []metricResultOutput{}
 
 	// Query the detailed metric results
-	err = mongo.Pipe(session, tenantDbConfig.Db, "status_metrics", prepMultipleQuery(input), &results)
+	err = mongo.Pipe(session, tenantDbConfig.Db, "status_metrics", prepMultipleQuery(input, filter), &results)
 
 	output, err = createMultipleMetricResultsView(results, contentType)
 
@@ -160,7 +163,7 @@ func prepQuery(input metricResultQuery) bson.M {
 
 }
 
-func prepMultipleQuery(input metricResultQuery) []bson.M {
+func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -169,13 +172,30 @@ func prepMultipleQuery(input metricResultQuery) []bson.M {
 	ts, _ := time.Parse(zuluForm, input.ExecTime)
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 
-	filter := bson.M{
+	matchQuery := bson.M{
 		"date_integer": tsYMD,
 		"host":         input.EndpointName,
 	}
 
-	query := []bson.M{
-		{"$match": filter},
+	// convert to lower case for agility in checks
+	filter = strings.ToUpper(filter)
+
+	if filter == "NON-OK" {
+
+		matchQuery["status"] = bson.M{"$ne": "OK"}
+
+	} else if filter == "CRITICAL" ||
+		filter == "WARNING" ||
+		filter == "OK" ||
+		filter == "MISSING" ||
+		filter == "UNKNOWN" {
+
+		matchQuery["status"] = filter
+
+	}
+
+	aggrQuery := []bson.M{
+		{"$match": matchQuery},
 		{"$group": bson.M{
 			"_id": bson.M{
 				"host":      "$host",
@@ -205,7 +225,7 @@ func prepMultipleQuery(input metricResultQuery) []bson.M {
 		},
 	}
 
-	return query
+	return aggrQuery
 
 }
 

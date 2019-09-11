@@ -35,8 +35,12 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 	// Exit here in case result is empty
 	if len(results) == 0 {
-		output, err := xml.MarshalIndent(docRoot, "", "")
-		return output, err
+
+		docRoot.Result = []*HostXML{}
+		if strings.ToLower(format) == "application/json" {
+			return json.MarshalIndent(docRoot, " ", "  ")
+		}
+		return xml.MarshalIndent(docRoot, "", "")
 	}
 
 	hostname := &HostXML{

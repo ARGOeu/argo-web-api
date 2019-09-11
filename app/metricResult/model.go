@@ -66,6 +66,6 @@ type StatusXML struct {
 }
 
 type root struct {
-	XMLName xml.Name      `xml:"root" json:"-"`
-	Result  []interface{} `json:"root"`
+	XMLName xml.Name   `xml:"root" json:"-"`
+	Result  []*HostXML `json:"root"`
 }
