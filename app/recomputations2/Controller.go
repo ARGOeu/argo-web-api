@@ -178,8 +178,8 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	now := time.Now()
 	recomputation := MongoInterface{
 		ID:             mongo.NewUUID(),
-		RequesterName:  tenantDbConfig.User,
-		RequesterEmail: tenantDbConfig.Email,
+		RequesterName:  recompSubmission.RequesterName,
+		RequesterEmail: recompSubmission.RequesterEmail,
 		StartTime:      recompSubmission.StartTime,
 		EndTime:        recompSubmission.EndTime,
 		Reason:         recompSubmission.Reason,
@@ -263,8 +263,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	recomputation := MongoInterface{
 		ID:             vars["ID"],
-		RequesterName:  tenantDbConfig.User,
-		RequesterEmail: tenantDbConfig.Email,
+		RequesterName:  recompSubmission.RequesterName,
+		RequesterEmail: recompSubmission.RequesterEmail,
 		StartTime:      recompSubmission.StartTime,
 		EndTime:        recompSubmission.EndTime,
 		Reason:         recompSubmission.Reason,

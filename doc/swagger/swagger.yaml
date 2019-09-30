@@ -3008,6 +3008,12 @@ definitions:
   recomputation_request:
     type: object
     properties:
+      requester_name:
+        type: string
+        description: "Name of the person submitting the recompuatation request"
+      requester_email:
+        type: string
+        description: "Email of the person submitting the recomputation request"
       reason:
         type: string
         description: "A reason why this request is being submitted"
