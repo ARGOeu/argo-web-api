@@ -6,6 +6,9 @@ Name                                     | Description                          
 GET: List Recomputation Requests         | This method can be used to retrieve a list of current Recomputation requests.          | [ Description](#1)
 POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#2)
 DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#3)
+POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#4)
+DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#5)
+
 
 <a id='1'></a>
 
@@ -46,28 +49,27 @@ Json Response
            "Gluster"
           ],
           "status": "running",
-          "timestamp": "2015-02-01 14:58:40"
+          "timestamp": "2015-02-01T14:58:40",
+          "history": [
+              { 
+                  "status": "pending", 
+                  "timestamp" : "2015-02-01T14:58:40"
+              },
+              { 
+                  "status": "approved", 
+                  "timestamp" : "2015-02-02T08:58:40"
+              },
+              { 
+                  "status": "running", 
+                  "timestamp" : "2015-02-02T09:10:40"
+              },
+
+          ]
      }
  ]
 }
 ```
 
-Xml Response
-```xml
-<root>
-    <Result>
-        <requester_name>Arya Stark</requester_name>
-        <requester_email>astark@shadowguild.com</requester_email>
-        <reason>power cuts</reason>
-        <start_time>2015-01-10T12:00:00Z</start_time>
-        <end_time>2015-01-30T23:00:00Z</end_time>
-        <report>EGI_Critical</report>
-        <exclude>Gluster</exclude>
-        <status>running</status>
-        <timestamp>2015-02-01 14:58:40</timestamp>
-    </Result>
-</root>
-```
 
 <a id='2'></a>
 
@@ -119,3 +121,81 @@ Accept: application/json
 
 ### Response
 `Status 200 OK`
+
+<a id='4'></a>
+
+## [POST]: Change status of recomputation
+
+```
+POST /recomputations/{ID}/status
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### POST body
+```json
+{
+  "status" : "approved"
+}
+```
+
+Eligible recomputation status values:
+
+- pending
+- approved
+- rejected
+- running
+- done
+
+If recomputation status input not in eligible values the api will respond with status code `404`:`conflict`
+
+### Response
+`Status 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Recomputation status updated successfully to: approved",
+  "code": "200"
+ }
+}
+```
+
+
+<a id='5'></a>
+
+## [DELETE]: Reset status of a specific recomputation
+
+```
+DELETE /recomputations/{ID}/status
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+`Status 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Recomputation status reset to: pending",
+  "code": "200"
+ }
+}
+```

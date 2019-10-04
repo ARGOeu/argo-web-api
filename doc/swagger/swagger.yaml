@@ -2342,6 +2342,71 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /recomputations/{ID}/status:
+    post:
+      summary: "change recomputation status"
+      description: "change status of a recomputation with a given ID"
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "status"
+          in: "body"
+          description: "incoming status recomputation"
+          schema:
+            $ref: "#/definitions/recomputation_status"
+      responses:
+        200:
+          description: "Successful change of status in recomputation"
+          schema:
+            $ref: "#/definitions/Status"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+    delete:
+      summary: "reset a recomputation status"
+      description: "reset status for a given recomputation"
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful reset status of recomputation"
+          schema:
+            $ref: '#/definitions/Status'
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        404:
+          $ref: "#/responses/404"
+        500:
+          $ref: "#/responses/ServerError"
 
   /recomputations/{ID}:
     get:
@@ -2984,6 +3049,8 @@ definitions:
         type: string
       requester_email:
         type: string
+      report:
+        type: string
       reason:
         type: string
         description: "The reason why this request has been submitted"
@@ -3000,10 +3067,32 @@ definitions:
           type: string
       status:
         type: string
-        description: "Can be one of pending, running or done"
+        description: "Can be one of approved, rejected, pending, running or done"
       timestamp:
         type: string
-        description: "Timestamp of last status change"
+        description: "Creation timestamp"
+      history:
+        type: array
+        description: "List of status changes"
+        items:
+          $ref: '#/definitions/recomputation_status_item'
+
+  recomputation_status_item:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be one of approved, rejected, pending, running or done"
+      timestamp:
+        type: string
+        description: "zulu format timestamp when the status was changed"
+        
+  recomputation_status:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be one of approved, rejected, pending, running or done"
 
   recomputation_request:
     type: object

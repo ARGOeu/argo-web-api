@@ -36,6 +36,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
+	{"recomputations.changeStatus", "POST", "/recomputations/{ID}/status", ChangeStatus},
+	{"recomputations.resetStatus", "DELETE", "/recomputations/{ID}/status", ResetStatus},
 	{"recomputations.list", "GET", "/recomputations", List},
 	{"recomputations.get", "GET", "/recomputations/{ID}", ListOne},
 	{"recomputations.delete", "DELETE", "/recomputations/{ID}", Delete},
