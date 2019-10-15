@@ -258,6 +258,38 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
+	c.Insert(bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"monitoring_box":     "nagios3.tenant2.eu",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T23:20:00Z",
+		"service":            "someService-A",
+		"host":               "someservice.example.gr",
+		"endpoint_group":     "EL-01-AUTH",
+		"metric":             "someService-FileTransfer",
+		"status":             "OK",
+		"time_integer":       0,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-05-01T22:20:00Z",
+		"summary":            "someService status is ok",
+		"message":            "someService data upload test return value of ok",
+	})
+	c.Insert(bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"monitoring_box":     "nagios3.tenant2.eu",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T00:00:00Z",
+		"service":            "someService-A",
+		"host":               "someservice.example.gr",
+		"endpoint_group":     "EL-01-AUTH",
+		"metric":             "someService-FileTransfer",
+		"status":             "OK",
+		"time_integer":       0,
+		"previous_state":     "OK",
+		"previous_timestamp": "2015-05-01T23:20:00Z",
+		"summary":            "someService status is ok",
+		"message":            "someService data upload test return value of ok",
+	})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -612,6 +644,58 @@ func (suite *LatestTestSuite) TestListLatest() {
  }
 }`
 
+	respJSON7 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON8 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService-A",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T00:00:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
 	respUnauthorized := `{
  "status": {
   "message": "Unauthorized",
@@ -621,22 +705,28 @@ func (suite *LatestTestSuite) TestListLatest() {
 }`
 
 	fullurl1 := "/api/v2/latest/Report_A/SITES/HG-03-AUTH" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=false"
 
 	fullurl2 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=false"
 
 	fullurl3 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&limit=1"
+		"?date=2015-05-01T00:00:00Z&limit=1&strict=false"
 
 	fullurl4 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=non-ok"
+		"?date=2015-05-01T00:00:00Z&filter=non-ok&strict=false"
 
 	fullurl5 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=critical"
+		"?date=2015-05-01T00:00:00Z&filter=critical&strict=false"
 
 	fullurl6 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=ok"
+		"?date=2015-05-01T00:00:00Z&filter=ok&strict=false"
+
+	fullurl7 := "/api/v2/latest/Report_A/SITES/HG-03-AUTH" +
+		"?date=2015-05-01T00:00:00Z"
+
+	fullurl8 := "/api/v2/latest/Report_A/SITES" +
+		"?date=2015-05-01T00:00:00Z"
 
 	// 3. EGI JSON REQUEST
 	// init the response placeholder
@@ -749,6 +839,38 @@ func (suite *LatestTestSuite) TestListLatest() {
 	suite.Equal(401, response.Code, "Response code mismatch")
 	// Compare the expected and actual xml response
 	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
+
+	// 9. EGI JSON REQUEST - strict mode
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl7, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON7, response.Body.String(), "Response body mismatch")
+
+	// 9. EGI JSON REQUEST - strict mode - all sites
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl8, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON8, response.Body.String(), "Response body mismatch")
 
 }
 

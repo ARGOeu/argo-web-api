@@ -1391,12 +1391,14 @@ paths:
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
+        - $ref: "#/parameters/strict"
+
 
       responses:
         200:
           description: "Successful retrieval of latest metric data"
           schema:
-            $ref: "#/definitions/StatusResponse"
+            $ref: "#/definitions/MetricDataList"
         400:
           $ref: "#/responses/404"
         401:
@@ -1426,12 +1428,14 @@ paths:
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
+        - $ref: "#/parameters/strict"
+
 
       responses:
         200:
           description: "Successful retrieval of latest metric data"
           schema:
-            $ref: "#/definitions/StatusResponse"
+            $ref: "#/definitions/MetricDataList"
         400:
           $ref: "#/responses/404"
         401:
@@ -1460,6 +1464,7 @@ paths:
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+
       responses:
         200:
           description: "Successful retrieval of statuses"
@@ -1709,7 +1714,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-          
+
   /metric_result/{endpoint}:
     get:
       summary: Retrieve a list of all metric results for a specific day and a specific host
@@ -2588,6 +2593,12 @@ parameters:
     type: string
     description: "the service will respond with just a flat json user object when this parameter is given(export=flat)"
     default: ""
+  strict:
+    name: "strict"
+    in: query
+    type: string
+    description: "the servce will return only the latest entry grouped by endpoint_group/host/service/metric"
+    default: "true"
 
 responses:
   Unauthorized:
@@ -2870,7 +2881,42 @@ definitions:
         type: string
       code:
         type: string
-        
+
+  MetricDataList:
+    type: object
+    properties:
+      status:
+        type: object
+        properties:
+          message:
+            type: string
+          code:
+            type: string
+      data:
+        type: object
+        properties:
+          metric_data:
+            type: array
+            items:
+              $ref: "#/definitions/MetricData"
+
+
+  MetricData:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      metric:
+        type: string
+      timestamp:
+        type: string
+      status:
+        type: string
+
         
   MultipleMetricResults:
     type: object
