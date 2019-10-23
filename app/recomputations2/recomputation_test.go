@@ -212,6 +212,16 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			"resource": "recomputations.update",
 			"roles":    []string{"editor", "viewer"},
 		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.changeStatus",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "recomputations.resetStatus",
+			"roles":    []string{"editor", "viewer"},
+		})
 	// Seed database with recomputations
 	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
 	c.Insert(
@@ -225,7 +235,8 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			Report:         "EGI_Critical",
 			Exclude:        []string{"SITE1", "SITE3"},
 			Status:         "pending",
-			Timestamp:      "2015-04-01 14:58:40",
+			Timestamp:      "2015-04-01T14:58:40Z",
+			History:        []HistoryItem{{Status: "pending", Timestamp: "2015-04-01T14:58:40Z"}},
 		},
 	)
 	c.Insert(
@@ -239,7 +250,9 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			Report:         "EGI_Critical",
 			Exclude:        []string{"SITE2", "SITE4"},
 			Status:         "running",
-			Timestamp:      "2015-02-01 14:58:40",
+			Timestamp:      "2015-02-01T14:58:40Z",
+			History: []HistoryItem{{Status: "pending", Timestamp: "2015-02-01T14:58:40Z"},
+				{Status: "running", Timestamp: "2015-02-01T16:58:40Z"}},
 		},
 	)
 
@@ -274,13 +287,24 @@ func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
    "SITE4"
   ],
   "status": "running",
-  "timestamp": "2015-02-01 14:58:40"
+  "timestamp": "2015-02-01T14:58:40Z",
+  "history": [
+   {
+    "status": "pending",
+    "timestamp": "2015-02-01T14:58:40Z"
+   },
+   {
+    "status": "running",
+    "timestamp": "2015-02-01T16:58:40Z"
+   }
+  ]
  }
 }`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListOneRecomputationNotFound() {
@@ -366,7 +390,17 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
     "SITE4"
    ],
    "status": "running",
-   "timestamp": "2015-02-01 14:58:40"
+   "timestamp": "2015-02-01T14:58:40Z",
+   "history": [
+    {
+     "status": "pending",
+     "timestamp": "2015-02-01T14:58:40Z"
+    },
+    {
+     "status": "running",
+     "timestamp": "2015-02-01T16:58:40Z"
+    }
+   ]
   },
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
@@ -381,7 +415,13 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
     "SITE3"
    ],
    "status": "pending",
-   "timestamp": "2015-04-01 14:58:40"
+   "timestamp": "2015-04-01T14:58:40Z",
+   "history": [
+    {
+     "status": "pending",
+     "timestamp": "2015-04-01T14:58:40Z"
+    }
+   ]
   }
  ]
 }`
@@ -389,6 +429,7 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
 }
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
@@ -430,60 +471,15 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	// Compare the expected and actual xml response
 	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
 
-	dbDumpJson := `\[
- \{
-  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
-  "requester_name": "Arya Stark",
-  "requester_email": "astark@shadowguild.com",
-  "reason": "power cuts",
-  "start_time": "2015-01-10T12:00:00Z",
-  "end_time": "2015-01-30T23:00:00Z",
-  "report": "EGI_Critical",
-  "exclude": \[
-   "SITE2",
-   "SITE4"
-  \],
-  "status": "running",
-  "timestamp": "2015-02-01 14:58:40"
- \},
- \{
-  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-  "requester_name": "John Snow",
-  "requester_email": "jsnow@wall.com",
-  "reason": "reasons",
-  "start_time": "2015-03-10T12:00:00Z",
-  "end_time": "2015-03-30T23:00:00Z",
-  "report": "EGI_Critical",
-  "exclude": \[
-   "SITE1",
-   "SITE3"
-  \],
-  "status": "pending",
-  "timestamp": "2015-04-01 14:58:40"
- \},
- \{
-  "id": ".+-.+-.+-.+-.+",
-  "requester_name": "Joe Complexz",
-  "requester_email": "C.Joecz@egi.eu",
-  "reason": "Ups failure",
-  "start_time": "2015-01-10T12:00:00Z",
-  "end_time": "2015-01-30T23:00:00Z",
-  "report": "EGI_Critical",
-  "exclude": \[
-   "SITE5",
-   "SITE8"
-  \],
-  "status": "pending",
-  "timestamp": ".*"
- \}
-\]`
-
 	session, _ := mongo.OpenSession(suite.tenantDbConf)
 	defer mongo.CloseSession(session)
 	var results []MongoInterface
 	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
-	json, _ := json.MarshalIndent(results, "", " ")
-	suite.Regexp(dbDumpJson, string(json), "Database contents were not expected")
+
+	suite.Equal(len(results), 3)
+	suite.Equal("2015-01-10T12:00:00Z", results[2].StartTime)
+	suite.Equal("2015-01-30T23:00:00Z", results[2].EndTime)
+	suite.Equal("Joe Complexz", results[2].RequesterName)
 
 }
 
@@ -518,6 +514,225 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputationBadJSON() {
 	suite.Equal(400, code)
 	// Compare the expected and actual json response
 	suite.Equal(recomputationRequestsJSON, output)
+}
+
+func (suite *RecomputationsProfileTestSuite) TestChangeAndResetStatus() {
+
+	// malformed json
+	jsonSubmission := []byte("{\"status\": \"approved\"}")
+	jsonSubmission2 := []byte("{\"status\": \"running\"}")
+	jsonSubmissionX := []byte("{\"status\": \"whatever\"}")
+	jsonSubmission3 := []byte("{\"status\": \"done\"}")
+
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", bytes.NewBuffer(jsonSubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	request2, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", bytes.NewBuffer(jsonSubmission2))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+
+	requestX, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", bytes.NewBuffer(jsonSubmissionX))
+	requestX.Header.Set("x-api-key", suite.clientkey)
+	requestX.Header.Set("Accept", "application/json")
+	responseX := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(responseX, requestX)
+
+	request3, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", bytes.NewBuffer(jsonSubmission3))
+	request3.Header.Set("x-api-key", suite.clientkey)
+	request3.Header.Set("Accept", "application/json")
+	response3 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response3, request3)
+
+	code1 := response.Code
+	output1 := response.Body.String()
+
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	codeX := responseX.Code
+	outputX := responseX.Body.String()
+
+	code3 := response3.Code
+	output3 := response3.Body.String()
+
+	recomputationRequestsJSON1 := `{
+ "status": {
+  "message": "Recomputation status updated successfully to: approved",
+  "code": "200"
+ }
+}`
+
+	recomputationRequestsJSON2 := `{
+ "status": {
+  "message": "Recomputation status updated successfully to: running",
+  "code": "200"
+ }
+}`
+
+	recomputationRequestsJSONX := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "status should be among values: \"pending\",\"approved\",\"rejected\",\"running\",\"done\""
+  }
+ ]
+}`
+
+	recomputationRequestsJSON3 := `{
+ "status": {
+  "message": "Recomputation status updated successfully to: done",
+  "code": "200"
+ }
+}`
+
+	suite.Equal(200, code1)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON1, output1)
+
+	suite.Equal(200, code2)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON2, output2)
+
+	suite.Equal(409, codeX)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSONX, outputX)
+
+	suite.Equal(200, code3)
+	// Compare the expected and actual json response
+	suite.Equal(recomputationRequestsJSON3, output3)
+
+	// check that final recomputation contains correct history
+
+	request4, _ := http.NewRequest("GET", "/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request4.Header.Set("x-api-key", suite.clientkey)
+	request4.Header.Set("Accept", "application/json")
+	response4 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response4, request4)
+
+	code4 := response4.Code
+	output4 := response4.Body.String()
+
+	recomputationRequestsJSON4 := `\{
+ "status": \{
+  "message": "Success",
+  "code": "200"
+ \},
+ "data": \{
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+  "requester_name": "John Snow",
+  "requester_email": "jsnow@wall.com",
+  "reason": "reasons",
+  "start_time": "2015-03-10T12:00:00Z",
+  "end_time": "2015-03-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": \[
+   "SITE1",
+   "SITE3"
+  \],
+  "status": "done",
+  "timestamp": "2015-04-01T14:58:40Z",
+  "history": \[
+   \{
+    "status": "pending",
+    "timestamp": ".*"
+   \},
+   \{
+    "status": "approved",
+    "timestamp": ".*"
+   \},
+   \{
+    "status": "running",
+    "timestamp": ".*"
+   \},
+   \{
+    "status": "done",
+    "timestamp": ".*"
+   \}
+  \]
+ \}
+\}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code4, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(recomputationRequestsJSON4, output4, "Response body mismatch")
+
+	// Now reset status to see if history is cleared
+	request5, _ := http.NewRequest("DELETE", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", nil)
+	request5.Header.Set("x-api-key", suite.clientkey)
+	request5.Header.Set("Accept", "application/json")
+	response5 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response5, request5)
+
+	code5 := response5.Code
+	output5 := response5.Body.String()
+
+	recomputationRequestsJSON5 := `{
+ "status": {
+  "message": "Recomputation status reset successfully to: pending",
+  "code": "200"
+ }
+}`
+
+	suite.Equal(200, code5)
+	suite.Equal(recomputationRequestsJSON5, output5)
+
+	// Get again the recomputation json
+	request6, _ := http.NewRequest("GET", "/api/v2/recomputations/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request6.Header.Set("x-api-key", suite.clientkey)
+	request6.Header.Set("Accept", "application/json")
+	response6 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response6, request6)
+	recomputationRequestsJSON6 := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": {
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+  "requester_name": "John Snow",
+  "requester_email": "jsnow@wall.com",
+  "reason": "reasons",
+  "start_time": "2015-03-10T12:00:00Z",
+  "end_time": "2015-03-30T23:00:00Z",
+  "report": "EGI_Critical",
+  "exclude": [
+   "SITE1",
+   "SITE3"
+  ],
+  "status": "pending",
+  "timestamp": "2015-04-01T14:58:40Z",
+  "history": [
+   {
+    "status": "pending",
+    "timestamp": "2015-04-01T14:58:40Z"
+   }
+  ]
+ }
+}`
+
+	code6 := response6.Code
+	output6 := response6.Body.String()
+
+	suite.Equal(200, code6)
+	suite.Equal(recomputationRequestsJSON6, output6)
+
 }
 
 //TearDownTest to tear down every test

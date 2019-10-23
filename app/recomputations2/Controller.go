@@ -176,6 +176,10 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 	now := time.Now()
+
+	statusItem := HistoryItem{Status: "pending", Timestamp: now.Format("2006-01-02T15:04:05Z")}
+	history := []HistoryItem{statusItem}
+
 	recomputation := MongoInterface{
 		ID:             mongo.NewUUID(),
 		RequesterName:  recompSubmission.RequesterName,
@@ -185,8 +189,9 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		Reason:         recompSubmission.Reason,
 		Report:         recompSubmission.Report,
 		Exclude:        recompSubmission.Exclude,
-		Timestamp:      now.Format("2006-01-02 15:04:05"),
+		Timestamp:      now.Format("2006-01-02T15:04:05Z"),
 		Status:         "pending",
+		History:        history,
 	}
 
 	err = mongo.Insert(session, tenantDbConfig.Db, recomputationsColl, recomputation)
@@ -196,6 +201,192 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	}
 
 	output, err = createSubmitView(recomputation, contentType, r)
+	return code, h, output, err
+}
+
+// ResetStatus resets status changes back to pending when recomputation was created
+func ResetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	query := bson.M{"id": vars["ID"]}
+
+	// Retrieve Results from database
+	results := []MongoInterface{}
+	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	statusItem := HistoryItem{Status: "pending", Timestamp: results[0].Timestamp}
+	history := []HistoryItem{statusItem}
+
+	recomputation := MongoInterface{
+		ID:             vars["ID"],
+		RequesterName:  results[0].RequesterName,
+		RequesterEmail: results[0].RequesterEmail,
+		StartTime:      results[0].StartTime,
+		EndTime:        results[0].EndTime,
+		Reason:         results[0].Reason,
+		Report:         results[0].Report,
+		Exclude:        results[0].Exclude,
+		Status:         "pending",
+		Timestamp:      results[0].Timestamp,
+		History:        history,
+	}
+
+	if err = mongo.Update(session, tenantDbConfig.Db, recomputationsColl, query, recomputation); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createMsgView("Recomputation status reset successfully to: pending", 200)
+
+	return code, h, output, err
+}
+
+func isValidStatus(status string) bool {
+
+	switch status {
+	case
+		"pending",
+		"approved",
+		"rejected",
+		"running",
+		"done":
+		return true
+	}
+
+	return false
+}
+
+// ChangeStatus updates the status of an existing recomputation
+func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	var statusSubmit IncomingStatus
+	// urlValues := r.URL.Query()
+
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+
+	query := bson.M{"id": vars["ID"]}
+
+	// Retrieve Results from database
+	results := []MongoInterface{}
+	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	if err := json.Unmarshal(body, &statusSubmit); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	if isValidStatus(statusSubmit.Status) == false {
+		code = http.StatusConflict
+		output, _ = respond.MarshalContent(
+			respond.ErrConflict("status should be among values: \"pending\",\"approved\",\"rejected\",\"running\",\"done\""),
+			contentType, "", " ")
+		return code, h, output, err
+
+	}
+
+	now := time.Now()
+	history := results[0].History
+	statusItem := HistoryItem{Status: statusSubmit.Status, Timestamp: now.Format("2006-01-02T15:04:05Z")}
+	history = append(history, statusItem)
+
+	recomputation := MongoInterface{
+		ID:             vars["ID"],
+		RequesterName:  results[0].RequesterName,
+		RequesterEmail: results[0].RequesterEmail,
+		StartTime:      results[0].StartTime,
+		EndTime:        results[0].EndTime,
+		Reason:         results[0].Reason,
+		Report:         results[0].Report,
+		Exclude:        results[0].Exclude,
+		Status:         statusSubmit.Status,
+		Timestamp:      results[0].Timestamp,
+		History:        history,
+	}
+
+	if err = mongo.Update(session, tenantDbConfig.Db, recomputationsColl, query, recomputation); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createMsgView("Recomputation status updated successfully to: "+statusSubmit.Status, 200)
 	return code, h, output, err
 }
 
