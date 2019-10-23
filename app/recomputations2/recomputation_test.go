@@ -393,11 +393,13 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	submission := IncomingRecomputation{
-		StartTime: "2015-01-10T12:00:00Z",
-		EndTime:   "2015-01-30T23:00:00Z",
-		Reason:    "Ups failure",
-		Report:    "EGI_Critical",
-		Exclude:   []string{"SITE5", "SITE8"},
+		StartTime:      "2015-01-10T12:00:00Z",
+		EndTime:        "2015-01-30T23:00:00Z",
+		RequesterName:  "Joe Complexz",
+		RequesterEmail: "C.Joecz@egi.eu",
+		Reason:         "Ups failure",
+		Report:         "EGI_Critical",
+		Exclude:        []string{"SITE5", "SITE8"},
 	}
 	jsonsubmission, _ := json.Marshal(submission)
 
@@ -461,8 +463,8 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
  \},
  \{
   "id": ".+-.+-.+-.+-.+",
-  "requester_name": "Joe Complex",
-  "requester_email": "C.Joe@egi.eu",
+  "requester_name": "Joe Complexz",
+  "requester_email": "C.Joecz@egi.eu",
   "reason": "Ups failure",
   "start_time": "2015-01-10T12:00:00Z",
   "end_time": "2015-01-30T23:00:00Z",

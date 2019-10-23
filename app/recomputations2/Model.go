@@ -29,12 +29,14 @@ type IncomingRequest struct {
 }
 
 type IncomingRecomputation struct {
-	ID        string   `xml:"id" json:"id" bson:"id,omitempty"`
-	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
-	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
-	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
-	Report    string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
-	Exclude   []string `xml:"exclude" json:"exclude" bson:"exclude,omitempty"`
+	ID             string   `xml:"id" json:"id" bson:"id,omitempty"`
+	StartTime      string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
+	RequesterName  string   `xml:"requester_name" json:"requester_name" bson:"requester_name,omitempty" `
+	RequesterEmail string   `xml:"requester_email" json:"requester_email" bson:"requester_email,omitempty" `
+	EndTime        string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
+	Reason         string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
+	Report         string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
+	Exclude        []string `xml:"exclude" json:"exclude" bson:"exclude,omitempty"`
 }
 
 type SelfReference struct {

@@ -94,6 +94,8 @@ Type         | Description                                                      
 `start_time` | UTC time in W3C format                                                                                                                                 | YES      |
 `end_time`   | UTC time in W3C format                                                                                                                                 | YES      |
 `reason`     | Explain the need for a recomputation                                                                                                                   | YES      |
+`requester_name`     | The name of the person submitting the recomputation                                                                                            | YES      |
+`requester_email`    | The email of the person submitting the recomputation                                                                                           | YES      |
 `report`     | Report for which the recomputation is requested                                                                                                        | YES      |
 `exclude`    | Groups to be excluded from recomputation. If more than one group are to be excluded use the parameter as many times as needed within the same API call | NO       |
 
