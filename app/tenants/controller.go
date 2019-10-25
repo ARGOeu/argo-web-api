@@ -48,6 +48,10 @@ func isAdminRestricted(roles []string) bool {
 	return len(roles) > 0 && roles[0] == "super_admin_restricted"
 }
 
+func isAdminUI(roles []string) bool {
+	return len(roles) > 0 && roles[0] == "super_admin_ui"
+}
+
 // Provides a global tenant status (true/false) based on tenant's status details
 func calcTotalStatus(details StatusDetail) bool {
 	// Check first tenant configuration in argo-engine
@@ -115,6 +119,27 @@ func restrictTenantOutput(results []Tenant) []Tenant {
 		rItem := Tenant{}
 		rItem.ID = tenant.ID
 		rItem.Info = tenant.Info
+		restricted = append(restricted, rItem)
+	}
+	return restricted
+}
+
+func removeNonUIUsers(results []Tenant) []Tenant {
+	restricted := []Tenant{}
+	for _, tenant := range results {
+		uiUsers := []TenantUser{}
+		rItem := Tenant{}
+		rItem.ID = tenant.ID
+		rItem.Info = tenant.Info
+		for _, user := range tenant.Users {
+			for _, role := range user.Roles {
+				if role == "admin_ui" {
+					uiUsers = append(uiUsers, user)
+				}
+			}
+		}
+		rItem.Users = uiUsers
+
 		restricted = append(restricted, rItem)
 	}
 	return restricted
@@ -233,7 +258,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []Tenant{}
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
+	if isAdminUI(roles) {
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", bson.M{"users.roles": "admin_ui"}, "name", &results)
+	} else {
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
+	}
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -243,6 +272,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Quicky check if super admin is restricted to remove restricted info
 	if isAdminRestricted(roles) {
 		results = restrictTenantOutput(results)
+	}
+
+	// remove non ui users from results
+	if isAdminUI(roles) {
+		results = removeNonUIUsers(results)
 	}
 
 	// After successfully retrieving the db results
@@ -258,7 +292,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-// ShowStatus show tenant status
+// ListStatus show tenant status
 func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -334,6 +368,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	vars := mux.Vars(r)
 
+	roles := context.Get(r, "roles").([]string)
+
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
@@ -352,6 +388,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Create a simple query object to query by id
 	query := bson.M{"id": vars["ID"]}
+
+	if isAdminUI(roles) {
+		query = bson.M{"id": vars["ID"], "users.roles": "admin_ui"}
+	}
+
 	// Query collection tenants for the specific tenant id
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
@@ -365,6 +406,10 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
+	}
+
+	if isAdminUI(roles) {
+		results = removeNonUIUsers(results)
 	}
 
 	// After successfully retrieving the db results

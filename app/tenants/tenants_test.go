@@ -172,8 +172,10 @@ func (suite *TenantTestSuite) SetupTest() {
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
+	seedResAdminUI := bson.M{"api_key": "ADM1NU1", "super_admin_ui": true}
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
 	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAuth)
+	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAdminUI)
 
 	// seed mongo
 	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
@@ -186,12 +188,12 @@ func (suite *TenantTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{
 			"resource": "tenants.list",
-			"roles":    []string{"super_admin", "super_admin_restricted"},
+			"roles":    []string{"super_admin", "super_admin_restricted", "super_admin_ui"},
 		})
 	c.Insert(
 		bson.M{
 			"resource": "tenants.get",
-			"roles":    []string{"super_admin"},
+			"roles":    []string{"super_admin", "super_admin_ui"},
 		})
 	c.Insert(
 		bson.M{
@@ -255,7 +257,7 @@ func (suite *TenantTestSuite) SetupTest() {
 				"name":    "cap",
 				"email":   "cap@email.com",
 				"api_key": "C4PK3Y",
-				"roles":   []string{"admin"}},
+				"roles":   []string{"admin", "admin_ui"}},
 			bson.M{
 				"id":      "acb74432-553a-11e9-8647-d663bd873d93",
 				"name":    "thor",
@@ -1134,6 +1136,139 @@ func (suite *TenantTestSuite) TestListRestrictedTenants() {
 
 }
 
+func (suite *TenantTestSuite) TestListAdminUITenants() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants", strings.NewReader(""))
+	// emulate a restricted super admin user
+	request.Header.Set("x-api-key", "ADM1NU1")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "users": [
+    {
+     "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+      "admin",
+      "admin_ui"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestGetAdminUITenant() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	// emulate a restricted super admin user
+	request.Header.Set("x-api-key", "ADM1NU1")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "info": {
+    "name": "AVENGERS",
+    "email": "email@something",
+    "website": "www.avengers.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "users": [
+    {
+     "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+      "admin",
+      "admin_ui"
+     ]
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *TenantTestSuite) TestGetNonAdminUITenant() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(""))
+	// emulate a restricted super admin user
+	request.Header.Set("x-api-key", "ADM1NU1")
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "item with the specific ID was not found on the server"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
 // TestReadTeanants function implements the testing
 // of the get request which retrieves all tenant information
 func (suite *TenantTestSuite) TestListTenants() {
@@ -1188,7 +1323,8 @@ func (suite *TenantTestSuite) TestListTenants() {
      "email": "cap@email.com",
      "api_key": "C4PK3Y",
      "roles": [
-      "admin"
+      "admin",
+      "admin_ui"
      ]
     },
     {
