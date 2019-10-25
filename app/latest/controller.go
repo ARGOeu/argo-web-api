@@ -64,6 +64,11 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	dateStr := urlValues.Get("date")
 	filter := urlValues.Get("filter")
 
+	strict := true
+	if urlValues.Get("strict") == "false" {
+		strict = false
+	}
+
 	lim, err := strconv.Atoi(limit)
 	if err != nil {
 		lim = 500
@@ -90,10 +95,15 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
 
 	// Query the detailed metric results
-	if lim == -1 {
-		err = metricCol.Find(prepQuery(dateStr, reportID, endpointGroup, filter)).Sort("-time_integer").All(&resultItems)
+	metricResultsQuery := prepQuery(dateStr, reportID, endpointGroup, filter, strict)
+	if strict {
+		err = metricCol.Pipe(metricResultsQuery).All(&resultItems)
 	} else {
-		err = metricCol.Find(prepQuery(dateStr, reportID, endpointGroup, filter)).Sort("-time_integer").Limit(lim).All(&resultItems)
+		if lim == -1 {
+			err = metricCol.Find(metricResultsQuery).Sort("-time_integer").All(&resultItems)
+		} else {
+			err = metricCol.Find(metricResultsQuery).Sort("-time_integer").Limit(lim).All(&resultItems)
+		}
 	}
 
 	result.MetricData = resultItems
@@ -108,9 +118,7 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	return code, h, output, err
 }
 
-func prepQuery(dateStr string, report string, group string, filter string) bson.M {
-
-	filter = strings.ToUpper(filter)
+func prepQuery(dateStr string, report string, group string, filter string, strict bool) interface{} {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -122,6 +130,51 @@ func prepQuery(dateStr string, report string, group string, filter string) bson.
 	}
 
 	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+
+	if strict {
+
+		// start building the aggregation pipeline
+
+		// build the match stage
+		andOperator := []bson.M{
+			{"report": report},
+			{"date_integer": tsYMD},
+		}
+
+		if group != "" {
+			andOperator = append(andOperator, bson.M{"endpoint_group": group})
+		}
+
+		matchOperator := bson.M{"$and": andOperator}
+
+		pipelineQuery := []bson.M{
+			{
+				"$match": matchOperator,
+			},
+			{
+				"$group": bson.M{
+					"_id": bson.M{
+						"endpoint_group": "$endpoint_group",
+						"host":           "$host",
+						"service":        "$service",
+						"metric":         "$metric",
+					},
+					"endpoint_group": bson.M{"$last": "$endpoint_group"},
+					"service":        bson.M{"$last": "$service"},
+					"host":           bson.M{"$last": "$host"},
+					"metric":         bson.M{"$last": "$metric"},
+					"timestamp":      bson.M{"$last": "$timestamp"},
+					"status":         bson.M{"$last": "$status"},
+					"message":        bson.M{"$last": "$message"},
+					"summary":        bson.M{"$last": "$summary"},
+				},
+			},
+		}
+
+		return pipelineQuery
+	}
+
+	filter = strings.ToUpper(filter)
 	query := bson.M{
 		"report":       report,
 		"date_integer": tsYMD,
