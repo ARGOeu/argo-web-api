@@ -56,6 +56,8 @@ Json Response
    "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -104,6 +106,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -166,6 +170,8 @@ Json Response
    "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -176,6 +182,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -200,6 +208,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -258,6 +268,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -320,6 +332,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -422,6 +436,8 @@ Accept: application/json
     "name": "Tenant1",
     "email": "email1@tenant1.com",
     "website": "www.tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
   },
@@ -510,6 +526,8 @@ Accept: application/json
   "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a changed description",
+    "image" : "a changed url to nwe image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -638,6 +656,8 @@ Json Response
  "info": {
   "name": "tenant1",
   "email": "email1@tenant1.com",
+  "description" : "a simple tenant",
+  "image" : "url to image",
   "website": "www.tenant1.com",
   "created": "2015-10-20 02:08:04",
   "updated": "2015-10-20 02:08:04"

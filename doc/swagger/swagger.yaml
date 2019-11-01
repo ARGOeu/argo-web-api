@@ -3606,6 +3606,10 @@ definitions:
             type: string
           email:
             type: string
+          description: 
+            type: string
+          image: 
+            type: string
           website:
             type: string
           created:

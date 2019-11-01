@@ -230,11 +230,13 @@ func (suite *TenantTestSuite) SetupTest() {
 	c.Insert(bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{
-			"name":    "AVENGERS",
-			"email":   "email@something",
-			"website": "www.avengers.com",
-			"created": "2015-10-20 02:08:04",
-			"updated": "2015-10-20 02:08:04"},
+			"name":        "AVENGERS",
+			"email":       "email@something",
+			"description": "a simple tenant",
+			"image":       "url to image",
+			"website":     "www.avengers.com",
+			"created":     "2015-10-20 02:08:04",
+			"updated":     "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
@@ -382,6 +384,8 @@ func (suite *TenantTestSuite) TestCreateTenant() {
    "info": {
     "name": "mutants",
     "email": "yo@yo",
+    "description": "",
+    "image": "",
     "website": "website",
     "created": "{{TIMESTAMP}}",
     "updated": "{{TIMESTAMP}}"
@@ -718,6 +722,8 @@ func (suite *TenantTestSuite) TestUpdateTenantStatus() {
    "info": {
     "name": "GUARDIANS",
     "email": "email@something2",
+    "description": "",
+    "image": "",
     "website": "www.gotg.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1112,6 +1118,8 @@ func (suite *TenantTestSuite) TestListRestrictedTenants() {
    "info": {
     "name": "AVENGERS",
     "email": "email@something",
+    "description": "a simple tenant",
+    "image": "url to image",
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1122,6 +1130,8 @@ func (suite *TenantTestSuite) TestListRestrictedTenants() {
    "info": {
     "name": "GUARDIANS",
     "email": "email@something2",
+    "description": "",
+    "image": "",
     "website": "www.gotg.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1160,6 +1170,8 @@ func (suite *TenantTestSuite) TestListAdminUITenants() {
    "info": {
     "name": "AVENGERS",
     "email": "email@something",
+    "description": "a simple tenant",
+    "image": "url to image",
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1210,6 +1222,8 @@ func (suite *TenantTestSuite) TestGetAdminUITenant() {
    "info": {
     "name": "AVENGERS",
     "email": "email@something",
+    "description": "a simple tenant",
+    "image": "url to image",
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1294,6 +1308,8 @@ func (suite *TenantTestSuite) TestListTenants() {
    "info": {
     "name": "AVENGERS",
     "email": "email@something",
+    "description": "a simple tenant",
+    "image": "url to image",
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1343,6 +1359,8 @@ func (suite *TenantTestSuite) TestListTenants() {
    "info": {
     "name": "GUARDIANS",
     "email": "email@something2",
+    "description": "",
+    "image": "",
     "website": "www.gotg.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -1418,6 +1436,8 @@ func (suite *TenantTestSuite) TestListTenantStatus() {
    "info": {
     "name": "AVENGERS",
     "email": "email@something",
+    "description": "a simple tenant",
+    "image": "url to image",
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
