@@ -3482,6 +3482,19 @@ definitions:
             type: string
           updated:
             type: string
+      thresholds:
+        type: object
+        properties:
+          availability:
+            type: number
+          reliability:
+            type: number
+          uptime:
+            type: number
+          unknown: 
+            type: number
+          downtime: 
+            type: number
       topology_schema:
         type: object
         properties:

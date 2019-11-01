@@ -630,6 +630,13 @@ func (suite *ReportTestSuite) TestCreateReport() {
     "created": ".*",
     "updated": ".*"
    },
+   "thresholds": {
+    "availability": 80,
+    "reliability": 85,
+    "uptime": 80,
+    "unknown": 10,
+    "downtime": 10
+   },
    "topology_schema": {
     "group": {
      "type": "ngi",
@@ -699,7 +706,11 @@ func (suite *ReportTestSuite) TestUpdateReport() {
                 "type": "fight"
             }
         }
-    },
+	},
+	"thresholds": {
+		"availability" : 60.33,
+		"reliability"  : 40.55
+	},
     "profiles": [
         {
 			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
@@ -761,6 +772,13 @@ func (suite *ReportTestSuite) TestUpdateReport() {
     "description": "newdescription",
     "created": "2015-9-10 13:43:00",
     "updated": ".*"
+   },
+   "thresholds": {
+    "availability": 60.33,
+    "reliability": 40.55,
+    "uptime": 0,
+    "unknown": 0,
+    "downtime": 0
    },
    "topology_schema": {
     "group": {
