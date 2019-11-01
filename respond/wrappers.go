@@ -50,6 +50,8 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			// Check if admin is restricted
 			if authentication.IsAdminRestricted(r.Header, cfg) {
 				context.Set(r, "roles", []string{"super_admin_restricted"})
+			} else if authentication.IsSuperAdminUI(r.Header, cfg) {
+				context.Set(r, "roles", []string{"super_admin_ui"})
 			} else {
 				context.Set(r, "roles", []string{"super_admin"})
 			}

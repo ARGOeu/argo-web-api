@@ -37,8 +37,9 @@ import (
 )
 
 type Auth struct {
-	ApiKey     string `bson:"api_key"`
-	Restricted bool   `bson:"restricted"`
+	ApiKey       string `bson:"api_key"`
+	Restricted   bool   `bson:"restricted"`
+	SuperAdminUI bool   `bson:"super_admin_ui"`
 }
 
 type Tenant struct {
@@ -103,9 +104,7 @@ func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
 	return false
 }
 
-// IsAdminRestricted resturns a boolean value if an admin user is in restricted mode or not.
-// Admin user in restricted mode has read only access to certain calls
-func IsAdminRestricted(h http.Header, cfg config.Config) bool {
+func queryAdminRoles(h http.Header, cfg config.Config) Auth {
 	session, err := mongo.OpenSession(cfg.MongoDB)
 	defer mongo.CloseSession(session)
 
@@ -120,13 +119,26 @@ func IsAdminRestricted(h http.Header, cfg config.Config) bool {
 	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
 
 	if err != nil {
-		return false
+		return Auth{Restricted: false, SuperAdminUI: false}
 	}
 
 	if len(results) > 0 {
-		return results[0].Restricted
+		return results[0]
 	}
-	return false
+	return Auth{Restricted: false, SuperAdminUI: false}
+}
+
+// IsAdminRestricted resturns a boolean value if an admin user is in restricted mode or not.
+// Admin user in restricted mode has read only access to certain calls
+func IsAdminRestricted(h http.Header, cfg config.Config) bool {
+	auth := queryAdminRoles(h, cfg)
+	return auth.Restricted
+}
+
+// IsSuperAdminUI resturns a boolean value if the user is a dedicated super admin ui service user
+func IsSuperAdminUI(h http.Header, cfg config.Config) bool {
+	auth := queryAdminRoles(h, cfg)
+	return auth.SuperAdminUI
 }
 
 // AuthenticateTenant is used to find which tenant the user making the requests
