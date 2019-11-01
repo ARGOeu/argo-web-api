@@ -105,7 +105,7 @@ func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) 
 
 		handler = confHandler.Respond(route.SubrouterHandler)
 		handler = WrapValidate(handler, confHandler.Config, route.Name)
-		if route.Verb != "OPTIONS" {
+		if (route.Verb != "OPTIONS") && (route.Name != "version.list") {
 			handler = WrapAuthorize(handler, confHandler.Config, route.Name)
 			handler = WrapAuthenticate(handler, confHandler.Config, route.Name)
 		}

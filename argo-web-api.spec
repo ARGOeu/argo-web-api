@@ -31,7 +31,9 @@ Installs the ARGO API.
 export GOPATH=$PWD
 export PATH=$GOPATH/bin:$PATH
 cd src/github.com/ARGOeu/argo-web-api/
-go install
+export GIT_COMMIT=$(git rev-list -1 HEAD)
+export BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+go install -ldflags "-X github.com/ARGOeu/argo-web-api/version.Commit=$GIT_COMMIT -X github.com/ARGOeu/argo-web-api/version.BuildTime=$BUILD_TIME"
 
 %install
 %{__rm} -rf %{buildroot}
