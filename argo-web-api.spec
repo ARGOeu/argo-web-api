@@ -3,7 +3,7 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.7.9
+Version: 1.8.0
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -68,6 +68,9 @@ go clean
 %attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
+* Mon Nov 4 2019 Konstantinos Kagkelidis <kaggis@gmail.com> 1.8.0-1%{dist}
+- Release of argo-web-api version 1.8.0
+- Refactor building method to include commit hash and build time information into the binary
 * Fri Mar 22 2019 Konstantinos Kagkelidis <kaggis@gmail.com> 1.7.9-1%{dist}
 - ARGO-1455 - Migrate to golang/dep tool
 - ARGO-1438 Implement tenant general status
