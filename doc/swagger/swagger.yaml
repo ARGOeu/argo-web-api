@@ -577,6 +577,7 @@ paths:
           required: true
           type: string
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list with one operations profile
@@ -610,6 +611,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the operations profile"
@@ -697,6 +699,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of Operations profiles
@@ -725,6 +728,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - name: "x-api-key"
           in: "header"
           description: "the x-api-key"
@@ -2552,6 +2556,12 @@ paths:
 
 
 parameters:
+  profDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target date to retrieve a historic version of the profile"
+    default: todays_date in YYYY-MM-DD format
   topoDate:
     name: "date"
     in: "query"
@@ -3424,6 +3434,8 @@ definitions:
     type: object
     properties:
       id:
+        type: string
+      date:
         type: string
       name:
         type: string
