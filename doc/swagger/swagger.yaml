@@ -979,6 +979,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
@@ -1018,6 +1019,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the metric profile"
@@ -1100,6 +1102,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - $ref: "#/parameters/apiKey"
       responses:
         '200':
@@ -1136,6 +1139,7 @@ paths:
           schema:
             $ref: '#/definitions/Metric_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Metric profile Created
