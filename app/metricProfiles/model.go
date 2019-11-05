@@ -26,9 +26,11 @@
 
 package metricProfiles
 
-// MongoInterface to retrieve and insert metricProfiles in mongo
-type MongoInterface struct {
+//MetricProfile struct used to retrieve and insert metricProfiles in mongo
+type MetricProfile struct {
 	ID       string    `bson:"id" json:"id"`
+	DateInt  int       `bson:"date_integer" json:"-"`
+	Date     string    `bson:"date" json:"date"`
 	Name     string    `bson:"name" json:"name"`
 	Services []Service `bson:"services" json:"services"`
 }
