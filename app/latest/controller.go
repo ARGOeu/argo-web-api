@@ -59,14 +59,14 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	vars := mux.Vars(r)
 
 	endpointGroup := vars["group_name"]
-	report_name := vars["report_name"]
+	reportName := vars["report_name"]
 	limit := urlValues.Get("limit")
 	dateStr := urlValues.Get("date")
 	filter := urlValues.Get("filter")
 
-	strict := true
-	if urlValues.Get("strict") == "false" {
-		strict = false
+	strict := false
+	if urlValues.Get("strict") == "true" {
+		strict = true
 	}
 
 	lim, err := strconv.Atoi(limit)
@@ -83,7 +83,7 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	}
 
 	// find the report id first
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, report_name)
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, reportName)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

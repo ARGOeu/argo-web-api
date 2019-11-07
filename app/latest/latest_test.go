@@ -714,19 +714,19 @@ func (suite *LatestTestSuite) TestListLatest() {
 		"?date=2015-05-01T00:00:00Z&limit=1&strict=false"
 
 	fullurl4 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=non-ok&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=non-ok"
 
 	fullurl5 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=critical&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=critical"
 
 	fullurl6 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=ok&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=ok"
 
 	fullurl7 := "/api/v2/latest/Report_A/SITES/HG-03-AUTH" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=true"
 
 	fullurl8 := "/api/v2/latest/Report_A/SITES" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=true"
 
 	// 3. EGI JSON REQUEST
 	// init the response placeholder

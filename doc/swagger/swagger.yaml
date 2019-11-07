@@ -2678,7 +2678,7 @@ parameters:
     in: query
     type: string
     description: "the servce will return only the latest entry grouped by endpoint_group/host/service/metric"
-    default: "true"
+    default: "false"
 
 responses:
   Unauthorized:
