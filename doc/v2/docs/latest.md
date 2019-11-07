@@ -35,7 +35,7 @@ of results returned
 |`date`|  target a specific data | NO | today's date |
 |`filter`| filter by status values (`all`,`non-ok`,`ok`,`critical`,`warning`,`unknown`,`missing`)| NO | all |
 |`limit`| limit number of results returned | NO | 500  |
-|`strict`| strict mode on/off | NO | "true" |
+|`strict`| strict mode on/off | NO | "false" |
 
 
 ___Notes___:
@@ -179,7 +179,7 @@ of results returned
 |`date`|  target a specific data | NO | today's date |
 |`filter`| filter by status values (`all`,`non-ok`,`ok`,`critical`,`warning`,`unknown`,`missing`)| NO | all |
 |`limit`| limit number of results returned | NO | 500  |
-|`strict`| strict mode on/off | NO | "true" |
+|`strict`| strict mode on/off | NO | "false" |
 
 
 ___Notes___:
