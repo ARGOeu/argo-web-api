@@ -80,11 +80,13 @@ type NodeAMS struct {
 
 // TenantInfo struct holds information about tenant name, contact details
 type TenantInfo struct {
-	Name    string `bson:"name" json:"name"`
-	Email   string `bson:"email" json:"email"`
-	Website string `bson:"website" json:"website"`
-	Created string `bson:"created" json:"created"`
-	Updated string `bson:"updated" json:"updated"`
+	Name        string `bson:"name" json:"name"`
+	Email       string `bson:"email" json:"email"`
+	Description string `bson:"description" json:"description"`
+	Image       string `bson:"image" json:"image"`
+	Website     string `bson:"website" json:"website"`
+	Created     string `bson:"created" json:"created"`
+	Updated     string `bson:"updated" json:"updated"`
 }
 
 // TenantDbConf structure holds information about tenant's
@@ -99,8 +101,9 @@ type TenantDbConf struct {
 }
 
 // TenantUser structure holds information about tenant's
-// database configuration
+// user
 type TenantUser struct {
+	ID     string   `bson:"id" json:"id"`
 	Name   string   `bson:"name"       json:"name"`
 	Email  string   `bson:"email"      json:"email"`
 	APIkey string   `bson:"api_key"    json:"api_key"`

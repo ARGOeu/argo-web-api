@@ -29,6 +29,75 @@ import (
 	"strings"
 )
 
+func createMultipleMetricResultsView(results []metricResultOutput, format string) ([]byte, error) {
+
+	docRoot := &root{}
+
+	// Exit here in case result is empty
+	if len(results) == 0 {
+
+		docRoot.Result = []*HostXML{}
+		if strings.ToLower(format) == "application/json" {
+			return json.MarshalIndent(docRoot, " ", "  ")
+		}
+		return xml.MarshalIndent(docRoot, "", "")
+	}
+
+	hostname := &HostXML{
+		Name: results[0].Hostname,
+	}
+	docRoot.Result = append(docRoot.Result, hostname)
+
+	prevMetric := ""
+	prevService := ""
+
+	metric := &MetricXML{
+		Name:    "",
+		Service: "",
+	}
+
+	for i, result := range results {
+		if i == 0 {
+			prevMetric = result.Metric
+			prevService = result.Service
+
+			metric.Name = result.Metric
+			metric.Service = result.Service
+		}
+
+		if result.Metric != prevMetric || result.Service != prevService {
+			hostname.Metrics = append(hostname.Metrics, metric)
+
+			metric = &MetricXML{
+				Name:    result.Metric,
+				Service: result.Service,
+			}
+		}
+
+		// we append the detailed results
+		metric.Details = append(metric.Details,
+			&StatusXML{
+				Timestamp: fmt.Sprintf("%s", result.Timestamp),
+				Value:     fmt.Sprintf("%s", result.Status),
+				Summary:   fmt.Sprintf("%s", result.Summary),
+				Message:   fmt.Sprintf("%s", result.Message),
+			})
+
+		prevMetric = result.Metric
+		prevService = result.Service
+
+	}
+
+	hostname.Metrics = append(hostname.Metrics, metric)
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	}
+
+	return xml.MarshalIndent(docRoot, " ", "  ")
+
+}
+
 func createMetricResultView(result metricResultOutput, format string) ([]byte, error) {
 
 	docRoot := &root{}
@@ -60,8 +129,8 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
+
+	return xml.MarshalIndent(docRoot, " ", "  ")
 
 }

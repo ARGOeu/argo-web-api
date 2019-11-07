@@ -22,7 +22,7 @@ PUT: Update a tenant's engine status |This method can be used to update argo eng
 This method can be used to retrieve a list of current tenants
 
 __Note__: This method restricts tenant database and user information when the x-api-key token holder is a __restricted__ super admin
-
+__Note__: This method shows only tenants that have admin ui users when the x-api-key token holder is a  __super_admin_ui__
 
 ### Input
 
@@ -56,6 +56,8 @@ Json Response
    "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -80,6 +82,7 @@ Json Response
    ],
    "users": [
     {
+     "id": "acb74194-553a-11e9-8647-d663bd873d93",
      "name": "cap",
      "email": "cap@email.com",
      "api_key": "C4PK3Y",
@@ -88,6 +91,7 @@ Json Response
      ]
     },
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d94",
      "name": "thor",
      "email": "thor@email.com",
      "api_key": "TH0RK3Y",
@@ -102,6 +106,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -126,14 +132,16 @@ Json Response
    ],
    "users": [
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d95",
      "name": "groot",
      "email": "groot@email.com",
      "api_key": "GR00TK3Y",
      "roles": [
-         "admin"
+         "admin", "admin_ui"
       ]
     },
     {
+    "id": "acb74194-553a-11e9-8647-d663bd873d97",
      "name": "starlord",
      "email": "starlord@email.com",
      "api_key": "ST4RL0RDK3Y",
@@ -162,6 +170,8 @@ Json Response
    "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -172,6 +182,8 @@ Json Response
    "info": {
     "name": "tenant2",
     "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -181,10 +193,49 @@ Json Response
 }
 ```
 
+#### Response body for super_admin_ui users:
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "tenant2",
+    "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
+    "website": "www.tenant2.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "users": [
+    {
+    "id": "acb74194-553a-11e9-8647-d663bd873d95",
+     "name": "groot",
+     "email": "groot@email.com",
+     "api_key": "GR00TK3Y",
+     "roles": [
+         "admin", "admin_ui"
+      ]
+    }
+   ]
+  }
+ ]
+}
+```
+
 <a id='2'></a>
 
 ## [GET]: List A Specific tenant
 This method can be used to retrieve specific tenant based on its id
+
+__Note__: This method shows only tenants that have admin ui users when the x-api-key token holder is a  __super_admin_ui__
 
 ### Input
 
@@ -213,11 +264,13 @@ Json Response
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "info": {
-    "name": "Tenant1",
-    "email": "email1@tenant1.com",
-    "website": "www.tenant1.com",
+    "name": "tenant2",
+    "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
+    "website": "www.tenant2.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
    },
@@ -241,25 +294,120 @@ Json Response
    ],
    "users": [
     {
-     "name": "cap",
-     "email": "cap@email.com",
-     "api_key": "C4PK3Y",
+    "id": "acb74194-553a-11e9-8647-d663bd873d95",
+     "name": "groot",
+     "email": "groot@email.com",
+     "api_key": "GR00TK3Y",
      "roles": [
-         "admin"
+         "admin", "admin_ui"
       ]
     },
     {
-     "name": "thor",
-     "email": "thor@email.com",
-     "api_key": "TH0RK3Y",
+    "id": "acb74194-553a-11e9-8647-d663bd873d97",
+     "name": "starlord",
+     "email": "starlord@email.com",
+     "api_key": "ST4RL0RDK3Y",
      "roles": [
-         "viewer"
+         "admin"
       ]
     }
    ]
   }
  ]
 }
+```
+
+#### Response body for super_admin_ui users:
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "info": {
+    "name": "tenant2",
+    "email": "tenant2@email.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
+    "website": "www.tenant2.com",
+    "created": "2015-10-20 02:08:04",
+    "updated": "2015-10-20 02:08:04"
+   },
+   "users": [
+    {
+    "id": "acb74194-553a-11e9-8647-d663bd873d95",
+     "name": "groot",
+     "email": "groot@email.com",
+     "api_key": "GR00TK3Y",
+     "roles": [
+         "admin", "admin_ui"
+      ]
+    }
+   ]
+  }
+ ]
+}
+```
+
+## [GET]: List A Specific User
+This method can be used to retrieve specific user based on its id
+
+### Input
+
+```
+GET /admin/users:byID/{ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+Headers: `Status: 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+    "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+         "admin"
+      ]
+  }
+ ]
+}
+```
+
+### NOTE
+Specifying the filter, `export=flat`, it will return a flat user json object
+```json
+  {
+    "id": "acb74194-553a-11e9-8647-d663bd873d93",
+     "name": "cap",
+     "email": "cap@email.com",
+     "api_key": "C4PK3Y",
+     "roles": [
+         "admin"
+      ]
+  }
 ```
 
 <a id='3'></a>
@@ -288,6 +436,8 @@ Accept: application/json
     "name": "Tenant1",
     "email": "email1@tenant1.com",
     "website": "www.tenant1.com",
+    "description" : "a simple tenant",
+    "image" : "url to image",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
   },
@@ -376,6 +526,8 @@ Accept: application/json
   "info": {
     "name": "Tenant1",
     "email": "email1@tenant1.com",
+    "description" : "a changed description",
+    "image" : "a changed url to nwe image",
     "website": "www.tenant1.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
@@ -504,6 +656,8 @@ Json Response
  "info": {
   "name": "tenant1",
   "email": "email1@tenant1.com",
+  "description" : "a simple tenant",
+  "image" : "url to image",
   "website": "www.tenant1.com",
   "created": "2015-10-20 02:08:04",
   "updated": "2015-10-20 02:08:04"

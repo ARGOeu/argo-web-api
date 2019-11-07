@@ -325,6 +325,45 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
+  /admin/users:byID/{USER_ID}:
+    get:
+      summary: List a specific user
+      operationId: tenants.user_by_id
+      description: List one specific user designated by its unique id
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: '#/parameters/export'
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with one user
+          schema:
+            $ref: '#/definitions/Users_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
   /reports/{REPORT_ID}:
     get:
       summary: List a specific report
@@ -1352,12 +1391,14 @@ paths:
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
+        - $ref: "#/parameters/strict"
+
 
       responses:
         200:
           description: "Successful retrieval of latest metric data"
           schema:
-            $ref: "#/definitions/StatusResponse"
+            $ref: "#/definitions/MetricDataList"
         400:
           $ref: "#/responses/404"
         401:
@@ -1387,12 +1428,14 @@ paths:
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
+        - $ref: "#/parameters/strict"
+
 
       responses:
         200:
           description: "Successful retrieval of latest metric data"
           schema:
-            $ref: "#/definitions/StatusResponse"
+            $ref: "#/definitions/MetricDataList"
         400:
           $ref: "#/responses/404"
         401:
@@ -1421,6 +1464,7 @@ paths:
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/lgroupType"
         - $ref: "#/parameters/lgroupName"
+
       responses:
         200:
           description: "Successful retrieval of statuses"
@@ -1671,6 +1715,41 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
+  /metric_result/{endpoint}:
+    get:
+      summary: Retrieve a list of all metric results for a specific day and a specific host
+      description: Retrieve a list with  the full output of all metric results for a specific date
+      tags:
+        - MetricResult
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "endpoint"
+          in: path
+          description: "The fqdn of the monitored host"
+          required: true
+          type: string
+        - $ref: "#/parameters/execDate"
+        - $ref: "#/parameters/latestFilter"
+      responses:
+        200:
+          description: "Successful retrieval of multiple metric results"
+          schema:
+            $ref: "#/definitions/MultipleMetricResults"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
+
   /metric_result/{endpoint}/{metric_name}:
     get:
       summary: Retrieve the full output of a metric result
@@ -1849,7 +1928,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given service)"
@@ -1994,7 +2073,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  
+
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given group)"
@@ -2015,7 +2094,7 @@ paths:
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/Granularity"
-        
+
       responses:
         200:
           description: "Successful retrieval of results"
@@ -2268,6 +2347,71 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /recomputations/{ID}/status:
+    post:
+      summary: "change recomputation status"
+      description: "change status of a recomputation with a given ID"
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+        - name: "status"
+          in: "body"
+          description: "incoming status recomputation"
+          schema:
+            $ref: "#/definitions/recomputation_status"
+      responses:
+        200:
+          description: "Successful change of status in recomputation"
+          schema:
+            $ref: "#/definitions/Status"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+    delete:
+      summary: "reset a recomputation status"
+      description: "reset status for a given recomputation"
+      tags:
+        - Recomputations
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - name: "ID"
+          in: "path"
+          description: "the recomputation id"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        200:
+          description: "Successful reset status of recomputation"
+          schema:
+            $ref: '#/definitions/Status'
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        404:
+          $ref: "#/responses/404"
+        500:
+          $ref: "#/responses/ServerError"
 
   /recomputations/{ID}:
     get:
@@ -2391,6 +2535,21 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+  /version:
+    get:
+      summary: "List API Version information"
+      description: "List api version information such as release version, commit hash etc"
+      tags:
+        - Version
+      produces:
+        - "application/json"
+        - "application/xml"
+      responses:
+        200:
+          description: "Successful retrieval of version info"
+          schema:
+            $ref: "#/definitions/Version"
+
 
 parameters:
   topoDate:
@@ -2508,6 +2667,18 @@ parameters:
     required: true
     type: string
     default: "2006-01-01T00:04:05Z"
+  export:
+    name: "export"
+    in: "query"
+    type: string
+    description: "the service will respond with just a flat json user object when this parameter is given(export=flat)"
+    default: ""
+  strict:
+    name: "strict"
+    in: query
+    type: string
+    description: "the servce will return only the latest entry grouped by endpoint_group/host/service/metric"
+    default: "true"
 
 responses:
   Unauthorized:
@@ -2663,7 +2834,7 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
-  
+
   EndpointResultsResponse:
     type: object
     properties:
@@ -2791,6 +2962,82 @@ definitions:
       code:
         type: string
 
+  MetricDataList:
+    type: object
+    properties:
+      status:
+        type: object
+        properties:
+          message:
+            type: string
+          code:
+            type: string
+      data:
+        type: object
+        properties:
+          metric_data:
+            type: array
+            items:
+              $ref: "#/definitions/MetricData"
+
+
+  MetricData:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      metric:
+        type: string
+      timestamp:
+        type: string
+      status:
+        type: string
+
+        
+  MultipleMetricResults:
+    type: object
+    properties:
+      root:
+        type: array
+        items:
+          type: object
+          properties:
+            Name:
+              type: string
+              description: "The fqdn of the monitored endpoint"
+            Metrics:
+              type: array
+              items:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                    description: "The name of the probe (metric)"
+                  Service:
+                    type: string
+                    description: "Name of the corresponding service type"
+                  Details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Timestamp:
+                          type: string
+                          description: "The execution time of the probe (metric)"
+                        Value:
+                          type: string
+                          description: "The resulting state of the probe (metric)"
+                        Summary:
+                          type: string
+                          description: "A summary of the metric result"
+                        Message:
+                          type: string
+                          description: "The detailed output message of the probe (metric)"
+
   MetricResult:
     type: object
     properties:
@@ -2863,6 +3110,8 @@ definitions:
         type: string
       requester_email:
         type: string
+      report:
+        type: string
       reason:
         type: string
         description: "The reason why this request has been submitted"
@@ -2879,14 +3128,42 @@ definitions:
           type: string
       status:
         type: string
-        description: "Can be one of pending, running or done"
+        description: "Can be one of approved, rejected, pending, running or done"
       timestamp:
         type: string
-        description: "Timestamp of last status change"
+        description: "Creation timestamp"
+      history:
+        type: array
+        description: "List of status changes"
+        items:
+          $ref: '#/definitions/recomputation_status_item'
+
+  recomputation_status_item:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be one of approved, rejected, pending, running or done"
+      timestamp:
+        type: string
+        description: "zulu format timestamp when the status was changed"
+        
+  recomputation_status:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be one of approved, rejected, pending, running or done"
 
   recomputation_request:
     type: object
     properties:
+      requester_name:
+        type: string
+        description: "Name of the person submitting the recompuatation request"
+      requester_email:
+        type: string
+        description: "Email of the person submitting the recomputation request"
       reason:
         type: string
         description: "A reason why this request is being submitted"
@@ -3220,6 +3497,19 @@ definitions:
             type: string
           updated:
             type: string
+      thresholds:
+        type: object
+        properties:
+          availability:
+            type: number
+          reliability:
+            type: number
+          uptime:
+            type: number
+          unknown: 
+            type: number
+          downtime: 
+            type: number
       topology_schema:
         type: object
         properties:
@@ -3293,6 +3583,32 @@ definitions:
         items:
           $ref: '#/definitions/Tenant'
 
+  Users_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      api-key:
+        type: string
+      roles:
+        type: array
+        items:
+          type: string
+
   Tenant:
     type: object
     properties:
@@ -3304,6 +3620,10 @@ definitions:
           name:
             type: string
           email:
+            type: string
+          description: 
+            type: string
+          image: 
             type: string
           website:
             type: string
@@ -3331,6 +3651,8 @@ definitions:
         items:
           type: object
           properties:
+            id:
+              type: string
             name:
               type: string
             email:
@@ -3341,3 +3663,21 @@ definitions:
               type: array
               items:
                 type: string
+                
+  Version:
+    type: object
+    properties:
+      release:
+        type: string
+      commit: 
+        type: string        
+      build_time: 
+        type: string
+      golang:
+        type: string
+      compiler: 
+        type: string
+      os: 
+        type: string
+      architecture:
+          type: string

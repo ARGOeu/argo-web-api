@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -34,6 +35,57 @@ import (
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
+
+// GetMultipleMetricResults returns the detailed message from a probe
+func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+
+	input := metricResultQuery{
+		EndpointName: vars["endpoint_name"],
+		ExecTime:     urlValues.Get("exec_time"),
+	}
+
+	filter := urlValues.Get("filter")
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	results := []metricResultOutput{}
+
+	// Query the detailed metric results
+	err = mongo.Pipe(session, tenantDbConfig.Db, "status_metrics", prepMultipleQuery(input, filter), &results)
+
+	output, err = createMultipleMetricResultsView(results, contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+}
 
 // GetMetricResult returns the detailed message from a probe
 func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -108,6 +160,72 @@ func prepQuery(input metricResultQuery) bson.M {
 	}
 
 	return query
+
+}
+
+func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
+
+	//Time Related
+	const zuluForm = "2006-01-02T15:04:05Z"
+	const ymdForm = "20060102"
+
+	ts, _ := time.Parse(zuluForm, input.ExecTime)
+	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+
+	matchQuery := bson.M{
+		"date_integer": tsYMD,
+		"host":         input.EndpointName,
+	}
+
+	// convert to lower case for agility in checks
+	filter = strings.ToUpper(filter)
+
+	if filter == "NON-OK" {
+
+		matchQuery["status"] = bson.M{"$ne": "OK"}
+
+	} else if filter == "CRITICAL" ||
+		filter == "WARNING" ||
+		filter == "OK" ||
+		filter == "MISSING" ||
+		filter == "UNKNOWN" {
+
+		matchQuery["status"] = filter
+
+	}
+
+	aggrQuery := []bson.M{
+		{"$match": matchQuery},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"host":      "$host",
+				"service":   "$service",
+				"metric":    "$metric",
+				"timestamp": "$timestamp",
+				"message":   "$message",
+				"summary":   "$summary",
+				"status":    "$status"},
+		},
+		},
+		{"$project": bson.M{
+			"_id":       0,
+			"host":      "$_id.host",
+			"metric":    "$_id.metric",
+			"service":   "$_id.service",
+			"timestamp": "$_id.timestamp",
+			"status":    "$_id.status",
+			"summary":   "$_id.summary",
+			"message":   "$_id.message"},
+		},
+		{"$sort": bson.D{
+			{"service", 1},
+			{"metric", 1},
+			{"timestamp", 1},
+		},
+		},
+	}
+
+	return aggrQuery
 
 }
 

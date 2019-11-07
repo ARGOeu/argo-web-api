@@ -76,6 +76,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	err = json.Unmarshal(reqBody, &input)
 
+	// check if user declared any thresholds or else provide defaults
+	if input.Thresholds == nil {
+		t := defaultThresholds()
+		input.Thresholds = &t
+	}
+
 	// Check if json body is malformed
 	if err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
@@ -329,6 +335,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			"info.updated":     time.Now().Format("2006-01-02 15:04:05"),
 			"weight":           input.Weight,
 			"disabled":         input.Disabled,
+			"thresholds":       input.Thresholds,
 			// },
 			"profiles":        input.Profiles,
 			"filter_tags":     input.Tags,

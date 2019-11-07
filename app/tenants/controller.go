@@ -48,6 +48,10 @@ func isAdminRestricted(roles []string) bool {
 	return len(roles) > 0 && roles[0] == "super_admin_restricted"
 }
 
+func isAdminUI(roles []string) bool {
+	return len(roles) > 0 && roles[0] == "super_admin_ui"
+}
+
 // Provides a global tenant status (true/false) based on tenant's status details
 func calcTotalStatus(details StatusDetail) bool {
 	// Check first tenant configuration in argo-engine
@@ -120,6 +124,27 @@ func restrictTenantOutput(results []Tenant) []Tenant {
 	return restricted
 }
 
+func removeNonUIUsers(results []Tenant) []Tenant {
+	restricted := []Tenant{}
+	for _, tenant := range results {
+		uiUsers := []TenantUser{}
+		rItem := Tenant{}
+		rItem.ID = tenant.ID
+		rItem.Info = tenant.Info
+		for _, user := range tenant.Users {
+			for _, role := range user.Roles {
+				if role == "admin_ui" {
+					uiUsers = append(uiUsers, user)
+				}
+			}
+		}
+		rItem.Users = uiUsers
+
+		restricted = append(restricted, rItem)
+	}
+	return restricted
+}
+
 // Create function is used to implement the create tenant request.
 // The request is an http POST request with the tenant description
 // provided as json structure in the request body
@@ -168,6 +193,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
+	}
+
+	// generate a unique id for each of the tenant users
+	for idx := range incoming.Users {
+		incoming.Users[idx].ID = mongo.NewUUID()
 	}
 
 	// Check if name exists
@@ -228,7 +258,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []Tenant{}
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
-	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
+	if isAdminUI(roles) {
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", bson.M{"users.roles": "admin_ui"}, "name", &results)
+	} else {
+		err = mongo.Find(session, cfg.MongoDB.Db, "tenants", nil, "name", &results)
+	}
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -238,6 +272,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// Quicky check if super admin is restricted to remove restricted info
 	if isAdminRestricted(roles) {
 		results = restrictTenantOutput(results)
+	}
+
+	// remove non ui users from results
+	if isAdminUI(roles) {
+		results = removeNonUIUsers(results)
 	}
 
 	// After successfully retrieving the db results
@@ -253,7 +292,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-// ShowStatus show tenant status
+// ListStatus show tenant status
 func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -329,6 +368,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	vars := mux.Vars(r)
 
+	roles := context.Get(r, "roles").([]string)
+
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
@@ -347,6 +388,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	// Create a simple query object to query by id
 	query := bson.M{"id": vars["ID"]}
+
+	if isAdminUI(roles) {
+		query = bson.M{"id": vars["ID"], "users.roles": "admin_ui"}
+	}
+
 	// Query collection tenants for the specific tenant id
 	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
 
@@ -360,6 +406,10 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = http.StatusNotFound
 		return code, h, output, err
+	}
+
+	if isAdminUI(roles) {
+		results = removeNonUIUsers(results)
 	}
 
 	// After successfully retrieving the db results
@@ -544,6 +594,26 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 	}
 
+	// save all the previous users' ids
+	// use the apikey since it is a unique field
+	ids := map[string]string{}
+	for _, u := range results[0].Users {
+		ids[u.APIkey] = u.ID
+	}
+
+	// for the old users, reuse their ids
+	// for the new ones, generate new ids
+	for idx, u := range incoming.Users {
+		// check if the user was already present
+		id, found := ids[u.APIkey]
+		if found {
+			incoming.Users[idx].ID = id
+			continue
+		}
+		// generate new uuid
+		incoming.Users[idx].ID = mongo.NewUUID()
+	}
+
 	// run the update query
 	incoming.Info.Created = results[0].Info.Created
 
@@ -627,6 +697,65 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 
+}
+
+// Delete function used to implement remove tenant request
+func GetUserByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	exportFilter := r.URL.Query().Get("export")
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	query := bson.M{"users.id": vars["ID"]}
+	results := []Tenant{}
+
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	for _, user := range results[0].Users {
+		if user.ID == vars["ID"] {
+			output, err = createUserView(user, "User was successfully retrieved", 200, exportFilter)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
+	}
+
+	return code, h, output, err
 }
 
 // validateTenantUsers validates the uniqueness of the tenant's users' keys

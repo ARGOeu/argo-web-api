@@ -29,12 +29,14 @@ type IncomingRequest struct {
 }
 
 type IncomingRecomputation struct {
-	ID        string   `xml:"id" json:"id" bson:"id,omitempty"`
-	StartTime string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
-	EndTime   string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
-	Reason    string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
-	Report    string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
-	Exclude   []string `xml:"exclude" json:"exclude" bson:"exclude,omitempty"`
+	ID             string   `xml:"id" json:"id" bson:"id,omitempty"`
+	StartTime      string   `xml:"start_time,attr" json:"start_time" bson:"start_time,omitempty"`
+	RequesterName  string   `xml:"requester_name" json:"requester_name" bson:"requester_name,omitempty" `
+	RequesterEmail string   `xml:"requester_email" json:"requester_email" bson:"requester_email,omitempty" `
+	EndTime        string   `xml:"end_time,attr" json:"end_time" bson:"end_time,omitempty"`
+	Reason         string   `xml:"reason,attr" json:"reason" bson:"reason,omitempty"`
+	Report         string   `xml:"report,attr" json:"report" bson:"report,omitempty"`
+	Exclude        []string `xml:"exclude" json:"exclude" bson:"exclude,omitempty"`
 }
 
 type SelfReference struct {
@@ -46,18 +48,28 @@ type Links struct {
 	Self string `xml:"self" json:"self"`
 }
 
+type IncomingStatus struct {
+	Status string `xml:"status" json:"status"`
+}
+
 type MongoInterface struct {
-	XMLName        xml.Name `bson:"-" xml:"recomputation" json:"-"`
-	ID             string   `bson:"id" xml:"id" json:"id"`
-	RequesterName  string   `bson:"requester_name" xml:"requester_name" json:"requester_name"`
-	RequesterEmail string   `bson:"requester_email" xml:"requester_email" json:"requester_email"`
-	Reason         string   `bson:"reason" xml:"reason" json:"reason"`
-	StartTime      string   `bson:"start_time" xml:"start_time" json:"start_time"`
-	EndTime        string   `bson:"end_time" xml:"end_time" json:"end_time"`
-	Report         string   `bson:"report" xml:"report" json:"report"`
-	Exclude        []string `bson:"exclude" xml:"exclude>group" json:"exclude"`
-	Status         string   `bson:"status" xml:"status" json:"status"`
-	Timestamp      string   `bson:"timestamp" xml:"timestamp" json:"timestamp"`
+	XMLName        xml.Name      `bson:"-" xml:"recomputation" json:"-"`
+	ID             string        `bson:"id" xml:"id" json:"id"`
+	RequesterName  string        `bson:"requester_name" xml:"requester_name" json:"requester_name"`
+	RequesterEmail string        `bson:"requester_email" xml:"requester_email" json:"requester_email"`
+	Reason         string        `bson:"reason" xml:"reason" json:"reason"`
+	StartTime      string        `bson:"start_time" xml:"start_time" json:"start_time"`
+	EndTime        string        `bson:"end_time" xml:"end_time" json:"end_time"`
+	Report         string        `bson:"report" xml:"report" json:"report"`
+	Exclude        []string      `bson:"exclude" xml:"exclude>group" json:"exclude"`
+	Status         string        `bson:"status" xml:"status" json:"status"`
+	Timestamp      string        `bson:"timestamp" xml:"timestamp" json:"timestamp"`
+	History        []HistoryItem `bson:"history" xml:"history" json:"history"`
+}
+
+type HistoryItem struct {
+	Status    string `bson:"status" xml:"status" json:"status"`
+	Timestamp string `bson:"timestamp" xml:"timestamp" json:"timestamp"`
 }
 
 type Exclude struct {

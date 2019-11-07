@@ -39,6 +39,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/topology"
+	"github.com/ARGOeu/argo-web-api/version"
 )
 
 var routesV2 = []RouteV2{
@@ -58,4 +59,5 @@ var routesV2 = []RouteV2{
 	{"Thresholds Profiles", "", thresholdsProfiles.HandleSubrouter},
 	{"Tenants", "/admin", tenants.HandleSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
+	{"Version", "", version.HandleSubrouter},
 }

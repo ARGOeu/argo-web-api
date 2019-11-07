@@ -51,7 +51,6 @@ func openCollection(session *mgo.Session, dbName string, collectionName string) 
 }
 
 func Pipe(session *mgo.Session, dbName string, collectionName string, query []bson.M, results interface{}) error {
-
 	c := openCollection(session, dbName, collectionName)
 	err := c.Pipe(query).All(results)
 	return err

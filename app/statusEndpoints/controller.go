@@ -101,7 +101,7 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)
 		// Render the reults into xml
-		output, err = createView(doResults, input) //Render the results into XML format
+		output, err = createView(doResults, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -144,9 +144,8 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 			return code, h, output, err
 		}
 	}
-	// close the timeline by adding a final status point at the end of the day or at the current time
-	results = closeTimeline(results, urlValues.Get("end_time"))
-	output, err = createView(results, input) //Render the results into XML format
+
+	output, err = createView(results, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }

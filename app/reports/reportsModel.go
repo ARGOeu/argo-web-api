@@ -39,22 +39,32 @@ import (
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
 type MongoInterface struct {
-	ID       string    `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	Tenant   string    `json:"tenant" xml:"tenant"`
-	Weight   string    `bson:"weight,omitempty"  json:"weight,omitempty"  xml:"weight,omitempty"`
-	Disabled bool      `bson:"disabled" json:"disabled" xml:"disabled"`
-	Info     Info      `bson:"info" json:"info" xml:"info"`
-	Topology Topology  `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
-	Profiles []Profile `bson:"profiles" json:"profiles" xml:"profiles"`
-	Tags     []Tag     `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
+	ID         string      `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	Tenant     string      `json:"tenant" xml:"tenant"`
+	Weight     string      `bson:"weight,omitempty"  json:"weight,omitempty"  xml:"weight,omitempty"`
+	Disabled   bool        `bson:"disabled" json:"disabled" xml:"disabled"`
+	Info       Info        `bson:"info" json:"info" xml:"info"`
+	Thresholds *Thresholds `bson:"thresholds,omitempty" json:"thresholds,omitempty" xml:"thresholds"`
+	Topology   Topology    `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
+	Profiles   []Profile   `bson:"profiles" json:"profiles" xml:"profiles"`
+	Tags       []Tag       `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
 }
 
-// Info conatins info about a report and is used inside the main MongoInterface struct
+// Info contains info about a report and is used inside the main MongoInterface struct
 type Info struct {
 	Name        string `bson:"name,omitempty" json:"name" xml:"name"`
 	Description string `bson:"description,omitempty" json:"description" xml:"description"`
 	Created     string `bson:"created,omitempty" json:"created,omitempty" xml:"created,omitempty"`
 	Updated     string `bson:"updated,omitempty" json:"updated,omitempty" xml:"updated,omitempty"`
+}
+
+// Thresholds contains information about the percentage thresholds used to color report scores
+type Thresholds struct {
+	Availabilty float32 `bson:"availability" json:"availability" xml:"availability"`
+	Reliability float32 `bson:"reliability" json:"reliability" xml:"reliability"`
+	Uptime      float32 `bson:"uptime" json:"uptime" xml:"uptime"`
+	Unknown     float32 `bson:"unknown" json:"unknown" xml:"unknown"`
+	Downtime    float32 `bson:"downtime" json:"downtime" xml:"downtime"`
 }
 
 // Topology contains the topology used in this report and is used inside the main MongoInterface struct
@@ -109,6 +119,16 @@ func (report MongoInterface) GetEndpointGroupType() string {
 // GetGroupType retrieves the first type nested inside the group hierarchy
 func (report MongoInterface) GetGroupType() string {
 	return report.Topology.Group.Type
+}
+
+func defaultThresholds() Thresholds {
+	return Thresholds{
+		Availabilty: 80.00,
+		Reliability: 85.00,
+		Uptime:      80.00,
+		Unknown:     10.00,
+		Downtime:    10.00,
+	}
 }
 
 // DetermineGroupType looks into a report struct topology group pointers and determines

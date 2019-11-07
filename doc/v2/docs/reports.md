@@ -16,7 +16,7 @@ DELETE: Delete an existing Report  | This method can be used to delete an existi
 
 <a id='1'></a>
 
-## [GET]: List Recomputation Requests
+## [GET]: List Reports
 This method can be used to retrieve a list of existing reports or a single report according to its ID.
 
 ### Input
@@ -65,6 +65,13 @@ Json Response
                         "type": "SITE"
                     }
                 }
+            },
+            "thresholds": {
+                "availability": 80.00,
+                "reliability": 85.00,
+                "uptime": 80.00,
+                "unknown": 10.00,
+                "downtime": 10.00
             },
             "profiles": [
                 {
@@ -136,6 +143,13 @@ Accept: application/json
                 "type": "site"
             }
         }
+    },
+    "thresholds": {
+        "availability": 80.00,
+        "reliability": 85.00,
+        "uptime": 80.00,
+        "unknown": 10.00,
+        "downtime": 10.00
     },
     "profiles": [
         {
@@ -220,6 +234,13 @@ Accept: application/json
                 "type": "fight"
             }
         }
+    },
+    "thresholds": {
+        "availability": 90.00,
+        "reliability": 95.00,
+        "uptime": 90.00,
+        "unknown": 15.00,
+        "downtime": 15.00
     },
     "profiles": [
         {

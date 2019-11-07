@@ -49,7 +49,7 @@ func getPrevDay(dateStr string) (int, error) {
 	return strconv.Atoi(prevTime.Format(ymdForm))
 }
 
-// ListMetricTimelines returns a list of metric timelines
+// ListServiceTimelines returns a list of service timelines
 func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -100,7 +100,7 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)
 		// Render the reults into xml
-		output, err = createView(doResults, input) //Render the results into XML format
+		output, err = createView(doResults, input, urlValues.Get("end_time")) //Render the results into XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -143,9 +143,8 @@ func ListServiceTimelines(r *http.Request, cfg config.Config) (int, http.Header,
 			return code, h, output, err
 		}
 	}
-	// close the timeline by adding a final status point at the end of the day or at the current time
-	results = closeTimeline(results, urlValues.Get("end_time"))
-	output, err = createView(results, input) //Render the results into XML format
+
+	output, err = createView(results, input, urlValues.Get("end_time")) //Render the results into XML format
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
