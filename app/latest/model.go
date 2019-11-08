@@ -31,11 +31,12 @@ import "encoding/xml"
 // 	Services []Serv `bson:"services" json:"services"`
 // }
 
-// Service struct to represent services with their metrics
+// MetricList represents a list of metric data
 type MetricList struct {
 	MetricData []MetricData `bson:"metric_data" json:"metric_data"`
 }
 
+// MetricData is a struct representing a metric data record
 type MetricData struct {
 	Group     string `bson:"endpoint_group" json:"endpoint_group"`
 	Service   string `bson:"service" json:"service"`

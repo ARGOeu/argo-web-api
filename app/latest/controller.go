@@ -191,6 +191,12 @@ func prepQuery(dateStr string, report string, group string, filter string, stric
 					"status":         bson.M{"$first": "$status"},
 					"message":        bson.M{"$first": "$message"},
 					"summary":        bson.M{"$first": "$summary"},
+					"time_integer":   bson.M{"$first": "$time_integer"},
+				},
+			},
+			{
+				"$sort": bson.M{
+					"time_integer": -1,
 				},
 			},
 		}

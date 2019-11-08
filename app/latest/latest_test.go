@@ -268,7 +268,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
 		"status":             "OK",
-		"time_integer":       0,
+		"time_integer":       232000,
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-05-01T22:20:00Z",
 		"summary":            "someService status is ok",
@@ -703,6 +703,16 @@ func (suite *LatestTestSuite) TestListLatest() {
  },
  "data": {
   "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService-A",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T23:20:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
    {
     "endpoint_group": "HG-03-AUTH",
     "service": "CREAM-CE",
