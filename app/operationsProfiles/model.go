@@ -31,8 +31,6 @@ import "sort"
 // OpsProfile to retrieve and insert operationsProfiles in mongo
 type OpsProfile struct {
 	ID          string        `bson:"id" json:"id"`
-	DateInt     int           `bson:"date_integer" json:"-"`
-	Date        string        `bson:"date" json:"date"`
 	Name        string        `bson:"name" json:"name"`
 	AvailStates []string      `bson:"available_states" json:"available_states"`
 	Defaults    DefaultStates `bson:"defaults" json:"defaults"`
