@@ -268,7 +268,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
 		"status":             "OK",
-		"time_integer":       0,
+		"time_integer":       232000,
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-05-01T22:20:00Z",
 		"summary":            "someService status is ok",
@@ -677,7 +677,7 @@ func (suite *LatestTestSuite) TestListLatest() {
     "service": "someService-A",
     "endpoint": "someservice.example.gr",
     "metric": "someService-FileTransfer",
-    "timestamp": "2015-05-01T00:00:00Z",
+    "timestamp": "2015-05-01T23:20:00Z",
     "status": "OK",
     "summary": "someService status is ok",
     "message": "someService data upload test return value of ok"
@@ -691,6 +691,58 @@ func (suite *LatestTestSuite) TestListLatest() {
     "status": "OK",
     "summary": "Cream status is ok",
     "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON9 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService-A",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T23:20:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON10 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "WARNING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
    }
   ]
  }
@@ -714,21 +766,27 @@ func (suite *LatestTestSuite) TestListLatest() {
 		"?date=2015-05-01T00:00:00Z&limit=1&strict=false"
 
 	fullurl4 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=non-ok&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=non-ok"
 
 	fullurl5 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=critical&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=critical"
 
 	fullurl6 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"?date=2015-05-01T00:00:00Z&filter=ok&strict=false"
+		"?date=2015-05-01T00:00:00Z&filter=ok"
 
 	fullurl7 := "/api/v2/latest/Report_A/SITES/HG-03-AUTH" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=true"
 
 	fullurl8 := "/api/v2/latest/Report_A/SITES" +
-		"?date=2015-05-01T00:00:00Z"
+		"?date=2015-05-01T00:00:00Z&strict=true"
 
-	// 3. EGI JSON REQUEST
+	fullurl9 := "/api/v2/latest/Report_A/SITES" +
+		"?date=2015-05-01T00:00:00Z&strict=true&limit=2"
+
+	fullurl10 := "/api/v2/latest/Report_B/EUDAT_SITES/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&filter=non-ok&strict=true"
+
+	// 1. EGI JSON REQUEST
 	// init the response placeholder
 	response := httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -744,7 +802,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
 
-	// 4. EUDAT JSON REQUEST
+	// 2. EUDAT JSON REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -760,7 +818,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
 
-	// 5. EUDAT limit = 1
+	// 3. EUDAT limit = 1
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -776,7 +834,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON3, response.Body.String(), "Response body mismatch")
 
-	// 6. EUDAT non-ok
+	// 4. EUDAT non-ok
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -792,7 +850,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON4, response.Body.String(), "Response body mismatch")
 
-	// 7. EUDAT non-ok
+	// 5. EUDAT non-ok
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -808,7 +866,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON5, response.Body.String(), "Response body mismatch")
 
-	// 8. EUDAT non-ok
+	// 6. EUDAT non-ok
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -824,7 +882,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON6, response.Body.String(), "Response body mismatch")
 
-	// 8. WRONG KEY REQUEST
+	// 6b. WRONG KEY REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -840,7 +898,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
 
-	// 9. EGI JSON REQUEST - strict mode
+	// 7. EGI JSON REQUEST - strict mode
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -856,7 +914,7 @@ func (suite *LatestTestSuite) TestListLatest() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON7, response.Body.String(), "Response body mismatch")
 
-	// 9. EGI JSON REQUEST - strict mode - all sites
+	// 8. EGI JSON REQUEST - strict mode - all sites
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
@@ -871,6 +929,38 @@ func (suite *LatestTestSuite) TestListLatest() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON8, response.Body.String(), "Response body mismatch")
+
+	// 9. EGI JSON REQUEST - strict mode - all sites but with limit (strict honors limits)
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl9, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON9, response.Body.String(), "Response body mismatch")
+
+	// 10. EGI JSON REQUEST - strict mode - honor non-ok values only
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl10, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON10, response.Body.String(), "Response body mismatch")
 
 }
 
