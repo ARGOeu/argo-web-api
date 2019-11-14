@@ -102,6 +102,14 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+<<<<<<< HEAD
+=======
+
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+>>>>>>> ARGO-2002 Add History for operations profiles
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -189,9 +197,15 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 	opsQuery := prepMultiQuery(dt, name)
+<<<<<<< HEAD
 
 	opsCol := session.DB(tenantDbConfig.Db).C(opsColName)
 
+=======
+
+	opsCol := session.DB(tenantDbConfig.Db).C(opsColName)
+
+>>>>>>> ARGO-2002 Add History for operations profiles
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -334,7 +348,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> ARGO-2002 Add History for operations profiles
 =======
 >>>>>>> ARGO-2002 Add History for operations profiles
 	if err != nil {
