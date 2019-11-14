@@ -1177,6 +1177,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the thresholds profile"
@@ -1215,6 +1216,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the thresholds profile"
@@ -1299,6 +1301,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of thresholds profiles
@@ -1334,6 +1337,7 @@ paths:
           schema:
             $ref: '#/definitions/Thresholds_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Thresholds profile Created
