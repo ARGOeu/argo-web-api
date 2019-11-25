@@ -1845,6 +1845,41 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 
 }
 
+func (suite *OperationsProfilesTestSuite) TestListEmpty() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.DropCollection()
+
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	emptyList := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(emptyList, output, "Response body mismatch")
+
+}
+
 func (suite *OperationsProfilesTestSuite) TestDelete() {
 
 	request, _ := http.NewRequest("DELETE", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
