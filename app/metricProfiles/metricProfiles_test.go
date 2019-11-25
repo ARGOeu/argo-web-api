@@ -1014,6 +1014,41 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 }
 
+func (suite *MetricProfilesTestSuite) TestListEmpty() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.DropCollection()
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	emptyList := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(emptyList, output, "Response body mismatch")
+
+}
+
 func (suite *MetricProfilesTestSuite) TestDeleteNotFound() {
 
 	jsonInput := `{}`
