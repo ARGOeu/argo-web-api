@@ -24,6 +24,7 @@ package routing
 
 import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
+	"github.com/ARGOeu/argo-web-api/app/downtimes"
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
@@ -44,6 +45,7 @@ import (
 )
 
 var routesV2 = []RouteV2{
+	{"Downtimes", "/downtimes", downtimes.HandleSubrouter},
 	{"Weights", "/weights", weights.HandleSubrouter},
 	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
