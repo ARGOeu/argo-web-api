@@ -44,7 +44,7 @@ func (suite *WeightsTestSuite) SetupSuite() {
 	 [mongodb]
 	 host = "127.0.0.1"
 	 port = 27017
-	 db = "AR_test_mprof"
+	 db = "AR_test_weights"
 	 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
