@@ -783,6 +783,7 @@ paths:
           required: true
           type: string
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list with one aggregation profile
@@ -827,6 +828,7 @@ paths:
           schema:
             $ref: '#/definitions/Aggregation_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '201':
           description: Aggregation profile Updated
@@ -907,6 +909,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of aggregation profiles
@@ -942,6 +945,7 @@ paths:
           schema:
             $ref: '#/definitions/Aggregation_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Aggregation profile Created

@@ -34,9 +34,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// MongoInterface to retrieve and insert metricProfiles in mongo
-type MongoInterface struct {
+// AggProfile struct to retrieve and insert aggregation profiles in mongo
+type AggProfile struct {
 	ID            string        `bson:"id" json:"id"`
+	DateInt       int           `bson:"date_integer" json:"-"`
+	Date          string        `bson:"date" json:"date"`
 	Name          string        `bson:"name" json:"name"`
 	Namespace     string        `bson:"namespace" json:"namespace"`
 	EndpointGroup string        `bson:"endpoint_group" json:"endpoint_group"`

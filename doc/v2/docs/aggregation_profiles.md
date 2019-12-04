@@ -30,6 +30,7 @@ GET /aggregation_profiles
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
 `name`          | aggregation profile name to be used as query                                                    | NO      
+`date`          | Date to retrieve a historic version of the aggregations profiles. If no date parameter is provided the most current profile will be returned | NO
 
 #### Request headers
 
@@ -53,6 +54,7 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-10",
    "name": "cloud",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -95,6 +97,7 @@ Json Response
   },
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-11",
    "name": "critical",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -157,6 +160,13 @@ x-api-key: shared_key_value
 Accept: application/json
 ```
 
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to list a historic version of the aggregation profile. If no date parameter is provided current date will be supplied automatically | NO
+
 ### Response
 Headers: `Status: 200 OK`
 
@@ -172,6 +182,7 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-10",
    "name": "cloud",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -234,11 +245,19 @@ x-api-key: shared_key_value
 Accept: application/json
 ```
 
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to create a  new historic version of the aggregation profile. If no date parameter is provided current date will be supplied automatically | NO
+
 #### POST BODY
 
 ```json
 {
    "name": "new_aggregation_profile",
+   "date": "2019-12-12",
    "namespace": "test",
    "endpoint_group": "sites",
    "metric_operation": "AND",
@@ -318,6 +337,13 @@ PUT /aggregation_profiles/{ID}
 x-api-key: shared_key_value
 Accept: application/json
 ```
+
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to update a  new historic version of the aggregation profile. If no date parameter is provided current date will be supplied automatically | NO
 
 #### PUT BODY
 
