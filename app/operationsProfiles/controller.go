@@ -333,7 +333,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+<<<<<<< HEAD
 
+=======
+>>>>>>> ARGO-2002 Add History for operations profiles
 	if err != nil {
 		code = http.StatusBadRequest
 		return code, h, output, err
