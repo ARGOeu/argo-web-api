@@ -1372,6 +1372,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the weights resource"
@@ -1410,6 +1411,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the weights resource"
@@ -1494,6 +1496,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of weights resources
@@ -1529,6 +1532,7 @@ paths:
           schema:
             $ref: '#/definitions/Weights'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Weights resource Created
@@ -3648,6 +3652,8 @@ definitions:
     type: object
     properties:
       id:
+        type: string
+      date:
         type: string
       name:
         type: string

@@ -184,12 +184,15 @@ func (suite *WeightsTestSuite) SetupTest() {
 
 	// Seed database with weights
 	c = session.DB(suite.tenantDbConf.Db).C("weights")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
-			"id":          "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-			"name":        "Critical",
-			"weight_type": "hepsepc",
-			"group_type":  "SITES",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":         "Critical",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"weight_type":  "hepsepc",
+			"group_type":   "SITES",
 			"groups": []bson.M{
 				bson.M{"name": "SITE-A", "value": 1673},
 				bson.M{"name": "SITE-B", "value": 1234},
@@ -199,13 +202,57 @@ func (suite *WeightsTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"id":          "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"name":        "NonCritical",
-			"weight_type": "hepsepc",
-			"group_type":  "SERVICEGROUPS",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":         "Critical",
+			"date_integer": 20191023,
+			"date":         "2019-10-23",
+			"weight_type":  "hepsepc",
+			"group_type":   "SITES",
+			"groups": []bson.M{
+				bson.M{"name": "SITE-A", "value": 3373},
+				bson.M{"name": "SITE-B", "value": 1434},
+				bson.M{"name": "SITE-C", "value": 623},
+				bson.M{"name": "SITE-D", "value": 7},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":         "NonCritical",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"weight_type":  "hepsepc",
+			"group_type":   "SERVICEGROUPS",
 			"groups": []bson.M{
 				bson.M{"name": "SVGROUP-A", "value": 334},
 				bson.M{"name": "SVGROUP-B", "value": 588},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":         "NonCritical",
+			"date_integer": 20191022,
+			"date":         "2019-10-22",
+			"weight_type":  "hepsepc",
+			"group_type":   "SERVICEGROUPS",
+			"groups": []bson.M{
+				bson.M{"name": "SVGROUP-A", "value": 400},
+				bson.M{"name": "SVGROUP-B", "value": 188},
+			},
+		})
+
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":         "NonCritical",
+			"date_integer": 20191104,
+			"date":         "2019-11-04",
+			"weight_type":  "hepsepc",
+			"group_type":   "SERVICEGROUPS",
+			"groups": []bson.M{
+				bson.M{"name": "SVGROUP-A", "value": 634},
+				bson.M{"name": "SVGROUP-B", "value": 888},
 			},
 		})
 
@@ -253,6 +300,50 @@ func (suite *WeightsTestSuite) TestCreateBadJson() {
 
 }
 
+func (suite *WeightsTestSuite) TestListQueryName() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/weights?name=NonCritical", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-11-04",
+   "name": "NonCritical",
+   "weight_type": "hepsepc",
+   "group_type": "SERVICEGROUPS",
+   "groups": [
+    {
+     "name": "SVGROUP-A",
+     "value": 634
+    },
+    {
+     "name": "SVGROUP-B",
+     "value": 888
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
 func (suite *WeightsTestSuite) TestCreate() {
 
 	jsonInput := `{
@@ -290,6 +381,7 @@ func (suite *WeightsTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{id}}",
+   "date": "2019-11-20",
    "name": "weight_set3",
    "weight_type": "hepspec2",
    "group_type": "SITES",
@@ -323,7 +415,7 @@ func (suite *WeightsTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/weights", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/weights?date=2019-11-20", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -392,6 +484,93 @@ func (suite *WeightsTestSuite) TestList() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-23",
+   "name": "Critical",
+   "weight_type": "hepsepc",
+   "group_type": "SITES",
+   "groups": [
+    {
+     "name": "SITE-A",
+     "value": 3373
+    },
+    {
+     "name": "SITE-B",
+     "value": 1434
+    },
+    {
+     "name": "SITE-C",
+     "value": 623
+    },
+    {
+     "name": "SITE-D",
+     "value": 7
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-11-04",
+   "name": "NonCritical",
+   "weight_type": "hepsepc",
+   "group_type": "SERVICEGROUPS",
+   "groups": [
+    {
+     "name": "SVGROUP-A",
+     "value": 634
+    },
+    {
+     "name": "SVGROUP-B",
+     "value": 888
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(weightsJSON, output, "Response body mismatch")
+
+}
+
+func (suite *WeightsTestSuite) TestListPast() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/weights?date=2019-10-20", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	weightsJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-04",
+   "name": "NonCritical",
+   "weight_type": "hepsepc",
+   "group_type": "SERVICEGROUPS",
+   "groups": [
+    {
+     "name": "SVGROUP-A",
+     "value": 334
+    },
+    {
+     "name": "SVGROUP-B",
+     "value": 588
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
    "name": "Critical",
    "weight_type": "hepsepc",
    "group_type": "SITES",
@@ -411,22 +590,6 @@ func (suite *WeightsTestSuite) TestList() {
     {
      "name": "SITE-D",
      "value": 2
-    }
-   ]
-  },
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "NonCritical",
-   "weight_type": "hepsepc",
-   "group_type": "SERVICEGROUPS",
-   "groups": [
-    {
-     "name": "SVGROUP-A",
-     "value": 334
-    },
-    {
-     "name": "SVGROUP-B",
-     "value": 588
     }
    ]
   }
@@ -548,25 +711,26 @@ func (suite *WeightsTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-23",
    "name": "Critical",
    "weight_type": "hepsepc",
    "group_type": "SITES",
    "groups": [
     {
      "name": "SITE-A",
-     "value": 1673
+     "value": 3373
     },
     {
      "name": "SITE-B",
-     "value": 1234
+     "value": 1434
     },
     {
      "name": "SITE-C",
-     "value": 523
+     "value": 623
     },
     {
      "name": "SITE-D",
-     "value": 2
+     "value": 7
     }
    ]
   }
@@ -734,7 +898,7 @@ func (suite *WeightsTestSuite) TestUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Weights resource successfully updated",
+  "message": "Weights resource successfully updated (new history snapshot)",
   "code": "200"
  }
 }`
@@ -747,6 +911,7 @@ func (suite *WeightsTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-12-05",
    "name": "NonCritical",
    "weight_type": "hepsepc5",
    "group_type": "SITES",
