@@ -911,7 +911,7 @@ func (suite *WeightsTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-12-05",
+   "date": "2019-12-04",
    "name": "NonCritical",
    "weight_type": "hepsepc5",
    "group_type": "SITES",
@@ -929,7 +929,7 @@ func (suite *WeightsTestSuite) TestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/weights/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/weights/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-04", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()

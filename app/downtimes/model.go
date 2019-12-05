@@ -3,6 +3,8 @@ package downtimes
 //Downtimes holds a list of downtimes for endpoints for a specific day
 type Downtimes struct {
 	ID        string     `bson:"id" json:"id"`
+	DateInt   int        `bson:"date_integer" json:"-"`
+	Date      string     `bson:"date" json:"date"`
 	Name      string     `bson:"name" json:"name"`
 	Endpoints []Downtime `bson:"endpoints" json:"endpoints"`
 }

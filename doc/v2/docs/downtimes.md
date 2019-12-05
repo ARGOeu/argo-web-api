@@ -29,9 +29,10 @@ GET /downtimes
 
 #### Optional Query Parameters
 
-| Type   | Description                                | Required |
-| ------ | ------------------------------------------ | -------- |
-| `name` | downtime resource name to be used as query | NO       |
+| Type   | Description                                                                                                                               | Required |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `name` | downtime resource name to be used as query                                                                                                | NO       |
+| `date` | Date to retrieve a historic version of the downtime resource. If no date parameter is provided the most current resource will be returned | NO       |
 
 ### Request headers
 
@@ -57,6 +58,7 @@ Json Response
     "data": [
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "date": "2019-11-04",
             "name": "Critical",
             "endpoints": [
                 {
@@ -81,6 +83,7 @@ Json Response
         },
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+            "date": "2019-11-02",
             "name": "NonCritical",
             "endpoints": [
                 {
@@ -113,6 +116,12 @@ This method can be used to retrieve specific downtime resource based on its id
 GET /downtimes/{ID}
 ```
 
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                                        | Required |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to retrieve a historic version of the downtime resource. If no date parameter is provided the most current downtime resource will be returned | NO       |
+
 #### Request headers
 
 ```
@@ -137,6 +146,7 @@ Json Response
     "data": [
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "date": "2019-11-04",
             "name": "Critical",
             "endpoints": [
                 {
@@ -174,6 +184,12 @@ This method can be used to insert a new downtime resource
 ```
 POST /downtimes
 ```
+
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                                  | Required |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to create a new historic version of the downtime resource. If no date parameter is provided current date will be supplied automatically | NO       |
 
 #### Request headers
 
@@ -234,6 +250,12 @@ This method can be used to update information on an existing downtime resource
 ```
 PUT /downtimes/{ID}
 ```
+
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                                  | Required |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to update a historic version of the downtime resource. If no date parameter is provided the current date will be supplied automatically | NO       |
 
 #### Request headers
 
