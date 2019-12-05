@@ -29,9 +29,10 @@ GET /weights
 
 #### Optional Query Parameters
 
-| Type   | Description                              | Required |
-| ------ | ---------------------------------------- | -------- |
-| `name` | weight resource name to be used as query | NO       |
+| Type   | Description                                                                                                                             | Required |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `name` | weight resource name to be used as query                                                                                                | NO       |
+| `date` | Date to retrieve a historic version of the weights resource. If no date parameter is provided the most current profile will be returned | NO       |
 
 ### Request headers
 
@@ -57,6 +58,7 @@ Json Response
     "data": [
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "date": "2019-11-04",
             "name": "Critical",
             "weight_type": "hepsepc",
             "group_type": "SITES",
@@ -81,6 +83,7 @@ Json Response
         },
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+            "date": "2019-11-02",
             "name": "NonCritical",
             "weight_type": "hepsepc",
             "group_type": "SERVICEGROUPS",
@@ -111,6 +114,12 @@ This method can be used to retrieve specific weight resource based on its id
 GET /weights/{ID}
 ```
 
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                             | Required |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to retrieve a historic version of the weights resource. If no date parameter is provided the most current profile will be returned | NO       |
+
 #### Request headers
 
 ```
@@ -135,6 +144,7 @@ Json Response
     "data": [
         {
             "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+            "date": "2019-11-02",
             "name": "NonCritical",
             "weight_type": "hepsepc",
             "group_type": "SERVICEGROUPS",
@@ -164,6 +174,12 @@ This method can be used to insert a new weight resource
 ```
 POST /weights
 ```
+
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                                 | Required |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to create a historic version of the weights resource. If no date parameter is provided the current date will be supplied automatically | NO       |
 
 #### Request headers
 
@@ -224,6 +240,12 @@ This method can be used to update information on an existing weight resource
 ```
 PUT /weights/{ID}
 ```
+
+#### Optional Query Parameters
+
+| Type   | Description                                                                                                                                                                  | Required |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `date` | Date to update a historic version of the weights resource. If no date parameter is provided If no date parameter is provided the current date will be supplied automatically | NO       |
 
 #### Request headers
 
