@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -17,6 +18,44 @@ import (
 
 //Create a new weights resource
 const weightCol = "weights"
+
+func prepMultiQuery(dt int, name string) interface{} {
+
+	matchQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+
+	if name != "" {
+		matchQuery["name"] = name
+	}
+
+	return []bson.M{
+		{
+			"$match": matchQuery,
+		},
+		{
+			"$group": bson.M{
+				"_id": bson.M{
+					"id": "$id",
+				},
+				// weights collection is meant to have an index with date_integer:-1 and id:1 so
+				// when searching by date the documents are sorted with the recent timestamp first
+				// so we need the recent item available to our query timepoint which is specific date
+				"id":          bson.M{"$first": "$id"},
+				"date":        bson.M{"$first": "$date"},
+				"name":        bson.M{"$first": "$name"},
+				"weight_type": bson.M{"$first": "$weight_type"},
+				"group_type":  bson.M{"$first": "$group_type"},
+				"groups":      bson.M{"$first": "$groups"},
+			},
+		},
+	}
+
+}
+
+func prepQuery(dt int, id string) interface{} {
+
+	return bson.M{"date_integer": bson.M{"$lte": dt}, "id": id}
+
+}
 
 // Create request handler creates a new weight resource
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -34,7 +73,13 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 	if err != nil {
@@ -43,6 +88,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	incoming := Weights{}
+	incoming.DateInt = dt
+	incoming.Date = dateStr
 
 	// Try ingest request body
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -113,6 +160,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -126,26 +175,29 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	filter := bson.M{"id": vars["ID"]}
-
 	// Retrieve Results from database
-	results := []Weights{}
-	err = mongo.Find(session, tenantDbConfig.Db, weightCol, filter, "name", &results)
-
+	result := Weights{}
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+	wQuery := prepQuery(dt, vars["ID"])
+
+	wCol := session.DB(tenantDbConfig.Db).C(weightCol)
+	err = wCol.Find(wQuery).One(&result)
+	if err != nil {
+		if err.Error() == "not found" {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
 	// Create view of the results
-	output, err = createListView(results, "Success", code) //Render the results into JSON
+	output, err = createListView([]Weights{result}, "Success", code) //Render the results into JSON
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -174,6 +226,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	name := urlValues.Get("name")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -187,20 +241,30 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	results := []Weights{}
-
-	// Retrieve Results from database
-
-	var filter interface{}
-	if len(urlValues["name"]) > 0 {
-		filter = bson.M{"name": urlValues["name"][0]}
-	} else {
-		filter = nil
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
 	}
-	err = mongo.Find(session, tenantDbConfig.Db, weightCol, filter, "name", &results)
+	wQuery := prepMultiQuery(dt, name)
+
+	wCol := session.DB(tenantDbConfig.Db).C(weightCol)
 
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	results := []Weights{}
+	err = wCol.Pipe(wQuery).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -227,6 +291,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	//STANDARD DECLARATIONS END
 
 	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
@@ -236,6 +303,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := Weights{}
+	incoming.DateInt = dt
+	incoming.Date = dateStr
 
 	// ingest body data
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -258,8 +327,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	// create filter to retrieve specific weight resource with id
-	filter := bson.M{"id": vars["ID"]}
+	// create filter to retrieve specific profile with id
+	filter := bson.M{"id": vars["ID"], "date_integer": bson.M{"$lte": dt}}
 
 	incoming.ID = vars["ID"]
 
@@ -278,11 +347,11 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// check if the weights resource name is unique
+	// check if the operations profile's name is unique
 	if incoming.Name != results[0].Name {
 
 		results = []Weights{}
-		query := bson.M{"name": incoming.Name}
+		query := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
 
 		err = mongo.Find(session, tenantDbConfig.Db, weightCol, query, "", &results)
 
@@ -292,7 +361,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 
 		// If results are returned for the specific name
-		// then we already have an existing weight resource
+		// then we already have an existing operations profile and we must
 		// abort creation notifying the user
 		if len(results) > 0 {
 			output, _ = respond.MarshalContent(respond.ErrConflict("Weights resource with the same name already exists"), contentType, "", " ")
@@ -301,15 +370,21 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 	}
 	// run the update query
-	err = mongo.Update(session, tenantDbConfig.Db, weightCol, filter, incoming)
-
+	wCol := session.DB(tenantDbConfig.Db).C(weightCol)
+	info, err := wCol.Upsert(bson.M{"id": vars["ID"], "date_integer": dt}, incoming)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	updMsg := "Weights resource successfully updated"
+
+	if info.Updated <= 0 {
+		updMsg = "Weights resource successfully updated (new history snapshot)"
+	}
+
 	// Create view for response message
-	output, err = createMsgView("Weights resource successfully updated", 200) //Render the results into JSON
+	output, err = createMsgView(updMsg, 200) //Render the results into JSON
 	code = 200
 	return code, h, output, err
 }
@@ -335,12 +410,6 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	if err != nil {
-		output, _ = respond.MarshalContent(respond.UnauthorizedMessage, contentType, "", " ")
-		code = http.StatusUnauthorized //If wrong api key is passed we return UNAUTHORIZED http status
-		return code, h, output, err
-	}
 
 	// Open session to tenant database
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -369,6 +438,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// Remove also removes multiple documents with specific id, thus erasing all history
 	mongo.Remove(session, tenantDbConfig.Db, weightCol, filter)
 
 	if err != nil {

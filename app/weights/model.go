@@ -3,6 +3,8 @@ package weights
 //Weights holds a list of group weights of specific type and of specific group type
 type Weights struct {
 	ID         string   `bson:"id" json:"id"`
+	DateInt    int      `bson:"date_integer" json:"-"`
+	Date       string   `bson:"date" json:"date"`
 	Name       string   `bson:"name" json:"name"`
 	WeightType string   `bson:"weight_type" json:"weight_type"`
 	GroupType  string   `bson:"group_type" json:"group_type"`
