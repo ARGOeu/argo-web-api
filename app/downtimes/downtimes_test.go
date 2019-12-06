@@ -1,7 +1,6 @@
 package downtimes
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -185,10 +184,13 @@ func (suite *DowntimesTestSuite) SetupTest() {
 
 	// Seed database with downtimes
 	c = session.DB(suite.tenantDbConf.Db).C("downtimes")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-			"name": "Critical",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191011,
+			"date":         "2019-10-11",
+			"name":         "Critical",
 			"endpoints": []bson.M{
 				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-11T04:00:33Z", "end_time": "2019-10-11T15:33:00Z"},
 				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-11T12:00:33Z", "end_time": "2019-10-11T12:33:00Z"},
@@ -197,11 +199,55 @@ func (suite *DowntimesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"name": "NonCritical",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191012,
+			"date":         "2019-10-12",
+			"name":         "Critical",
+			"endpoints": []bson.M{
+				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-12T04:00:33Z", "end_time": "2019-10-12T15:33:00Z"},
+				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-12T12:00:33Z", "end_time": "2019-10-12T12:33:00Z"},
+				bson.M{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-12T20:00:33Z", "end_time": "2019-10-12T22:15:00Z"},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191013,
+			"date":         "2019-10-13",
+			"name":         "Critical",
+			"endpoints": []bson.M{
+				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-13T04:00:33Z", "end_time": "2019-10-13T15:33:00Z"},
+				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-13T12:00:33Z", "end_time": "2019-10-13T12:33:00Z"},
+				bson.M{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-13T20:00:33Z", "end_time": "2019-10-13T22:15:00Z"},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"date_integer": 20191011,
+			"date":         "2019-10-11",
+			"name":         "NonCritical",
 			"endpoints": []bson.M{
 				bson.M{"hostname": "host-01", "service": "service-01", "start_time": "2019-10-11T02:00:33Z", "end_time": "2019-10-11T23:33:00Z"},
 				bson.M{"hostname": "host-02", "service": "service-02", "start_time": "2019-10-11T16:00:33Z", "end_time": "2019-10-11T16:45:00Z"},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"date_integer": 20191012,
+			"date":         "2019-10-12",
+			"name":         "NonCritical",
+			"endpoints":    []bson.M{},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"date_integer": 20191013,
+			"date":         "2019-10-13",
+			"name":         "NonCritical",
+			"endpoints": []bson.M{
+				bson.M{"hostname": "host-01", "service": "service-01", "start_time": "2019-10-13T02:00:33Z", "end_time": "2019-10-13T23:33:00Z"},
 			},
 		})
 
@@ -280,6 +326,7 @@ func (suite *DowntimesTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{id}}",
+   "date": "2019-11-29",
    "name": "downtimes_set",
    "endpoints": [
     {
@@ -299,7 +346,7 @@ func (suite *DowntimesTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/downtimes", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/downtimes?date=2019-11-29", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -364,7 +411,92 @@ func (suite *DowntimesTestSuite) TestList() {
  },
  "data": [
   {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-13",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-13T02:00:33Z",
+     "end_time": "2019-10-13T23:33:00Z"
+    }
+   ]
+  },
+  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-13",
+   "name": "Critical",
+   "endpoints": [
+    {
+     "hostname": "host-A",
+     "service": "service-A",
+     "start_time": "2019-10-13T04:00:33Z",
+     "end_time": "2019-10-13T15:33:00Z"
+    },
+    {
+     "hostname": "host-B",
+     "service": "service-B",
+     "start_time": "2019-10-13T12:00:33Z",
+     "end_time": "2019-10-13T12:33:00Z"
+    },
+    {
+     "hostname": "host-C",
+     "service": "service-C",
+     "start_time": "2019-10-13T20:00:33Z",
+     "end_time": "2019-10-13T22:15:00Z"
+    }
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(downtimesJSON, output, "Response body mismatch")
+
+}
+
+func (suite *DowntimesTestSuite) TestListPast() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/downtimes?date=2019-10-11", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	downtimesJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-11",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-11T02:00:33Z",
+     "end_time": "2019-10-11T23:33:00Z"
+    },
+    {
+     "hostname": "host-02",
+     "service": "service-02",
+     "start_time": "2019-10-11T16:00:33Z",
+     "end_time": "2019-10-11T16:45:00Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-11",
    "name": "Critical",
    "endpoints": [
     {
@@ -384,24 +516,6 @@ func (suite *DowntimesTestSuite) TestList() {
      "service": "service-C",
      "start_time": "2019-10-11T20:00:33Z",
      "end_time": "2019-10-11T22:15:00Z"
-    }
-   ]
-  },
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-11T02:00:33Z",
-     "end_time": "2019-10-11T23:33:00Z"
-    },
-    {
-     "hostname": "host-02",
-     "service": "service-02",
-     "start_time": "2019-10-11T16:00:33Z",
-     "end_time": "2019-10-11T16:45:00Z"
     }
    ]
   }
@@ -523,25 +637,26 @@ func (suite *DowntimesTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-13",
    "name": "Critical",
    "endpoints": [
     {
      "hostname": "host-A",
      "service": "service-A",
-     "start_time": "2019-10-11T04:00:33Z",
-     "end_time": "2019-10-11T15:33:00Z"
+     "start_time": "2019-10-13T04:00:33Z",
+     "end_time": "2019-10-13T15:33:00Z"
     },
     {
      "hostname": "host-B",
      "service": "service-B",
-     "start_time": "2019-10-11T12:00:33Z",
-     "end_time": "2019-10-11T12:33:00Z"
+     "start_time": "2019-10-13T12:00:33Z",
+     "end_time": "2019-10-13T12:33:00Z"
     },
     {
      "hostname": "host-C",
      "service": "service-C",
-     "start_time": "2019-10-11T20:00:33Z",
-     "end_time": "2019-10-11T22:15:00Z"
+     "start_time": "2019-10-13T20:00:33Z",
+     "end_time": "2019-10-13T22:15:00Z"
     }
    ]
   }
@@ -689,14 +804,14 @@ func (suite *DowntimesTestSuite) TestUpdate() {
 	jsonInput := `{
    "name": "downtimes_set",
    "endpoints": [
-	{"hostname":"updated-host-foo","service":"service-new-foo","start_time":"2019-10-11T23:10:00Z","end_time":"2019-10-11T23:25:00Z"},
-	{"hostname":"updated-host-bar","service":"service-new-bar","start_time":"2019-10-11T23:40:00Z","end_time":"2019-10-11T23:55:00Z"}
+	{"hostname":"updated-host-foo","service":"service-new-foo","start_time":"2019-11-30T23:10:00Z","end_time":"2019-11-30T23:25:00Z"},
+	{"hostname":"updated-host-bar","service":"service-new-bar","start_time":"2019-11-30T23:40:00Z","end_time":"2019-11-30T23:55:00Z"}
   ]
  }`
 
 	jsonOutput := `{
  "status": {
-  "message": "Downtimes resource successfully updated",
+  "message": "Downtimes resource successfully updated (new history snapshot)",
   "code": "200"
  }
 }`
@@ -709,26 +824,27 @@ func (suite *DowntimesTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-11-30",
    "name": "downtimes_set",
    "endpoints": [
     {
      "hostname": "updated-host-foo",
      "service": "service-new-foo",
-     "start_time": "2019-10-11T23:10:00Z",
-     "end_time": "2019-10-11T23:25:00Z"
+     "start_time": "2019-11-30T23:10:00Z",
+     "end_time": "2019-11-30T23:25:00Z"
     },
     {
      "hostname": "updated-host-bar",
      "service": "service-new-bar",
-     "start_time": "2019-10-11T23:40:00Z",
-     "end_time": "2019-10-11T23:55:00Z"
+     "start_time": "2019-11-30T23:40:00Z",
+     "end_time": "2019-11-30T23:55:00Z"
     }
    ]
   }
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-11-30", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -761,7 +877,6 @@ func (suite *DowntimesTestSuite) TestUpdate() {
 	// Compare the expected and actual json response
 
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
-	fmt.Println(output2)
 
 }
 
