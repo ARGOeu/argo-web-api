@@ -152,7 +152,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	return code, h, output, err
 }
 
-// List the existing metric profiles for the tenant making the request
+// List the existing aggregation profiles for the tenant making the request
 // Also there is an optional url param "name" to filter results by
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -314,7 +314,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Update function to update contents of an existing metric profile
+//Update function to update contents of an existing aggregation profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK

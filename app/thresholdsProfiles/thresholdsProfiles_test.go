@@ -23,6 +23,7 @@
 package thresholdsProfiles
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -208,10 +209,26 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 
 	// Seed database with thresholds profiles
 	c = session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-			"name": "thr01",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20190105,
+			"date":         "2019-01-05",
+			"name":         "thr01",
+			"rules": []bson.M{bson.M{
+				"host":       "hostFoo",
+				"metric":     "metricA",
+				"thresholds": "entries=1;3;2:0;10",
+			}},
+		})
+
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"name":         "thr01",
 			"rules": []bson.M{bson.M{
 				"host":       "hostFoo",
 				"metric":     "metricA",
@@ -221,8 +238,10 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
-			"name": "thr02",
+			"id":           "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"name":         "thr02",
 			"rules": []bson.M{bson.M{
 				"host":       "hostFoo",
 				"metric":     "metricA",
@@ -232,8 +251,10 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
-			"name": "thr03",
+			"id":           "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"name":         "thr03",
 			"rules": []bson.M{bson.M{
 				"host":       "hostFoo",
 				"metric":     "metricA",
@@ -262,6 +283,7 @@ func (suite *ThresholdsProfilesTestSuite) TestList() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
    "name": "thr01",
    "rules": [
     {
@@ -272,8 +294,9 @@ func (suite *ThresholdsProfilesTestSuite) TestList() {
    ]
   },
   {
-   "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
-   "name": "thr02",
+   "id": "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
+   "name": "thr03",
    "rules": [
     {
      "host": "hostFoo",
@@ -283,8 +306,9 @@ func (suite *ThresholdsProfilesTestSuite) TestList() {
    ]
   },
   {
-   "id": "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
-   "name": "thr03",
+   "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
+   "name": "thr02",
    "rules": [
     {
      "host": "hostFoo",
@@ -322,6 +346,7 @@ func (suite *ThresholdsProfilesTestSuite) TestListQueryName() {
  "data": [
   {
    "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
    "name": "thr02",
    "rules": [
     {
@@ -395,6 +420,7 @@ func (suite *ThresholdsProfilesTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-10-04",
    "name": "thr02",
    "rules": [
     {
@@ -484,6 +510,7 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{ID}}",
+   "date": "2019-11-11",
    "name": "thr04",
    "rules": [
     {
@@ -495,7 +522,7 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/thresholds_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/thresholds_profiles?date=2019-11-11", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -505,7 +532,7 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
 	code := response.Code
 	output := response.Body.String()
 
-	// Check that we must have a 200 ok code
+	// Check that we must have a 201 ok code
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
@@ -521,6 +548,7 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
 	c := session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
 
 	c.Find(bson.M{"name": "thr04"}).One(&result)
+	fmt.Println(result)
 	id := result["id"].(string)
 
 	// Apply id to output template and check
@@ -644,6 +672,7 @@ func (suite *ThresholdsProfilesTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-12",
    "name": "thr04",
    "rules": [
     {
@@ -655,7 +684,7 @@ func (suite *ThresholdsProfilesTestSuite) TestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/thresholds_profiles/6ac7d555-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/thresholds_profiles/6ac7d555-1f8e-4a02-a502-720e8f11e50b?date=2019-11-12", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()

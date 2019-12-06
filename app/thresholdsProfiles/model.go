@@ -27,11 +27,16 @@ import (
 	"regexp"
 )
 
+// datastore collection name that contains threshold profile records
+const aggColName = "threshold_profiles"
+
 // ThresholdsProfile struct that holds information about threshold rules
 type ThresholdsProfile struct {
-	ID    string `bson:"id" json:"id"`
-	Name  string `bson:"name" json:"name"`
-	Rules []Rule `bson:"rules" json:"rules"`
+	ID      string `bson:"id" json:"id"`
+	DateInt int    `bson:"date_integer" json:"-"`
+	Date    string `bson:"date" json:"date"`
+	Name    string `bson:"name" json:"name"`
+	Rules   []Rule `bson:"rules" json:"rules"`
 }
 
 // Rule represents a thresholds rule that must be applied to a metric and then optionally to a host and/or endpoint group
