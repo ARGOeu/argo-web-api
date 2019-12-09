@@ -45,8 +45,7 @@ import (
 )
 
 var routesV2 = []RouteV2{
-	{"Downtimes", "/downtimes", downtimes.HandleSubrouter},
-	{"Weights", "/weights", weights.HandleSubrouter},
+
 	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
@@ -64,4 +63,6 @@ var routesV2 = []RouteV2{
 	{"Tenants", "/admin", tenants.HandleSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 	{"Version", "", version.HandleSubrouter},
+	{"Downtimes", "", downtimes.HandleSubrouter},
+	{"Weights", "", weights.HandleSubrouter},
 }
