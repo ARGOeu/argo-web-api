@@ -1745,7 +1745,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /topology/{report_name}:
+  /topology/stats/{report_name}:
     get:
       summary: "List topology statistics for a specific report"
       description: "This request lists number of groups and services contained in the report"
