@@ -29,10 +29,17 @@ package tenants
 // Tenant structure holds information about tenant information
 // including db conf and users. Used in
 type Tenant struct {
-	ID     string         `bson:"id" json:"id"`
-	Info   TenantInfo     `bson:"info" json:"info"`
-	DbConf []TenantDbConf `bson:"db_conf" json:"db_conf,omitempty"`
-	Users  []TenantUser   `bson:"users" json:"users,omitempty"`
+	ID       string         `bson:"id" json:"id"`
+	Info     TenantInfo     `bson:"info" json:"info"`
+	DbConf   []TenantDbConf `bson:"db_conf" json:"db_conf,omitempty"`
+	Topology TopologyInfo   `bson:"topology" json:"topology"`
+	Users    []TenantUser   `bson:"users" json:"users,omitempty"`
+}
+
+// TopologyInfo contains topology feed information
+type TopologyInfo struct {
+	TopoType string `bson:"type" json:"type"`
+	Feed     string `bson:"feed" json:"feed"`
 }
 
 type TenantStatus struct {
