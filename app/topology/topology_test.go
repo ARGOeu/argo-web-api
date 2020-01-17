@@ -474,7 +474,7 @@ func (suite *topologyTestSuite) TestListServiceFlavorAvailabilityMonthly() {
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/Critical?date=2015-06-22", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/stats/Critical?date=2015-06-22", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
