@@ -352,6 +352,92 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	return code, h, output, err
 }
 
+// CreateGroups creates a list of groups as a group topology for a specific date
+func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	incoming := []Group{}
+	// Try ingest request body
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+
+	// check if topology already exists for current day
+
+	existing := Group{}
+	groupCol := session.DB(tenantDbConfig.Db).C(groupColName)
+	err = groupCol.Find(bson.M{"date_integer": dt}).One(&existing)
+	if err != nil {
+		// Stop at any error except not found. We want to have not found
+		if err.Error() != "not found" {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+		// else continue correctly -
+	} else {
+		// If found we need to inform user that the topology is already created for this date
+		output, err = createMessageOUT(fmt.Sprintf("Topology already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
+		code = 409
+		return code, h, output, err
+	}
+
+	// Parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = 400
+		return code, h, output, err
+	}
+
+	for i := range incoming {
+		incoming[i].Date = dateStr
+		incoming[i].DateInt = dt
+	}
+
+	err = mongo.MultiInsert(session, tenantDbConfig.Db, groupColName, incoming)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Create view of the results
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d groups created for date: %s", len(incoming), dateStr), 201, "json") //Render the results into JSON
+	code = 201
+	return code, h, output, err
+}
+
 // Options implements the option request on resource
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
