@@ -160,6 +160,10 @@ function populate_default_roles() {
         {
             resource: "topology_endpoints.list",
             roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_endpoints.delete",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
