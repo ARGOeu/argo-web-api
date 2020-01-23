@@ -164,6 +164,11 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
+			"resource": "topology_groups.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_endpoints.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -175,16 +180,6 @@ func (suite *topologyTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{
 			"resource": "topology_endpoints.delete",
-			"roles":    []string{"editor", "viewer"},
-		})
-	c.Insert(
-		bson.M{
-			"resource": "topology_stats.list",
-			"roles":    []string{"editor", "viewer"},
-		})
-	c.Insert(
-		bson.M{
-			"resource": "topology_endpoints.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
 	c.Insert(
@@ -594,6 +589,55 @@ func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
 
 }
 
+func (suite *topologyTestSuite) TestCreateGroupTopology() {
+
+	expJSON := `{
+ "message": "Topology of 3 groups created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJSON2 := `{
+ "message": "Topology already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	jsonInput := `	[
+	 {"group": "NGIA", "type": "NGIS", "service": "SITEA", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}},
+	 {"group": "NGIA", "type": "NGIS", "service": "SITEB", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}},
+	 {"group": "NGIZ", "type": "NGIS", "service": "SITEZ", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}}
+	]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/groups?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/groups?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON2, output2, "Creation failed")
+
+}
+
 func (suite *topologyTestSuite) TestListEndpoints() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints", strings.NewReader(""))
@@ -752,7 +796,6 @@ func (suite *topologyTestSuite) TestListEndpoints2() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
-
 }
 
 func (suite *topologyTestSuite) TestListEndpoints3() {
@@ -813,7 +856,6 @@ func (suite *topologyTestSuite) TestListEndpoints3() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
-
 }
 
 func (suite *topologyTestSuite) TestListEndpoints4() {
