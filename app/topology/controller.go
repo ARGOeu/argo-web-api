@@ -31,6 +31,8 @@ import (
 	"strconv"
 	"time"
 
+	"gopkg.in/mgo.v2"
+
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
@@ -44,6 +46,16 @@ import (
 const topoColName = "topology"
 const endpointColName = "topology_endpoints"
 const groupColName = "topology_groups"
+
+func getCloseDate(c *mgo.Collection, dt int) int {
+	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	result := Endpoint{}
+	err := c.Find(dateQuery).One(&result)
+	if err != nil {
+		return -1
+	}
+	return result.DateInt
+}
 
 // ListTopoStats list statistics about the topology used in the report
 func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -141,8 +153,72 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	return code, h, output, err
 }
 
-// CreateEndpoints Creates a list of Endpoint items with info on their groupings
+// ListEndpoints by date
+func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	colEndpoint := session.DB(tenantDbConfig.Db).C(endpointColName)
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	expDate := getCloseDate(colEndpoint, dt)
+
+	results := []Endpoint{}
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	err = colEndpoint.Find(bson.M{"date_integer": expDate}).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createListEndpoint(results, "Success", code) //Render the results into JSON
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
+// CreateEndpoints Creates a list of Endpoint Groups fon an item
 func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
