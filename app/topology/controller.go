@@ -438,6 +438,69 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	return code, h, output, err
 }
 
+// ListGroups by date
+func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	expDate := getCloseDate(colGroup, dt)
+
+	results := []Group{}
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	err = colGroup.Find(bson.M{"date_integer": expDate}).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createListGroup(results, "Success", code) //Render the results into JSON
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
 // Options implements the option request on resource
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
