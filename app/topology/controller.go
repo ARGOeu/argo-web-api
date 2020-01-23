@@ -242,6 +242,7 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
@@ -448,7 +449,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 
 func handleWildcard(item string) (string, bool) {
 	if strings.Contains(item, "*") {
-		return strings.Replace(item, "*", ".*", -1), true
+		return "^" + strings.Replace(item, "*", ".*", -1) + "$", true
 	}
 	return item, false
 }
@@ -493,6 +494,38 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 	return query
 }
 
+func prepGroupQuery(date int, filter fltrGroup) bson.M {
+
+	query := bson.M{"date_integer": date}
+	// if filter struct not empty begin adding filters
+	if (fltrGroup{} != filter) {
+		if filter.Group != "" {
+			if value, reg := handleWildcard(filter.Group); reg == true {
+				query["group"] = bson.RegEx{Pattern: value}
+			} else {
+				query["group"] = value
+			}
+
+		}
+		if filter.GroupType != "" {
+			if value, reg := handleWildcard(filter.GroupType); reg == true {
+				query["type"] = bson.RegEx{Pattern: value}
+			} else {
+				query["type"] = value
+			}
+		}
+		if filter.Subgroup != "" {
+			if value, reg := handleWildcard(filter.Subgroup); reg == true {
+				query["subgroup"] = bson.RegEx{Pattern: value}
+			} else {
+				query["subgroup"] = value
+			}
+		}
+	}
+
+	return query
+}
+
 // ListGroups by date
 func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -528,6 +561,11 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
+	fltr := fltrGroup{}
+	fltr.Group = urlValues.Get("group")
+	fltr.GroupType = urlValues.Get("type")
+	fltr.Subgroup = urlValues.Get("subgroup")
+
 	expDate := getCloseDate(colGroup, dt)
 
 	results := []Group{}
@@ -538,7 +576,7 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	err = colGroup.Find(bson.M{"date_integer": expDate}).All(&results)
+	err = colGroup.Find(prepGroupQuery(expDate, fltr)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

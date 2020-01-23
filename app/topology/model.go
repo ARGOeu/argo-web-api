@@ -57,6 +57,12 @@ type fltrEndpoint struct {
 	Hostname  string
 }
 
+type fltrGroup struct {
+	Group     string
+	GroupType string
+	Subgroup  string
+}
+
 // Endpoint includes information on endpoint group topology
 type Endpoint struct {
 	Date      string            `bson:"date" json:"date"`
