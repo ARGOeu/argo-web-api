@@ -1933,6 +1933,22 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: query
+          name: name
+          type: string
+          description: filter results by group name
+        - in: query
+          name: type
+          type: string
+          description: filter results by group type
+        - in: query
+          name: service
+          type: string
+          description: filter results by service
+        - in: query
+          name: hostname
+          type: string
+          description: filter results by hostname
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/profDate"
       responses:
