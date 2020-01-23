@@ -2,9 +2,10 @@
 
 API calls for handling topology group resources
 
-| Name                                             | Description                                                         | Shortcut                     |
-| ------------------------------------------------ | ------------------------------------------------------------------- | ---------------------------- |
-| POST: Create endpoint topology for specific date | Creates a daily group topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
+| Name                                          | Description                                                         | Shortcut                     |
+| --------------------------------------------- | ------------------------------------------------------------------- | ---------------------------- |
+| POST: Create group topology for specific date | Creates a daily group topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
+| GET: List group topology for specific date    | Lists group topology for a specific date                            | <a href="#2">Description</a> |
 
 <a id="1"></a>
 
@@ -103,3 +104,83 @@ Status: 409 Conflict
 ```
 
 User can proceed with either updating the existing topology OR deleting before trying to create it anew
+
+<a id="2"></a>
+
+## POST: List group topology for specific date
+
+Lists group topology items for specific date
+
+### Input
+
+```
+GET /topology/groups?date=YYYY-MM-DD
+```
+
+#### Url Parameters
+
+| Type   | Description            | Required | Default value |
+| ------ | ---------------------- | -------- | ------------- |
+| `date` | target a specific date | NO       | today's date  |
+
+#### Headers
+
+```
+x-api-key: secret_key_value
+Accept: application/json
+```
+
+#### Example Request
+
+```
+GET /topology/groups?date=2015-07-22
+```
+
+#### Response Code
+
+```
+Status: 200 OK
+```
+
+### Response body
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "date": "2015-07-22",
+            "group": "NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEA",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        },
+        {
+            "date": "2015-07-22",
+            "group": "NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEB",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        },
+        {
+            "date": "2015-07-22",
+            "group": "NGIX",
+            "type": "NGIS",
+            "subgroup": "SITEX",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        }
+    ]
+}
+```

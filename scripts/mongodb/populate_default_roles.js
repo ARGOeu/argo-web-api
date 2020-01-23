@@ -168,6 +168,10 @@ function populate_default_roles() {
         {
             resource: "topology_groups.insert",
             roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups.list",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

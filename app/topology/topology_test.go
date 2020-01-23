@@ -164,6 +164,11 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
+			"resource": "topology_groups.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_groups.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -538,6 +543,60 @@ func (suite *topologyTestSuite) SetupTest() {
 			"service":      "service_x",
 			"tags":         bson.M{"production": "0", "monitored": "0"},
 		})
+	// Seed database with group topology
+	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-08-11",
+			"date_integer": 20150811,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		})
+
 }
 
 func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
@@ -910,6 +969,178 @@ func (suite *topologyTestSuite) TestListEndpoints4() {
 func (suite *topologyTestSuite) TestListEndpoints5() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-02-15", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestListGroups() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups2() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-06-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups3() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-07-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-07-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups5() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-02-15", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
