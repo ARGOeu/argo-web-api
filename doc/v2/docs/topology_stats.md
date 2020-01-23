@@ -14,7 +14,7 @@ This method may be used to retrieve topology statistics for a specific report. T
 
 ### Input
 
-##### List All latest metric data
+##### List All topology statistics
 
 ```
 /topology/stats/{report}/?[date]

@@ -56,12 +56,13 @@ func (suite *topologyTestSuite) SetupSuite() {
 
 	const testConfig = `
 	[server]
-	bindip = ""
-	port = 8080
-	maxprocs = 4
-	cache = false
-	lrucache = 700000000
-	gzip = true
+    bindip = ""
+    port = 8080
+    maxprocs = 4
+    cache = false
+    lrucache = 700000000
+    gzip = true
+	reqsizelimit = 1073741824
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
@@ -164,6 +165,11 @@ func (suite *topologyTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{
 			"resource": "topology.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
 	c.Insert(
@@ -440,6 +446,55 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+}
+
+func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
+
+	expJson := `{
+ "message": "Topology of 3 endpoints created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJson2 := `{
+ "message": "Topology already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	jsonInput := `	[
+	 {"group": "SITE_A", "hostname": "host1.site-a.foo", "type": "SITES", "service": "a.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_A", "hostname": "host2.site-b.foo", "type": "SITES", "service": "b.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_B", "hostname": "host1.site-a.foo", "type": "SITES", "service": "c.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}}
+	]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJson, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJson2, output2, "Creation failed")
+
 }
 
 // TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly

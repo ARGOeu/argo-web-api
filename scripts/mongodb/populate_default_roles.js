@@ -152,6 +152,10 @@ function populate_default_roles() {
         {
             resource: "recomputations.update",
             roles: ["admin", "editor", "admin_ui"]
+        },
+        {
+            resource: "topology_endpoints.insert",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

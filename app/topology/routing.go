@@ -44,6 +44,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
+	{"topology_endpoints.insert", "POST", "/endpoints", CreateEndpoints},
+	{"topology_endpoints.options", "OPTIONS", "/endpoints", Options},
 	{"topology.list", "GET", "/stats/{report_name}", routeCheckGroup},
 	{"topology.options", "OPTIONS", "/stats/{report_name}", Options},
 }

@@ -19,7 +19,8 @@ pages:
     - Validation Checks: validations.md
     - Metrics: metrics.md
     - Latest results: latest.md
-    - Topology statistics: topology.md
+    - Topology statistics: topology_stats.md
+    - Topology Endpoints: topology_endpoints.md
     - Weights resource: weights.md
 
 theme: readthedocs
