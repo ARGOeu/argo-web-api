@@ -55,12 +55,14 @@ type fltrEndpoint struct {
 	GroupType string
 	Service   string
 	Hostname  string
+	Tags      string
 }
 
 type fltrGroup struct {
 	Group     string
 	GroupType string
 	Subgroup  string
+	Tags      string
 }
 
 // Endpoint includes information on endpoint group topology

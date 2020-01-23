@@ -23,6 +23,7 @@
 package topology
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -477,6 +478,33 @@ func (suite *topologyTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		},
+		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "Y"},
+		},
+		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1Prod", "monitored": "YesNo"},
+		},
+		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
 			"group":        "SITEA",
@@ -700,6 +728,150 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 	// Compare the expected and actual json response
 	suite.Equal(expJSON2, output2, "Creation failed")
 
+}
+
+func (suite *topologyTestSuite) TestListFilterEndpointTags() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints?&date=2015-06-12&tags=production:1",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?&date=2015-06-12&tags=production:1*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?&date=2015-06-12&tags=production:1*,monitored:Yes",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?&date=2015-06-12&tags=production:1*,monitored:Yes*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
+			fmt.Println(output)
+		}
+
+	}
 }
 
 func (suite *topologyTestSuite) TestListFilterGroups() {

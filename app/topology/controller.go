@@ -194,6 +194,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	fltr.GroupType = urlValues.Get("type")
 	fltr.Hostname = urlValues.Get("hostname")
 	fltr.Service = urlValues.Get("service")
+	fltr.Tags = urlValues.Get("tags")
 
 	expDate := getCloseDate(colEndpoint, dt)
 
@@ -328,6 +329,7 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
+
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -379,7 +381,6 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
-
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
@@ -454,6 +455,29 @@ func handleWildcard(item string) (string, bool) {
 	return item, false
 }
 
+func appendTags(query bson.M, tags string) bson.M {
+	// split tags in kv paris
+	kvs := strings.Split(tags, ",")
+	for _, kv := range kvs {
+		// split kv in key and value
+		kvsplit := strings.Split(kv, ":")
+		// if not properly split ignore
+		if len(kvsplit) != 2 {
+			continue
+		}
+
+		if value, reg := handleWildcard(kvsplit[1]); reg == true {
+			query["tags."+kvsplit[0]] = bson.RegEx{Pattern: value}
+		} else {
+			query["tags."+kvsplit[0]] = value
+		}
+
+	}
+
+	return query
+
+}
+
 func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 	query := bson.M{"date_integer": date}
@@ -489,6 +513,11 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				query["hostname"] = value
 			}
 		}
+	}
+
+	// check if tags exist to append them to query
+	if filter.Tags != "" {
+		appendTags(query, filter.Tags)
 	}
 
 	return query
