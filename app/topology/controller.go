@@ -501,6 +501,56 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
+// DeleteGroups deletes a list of groups topology for a specific date
+func DeleteGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	groupCol := session.DB(tenantDbConfig.Db).C(groupColName)
+	change, err := groupCol.RemoveAll(bson.M{"date_integer": dt})
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if change.Removed == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d groups deleted for date: %s", change.Removed, dateStr), 200, "json")
+	return code, h, output, err
+}
+
 // Options implements the option request on resource
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 

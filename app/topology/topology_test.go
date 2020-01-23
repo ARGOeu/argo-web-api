@@ -164,6 +164,11 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
+			"resource": "topology_groups.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_groups.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -1167,6 +1172,58 @@ func (suite *topologyTestSuite) TestListGroups5() {
 	suite.Equal(404, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestDeleteGroups() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/groups?date=2015-07-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 3 groups deleted for date: 2015-07-22",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/groups?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
 }
 
 // TestListTopologyStats
