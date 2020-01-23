@@ -2,10 +2,11 @@
 
 API calls for handling topology endpoint resources
 
-| Name                                             | Description                                                            | Shortcut                     |
-| ------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------- |
-| POST: Create endpoint topology for specific date | Creates a daily endpoint topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
-| GET: List endpoint topology for specific date    | Lists endpoint topology for a specific date                            | <a href="#2">Description</a> |
+| Name                                               | Description                                                            | Shortcut                     |
+| -------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| POST: Create endpoint topology for specific date   | Creates a daily endpoint topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
+| GET: List endpoint topology for specific date      | Lists endpoint topology for a specific date                            | <a href="#2">Description</a> |
+| DELETE: delete endpoint topology for specific date | Deletes all endpoint items (topology) for a specific date              | <a href="#3">Description</a> |
 
 <a id="1"></a>
 
@@ -158,4 +159,39 @@ Status: 200 OK
         "tags": { "scope": "TENANT", "production": "1", "monitored": "1" }
     }
 ]
+```
+
+<a id='3'></a>
+
+## [DELETE]: Delete endpoint topology for a specific date
+
+This method can be used to delete all endpoint items contributing to the endpoint topology of a specific date
+
+### Input
+
+```
+DELETE /topology/endpoints?date=YYYY-MM-DD
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Content-Type: application/json
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "message": "Topology of 3 endpoints deleted for date: 2019-12-12",
+    "code": "200"
+}
 ```

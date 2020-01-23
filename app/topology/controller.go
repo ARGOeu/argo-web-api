@@ -216,7 +216,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	return code, h, output, err
 }
 
-// CreateEndpoints Creates a list of Endpoint Groups fon an item
+// CreateEndpoints Creates a list of endpoints for a specific date
 func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -299,6 +299,56 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Create view of the results
 	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints created for date: %s", len(incoming), dateStr), 201, "json") //Render the results into JSON
 	code = 201
+	return code, h, output, err
+}
+
+// DeleteEndpoints deletes a list of endpoints topology for a specific date
+func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	endpointCol := session.DB(tenantDbConfig.Db).C(endpointColName)
+	change, err := endpointCol.RemoveAll(bson.M{"date_integer": dt})
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if change.Removed == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints deleted for date: %s", change.Removed, dateStr), 200, "json")
 	return code, h, output, err
 }
 
