@@ -29,6 +29,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -188,6 +189,12 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
+	fltr := fltrEndpoint{}
+	fltr.Group = urlValues.Get("group")
+	fltr.GroupType = urlValues.Get("type")
+	fltr.Hostname = urlValues.Get("hostname")
+	fltr.Service = urlValues.Get("service")
+
 	expDate := getCloseDate(colEndpoint, dt)
 
 	results := []Endpoint{}
@@ -198,7 +205,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	err = colEndpoint.Find(bson.M{"date_integer": expDate}).All(&results)
+	err = colEndpoint.Find(prepEndpointQuery(expDate, fltr)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -371,6 +378,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
@@ -436,6 +444,53 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	output, err = createMessageOUT(fmt.Sprintf("Topology of %d groups created for date: %s", len(incoming), dateStr), 201, "json") //Render the results into JSON
 	code = 201
 	return code, h, output, err
+}
+
+func handleWildcard(item string) (string, bool) {
+	if strings.Contains(item, "*") {
+		return strings.Replace(item, "*", ".*", -1), true
+	}
+	return item, false
+}
+
+func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
+
+	query := bson.M{"date_integer": date}
+	// if filter struct not empty begin adding filters
+
+	if (fltrEndpoint{} != filter) {
+		if filter.Group != "" {
+			if value, reg := handleWildcard(filter.Group); reg == true {
+				query["group"] = bson.RegEx{Pattern: value}
+			} else {
+				query["group"] = value
+			}
+
+		}
+		if filter.GroupType != "" {
+			if value, reg := handleWildcard(filter.GroupType); reg == true {
+				query["type"] = bson.RegEx{Pattern: value}
+			} else {
+				query["type"] = value
+			}
+		}
+		if filter.Service != "" {
+			if value, reg := handleWildcard(filter.Service); reg == true {
+				query["service"] = bson.RegEx{Pattern: value}
+			} else {
+				query["service"] = value
+			}
+		}
+		if filter.Hostname != "" {
+			if value, reg := handleWildcard(filter.Hostname); reg == true {
+				query["hostname"] = bson.RegEx{Pattern: value}
+			} else {
+				query["hostname"] = value
+			}
+		}
+	}
+
+	return query
 }
 
 // ListGroups by date

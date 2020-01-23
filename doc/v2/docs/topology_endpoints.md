@@ -113,9 +113,15 @@ GET /topology/endpoints?date=YYYY-MM-DD
 
 #### Url Parameters
 
-| Type   | Description            | Required | Default value |
-| ------ | ---------------------- | -------- | ------------- |
-| `date` | target a specific date | NO       | today's date  |
+| Type       | Description            | Required | Default value |
+| ---------- | ---------------------- | -------- | ------------- |
+| `date`     | target a specific date | NO       | today's date  |
+| `group`    | filter by group name   | NO       |               |
+| `type`     | filter by group type   | NO       |               |
+| `service`  | filter by service      | NO       |               |
+| `hostname` | filter by hostname     | NO       |               |
+
+_note_ : user can use wildcard \* in filters
 
 #### Headers
 
