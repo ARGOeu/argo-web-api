@@ -46,11 +46,11 @@ pipeline {
                 sh '''
                 cd ${WORKSPACE}/argo-web-api && make sources
                 cp ${WORKSPACE}/argo-web-api/argo-web-api*.tar.gz /home/jenkins/rpmbuild/SOURCES/
-                if [ $env.BRANCH_NAME -ne "master" ]; then
+                if [ "$env.BRANCH_NAME" = "master" ]; then
+                    echo "Production"
+                else
                     sed -i 's/^Release.*/Release: %(echo $GIT_COMMIT_DATE).%(echo $GIT_COMMIT_HASH)%{?dist}/' ${WORKSPACE}/argo-web-api/argo-web-api.spec
                     echo "Non Production"
-                else
-                    echo "Production"
                 fi
                 cd /home/jenkins/rpmbuild/SOURCES && tar -xzvf argo-web-api*.tar.gz
                 cp ${WORKSPACE}/argo-web-api/argo-web-api.spec /home/jenkins/rpmbuild/SPECS/
