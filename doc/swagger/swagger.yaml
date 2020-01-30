@@ -1961,6 +1961,10 @@ paths:
           name: hostname
           type: string
           description: filter results by hostname
+        - in: query
+          name: tags
+          type: string
+          description: filter results by tags using the pattern tags=key:value,key:value etc...
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/profDate"
       responses:

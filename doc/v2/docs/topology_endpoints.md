@@ -113,15 +113,17 @@ GET /topology/endpoints?date=YYYY-MM-DD
 
 #### Url Parameters
 
-| Type       | Description            | Required | Default value |
-| ---------- | ---------------------- | -------- | ------------- |
-| `date`     | target a specific date | NO       | today's date  |
-| `group`    | filter by group name   | NO       |               |
-| `type`     | filter by group type   | NO       |               |
-| `service`  | filter by service      | NO       |               |
-| `hostname` | filter by hostname     | NO       |               |
+| Type       | Description                   | Required | Default value |
+| ---------- | ----------------------------- | -------- | ------------- |
+| `date`     | target a specific date        | NO       | today's date  |
+| `group`    | filter by group name          | NO       |               |
+| `type`     | filter by group type          | NO       |               |
+| `service`  | filter by service             | NO       |               |
+| `hostname` | filter by hostname            | NO       |               |
+| `tags`     | filter by tag key:value pairs | NO       |               |
 
 _note_ : user can use wildcard \* in filters
+_note_ : when using tags filter the query string must follow the pattern: `?tags=key1:value1,key2:value2`
 
 #### Headers
 
