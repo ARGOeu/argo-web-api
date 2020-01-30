@@ -23,7 +23,6 @@
 package topology
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -582,6 +581,30 @@ func (suite *topologyTestSuite) SetupTest() {
 	// Insert seed data
 	c.Insert(
 		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITE_01",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		},
+		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITE_02",
+			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
+		},
+		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI1",
+			"type":         "NGIS",
+			"subgroup":     "SITE_101",
+			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
+		},
+		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
 			"group":        "NGIA",
@@ -730,6 +753,142 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 
 }
 
+func (suite *topologyTestSuite) TestListFilterGroupTags() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:production",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:dev*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:*test",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=certification:Cert*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
 func (suite *topologyTestSuite) TestListFilterEndpointTags() {
 
 	type TestReq struct {
@@ -867,9 +1026,7 @@ func (suite *topologyTestSuite) TestListFilterEndpointTags() {
 		// Check that we must have a 200 ok code
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
-		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
-			fmt.Println(output)
-		}
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
 
 	}
 }

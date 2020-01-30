@@ -123,7 +123,7 @@ GET /topology/endpoints?date=YYYY-MM-DD
 | `tags`     | filter by tag key:value pairs | NO       |               |
 
 _note_ : user can use wildcard \* in filters
-_note_ : when using tags filter the query string must follow the pattern: `?tags=key1:value1,key2:value2`
+_note_ : when using tag filters the query string must follow the pattern: `?tags=key1:value1,key2:value2`
 
 #### Headers
 

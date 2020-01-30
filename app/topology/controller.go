@@ -552,6 +552,11 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 		}
 	}
 
+	// check if tags exist to append them to query
+	if filter.Tags != "" {
+		appendTags(query, filter.Tags)
+	}
+
 	return query
 }
 
@@ -594,6 +599,7 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	fltr.Group = urlValues.Get("group")
 	fltr.GroupType = urlValues.Get("type")
 	fltr.Subgroup = urlValues.Get("subgroup")
+	fltr.Tags = urlValues.Get("tags")
 
 	expDate := getCloseDate(colGroup, dt)
 
