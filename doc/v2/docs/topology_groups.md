@@ -120,9 +120,14 @@ GET /topology/groups?date=YYYY-MM-DD
 
 #### Url Parameters
 
-| Type   | Description            | Required | Default value |
-| ------ | ---------------------- | -------- | ------------- |
-| `date` | target a specific date | NO       | today's date  |
+| Type       | Description            | Required | Default value |
+| ---------- | ---------------------- | -------- | ------------- |
+| `date`     | target a specific date | NO       | today's date  |
+| `group`    | filter by group name   | NO       |               |
+| `type`     | filter by group type   | NO       |               |
+| `subgroup` | filter by subgroup     | NO       |               |
+
+_note_ : user can use wildcard \* in filters
 
 #### Headers
 

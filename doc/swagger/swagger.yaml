@@ -1831,6 +1831,18 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: query
+          name: name
+          type: string
+          description: filter results by group name
+        - in: query
+          name: type
+          type: string
+          description: filter results by group type
+        - in: query
+          name: subgroup
+          type: string
+          description: filter results by subgroup
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/profDate"
       responses:

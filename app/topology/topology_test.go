@@ -702,6 +702,119 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 
 }
 
+func (suite *topologyTestSuite) TestListFilterGroups() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&group=NGIA",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&group=NGIA&subgroup=SITEB",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=*A",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=A*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
 func (suite *topologyTestSuite) TestListFilterEndpoints() {
 
 	type TestReq struct {
@@ -741,19 +854,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
   "message": "Success",
   "code": "200"
  },
- "data": [
-  {
-   "date": "2015-08-10",
-   "group": "SITEB",
-   "type": "SITES",
-   "service": "service_x",
-   "hostname": "host0.site_b.foo",
-   "tags": {
-    "monitored": "0",
-    "production": "0"
-   }
-  }
- ]
+ "data": []
 }`},
 		TestReq{
 			Path: "/api/v2/topology/endpoints?service=serv*",
