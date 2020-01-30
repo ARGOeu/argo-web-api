@@ -1850,6 +1850,39 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+    
+    delete:
+      summary: Delete topology of groups for a specific date
+      operationId: topology_groups.delete
+      description: Delete a list of groups (topology) for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: groups topology definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
           
   /topology/endpoints:
     post:

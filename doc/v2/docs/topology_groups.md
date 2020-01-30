@@ -1,11 +1,12 @@
-#Topology Groups
+# Topology Groups
 
 API calls for handling topology group resources
 
-| Name                                          | Description                                                         | Shortcut                     |
-| --------------------------------------------- | ------------------------------------------------------------------- | ---------------------------- |
-| POST: Create group topology for specific date | Creates a daily group topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
-| GET: List group topology for specific date    | Lists group topology for a specific date                            | <a href="#2">Description</a> |
+| Name                                            | Description                                                         | Shortcut                     |
+| ----------------------------------------------- | ------------------------------------------------------------------- | ---------------------------- |
+| POST: Create group topology for specific date   | Creates a daily group topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
+| GET: List group topology for specific date      | Lists group topology for a specific date                            | <a href="#2">Description</a> |
+| DELETE: Delete group topology for specific date | Delete group topology items for specific date                       | <a href="#3">Description</a> |
 
 <a id="1"></a>
 
@@ -182,5 +183,40 @@ Status: 200 OK
             }
         }
     ]
+}
+```
+
+<a id='3'></a>
+
+## [DELETE]: Delete group topology for a specific date
+
+This method can be used to delete all group items contributing to the group topology of a specific date
+
+### Input
+
+```
+DELETE /topology/groups?date=YYYY-MM-DD
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Content-Type: application/json
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "message": "Topology of 3 groups deleted for date: 2019-12-12",
+    "code": "200"
 }
 ```
