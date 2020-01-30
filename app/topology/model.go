@@ -50,6 +50,13 @@ type messageOUT struct {
 	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }
 
+type fltrEndpoint struct {
+	Group     string
+	GroupType string
+	Service   string
+	Hostname  string
+}
+
 // Endpoint includes information on endpoint group topology
 type Endpoint struct {
 	Date      string            `bson:"date" json:"date"`

@@ -702,6 +702,222 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 
 }
 
+func (suite *topologyTestSuite) TestListFilterEndpoints() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=SITEA",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=B*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*site_b*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=SITES",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=BITES",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
 func (suite *topologyTestSuite) TestListEndpoints() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints", strings.NewReader(""))
