@@ -120,12 +120,16 @@ GET /topology/groups?date=YYYY-MM-DD
 
 #### Url Parameters
 
-| Type       | Description            | Required | Default value |
-| ---------- | ---------------------- | -------- | ------------- |
-| `date`     | target a specific date | NO       | today's date  |
-| `group`    | filter by group name   | NO       |               |
-| `type`     | filter by group type   | NO       |               |
-| `subgroup` | filter by subgroup     | NO       |               |
+| Type       | Description                   | Required | Default value |
+| ---------- | ----------------------------- | -------- | ------------- |
+| `date`     | target a specific date        | NO       | today's date  |
+| `group`    | filter by group name          | NO       |               |
+| `type`     | filter by group type          | NO       |               |
+| `subgroup` | filter by subgroup            | NO       |               |
+| `tags`     | filter by tag key:value pairs | NO       |               |
+
+_note_ : user can use wildcard \* in filters
+_note_ : when using tag filters the query string must follow the pattern: `?tags=key1:value1,key2:value2`
 
 _note_ : user can use wildcard \* in filters
 
