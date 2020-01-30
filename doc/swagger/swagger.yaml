@@ -1775,6 +1775,52 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
+  /topology/groups:
+    post:
+      summary: Create a new group topology per date
+      operationId: topology_groups.create
+      description: Create a new group topology which maps top level groups to subgroups
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "group_resource"
+          in: "body"
+          description: "Json description of group topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/TopologyGroups'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '409':
+          description: Content already created for specific date
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+          
   /topology/endpoints:
     post:
       summary: Create a new endpoints topology resource
@@ -1859,7 +1905,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-            
+
     delete:
       summary: Delete topology of endpoints for a specific date
       operationId: topology_endpoints.delete
@@ -1893,8 +1939,6 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  
-
 
   /latest/{report_name}/{lgroup_type}:
     get:
@@ -3262,6 +3306,27 @@ definitions:
     type: array
     items:
       $ref: '#/definitions/TopologyEndpoint'
+      
+  TopologyGroups:
+    type: array
+    items:
+      $ref: '#/definitions/TopologyGroup'
+      
+  TopologyGroup:
+    type: object
+    properties:
+      group:
+        type: string
+        description: "name of the topology group"
+      type:
+        type: string
+        description: "type of the topology group, eg. PROJECTS, NGIS etc... "
+      subgroup:
+        type: string
+        description: "name of subgroup contained in the top level group"
+      tags:
+        type: object
+        description: "key value tags"
       
 
   FactorsResponse:

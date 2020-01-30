@@ -60,3 +60,13 @@ type Endpoint struct {
 	Hostname  string            `bson:"hostname" json:"hostname"`
 	Tags      map[string]string `bson:"tags" json:"tags"`
 }
+
+// Group includes information on  of group group topology
+type Group struct {
+	Date      string            `bson:"date" json:"date"`
+	DateInt   int               `bson:"date_integer" json:"-"`
+	Group     string            `bson:"group" json:"group"`
+	GroupType string            `bson:"type" json:"type"`
+	Subgroup  string            `bson:"subgroup" json:"subgroup"`
+	Tags      map[string]string `bson:"tags" json:"tags"`
+}
