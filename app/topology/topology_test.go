@@ -174,6 +174,21 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"resource": "topology_endpoints.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_stats.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_stats.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -628,6 +643,58 @@ func (suite *topologyTestSuite) TestListEndpoints() {
 
 }
 
+func (suite *topologyTestSuite) TestDeleteEndpoints() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 2 endpoints deleted for date: 2015-08-10",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
+}
+
 func (suite *topologyTestSuite) TestListEndpoints2() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-06-30", strings.NewReader(""))
@@ -795,6 +862,7 @@ func (suite *topologyTestSuite) TestListEndpoints4() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 func (suite *topologyTestSuite) TestListEndpoints5() {

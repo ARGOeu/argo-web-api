@@ -1860,6 +1860,39 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
+    delete:
+      summary: Delete topology of endpoints for a specific date
+      operationId: topology_endpoints.delete
+      description: Delete a list of endpoints (topology) for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Endpoint topology definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
   
 
 
