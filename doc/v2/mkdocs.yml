@@ -6,19 +6,21 @@ remote_branch: master
 copyright: Copyright © 2014 - 2015 GRNET S.A.
 
 pages:
-  - Home: index.md
-  - Recomputations Requests: recomputations.md
-  - Results : results.md
-  - Status Results : status.md
-  - Metric Profiles : metric_profiles.md
-  - Aggregation Profiles : aggregation_profiles.md
-  - Operations Profiles : operations_profiles.md
-  - Reports : reports.md
-  - Tenants : tenants.md
-  - Error Codes: errors.md
-  - Validation Checks: validations.md
-  - Metrics: metrics.md
-  - Latest results: latest.md
-  - Topology statistics: topology.md
+    - Home: index.md
+    - Recomputations Requests: recomputations.md
+    - Results: results.md
+    - Status Results: status.md
+    - Metric Profiles: metric_profiles.md
+    - Aggregation Profiles: aggregation_profiles.md
+    - Operations Profiles: operations_profiles.md
+    - Reports: reports.md
+    - Tenants: tenants.md
+    - Error Codes: errors.md
+    - Validation Checks: validations.md
+    - Metrics: metrics.md
+    - Latest results: latest.md
+    - Topology statistics: topology_stats.md
+    - Topology Endpoints: topology_endpoints.md
+    - Weights resource: weights.md
 
 theme: readthedocs

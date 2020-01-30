@@ -35,7 +35,7 @@ import (
 )
 
 // createListView constructs the list response template and exports it as json
-func createListView(results []MongoInterface, msg string, code int) ([]byte, error) {
+func createListView(results []AggProfile, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
@@ -51,7 +51,7 @@ func createListView(results []MongoInterface, msg string, code int) ([]byte, err
 }
 
 // createListView constructs self-reference response and exports it as json
-func createRefView(inserted MongoInterface, msg string, code int, r *http.Request) ([]byte, error) {
+func createRefView(inserted AggProfile, msg string, code int, r *http.Request) ([]byte, error) {
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
 			Message: msg,

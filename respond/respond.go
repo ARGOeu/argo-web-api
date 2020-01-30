@@ -353,6 +353,16 @@ var NotFound = ResponseMessage{
 	},
 }
 
+var ErrNotFoundQuery = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+	},
+	Errors: []StatusResponse{
+		{Message: "Not Found", Code: "404", Details: "Specific query returned no items"},
+	},
+}
+
 // NotFound is used to inform the user about not found item
 var ErrNotFound = ResponseMessage{
 	Status: StatusResponse{

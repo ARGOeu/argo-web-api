@@ -577,6 +577,7 @@ paths:
           required: true
           type: string
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list with one operations profile
@@ -610,6 +611,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the operations profile"
@@ -697,6 +699,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of Operations profiles
@@ -725,6 +728,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - name: "x-api-key"
           in: "header"
           description: "the x-api-key"
@@ -779,6 +783,7 @@ paths:
           required: true
           type: string
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list with one aggregation profile
@@ -823,6 +828,7 @@ paths:
           schema:
             $ref: '#/definitions/Aggregation_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '201':
           description: Aggregation profile Updated
@@ -903,6 +909,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of aggregation profiles
@@ -938,6 +945,7 @@ paths:
           schema:
             $ref: '#/definitions/Aggregation_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Aggregation profile Created
@@ -975,6 +983,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - $ref: "#/parameters/apiKey"
         - name: "PROFILE_ID"
           in: "path"
@@ -1014,6 +1023,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the metric profile"
@@ -1096,6 +1106,7 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - $ref: "#/parameters/profDate"
         - $ref: "#/parameters/apiKey"
       responses:
         '200':
@@ -1132,6 +1143,7 @@ paths:
           schema:
             $ref: '#/definitions/Metric_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Metric profile Created
@@ -1165,6 +1177,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the thresholds profile"
@@ -1203,6 +1216,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
         - name: "PROFILE_ID"
           in: "path"
           description: "id of the thresholds profile"
@@ -1287,6 +1301,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of thresholds profiles
@@ -1322,6 +1337,7 @@ paths:
           schema:
             $ref: '#/definitions/Thresholds_profile'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Thresholds profile Created
@@ -1343,8 +1359,393 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /downtimes/{PROFILE_ID}:
+    get:
+      summary: List a specific downtimes resource
+      operationId: downtimes.ListOne
+      description: List one specific downtimes resource targeted by it's unique id
+      tags:
+        - Downtimes
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the downtimes resource"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with a downtimes resource
+          schema:
+            $ref: '#/definitions/Downtimes_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update an existing downtimes resource
+      operationId: downtimes.Update
+      description: update information on a specific downtimes resource which is targeted by it's unique id
+      tags:
+        - Downtimes
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the downtimes resource"
+          required: true
+          type: string
+        - name: "weights_resource"
+          in: "body"
+          description: "Json description of the dowtimes resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Weights'
+      responses:
+        '201':
+          description: Downtimes resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a downtimes resource
+      operationId: downtimes.Delete
+      description: Delete a specific downtimes resource which is targeted by it's unique id
+      tags:
+        - Downtimes
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the downtimes resource"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Downtimes resource deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
-  /topology/{report_name}:
+  /downtimes:
+    get:
+      summary: List all downtimes resource
+      operationId: downtimes.List
+      description: List available downtimes resources
+      tags:
+        - Downtimes
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list of downtimes resources
+          schema:
+            $ref: '#/definitions/Downtimes_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a new downtimes resource
+      operationId: downtimes.Create
+      description: Create a new downtimes resource that includes a list of downtime periods assigned to hosts
+      tags:
+        - Downtimes
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "downtimes_resource"
+          in: "body"
+          description: "Json description of the downtimes resource to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Weights'
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: Downtimes resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  
+  /weights/{PROFILE_ID}:
+    get:
+      summary: List a specific weights resource
+      operationId: weights.ListOne
+      description: List one specific weights resource targeted by it's unique id
+      tags:
+        - Weights
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the weights resource"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with a weights resource
+          schema:
+            $ref: '#/definitions/Weights_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update an existing weights resource
+      operationId: weights.Update
+      description: update information on a specific weights resource which is targeted by it's unique id
+      tags:
+        - Weights
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the weights resource"
+          required: true
+          type: string
+        - name: "weights_resource"
+          in: "body"
+          description: "Json description of the weight_resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/Weights'
+      responses:
+        '201':
+          description: Weights resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a weights resource
+      operationId: weights.Delete
+      description: Delete a specific weights resource which is targeted by it's unique id
+      tags:
+        - Weights
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "PROFILE_ID"
+          in: "path"
+          description: "id of the weights resource"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Weights resource deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /weights:
+    get:
+      summary: List all weight resource
+      operationId: weights.List
+      description: List available weight resources
+      tags:
+        - Weights
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: A list of weights resources
+          schema:
+            $ref: '#/definitions/Weights_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    post:
+      summary: Create a new weights resource
+      operationId: weights.Create
+      description: Create a new weights resource that includes mapping of groups and weights to be used through a computation
+      tags:
+        - Weights
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "weights_resource"
+          in: "body"
+          description: "Json description of the weights resource to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/Weights'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Weights resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /topology/stats/{report_name}:
     get:
       summary: "List topology statistics for a specific report"
       description: "This request lists number of groups and services contained in the report"
@@ -1373,6 +1774,127 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /topology/endpoints:
+    post:
+      summary: Create a new endpoints topology resource
+      operationId: topology_endpoints.create
+      description: Create a new endpoints topology resource which maps endpoints to endpoint groups
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "endpoint_resource"
+          in: "body"
+          description: "Json description of endpoint topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/TopologyEndpoints'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '409':
+          description: Content already created for specific date
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+    get:
+      summary: List topology endpoints per date
+      operationId: topology_endpoints.list
+      description: List topology endpoints per date
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '409':
+          description: Content already created for specific date
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+    delete:
+      summary: Delete topology of endpoints for a specific date
+      operationId: topology_endpoints.delete
+      description: Delete a list of endpoints (topology) for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Endpoint topology definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  
+
 
   /latest/{report_name}/{lgroup_type}:
     get:
@@ -2552,6 +3074,12 @@ paths:
 
 
 parameters:
+  profDate:
+    name: "date"
+    in: "query"
+    type: string
+    description: "target date to retrieve a historic version of the profile"
+    default: todays_date in YYYY-MM-DD format
   topoDate:
     name: "date"
     in: "query"
@@ -2710,6 +3238,31 @@ responses:
       $ref: '#/definitions/Status_error'
 
 definitions:
+
+  TopologyEndpoint:
+    type: object
+    properties:
+      group:
+        type: string
+        description: "name of the endpoint group"
+      type:
+        type: string
+        description: "type of the endpoint group, for example: SITES or SERVICEGROUPS etc... "
+      service:
+        type: string
+        description: "service type of the endpoint belonging to the endpoint group"
+      hostname:
+        type: string
+        description: "hostname of the endpoint belonging to the endpoint group"
+      tags:
+        type: object
+        description: "key value tags"
+
+  TopologyEndpoints:
+    type: array
+    items:
+      $ref: '#/definitions/TopologyEndpoint'
+      
 
   FactorsResponse:
     type: object
@@ -3224,6 +3777,27 @@ definitions:
               type: string
             details:
               type: string
+              
+
+  Downtimes_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Downtimes'
+              
+  Weights_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Weights'
 
   Thresholds_profile_list:
     type: object
@@ -3419,11 +3993,64 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Operation'
+          
+  Downtimes:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      endpoints:
+        type: array
+        items:
+          $ref: '#/definitions/HostDowntime'
+
+  HostDowntime:
+    type: object
+    properties:
+      hostname: 
+        type: string
+      service:
+        type: string
+      start_time:
+        type: string
+      end_time:
+        type: string
+          
+  Weights:
+    type: object
+    properties:
+      id:
+        type: string
+      date:
+        type: string
+      name:
+        type: string
+      weight_type:
+        type: string
+      group_type:
+        type: string
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/GroupWeight'
+
+  GroupWeight:
+    type: object
+    properties:
+      name: 
+        type: string
+      value:
+        type: number
+    
 
   Operations_profile:
     type: object
     properties:
       id:
+        type: string
+      date:
         type: string
       name:
         type: string
@@ -3646,6 +4273,13 @@ definitions:
               type: string
             password:
               type: string
+      topology:
+        type: object
+        properties:
+          type: 
+            type: string
+          feed:
+            type: string
       users:
         type: array
         items:

@@ -237,6 +237,10 @@ func (suite *TenantTestSuite) SetupTest() {
 			"website":     "www.avengers.com",
 			"created":     "2015-10-20 02:08:04",
 			"updated":     "2015-10-20 02:08:04"},
+		"topology": bson.M{
+			"type": "GOCDB",
+			"feed": "gocdb.example.foo",
+		},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
@@ -277,6 +281,10 @@ func (suite *TenantTestSuite) SetupTest() {
 			"website": "www.gotg.com",
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
+		"topology": bson.M{
+			"type": "GOCDB",
+			"feed": "gocdb.example.foo",
+		},
 		"db_conf": []bson.M{
 			bson.M{
 				"store":    "ar",
@@ -324,6 +332,10 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 				"email":"yo@yo",
 				"website":"website"
 			},
+	  "topology":{
+		  "type":"GOCDB",
+		  "feed":"goc01.example.foo"
+	  },
       "db_conf": [
         {
           "store":"ar",
@@ -408,6 +420,10 @@ func (suite *TenantTestSuite) TestCreateTenant() {
      "password": "3NCRYPT3D"
     }
    ],
+   "topology": {
+    "type": "GOCDB",
+    "feed": "goc01.example.foo"
+   },
    "users": [
     {
      "id": "{{UUID-1}}",
@@ -1123,6 +1139,10 @@ func (suite *TenantTestSuite) TestListRestrictedTenants() {
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
+   },
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
    }
   },
   {
@@ -1135,6 +1155,10 @@ func (suite *TenantTestSuite) TestListRestrictedTenants() {
     "website": "www.gotg.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
+   },
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
    }
   }
  ]
@@ -1175,6 +1199,10 @@ func (suite *TenantTestSuite) TestListAdminUITenants() {
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
+   },
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
    },
    "users": [
     {
@@ -1227,6 +1255,10 @@ func (suite *TenantTestSuite) TestGetAdminUITenant() {
     "website": "www.avengers.com",
     "created": "2015-10-20 02:08:04",
     "updated": "2015-10-20 02:08:04"
+   },
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
    },
    "users": [
     {
@@ -1332,6 +1364,10 @@ func (suite *TenantTestSuite) TestListTenants() {
      "password": "3NCRYPT3D"
     }
    ],
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
+   },
    "users": [
     {
      "id": "acb74194-553a-11e9-8647-d663bd873d93",
@@ -1383,6 +1419,10 @@ func (suite *TenantTestSuite) TestListTenants() {
      "password": "3NCRYPT3D"
     }
    ],
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb.example.foo"
+   },
    "users": [
     {
      "id": "acb7459a-553a-11e9-8647-d663bd873d93",

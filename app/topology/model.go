@@ -49,3 +49,14 @@ type messageOUT struct {
 	Message string   `xml:"message" json:"message"`
 	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }
+
+// Endpoint includes information on endpoint group topology
+type Endpoint struct {
+	Date      string            `bson:"date" json:"date"`
+	DateInt   int               `bson:"date_integer" json:"-"`
+	Group     string            `bson:"group" json:"group"`
+	GroupType string            `bson:"type" json:"type"`
+	Service   string            `bson:"service" json:"service"`
+	Hostname  string            `bson:"hostname" json:"hostname"`
+	Tags      map[string]string `bson:"tags" json:"tags"`
+}

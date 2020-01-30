@@ -56,12 +56,13 @@ func (suite *topologyTestSuite) SetupSuite() {
 
 	const testConfig = `
 	[server]
-	bindip = ""
-	port = 8080
-	maxprocs = 4
-	cache = false
-	lrucache = 700000000
-	gzip = true
+    bindip = ""
+    port = 8080
+    maxprocs = 4
+    cache = false
+    lrucache = 700000000
+    gzip = true
+	reqsizelimit = 1073741824
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
@@ -163,7 +164,32 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
-			"resource": "topology.list",
+			"resource": "topology_endpoints.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_stats.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_stats.list",
 			"roles":    []string{"editor", "viewer"},
 		})
 	c.Insert(
@@ -440,10 +466,438 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	// Seed database with endpoint topology
+	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host3.site_a.foo",
+			"service":      "service_3",
+			"tags":         bson.M{"production": "0", "monitored": "0", "scope": "TEST"},
+		},
+		bson.M{
+			"date":         "2015-08-10",
+			"date_integer": 20150810,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host0.site_a.foo",
+			"service":      "service_x",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-08-10",
+			"date_integer": 20150810,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host0.site_b.foo",
+			"service":      "service_x",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		})
 }
 
-// TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly
-func (suite *topologyTestSuite) TestListServiceFlavorAvailabilityMonthly() {
+func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
+
+	expJSON := `{
+ "message": "Topology of 3 endpoints created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJSON2 := `{
+ "message": "Topology already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	jsonInput := `	[
+	 {"group": "SITE_A", "hostname": "host1.site-a.foo", "type": "SITES", "service": "a.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_A", "hostname": "host2.site-b.foo", "type": "SITES", "service": "b.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_B", "hostname": "host1.site-a.foo", "type": "SITES", "service": "c.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}}
+	]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON2, output2, "Creation failed")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestDeleteEndpoints() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 2 endpoints deleted for date: 2015-08-10",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints2() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-06-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints3() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-07-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_3",
+   "hostname": "host3.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0",
+    "scope": "TEST"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints4() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-08-15", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints5() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-02-15", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+// TestListTopologyStats
+func (suite *topologyTestSuite) TestListTopologyStats() {
 
 	expJSON := `{
  "status": {
@@ -474,7 +928,7 @@ func (suite *topologyTestSuite) TestListServiceFlavorAvailabilityMonthly() {
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/Critical?date=2015-06-22", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/stats/Critical?date=2015-06-22", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
