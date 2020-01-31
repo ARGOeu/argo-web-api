@@ -78,12 +78,27 @@ pipeline {
                 cp /home/jenkins/rpmbuild/RPMS/**/*.rpm ${WORKSPACE}/
                 '''
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
-                echo 'Uploading rpm for devel...'
-                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-repo', usernameVariable: 'REPOUSER', \
-                                                             keyFileVariable: 'REPOKEY')]) {
-                  sh '''
-                  scp -i ${REPOKEY} -o StrictHostKeyChecking=no ${WORKSPACE}/*.rpm ${REPOUSER}@rpm-repo.argo.grnet.gr:/repos/ARGO/devel/centos7/
-                  '''
+                script {
+                    if ( env.BRANCH_NAME == 'master' ) {
+                        echo 'Uploading rpm for devel...'
+                        withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-repo', usernameVariable: 'REPOUSER', \
+                                                                keyFileVariable: 'REPOKEY')]) {
+                            sh  '''
+                                scp -i ${REPOKEY} -o StrictHostKeyChecking=no ${WORKSPACE}/*.rpm ${REPOUSER}@rpm-repo.argo.grnet.gr:/repos/ARGO/prod/centos7/
+                                ssh  jenkins@rpm-repo.argo.grnet.gr createrepo --update /repos/ARGO/prod/centos7/
+                                '''
+                        }
+                    }
+                    else if ( env.BRANCH_NAME == 'devel' ) {
+                        echo 'Uploading rpm for devel...'
+                        withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-repo', usernameVariable: 'REPOUSER', \
+                                                                    keyFileVariable: 'REPOKEY')]) {
+                            sh  '''
+                                scp -i ${REPOKEY} -o StrictHostKeyChecking=no ${WORKSPACE}/*.rpm ${REPOUSER}@rpm-repo.argo.grnet.gr:/repos/ARGO/devel/centos7/
+                                ssh -i ${REPOKEY} -o StrictHostKeyChecking=no jenkins@rpm-repo.argo.grnet.gr createrepo --update /repos/ARGO/devel/centos7/
+                                '''
+                        }
+                    }
                 }
             }
         }
