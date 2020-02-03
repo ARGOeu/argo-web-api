@@ -7,6 +7,7 @@ pipeline {
     }
     options { checkoutToSubdirectory('argo-web-api') }
     environment {
+        PROJECT_DIR='argo-web-api'
         GOPATH="${WORKSPACE}/go"
         GIT_COMMIT=sh(script: 'cd ${WORKSPACE}/argo-web-api && git log -1 --format="%H"',returnStdout: true).trim()
         GIT_COMMIT_HASH=sh(script: 'cd ${WORKSPACE}/argo-web-api && git log -1 --format="%H" | cut -c1-7',returnStdout: true).trim()
@@ -16,24 +17,24 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Build...'
-                sh '''
+                sh """
                 mkdir -p ${WORKSPACE}/go/src/github.com/ARGOeu
-                ln -sf ${WORKSPACE}/argo-web-api ${WORKSPACE}/go/src/github.com/ARGOeu/argo-web-api
-                rm -rf ${WORKSPACE}/go/src/github.com/ARGOeu/argo-web-api/argo-web-api
-                cd ${WORKSPACE}/go/src/github.com/ARGOeu/argo-web-api
+                ln -sf ${WORKSPACE}/${PROJECT_DIR} ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
+                rm -rf ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}/${PROJECT_DIR}
+                cd ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
                 go build
-                '''
+                """
             }
         }
         stage('Test') {
             steps {
                 echo 'Test & Coverage...'
-                sh '''
+                sh """
                 sudo /etc/init.d/mongod restart
-                cd ${WORKSPACE}/go/src/github.com/ARGOeu/argo-web-api
-                gocov test -p 1 $(go list ./... | grep -v /vendor/) | gocov-xml > ${WORKSPACE}/coverage.xml
-                go test -p 1 $(go list ./... | grep -v /vendor/) -v=1 | go-junit-report > ${WORKSPACE}/junit.xml
-                '''
+                cd ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
+                gocov test -p 1 \$(go list ./... | grep -v /vendor/) | gocov-xml > ${WORKSPACE}/coverage.xml
+                go test -p 1 \$(go list ./... | grep -v /vendor/) -v=1 | go-junit-report > ${WORKSPACE}/junit.xml
+                """
                 junit '**/junit.xml'
                 cobertura coberturaReportFile: '**/coverage.xml'
 
@@ -42,18 +43,18 @@ pipeline {
         stage('Package') {
             steps {
                 echo 'Building Rpm...'
-                sh '''
-                cd ${WORKSPACE}/argo-web-api && make sources
-                cp ${WORKSPACE}/argo-web-api/argo-web-api*.tar.gz /home/jenkins/rpmbuild/SOURCES/
+                sh """
+                cd ${WORKSPACE}/${PROJECT_DIR} && make sources
+                cp ${WORKSPACE}/${PROJECT_DIR}/argo-web-api*.tar.gz /home/jenkins/rpmbuild/SOURCES/
                 if [ "$env.BRANCH_NAME" != "master" ]; then
-                    sed -i 's/^Release.*/Release: %(echo $GIT_COMMIT_DATE).%(echo $GIT_COMMIT_HASH)%{?dist}/' ${WORKSPACE}/argo-web-api/argo-web-api.spec
+                    sed -i 's/^Release.*/Release: %(echo $GIT_COMMIT_DATE).%(echo $GIT_COMMIT_HASH)%{?dist}/' ${WORKSPACE}/${PROJECT_DIR}/argo-web-api.spec
                 fi
                 cd /home/jenkins/rpmbuild/SOURCES && tar -xzvf argo-web-api*.tar.gz
-                cp ${WORKSPACE}/argo-web-api/argo-web-api.spec /home/jenkins/rpmbuild/SPECS/
+                cp ${WORKSPACE}/${PROJECT_DIR}/argo-web-api.spec /home/jenkins/rpmbuild/SPECS/
                 rpmbuild -bb /home/jenkins/rpmbuild/SPECS/*.spec
                 rm -f ${WORKSPACE}/*.rpm
                 cp /home/jenkins/rpmbuild/RPMS/**/*.rpm ${WORKSPACE}/
-                '''
+                """
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
                 script {
                     if ( env.BRANCH_NAME == 'master' ) {
