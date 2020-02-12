@@ -176,6 +176,10 @@ function populate_default_roles() {
         {
             resource: "topology_groups.delete",
             roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups_report.list",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
