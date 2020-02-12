@@ -573,6 +573,23 @@ func getReportEndpointGroupType(r reports.MongoInterface) string {
 	return ""
 }
 
+func getReportTags(r reports.MongoInterface) string {
+	tagStr := ""
+	first := false
+	for _, tag := range r.Tags {
+		if tag.Context == "argo.group.filter.tags" {
+			if !first {
+				tagStr = tagStr + ","
+			} else {
+				first = false
+			}
+
+			tagStr = tagStr + tag.Name + ":" + tag.Value
+		}
+	}
+	return tagStr
+}
+
 func getReportGroupType(r reports.MongoInterface) string {
 
 	if r.Topology.Group != nil {
@@ -629,6 +646,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	}
 
 	groupType := getReportGroupType(report)
+	groupTags := getReportTags(report)
 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -639,6 +657,9 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	fltr := fltrGroup{}
 	if groupType != "" {
 		fltr.GroupType = groupType
+	}
+	if groupTags != "" {
+		fltr.Tags = groupTags
 	}
 
 	expDate := getCloseDate(colGroup, dt)
