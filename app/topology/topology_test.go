@@ -506,7 +506,7 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49438",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943x",
 		"info": bson.M{
 			"name":        "Critical3",
 			"description": "lalalallala",
@@ -534,7 +534,7 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
-		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49438",
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943p",
 		"info": bson.M{
 			"name":        "Critical4",
 			"description": "lalalallala",
@@ -559,6 +559,57 @@ func (suite *topologyTestSuite) SetupTest() {
 			bson.M{
 				"name":  "name2",
 				"value": "value2"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943d",
+		"info": bson.M{
+			"name":        "Critical5",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "PROJECT",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.tags",
+				"name":    "infrastructure",
+				"value":   "Devel"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical6",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "PROJECT",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.tags",
+				"name":    "certification",
+				"value":   "Certified"},
 		}})
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
@@ -746,8 +797,24 @@ func (suite *topologyTestSuite) SetupTest() {
 			"date_integer": 20200111,
 			"group":        "NGIX",
 			"type":         "NGIS",
-			"subgroup":     "SITEX",
+			"subgroup":     "SITEXYZ",
+			"tags":         bson.M{"infrastructure": "Devel", "certification": "Uncertified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEXZ",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
 		},
 		bson.M{
 			"date":         "2020-01-11",
@@ -1024,9 +1091,29 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
    "date": "2020-01-11",
    "group": "NGIX",
    "type": "NGIS",
-   "subgroup": "SITEX",
+   "subgroup": "SITEXYZ",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Devel"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXZ",
    "tags": {
     "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Uncertified",
     "infrastructure": "Production"
    }
   }
@@ -1056,6 +1143,50 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 
 		TestReq{
 			Path: "/api/v2/topology/groups/by_report/Critical4",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical5",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical6",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1735,9 +1866,29 @@ func (suite *topologyTestSuite) TestListGroups() {
    "date": "2020-01-11",
    "group": "NGIX",
    "type": "NGIS",
-   "subgroup": "SITEX",
+   "subgroup": "SITEXYZ",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Devel"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXZ",
    "tags": {
     "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Uncertified",
     "infrastructure": "Production"
    }
   },
