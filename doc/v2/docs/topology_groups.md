@@ -7,6 +7,7 @@ API calls for handling topology group resources
 | POST: Create group topology for specific date   | Creates a daily group topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
 | GET: List group topology for specific date      | Lists group topology for a specific date                            | <a href="#2">Description</a> |
 | DELETE: Delete group topology for specific date | Delete group topology items for specific date                       | <a href="#3">Description</a> |
+| GET: List group topology for specific report    | Lists group topology for a specific report                          | <a href="#4">Description</a> |
 
 <a id="1"></a>
 
@@ -58,8 +59,8 @@ Accept: application/json
         }
     },
     {
-        "group": "NGIZ",
-        "type": "NGIS",
+        "group": "PROJECTZ",
+        "type": "PROJECT",
         "service": "SITEZ",
         "tags": {
             "scope": "FEDERATION",
@@ -108,7 +109,7 @@ User can proceed with either updating the existing topology OR deleting before t
 
 <a id="2"></a>
 
-## POST: List group topology for specific date
+## GET: List group topology for specific date
 
 Lists group topology items for specific date
 
@@ -180,16 +181,6 @@ Status: 200 OK
                 "certification": "Certified",
                 "infrastructure": "Production"
             }
-        },
-        {
-            "date": "2015-07-22",
-            "group": "NGIX",
-            "type": "NGIS",
-            "subgroup": "SITEX",
-            "tags": {
-                "certification": "Certified",
-                "infrastructure": "Production"
-            }
         }
     ]
 }
@@ -227,5 +218,86 @@ Json Response
 {
     "message": "Topology of 3 groups deleted for date: 2019-12-12",
     "code": "200"
+}
+```
+
+<a id="4"></a>
+
+## GET: List group topology for specific report
+
+Lists group topology items for specific report
+
+### Input
+
+```
+GET /topology/groups/by_report/{report-name}?date=YYYY-MM-DD
+```
+
+#### Url Parameters
+
+| Type          | Description              | Required | Default value |
+| ------------- | ------------------------ | -------- | ------------- |
+| `report-name` | target a specific report | YES      | none          |
+| `date`        | target a specific date   | NO       | today's date  |
+
+#### Headers
+
+```
+x-api-key: secret_key_value
+Accept: application/json
+```
+
+#### Example Request
+
+```
+GET /topology/groups/by_report/Critical?date=2015-07-22
+```
+
+#### Response Code
+
+```
+Status: 200 OK
+```
+
+### Response body
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "date": "2015-07-22",
+            "group": "NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEA",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        },
+        {
+            "date": "2015-07-22",
+            "group": "NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEB",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        },
+        {
+            "date": "2015-07-22",
+            "group": "NGIX",
+            "type": "NGIS",
+            "subgroup": "SITEX",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            }
+        }
+    ]
 }
 ```

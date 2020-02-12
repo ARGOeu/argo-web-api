@@ -32,6 +32,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
+
 	"gopkg.in/mgo.v2"
 
 	"github.com/ARGOeu/argo-web-api/respond"
@@ -558,6 +560,113 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 	}
 
 	return query
+}
+
+func getReportEndpointGroupType(r reports.MongoInterface) string {
+
+	if r.Topology.Group != nil {
+		if r.Topology.Group.Group != nil {
+			return r.Topology.Group.Group.Type
+		}
+	}
+
+	return ""
+}
+
+func getReportGroupType(r reports.MongoInterface) string {
+
+	if r.Topology.Group != nil {
+		return r.Topology.Group.Type
+	}
+
+	return ""
+}
+
+//ListGroupsByReport lists group topology by report
+func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	reportName := vars["report"]
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
+	colReports := session.DB(tenantDbConfig.Db).C("reports")
+	//get the report
+
+	report := reports.MongoInterface{}
+	err = colReports.Find(bson.M{"info.name": reportName}).One(&report)
+
+	if err != nil {
+		if err.Error() == "not found" {
+			output, err = createMessageOUT(fmt.Sprintf("No report with name: %s exists!", reportName), 404, "json")
+			code = 404
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	groupType := getReportGroupType(report)
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	fltr := fltrGroup{}
+	if groupType != "" {
+		fltr.GroupType = groupType
+	}
+
+	expDate := getCloseDate(colGroup, dt)
+
+	results := []Group{}
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	err = colGroup.Find(prepGroupQuery(expDate, fltr)).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createListGroup(results, "Success", code) //Render the results into JSON
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
 }
 
 // ListGroups by date
