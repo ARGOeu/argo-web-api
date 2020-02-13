@@ -704,6 +704,43 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "monitored",
 				"value":   "YesNo"},
 		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "CriticalCombine",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host1.site_a.foo"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host2.site_a.foo"},
+		}})
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
 	c.EnsureIndexKey("-date_integer", "group")
@@ -1087,6 +1124,145 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 
 }
 
+func (suite *topologyTestSuite) TestListFilterEndpointTags() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=monitored:Y*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=production:1*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=monitored:Yes,monitored:Y",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+	}
+}
 func (suite *topologyTestSuite) TestListFilterGroupTags() {
 
 	type TestReq struct {
@@ -1173,6 +1349,38 @@ func (suite *topologyTestSuite) TestListFilterGroupTags() {
 
 		TestReq{
 			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=certification:Cert*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:devel,infrastructure:production",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1392,6 +1600,38 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
   }
  ]
 }`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/CriticalCombine?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -1523,6 +1763,40 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
   }
  ]
 }`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/CriticalCombine?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -1635,6 +1909,38 @@ func (suite *topologyTestSuite) TestListFilterGroups() {
   "code": "200"
  },
  "data": []
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=*A&subgroup=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
 }`},
 	}
 
@@ -1839,6 +2145,40 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
   "code": "200"
  },
  "data": []
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=*A&group=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
 }`},
 	}
 
