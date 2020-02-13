@@ -33,7 +33,10 @@ pipeline {
             steps {
                 echo 'Test & Coverage...'
                 sh """
-                sudo /etc/init.d/mongod restart
+                mkdir /home/jenkins/mongo_data
+                mkdir /home/jenkins/mongo_log
+                mkdir /home/jenkins/mongo_run
+                mongod --dbpath /home/jenkins/mongo_data --logpath /home/jenkins/mongo_log/mongo.log --pidfilepath /home/jenkins/mongo_run/mongo.pid --fork
                 cd ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
                 gocov test -p 1 \$(go list ./... | grep -v /vendor/) | gocov-xml > ${WORKSPACE}/coverage.xml
                 go test -p 1 \$(go list ./... | grep -v /vendor/) -v=1 | go-junit-report > ${WORKSPACE}/junit.xml

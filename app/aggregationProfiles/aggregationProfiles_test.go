@@ -419,49 +419,6 @@ func (suite *AggregationProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-05-04",
-   "name": "cloud",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
-   },
-   "groups": [
-    {
-     "name": "compute2",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEA",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICEB",
-       "operation": "AND"
-      }
-     ]
-    },
-    {
-     "name": "images2",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEC",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICED",
-       "operation": "AND"
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-11-04",
    "name": "critical",
@@ -498,6 +455,49 @@ func (suite *AggregationProfilesTestSuite) TestList() {
       },
       {
        "name": "SRM",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-05-04",
+   "name": "cloud",
+   "namespace": "test",
+   "endpoint_group": "sites",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "name": "roc.critical",
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   },
+   "groups": [
+    {
+     "name": "compute2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEA",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICEB",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "images2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEC",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICED",
        "operation": "AND"
       }
      ]

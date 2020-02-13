@@ -525,6 +525,51 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 	return query
 }
 
+func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
+
+	// prepare match query for applying filtering on the groups based on report
+	groupMatch := prepGroupQuery(date, fgroup)
+	// prepare match query for applying further filtering on already filtered by groups endpoints based on report
+	endpointMatch := prepEndpointQuery(date, fendpoint)
+
+	// Endpoints must be filtered based on the filtered groups they belong to. So we begin an aggregation firstly
+	// by filtering groups and then trying to find using lookup which endpoints belong to those filtered groups.
+	// The lookup aggregation step does that and creates to reference variables group_date = each group's date_integer value
+	// and group_subgroup = each group's subgroup value. For each group those reference variables are used in a matching
+	// rule to get only endpoints that their date_integer and group values match group_date and group_subgroup var values
+	// respectively. For each group iterated we store the matched endpoint records in an array named endp. Since
+	// the pipeline produces a list of groups with nested arrays of matched endpoints we unwind the arrays to get
+	// a flat association of each group with each matched endpoint record (again stored in an nested endp field).
+	// Lastly we replace the root of each record with the contents of the endp nested field which is the actual
+	// endpoint record we want.
+	aggr := []bson.M{
+		{"$match": groupMatch},
+		{"$lookup": bson.M{"from": endpointColName,
+			"let": bson.M{
+				"group_date":     "$date_integer",
+				"group_subgroup": "$subgroup",
+			},
+			"pipeline": []bson.M{
+				{"$match": bson.M{
+					"$expr": bson.M{
+						"$and": []bson.M{
+							{"$eq": []string{"$$group_subgroup", "$group"}},
+							{"$eq": []string{"$$group_date", "$date_integer"}},
+						},
+					},
+				},
+				},
+			},
+			"as": "endp"}},
+		{"$unwind": "$endp"},
+		{"$replaceRoot": bson.M{"newRoot": "$endp"}},
+		{"$match": endpointMatch},
+	}
+
+	return aggr
+
+}
+
 func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 	query := bson.M{"date_integer": date}
@@ -573,21 +618,74 @@ func getReportEndpointGroupType(r reports.MongoInterface) string {
 	return ""
 }
 
-func getReportTags(r reports.MongoInterface) string {
-	tagStr := ""
-	first := false
-	for _, tag := range r.Tags {
-		if tag.Context == "argo.group.filter.tags" {
-			if !first {
-				tagStr = tagStr + ","
-			} else {
-				first = false
-			}
+// getReportFilters reads a report definition and extracs all related group and endpoint filters
+func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
+	// prepare filter structs for groups and endpoints
+	fGroup := fltrGroup{}
+	fEndpoint := fltrEndpoint{}
+	// prepare empty tag strings for groups and endpoints
+	groupTags := ""
+	endpointTags := ""
+	// help vars to decide when to put commas when building tag strings
+	groupFirst := false
+	endpointFirst := false
 
-			tagStr = tagStr + tag.Name + ":" + tag.Value
+	// Iterate over report filter tags
+	for _, tag := range r.Tags {
+
+		if tag.Context == "argo.group.filter.tags" {
+			// check if it has special context refering to group filtering based on tags
+			// then construct / update group tag string
+
+			if !groupFirst {
+				groupTags = groupTags + ","
+			} else {
+				groupFirst = false
+			}
+			groupTags = groupTags + tag.Name + ":" + tag.Value
+
+		} else if tag.Context == "argo.group.filter.fields" {
+			// check if it has special context refering to group filtering based on basic fields
+			// then based on tag name update corresponding field filter
+
+			if tag.Name == "group" {
+				fGroup.Group = tag.Value
+			} else if tag.Name == "type" {
+				fGroup.GroupType = tag.Value
+			} else if tag.Name == "subgroup" {
+				fGroup.Subgroup = tag.Value
+			}
+		} else if tag.Context == "argo.endpoint.filter.tags" {
+			// check if it has special context refering to endpoint filtering based on tags
+			// then construct / update endpoint tag string
+
+			if !endpointFirst {
+				endpointTags = endpointTags + ","
+			} else {
+				endpointFirst = false
+			}
+			endpointTags = endpointTags + tag.Name + ":" + tag.Value
+		} else if tag.Context == "argo.endpoint.filter.fields" {
+			// check if it has special context refering to endpoint filtering based on basic fields
+			// then based on tag name update corresponding field filter
+
+			if tag.Name == "group" {
+				fEndpoint.Group = tag.Value
+			} else if tag.Name == "type" {
+				fEndpoint.GroupType = tag.Value
+			} else if tag.Name == "service" {
+				fEndpoint.Service = tag.Value
+			} else if tag.Name == "hostname" {
+				fEndpoint.Hostname = tag.Value
+			}
 		}
 	}
-	return tagStr
+
+	// lastly add constructued tag string to filters
+	fGroup.Tags = groupTags
+	fEndpoint.Tags = endpointTags
+
+	return fGroup, fEndpoint
 }
 
 func getReportGroupType(r reports.MongoInterface) string {
@@ -597,6 +695,100 @@ func getReportGroupType(r reports.MongoInterface) string {
 	}
 
 	return ""
+}
+
+//ListEndpointsByReport lists endpoint topology by report
+func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	reportName := vars["report"]
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
+	colReports := session.DB(tenantDbConfig.Db).C("reports")
+	//get the report
+
+	report := reports.MongoInterface{}
+	err = colReports.Find(bson.M{"info.name": reportName}).One(&report)
+
+	if err != nil {
+		if err.Error() == "not found" {
+			output, err = createMessageOUT(fmt.Sprintf("No report with name: %s exists!", reportName), 404, "json")
+			code = 404
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	groupType := getReportGroupType(report)
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	fGroup := fltrGroup{}
+	fEndpoint := fltrEndpoint{}
+
+	fGroup, fEndpoint = getReportFilters(report)
+
+	if groupType != "" {
+		fGroup.GroupType = groupType
+	}
+
+	expDate := getCloseDate(colGroup, dt)
+
+	results := []Endpoint{}
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	query := prepGroupEndpointAggr(expDate, fGroup, fEndpoint)
+
+	colGroup.Pipe(query).All(&results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createListEndpoint(results, "Success", code) //Render the results into JSON
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
 }
 
 //ListGroupsByReport lists group topology by report
@@ -646,7 +838,6 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	}
 
 	groupType := getReportGroupType(report)
-	groupTags := getReportTags(report)
 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -654,12 +845,11 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	fltr := fltrGroup{}
+	fGroup := fltrGroup{}
+	fGroup, _ = getReportFilters(report)
+
 	if groupType != "" {
-		fltr.GroupType = groupType
-	}
-	if groupTags != "" {
-		fltr.Tags = groupTags
+		fGroup.GroupType = groupType
 	}
 
 	expDate := getCloseDate(colGroup, dt)
@@ -672,7 +862,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	err = colGroup.Find(prepGroupQuery(expDate, fltr)).All(&results)
+	err = colGroup.Find(prepGroupQuery(expDate, fGroup)).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

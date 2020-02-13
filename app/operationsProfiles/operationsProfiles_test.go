@@ -431,61 +431,6 @@ func (suite *OperationsProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-08-04",
-   "name": "ops2",
-   "available_states": [
-    "X,Y,Z"
-   ],
-   "defaults": {
-    "down": "Y",
-    "missing": "X",
-    "unknown": "Z"
-   },
-   "operations": [
-    {
-     "name": "AND2",
-     "truth_table": [
-      {
-       "a": "X",
-       "b": "Y",
-       "x": "Y"
-      },
-      {
-       "a": "X",
-       "b": "Z",
-       "x": "Z"
-      },
-      {
-       "a": "Y",
-       "b": "Z",
-       "x": "Z"
-      }
-     ]
-    },
-    {
-     "name": "OR2",
-     "truth_table": [
-      {
-       "a": "X",
-       "b": "Y",
-       "x": "X"
-      },
-      {
-       "a": "X",
-       "b": "Z",
-       "x": "X"
-      },
-      {
-       "a": "Y",
-       "b": "Z",
-       "x": "Y"
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-11-04",
    "name": "ops1",
@@ -535,6 +480,61 @@ func (suite *OperationsProfilesTestSuite) TestList() {
        "a": "B",
        "b": "C",
        "x": "B"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-08-04",
+   "name": "ops2",
+   "available_states": [
+    "X,Y,Z"
+   ],
+   "defaults": {
+    "down": "Y",
+    "missing": "X",
+    "unknown": "Z"
+   },
+   "operations": [
+    {
+     "name": "AND2",
+     "truth_table": [
+      {
+       "a": "X",
+       "b": "Y",
+       "x": "Y"
+      },
+      {
+       "a": "X",
+       "b": "Z",
+       "x": "Z"
+      },
+      {
+       "a": "Y",
+       "b": "Z",
+       "x": "Z"
+      }
+     ]
+    },
+    {
+     "name": "OR2",
+     "truth_table": [
+      {
+       "a": "X",
+       "b": "Y",
+       "x": "X"
+      },
+      {
+       "a": "X",
+       "b": "Z",
+       "x": "X"
+      },
+      {
+       "a": "Y",
+       "b": "Z",
+       "x": "Y"
       }
      ]
     }

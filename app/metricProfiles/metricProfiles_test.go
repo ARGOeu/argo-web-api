@@ -338,9 +338,9 @@ func (suite *MetricProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-06-04",
-   "name": "ch.cern.SAM.ROC",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
+   "name": "ch.cern.SAM.ROC_CRITICAL",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -348,8 +348,6 @@ func (suite *MetricProfilesTestSuite) TestList() {
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
       "emi.wn.WN-Csh",
-      "hr.srce.CADist-Check",
-      "hr.srce.CREAMCE-CertLifetime",
       "emi.wn.WN-SoftVer"
      ]
     },
@@ -369,9 +367,9 @@ func (suite *MetricProfilesTestSuite) TestList() {
    ]
   },
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "date": "2019-11-04",
-   "name": "ch.cern.SAM.ROC_CRITICAL",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-06-04",
+   "name": "ch.cern.SAM.ROC",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -379,6 +377,8 @@ func (suite *MetricProfilesTestSuite) TestList() {
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
       "emi.wn.WN-Csh",
+      "hr.srce.CADist-Check",
+      "hr.srce.CREAMCE-CertLifetime",
       "emi.wn.WN-SoftVer"
      ]
     },
