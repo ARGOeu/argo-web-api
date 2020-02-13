@@ -192,10 +192,10 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	}
 
 	fltr := fltrEndpoint{}
-	fltr.Group = urlValues.Get("group")
-	fltr.GroupType = urlValues.Get("type")
-	fltr.Hostname = urlValues.Get("hostname")
-	fltr.Service = urlValues.Get("service")
+	fltr.Group = urlValues["group"]
+	fltr.GroupType = urlValues["type"]
+	fltr.Hostname = urlValues["hostname"]
+	fltr.Service = urlValues["service"]
 	fltr.Tags = urlValues.Get("tags")
 
 	expDate := getCloseDate(colEndpoint, dt)
@@ -458,7 +458,8 @@ func handleWildcard(item string) (string, bool) {
 }
 
 func appendTags(query bson.M, tags string) bson.M {
-	// split tags in kv paris
+	// split tags in kv parts
+	tagmap := map[string][]string{}
 	kvs := strings.Split(tags, ",")
 	for _, kv := range kvs {
 		// split kv in key and value
@@ -468,12 +469,38 @@ func appendTags(query bson.M, tags string) bson.M {
 			continue
 		}
 
-		if value, reg := handleWildcard(kvsplit[1]); reg == true {
-			query["tags."+kvsplit[0]] = bson.RegEx{Pattern: value}
-		} else {
-			query["tags."+kvsplit[0]] = value
+		if _, exists := tagmap[kvsplit[0]]; exists == false {
+			tagmap[kvsplit[0]] = []string{}
 		}
 
+		tagmap[kvsplit[0]] = append(tagmap[kvsplit[0]], kvsplit[1])
+
+	}
+
+	// iterate over map
+	for tag := range tagmap {
+		if len(tagmap[tag]) > 1 {
+			tagRegStr := "^("
+			for i, tagVal := range tagmap[tag] {
+				if i != 0 {
+					tagRegStr = tagRegStr + "|"
+				}
+				if value, reg := handleWildcard(tagVal); reg == true {
+					tagRegStr = tagRegStr + value
+				} else {
+					tagRegStr = tagRegStr + tagVal
+				}
+			}
+			tagRegStr = tagRegStr + ")$"
+			query["tags."+tag] = bson.RegEx{Pattern: tagRegStr}
+
+		} else {
+			if value, reg := handleWildcard(tagmap[tag][0]); reg == true {
+				query["tags."+tag] = bson.RegEx{Pattern: value}
+			} else {
+				query["tags."+tag] = value
+			}
+		}
 	}
 
 	return query
@@ -483,33 +510,99 @@ func appendTags(query bson.M, tags string) bson.M {
 func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 	query := bson.M{"date_integer": date}
-	// if filter struct not empty begin adding filters
-
-	if (fltrEndpoint{} != filter) {
-		if filter.Group != "" {
-			if value, reg := handleWildcard(filter.Group); reg == true {
+	// if filter group has values
+	if len(filter.Group) > 0 {
+		if len(filter.Group) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.Group {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["group"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.Group[0]); reg == true {
 				query["group"] = bson.RegEx{Pattern: value}
 			} else {
 				query["group"] = value
 			}
-
 		}
-		if filter.GroupType != "" {
-			if value, reg := handleWildcard(filter.GroupType); reg == true {
+	}
+
+	// if filter group type has values
+	if len(filter.GroupType) > 0 {
+		if len(filter.GroupType) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.GroupType {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["type"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.GroupType[0]); reg == true {
 				query["type"] = bson.RegEx{Pattern: value}
 			} else {
 				query["type"] = value
 			}
 		}
-		if filter.Service != "" {
-			if value, reg := handleWildcard(filter.Service); reg == true {
+	}
+
+	// if filter service has values
+	if len(filter.Service) > 0 {
+		if len(filter.Service) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.Service {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["service"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.Service[0]); reg == true {
 				query["service"] = bson.RegEx{Pattern: value}
 			} else {
 				query["service"] = value
 			}
 		}
-		if filter.Hostname != "" {
-			if value, reg := handleWildcard(filter.Hostname); reg == true {
+	}
+
+	// if filter hostname has values
+	if len(filter.Hostname) > 0 {
+		if len(filter.Hostname) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.Hostname {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["hostname"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.Hostname[0]); reg == true {
 				query["hostname"] = bson.RegEx{Pattern: value}
 			} else {
 				query["hostname"] = value
@@ -573,25 +666,74 @@ func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) [
 func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 	query := bson.M{"date_integer": date}
-	// if filter struct not empty begin adding filters
-	if (fltrGroup{} != filter) {
-		if filter.Group != "" {
-			if value, reg := handleWildcard(filter.Group); reg == true {
+	// if filter group has values
+	if len(filter.Group) > 0 {
+		if len(filter.Group) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.Group {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["group"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.Group[0]); reg == true {
 				query["group"] = bson.RegEx{Pattern: value}
 			} else {
 				query["group"] = value
 			}
-
 		}
-		if filter.GroupType != "" {
-			if value, reg := handleWildcard(filter.GroupType); reg == true {
+	}
+
+	// if filter group type has values
+	if len(filter.GroupType) > 0 {
+		if len(filter.GroupType) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.GroupType {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["type"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.GroupType[0]); reg == true {
 				query["type"] = bson.RegEx{Pattern: value}
 			} else {
 				query["type"] = value
 			}
 		}
-		if filter.Subgroup != "" {
-			if value, reg := handleWildcard(filter.Subgroup); reg == true {
+	}
+
+	// if filter subgroup has values
+	if len(filter.Subgroup) > 0 {
+		if len(filter.Subgroup) > 1 {
+			groupRegStr := "^("
+			for i, groupVal := range filter.Subgroup {
+				if i != 0 {
+					groupRegStr = groupRegStr + "|"
+				}
+				if value, reg := handleWildcard(groupVal); reg == true {
+					groupRegStr = groupRegStr + value
+				} else {
+					groupRegStr = groupRegStr + groupVal
+				}
+			}
+			groupRegStr = groupRegStr + ")$"
+			query["subgroup"] = bson.RegEx{Pattern: groupRegStr}
+		} else {
+			if value, reg := handleWildcard(filter.Subgroup[0]); reg == true {
 				query["subgroup"] = bson.RegEx{Pattern: value}
 			} else {
 				query["subgroup"] = value
@@ -649,11 +791,11 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			// then based on tag name update corresponding field filter
 
 			if tag.Name == "group" {
-				fGroup.Group = tag.Value
+				fGroup.Group = append(fGroup.Group, tag.Value)
 			} else if tag.Name == "type" {
-				fGroup.GroupType = tag.Value
+				fGroup.GroupType = append(fGroup.GroupType, tag.Value)
 			} else if tag.Name == "subgroup" {
-				fGroup.Subgroup = tag.Value
+				fGroup.Subgroup = append(fGroup.Subgroup, tag.Value)
 			}
 		} else if tag.Context == "argo.endpoint.filter.tags" {
 			// check if it has special context refering to endpoint filtering based on tags
@@ -670,13 +812,13 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			// then based on tag name update corresponding field filter
 
 			if tag.Name == "group" {
-				fEndpoint.Group = tag.Value
+				fEndpoint.Group = append(fEndpoint.Group, tag.Value)
 			} else if tag.Name == "type" {
-				fEndpoint.GroupType = tag.Value
+				fEndpoint.GroupType = append(fEndpoint.GroupType, tag.Value)
 			} else if tag.Name == "service" {
-				fEndpoint.Service = tag.Value
+				fEndpoint.Service = append(fEndpoint.Service, tag.Value)
 			} else if tag.Name == "hostname" {
-				fEndpoint.Hostname = tag.Value
+				fEndpoint.Hostname = append(fEndpoint.Hostname, tag.Value)
 			}
 		}
 	}
@@ -757,7 +899,7 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	fGroup, fEndpoint = getReportFilters(report)
 
 	if groupType != "" {
-		fGroup.GroupType = groupType
+		fGroup.GroupType = append(fGroup.GroupType)
 	}
 
 	expDate := getCloseDate(colGroup, dt)
@@ -849,7 +991,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	fGroup, _ = getReportFilters(report)
 
 	if groupType != "" {
-		fGroup.GroupType = groupType
+		fGroup.GroupType = append(fGroup.GroupType, groupType)
 	}
 
 	expDate := getCloseDate(colGroup, dt)
@@ -916,9 +1058,9 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	}
 
 	fltr := fltrGroup{}
-	fltr.Group = urlValues.Get("group")
-	fltr.GroupType = urlValues.Get("type")
-	fltr.Subgroup = urlValues.Get("subgroup")
+	fltr.Group = urlValues["group"]
+	fltr.GroupType = urlValues["type"]
+	fltr.Subgroup = urlValues["subgroup"]
 	fltr.Tags = urlValues.Get("tags")
 
 	expDate := getCloseDate(colGroup, dt)
