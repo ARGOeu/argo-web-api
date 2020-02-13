@@ -164,6 +164,11 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
+			"resource": "topology_endpoints_report.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_groups_report.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -611,11 +616,136 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "certification",
 				"value":   "Certified"},
 		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical7",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical8",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "service",
+				"value":   "service_1"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical9",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "service",
+				"value":   "service_1"},
+			bson.M{
+				"context": "argo.endpoint.filter.tags",
+				"name":    "monitored",
+				"value":   "YesNo"},
+		}})
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
 	c.EnsureIndexKey("-date_integer", "group")
 	// Insert seed data
+
 	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "Y"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "Prod", "monitored": "YesNo"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEC",
+			"type":         "SITES",
+			"hostname":     "host1.site_c.foo",
+			"service":      "service_3",
+			"tags":         bson.M{"production": "Prod", "monitored": "No"},
+		},
 		bson.M{
 			"date":         "2015-06-11",
 			"date_integer": 20150611,
@@ -720,6 +850,30 @@ func (suite *topologyTestSuite) SetupTest() {
 	c.EnsureIndexKey("-date_integer", "group")
 	// Insert seed data
 	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI1",
+			"type":         "NGIS",
+			"subgroup":     "SITEC",
+			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
+		},
 		bson.M{
 			"date":         "2015-06-10",
 			"date_integer": 20150610,
@@ -1202,6 +1356,169 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
    "tags": {
     "certification": "Certified",
     "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical7?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical7?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical8?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical9?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
    }
   }
  ]
@@ -1815,7 +2132,7 @@ func (suite *topologyTestSuite) TestListEndpoints4() {
 
 func (suite *topologyTestSuite) TestListEndpoints5() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-02-15", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-01-01", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -2027,7 +2344,7 @@ func (suite *topologyTestSuite) TestListGroups3() {
 
 func (suite *topologyTestSuite) TestListGroups5() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-02-15", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-01-01", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()

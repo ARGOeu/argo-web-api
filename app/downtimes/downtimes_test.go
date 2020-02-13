@@ -411,19 +411,6 @@ func (suite *DowntimesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-13",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-13T02:00:33Z",
-     "end_time": "2019-10-13T23:33:00Z"
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-13",
    "name": "Critical",
@@ -445,6 +432,19 @@ func (suite *DowntimesTestSuite) TestList() {
      "service": "service-C",
      "start_time": "2019-10-13T20:00:33Z",
      "end_time": "2019-10-13T22:15:00Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-13",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-13T02:00:33Z",
+     "end_time": "2019-10-13T23:33:00Z"
     }
    ]
   }
@@ -476,25 +476,6 @@ func (suite *DowntimesTestSuite) TestListPast() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-11",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-11T02:00:33Z",
-     "end_time": "2019-10-11T23:33:00Z"
-    },
-    {
-     "hostname": "host-02",
-     "service": "service-02",
-     "start_time": "2019-10-11T16:00:33Z",
-     "end_time": "2019-10-11T16:45:00Z"
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-11",
    "name": "Critical",
@@ -516,6 +497,25 @@ func (suite *DowntimesTestSuite) TestListPast() {
      "service": "service-C",
      "start_time": "2019-10-11T20:00:33Z",
      "end_time": "2019-10-11T22:15:00Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-11",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-11T02:00:33Z",
+     "end_time": "2019-10-11T23:33:00Z"
+    },
+    {
+     "hostname": "host-02",
+     "service": "service-02",
+     "start_time": "2019-10-11T16:00:33Z",
+     "end_time": "2019-10-11T16:45:00Z"
     }
    ]
   }

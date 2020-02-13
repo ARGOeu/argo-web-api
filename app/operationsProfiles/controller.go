@@ -74,6 +74,9 @@ func prepMultiQuery(dt int, name string) interface{} {
 				"operations":       bson.M{"$first": "$operations"},
 			},
 		},
+		{
+			"$sort": bson.M{"id": 1},
+		},
 	}
 
 }
