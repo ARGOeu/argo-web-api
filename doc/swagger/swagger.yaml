@@ -1899,6 +1899,44 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /topology/groups/by_report/{report_name}:
+    get:
+      summary: List group topology per date and filter by report
+      operationId: topology_groups_report.list
+      description: List group topology per date and filter by report
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: report_name
+          type: string
+          description: filter results based on selected report
+          required: true
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: filtered topology resources listed based on report
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+      
           
   /topology/endpoints:
     post:
