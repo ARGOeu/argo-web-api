@@ -51,17 +51,17 @@ type messageOUT struct {
 }
 
 type fltrEndpoint struct {
-	Group     string
-	GroupType string
-	Service   string
-	Hostname  string
+	Group     []string
+	GroupType []string
+	Service   []string
+	Hostname  []string
 	Tags      string
 }
 
 type fltrGroup struct {
-	Group     string
-	GroupType string
-	Subgroup  string
+	Group     []string
+	GroupType []string
+	Subgroup  []string
 	Tags      string
 }
 
