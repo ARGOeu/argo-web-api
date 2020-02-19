@@ -7,6 +7,7 @@ API calls for handling topology endpoint resources
 | POST: Create endpoint topology for specific date   | Creates a daily endpoint topology mapping endpoints to endpoint groups | <a href="#1">Description</a> |
 | GET: List endpoint topology for specific date      | Lists endpoint topology for a specific date                            | <a href="#2">Description</a> |
 | DELETE: delete endpoint topology for specific date | Deletes all endpoint items (topology) for a specific date              | <a href="#3">Description</a> |
+| GET: List endpoint topology for specific report    | Lists endpoint topology for a specific report                          | <a href="#4">Description</a> |
 
 <a id="1"></a>
 
@@ -141,32 +142,50 @@ Status: 200 OK
 ### Response body
 
 ```json
-[
-    {
-        "date": "2019-12-12",
-        "group": "SITE_A",
-        "hostname": "host1.site-a.foo",
-        "type": "SITES",
-        "service": "a.service.foo",
-        "tags": { "scope": "TENANT", "production": "1", "monitored": "1" }
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
     },
-    {
-        "date": "2019-12-12",
-        "group": "SITE_A",
-        "hostname": "host2.site-b.foo",
-        "type": "SITES",
-        "service": "b.service.foo",
-        "tags": { "scope": "TENANT", "production": "1", "monitored": "1" }
-    },
-    {
-        "date": "2019-12-12",
-        "group": "SITE_B",
-        "hostname": "host1.site-a.foo",
-        "type": "SITES",
-        "service": "c.service.foo",
-        "tags": { "scope": "TENANT", "production": "1", "monitored": "1" }
-    }
-]
+    "data": [
+        {
+            "date": "2019-12-12",
+            "group": "SITE_A",
+            "hostname": "host1.site-a.foo",
+            "type": "SITES",
+            "service": "a.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        },
+        {
+            "date": "2019-12-12",
+            "group": "SITE_A",
+            "hostname": "host2.site-b.foo",
+            "type": "SITES",
+            "service": "b.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        },
+        {
+            "date": "2019-12-12",
+            "group": "SITE_B",
+            "hostname": "host1.site-a.foo",
+            "type": "SITES",
+            "service": "c.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        }
+    ]
+}
 ```
 
 <a id='3'></a>
@@ -201,5 +220,92 @@ Json Response
 {
     "message": "Topology of 3 endpoints deleted for date: 2019-12-12",
     "code": "200"
+}
+```
+
+<a id="4"></a>
+
+## GET: List endpoint topology for specific report
+
+Lists endpoint topology items for specific report
+
+### Input
+
+```
+GET /topology/endpoint/by_report/{report-name}?date=YYYY-MM-DD
+```
+
+#### Url Parameters
+
+| Type          | Description              | Required | Default value |
+| ------------- | ------------------------ | -------- | ------------- |
+| `report-name` | target a specific report | YES      | none          |
+| `date`        | target a specific date   | NO       | today's date  |
+
+#### Headers
+
+```
+x-api-key: secret_key_value
+Accept: application/json
+```
+
+#### Example Request
+
+```
+GET /topology/endpoints/by_report/Critical?date=2015-07-22
+```
+
+#### Response Code
+
+```
+Status: 200 OK
+```
+
+### Response body
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "date": "2019-12-12",
+            "group": "SITE_A",
+            "hostname": "host1.site-a.foo",
+            "type": "SITES",
+            "service": "a.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        },
+        {
+            "date": "2019-12-12",
+            "group": "SITE_A",
+            "hostname": "host2.site-b.foo",
+            "type": "SITES",
+            "service": "b.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        },
+        {
+            "date": "2019-12-12",
+            "group": "SITE_B",
+            "hostname": "host1.site-a.foo",
+            "type": "SITES",
+            "service": "c.service.foo",
+            "tags": {
+                "scope": "TENANT",
+                "production": "1",
+                "monitored": "1"
+            }
+        }
+    ]
 }
 ```

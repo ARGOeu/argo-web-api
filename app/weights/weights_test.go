@@ -552,23 +552,6 @@ func (suite *WeightsTestSuite) TestListPast() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-04",
-   "name": "NonCritical",
-   "weight_type": "hepsepc",
-   "group_type": "SERVICEGROUPS",
-   "groups": [
-    {
-     "name": "SVGROUP-A",
-     "value": 334
-    },
-    {
-     "name": "SVGROUP-B",
-     "value": 588
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-04",
    "name": "Critical",
@@ -590,6 +573,23 @@ func (suite *WeightsTestSuite) TestListPast() {
     {
      "name": "SITE-D",
      "value": 2
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-04",
+   "name": "NonCritical",
+   "weight_type": "hepsepc",
+   "group_type": "SERVICEGROUPS",
+   "groups": [
+    {
+     "name": "SVGROUP-A",
+     "value": 334
+    },
+    {
+     "name": "SVGROUP-B",
+     "value": 588
     }
    ]
   }

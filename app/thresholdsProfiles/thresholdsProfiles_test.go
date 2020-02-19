@@ -23,7 +23,6 @@
 package thresholdsProfiles
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -282,14 +281,14 @@ func (suite *ThresholdsProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-04",
-   "name": "thr01",
+   "name": "thr02",
    "rules": [
     {
      "host": "hostFoo",
      "metric": "metricA",
-     "thresholds": "freshnesss=1s;10;9:;0;25 entries=1;3;2:0;10"
+     "thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10"
     }
    ]
   },
@@ -306,14 +305,14 @@ func (suite *ThresholdsProfilesTestSuite) TestList() {
    ]
   },
   {
-   "id": "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-04",
-   "name": "thr02",
+   "name": "thr01",
    "rules": [
     {
      "host": "hostFoo",
      "metric": "metricA",
-     "thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10"
+     "thresholds": "freshnesss=1s;10;9:;0;25 entries=1;3;2:0;10"
     }
    ]
   }
@@ -548,7 +547,7 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
 	c := session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
 
 	c.Find(bson.M{"name": "thr04"}).One(&result)
-	fmt.Println(result)
+
 	id := result["id"].(string)
 
 	// Apply id to output template and check
