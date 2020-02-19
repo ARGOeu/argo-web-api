@@ -84,4 +84,13 @@ pipeline {
             }
         } 
     }
+    post{
+        success {
+            script{
+                if ( env.BRANCH_NAME == 'devel' ) {
+                    build job: '../../argo_swagger_docs', propagate: false
+                }
+            }
+        }
+    }
 }
