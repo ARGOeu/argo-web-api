@@ -193,6 +193,9 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
+			"info": bson.M{
+				"Url": "https://foo.example.url",
+			},
 		},
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
@@ -246,6 +249,9 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 					"name":  "production",
 					"value": "Y",
 				},
+			},
+			"info": bson.M{
+				"Url": "https://foo.example.url",
 			},
 		},
 		bson.M{
@@ -349,6 +355,9 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly(
              {
                "name": "e01",
                "type": "endpoint",
+               "info": {
+                 "Url": "https://foo.example.url"
+               },
                "results": [
                  {
                    "timestamp": "2015-06",
@@ -455,6 +464,9 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityDaily() 
              {
                "name": "e01",
                "type": "endpoint",
+               "info": {
+                 "Url": "https://foo.example.url"
+               },
                "results": [
                  {
                    "timestamp": "2015-06-22",

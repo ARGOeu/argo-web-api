@@ -33,7 +33,6 @@ import (
 )
 
 func createEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string) ([]byte, error) {
-
 	docRoot := &root{}
 
 	prevServiceFlavorGroup := ""
@@ -76,6 +75,7 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 			endpoint = &Endpoint{
 				Name: row.Name,
 				Type: fmt.Sprintf("endpoint"),
+				Info: row.Info,
 			}
 			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
 		}

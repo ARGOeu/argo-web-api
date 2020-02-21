@@ -83,17 +83,18 @@ type endpointResultQuery struct {
 
 //EndpointInterface for mongodb object exchanging
 type EndpointInterface struct {
-	Name         string  `bson:"name"`
-	Report       string  `bson:"report"`
-	Date         string  `bson:"date"`
-	Type         string  `bson:"type"`
-	Up           float64 `bson:"up"`
-	Down         float64 `bson:"down"`
-	Unknown      float64 `bson:"unknown"`
-	Availability float64 `bson:"availability"`
-	Reliability  float64 `bson:"reliability"`
-	SuperGroup   string  `bson:"supergroup"`
-	Service      string  `bson:"service"`
+	Name         string            `bson:"name"`
+	Report       string            `bson:"report"`
+	Date         string            `bson:"date"`
+	Type         string            `bson:"type"`
+	Up           float64           `bson:"up"`
+	Down         float64           `bson:"down"`
+	Unknown      float64           `bson:"unknown"`
+	Availability float64           `bson:"availability"`
+	Reliability  float64           `bson:"reliability"`
+	SuperGroup   string            `bson:"supergroup"`
+	Service      string            `bson:"service"`
+	Info         map[string]string `bson:"info"`
 }
 
 // ServiceFlavorInterface for mongodb object exchanging
@@ -160,10 +161,11 @@ type ServiceEndpointGroup struct {
 
 // Endpoint A/R struct for formating xml/json
 type Endpoint struct {
-	XMLName      xml.Name      `xml:"group" json:"-"`
-	Name         string        `xml:"name,attr" json:"name"`
-	Type         string        `xml:"type,attr" json:"type"`
-	Availability []interface{} `json:"results"`
+	XMLName      xml.Name          `xml:"group" json:"-"`
+	Name         string            `xml:"name,attr" json:"name"`
+	Type         string            `xml:"type,attr" json:"type"`
+	Info         map[string]string `xml:"-" json:"info,omitempty"`
+	Availability []interface{}     `json:"results"`
 }
 
 // ServiceFlavor struct for formating xml/json

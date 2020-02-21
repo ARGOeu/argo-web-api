@@ -183,7 +183,10 @@ func DailyEndpoint(filter bson.M) []bson.M {
 				"unknown":      "$unknown",
 				"up":           "$up",
 				"down":         "$down",
-				"report":       "$report"}}},
+				"report":       "$report"},
+			"info": bson.M{"$first": "$info"},
+		}},
+
 		{"$project": bson.M{
 			"date":         "$_id.date",
 			"name":         "$_id.name",
@@ -194,6 +197,7 @@ func DailyEndpoint(filter bson.M) []bson.M {
 			"down":         "$_id.down",
 			"supergroup":   "$_id.supergroup",
 			"service":      "$_id.service",
+			"info":         "$info",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
 			{"supergroup", 1},
@@ -217,13 +221,16 @@ func MonthlyEndpoint(filter bson.M) []bson.M {
 				"report":     "$report"},
 			"avgup":      bson.M{"$avg": "$up"},
 			"avgunknown": bson.M{"$avg": "$unknown"},
-			"avgdown":    bson.M{"$avg": "$down"}}},
+			"avgdown":    bson.M{"$avg": "$down"},
+			"info":       bson.M{"$first": "$info"}}},
+
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"name":       "$_id.name",
 			"supergroup": "$_id.supergroup",
 			"service":    "$_id.service",
 			"report":     "$_id.report",
+			"info":       "$info",
 			"unknown":    "$avgunknown",
 			"up":         "$avgup",
 			"down":       "$avgdown",
