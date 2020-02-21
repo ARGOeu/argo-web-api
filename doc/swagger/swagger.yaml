@@ -3642,6 +3642,8 @@ definitions:
                           type: string
                         type:
                           type: string
+                        info:
+                          type : object
                         results:
                           $ref: "#/definitions/results"
 
