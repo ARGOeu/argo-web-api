@@ -72,10 +72,18 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 
 		if prevEndpoint != row.Name {
 			prevEndpoint = row.Name
+			infoItems := make(map[string]string)
+			for info := range row.Info {
+				if strings.HasPrefix(info, "info.") {
+					value := row.Info[info]
+					key := strings.Replace(info, "info.", "", 1)
+					infoItems[key] = value
+				}
+			}
 			endpoint = &Endpoint{
 				Name: row.Name,
 				Type: fmt.Sprintf("endpoint"),
-				Info: row.Info,
+				Info: infoItems,
 			}
 			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
 		}

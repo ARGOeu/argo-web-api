@@ -2675,6 +2675,7 @@ paths:
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/Granularity"
         - $ref: "#/parameters/service_name"
+        - $ref: "#/parameters/info"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -2713,6 +2714,7 @@ paths:
         - $ref: "#/parameters/endDate"
         - $ref: "#/parameters/Granularity"
         - $ref: "#/parameters/endpoint_name"
+        - $ref: "#/parameters/info"
       responses:
         200:
           description: "Successful retrieval of results"
@@ -3277,6 +3279,11 @@ paths:
 
 
 parameters:
+  info:
+    name: "info"
+    in: "query"
+    type: boolean
+    description: "if true show additional info about each endpoint"
   profDate:
     name: "date"
     in: "query"

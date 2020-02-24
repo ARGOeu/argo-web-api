@@ -227,25 +227,25 @@ The following methods can be used to obtain a tenant's Availability and Reliabil
 Request endpoint a/r under specific service:
 
 ```
-/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/services/{service_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]&[info]
 ```
 
 Request endpoint a/r under specific endpoint group:
 
 ```
-/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{group_type}/{group_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints?[start_time]&[end_time]&[granularity]&[info]
 or
-/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]
+/results/{report_name}/{endpoint_group_type}/{endpoint_group_name}/endpoints/{endpoint_name}?[start_time]&[end_time]&[granularity]&[info]
 ```
 
 #### Query Parameters
@@ -255,6 +255,7 @@ or
 | `[start_time]`  | UTC time in W3C format                                                                          | YES      |
 | `[end_time]`    | UTC time in W3C format                                                                          | YES      |
 | `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly` or `daily` | NO       | `daily`       |
+| `[info]` | True or false, display additional info for each endpoint if its available in topology information | NO       | `daily`       |
 
 #### Path Parameters
 
@@ -474,7 +475,8 @@ Status: 200 OK
 
 ### Extra information for a specific endpoint on endpoint a/r
 
-Some service endpoint a/r have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with the a/r results. For example:
+Some service endpoint a/r have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with the a/r results explicitly when url parameter info=true is set during request. For example:
+
 
 ```
 {

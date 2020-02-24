@@ -172,6 +172,30 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"roles":    []string{"editor", "viewer"},
 		})
 
+	c = session.DB(suite.tenantDbConf.Db).C("topology_endpoints")
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150622,
+			"group":        "ST01",
+			"type":         "SITES",
+			"hostname":     "e01",
+			"service":      "service_a",
+			"tags":         bson.M{"production": "1", "monitored": "Yes", "info.Url": "https://foo.example.url"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150622,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "Y"},
+		})
+
 	c = session.DB(suite.tenantDbConf.Db).C("endpoint_ar")
 
 	// Insert seed data
@@ -192,9 +216,6 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 					"name":  "production",
 					"value": "Y",
 				},
-			},
-			"info": bson.M{
-				"Url": "https://foo.example.url",
 			},
 		},
 		bson.M{
@@ -307,7 +328,7 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 // TestListEndpointAvailabilityMonthly tests if monthly results are returned correctly
 func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly&info=true", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
 
@@ -333,7 +354,7 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly(
 	// Compare the expected and actual xml response
 	suite.Equal(endpointAvailabilityXML, responseBody, "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly&info=true", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -396,7 +417,7 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly(
 	suite.Equal(endpointAvailabilityJSON, responseBody, "Response body mismatch")
 
 	// Test the quick path to site endpoint a/r
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly&info=true", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -443,7 +464,7 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityDaily() 
 	// Compare the expected and actual xml response
 	suite.Equal(endpointAvailabilityXML, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&info=true", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 

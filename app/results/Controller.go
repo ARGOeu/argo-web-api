@@ -64,6 +64,8 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
+	doInfo := urlValues.Get("info")
+
 	report := reports.MongoInterface{}
 	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
 
@@ -135,13 +137,25 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := DailyEndpoint(filter)
+		query := []bson.M{}
+		if doInfo == "true" {
+			query = DailyEndpointInfo(filter)
+		} else {
+			query = DailyEndpoint(filter)
+		}
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_ar", query, &results)
+
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := MonthlyEndpoint(filter)
+		query := []bson.M{}
+		if doInfo == "true" {
+			query = MonthlyEndpointInfo(filter)
+		} else {
+			query = MonthlyEndpoint(filter)
+		}
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_ar", query, &results)
+
 	}
 
 	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
@@ -169,6 +183,70 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 }
 
 // DailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
+func DailyEndpointInfo(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date_integer": "$date",
+				"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+				"name":         "$name",
+				"supergroup":   "$supergroup",
+				"service":      "$service",
+				"availability": "$availability",
+				"reliability":  "$reliability",
+				"unknown":      "$unknown",
+				"up":           "$up",
+				"down":         "$down",
+				"report":       "$report"},
+		}},
+		{"$lookup": bson.M{
+			"from": "topology_endpoints",
+			"let": bson.M{
+				"endpoint_date":    "$_id.date_integer",
+				"endpoint_name":    "$_id.name",
+				"endpoint_service": "$_id.service",
+			},
+			"pipeline": []bson.M{
+				{"$match": bson.M{
+					"$expr": bson.M{
+						"$and": []bson.M{
+							{"$eq": []string{"$$endpoint_date", "$date_integer"}},
+							{"$eq": []string{"$$endpoint_name", "$hostname"}},
+							{"$eq": []string{"$$endpoint_service", "$service"}},
+						},
+					},
+				}},
+				{"$project": bson.M{
+					"_id":  0,
+					"tags": "$tags"},
+				},
+			},
+			"as": "extra"},
+		},
+		{"$project": bson.M{
+			"date":         "$_id.date",
+			"name":         "$_id.name",
+			"availability": "$_id.availability",
+			"reliability":  "$_id.reliability",
+			"unknown":      "$_id.unknown",
+			"up":           "$_id.up",
+			"down":         "$_id.down",
+			"supergroup":   "$_id.supergroup",
+			"service":      "$_id.service",
+			"report":       "$_id.report",
+			"info":         bson.M{"$arrayElemAt": list{"$extra.tags", 0}},
+		}},
+		{"$sort": bson.D{
+			{"supergroup", 1},
+			{"service", 1},
+			{"name", 1},
+			{"date", 1}}}}
+
+	return query
+}
+
+// DailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
 func DailyEndpoint(filter bson.M) []bson.M {
 	query := []bson.M{
 		{"$match": filter},
@@ -183,10 +261,7 @@ func DailyEndpoint(filter bson.M) []bson.M {
 				"unknown":      "$unknown",
 				"up":           "$up",
 				"down":         "$down",
-				"report":       "$report"},
-			"info": bson.M{"$first": "$info"},
-		}},
-
+				"report":       "$report"}}},
 		{"$project": bson.M{
 			"date":         "$_id.date",
 			"name":         "$_id.name",
@@ -197,7 +272,6 @@ func DailyEndpoint(filter bson.M) []bson.M {
 			"down":         "$_id.down",
 			"supergroup":   "$_id.supergroup",
 			"service":      "$_id.service",
-			"info":         "$info",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
 			{"supergroup", 1},
@@ -205,6 +279,74 @@ func DailyEndpoint(filter bson.M) []bson.M {
 			{"name", 1},
 			{"date", 1}}}}
 
+	return query
+}
+
+// MonthlyEndpointInfo query to aggregate monthly a/r results from mongoDB
+func MonthlyEndpointInfo(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$lookup": bson.M{
+			"from": "topology_endpoints",
+			"let": bson.M{
+				"endpoint_date":    "$date",
+				"endpoint_name":    "$name",
+				"endpoint_service": "$service",
+			},
+			"pipeline": []bson.M{
+				{"$match": bson.M{
+					"$expr": bson.M{
+						"$and": []bson.M{
+							{"$eq": []string{"$$endpoint_date", "$date_integer"}},
+							{"$eq": []string{"$$endpoint_name", "$hostname"}},
+							{"$eq": []string{"$$endpoint_service", "$service"}},
+						},
+					},
+				}},
+				{"$project": bson.M{
+					"_id":  0,
+					"tags": "$tags"},
+				},
+			},
+			"as": "extra"}},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"service":    "$service",
+				"report":     "$report"},
+			"extra":      bson.M{"$first": "$extra"},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"}}},
+
+		{"$project": bson.M{
+			"date":       "$_id.date",
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"service":    "$_id.service",
+			"report":     "$_id.report",
+			"unknown":    "$avgunknown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"info":       bson.M{"$arrayElemAt": list{"$extra.tags", 0}},
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+
+		{"$sort": bson.D{
+			{"supergroup", 1},
+			{"name", 1},
+			{"date", 1}}},
+	}
 	return query
 }
 
@@ -221,16 +363,13 @@ func MonthlyEndpoint(filter bson.M) []bson.M {
 				"report":     "$report"},
 			"avgup":      bson.M{"$avg": "$up"},
 			"avgunknown": bson.M{"$avg": "$unknown"},
-			"avgdown":    bson.M{"$avg": "$down"},
-			"info":       bson.M{"$first": "$info"}}},
-
+			"avgdown":    bson.M{"$avg": "$down"}}},
 		{"$project": bson.M{
 			"date":       "$_id.date",
 			"name":       "$_id.name",
 			"supergroup": "$_id.supergroup",
 			"service":    "$_id.service",
 			"report":     "$_id.report",
-			"info":       "$info",
 			"unknown":    "$avgunknown",
 			"up":         "$avgup",
 			"down":       "$avgdown",
@@ -471,6 +610,7 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		customForm[1] = "2006-01-02"
 		query := DailyEndpointGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &results)
+
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
