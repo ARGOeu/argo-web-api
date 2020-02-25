@@ -207,6 +207,22 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+
+	c = session.DB(suite.tenantDbConf.Db).C("topology_endpoints")
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-05-01",
+			"date_integer": 20150501,
+			"group":        "HG-03-AUTH",
+			"type":         "SITES",
+			"hostname":     "cream01.afroditi.gr",
+			"service":      "CREAM-CE",
+			"tags":         bson.M{"production": "1", "monitored": "Yes", "info.Url": "https://foo.example.url"},
+		})
+
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
 	c.Insert(bson.M{
@@ -425,6 +441,9 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
      "endpoints": [
       {
        "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "https://foo.example.url"
+       },
        "statuses": [
         {
          "timestamp": "2015-05-01T00:00:00Z",
@@ -688,6 +707,9 @@ func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
      "endpoints": [
       {
        "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "https://foo.example.url"
+       },
        "statuses": [
         {
          "timestamp": "2015-05-01T00:00:00Z",

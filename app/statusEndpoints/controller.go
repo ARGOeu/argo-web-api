@@ -70,6 +70,8 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
+	doInfo := urlValues.Get("info")
+
 	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
 	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
 
@@ -126,7 +128,13 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+	if doInfo != "false" {
+		err = metricCollection.Pipe(infoAggr(prepareQuery(input, reportID))).All(&results)
+	} else {
+		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+
+	}
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -165,6 +173,56 @@ func prepareQuery(input InputParams, reportID string) bson.M {
 	}
 
 	return filter
+}
+
+type list []interface{}
+
+func infoAggr(filter bson.M) []bson.M {
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$lookup": bson.M{
+			"from": "topology_endpoints",
+			"let": bson.M{
+				"endpoint_date":    "$date_integer",
+				"endpoint_name":    "$host",
+				"endpoint_service": "$service",
+			},
+			"pipeline": []bson.M{
+				{"$match": bson.M{
+					"$expr": bson.M{
+						"$and": []bson.M{
+							{"$eq": []string{"$$endpoint_date", "$date_integer"}},
+							{"$eq": []string{"$$endpoint_name", "$hostname"}},
+							{"$eq": []string{"$$endpoint_service", "$service"}},
+						},
+					},
+				}},
+				{"$project": bson.M{
+					"_id":  0,
+					"tags": "$tags"},
+				},
+			},
+			"as": "extra"},
+		},
+		{"$project": bson.M{
+			"date_integer":   1,
+			"report":         1,
+			"endpoint_group": 1,
+			"service":        1,
+			"host":           1,
+			"status":         1,
+			"timestamp":      1,
+			"info":           bson.M{"$arrayElemAt": list{"$extra.tags", 0}},
+		}},
+		// {"$sort": bson.D{
+		// 	{"supergroup", 1},
+		// 	{"service", 1},
+		// 	{"host", 1},
+		// 	{"date", 1}}}}
+	}
+	return query
+
 }
 
 // Options implements the option request on resource

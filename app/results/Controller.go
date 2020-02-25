@@ -138,7 +138,7 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := []bson.M{}
-		if doInfo == "true" {
+		if doInfo != "false" {
 			query = DailyEndpointInfo(filter)
 		} else {
 			query = DailyEndpoint(filter)
@@ -149,7 +149,7 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := []bson.M{}
-		if doInfo == "true" {
+		if doInfo != "false" {
 			query = MonthlyEndpointInfo(filter)
 		} else {
 			query = MonthlyEndpoint(filter)

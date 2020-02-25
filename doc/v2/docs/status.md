@@ -279,12 +279,14 @@ This method may be used to retrieve a specific service endpoint status timeline 
 |`service_type`| type of endpoint group| YES |  |
 |`hostname`| hostname of service endpoint| NO |  |
 
+
 #### Url Parameters
 
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`start_time`| UTC time in W3C format| YES |  |
 |`end_time`| UTC time in W3C format| YES |  |
+|`info`| display additional information about service endpoints| NO |  |
 
 ___Notes___:
 `group_type` and `group_name` in the specific request refer always to endpoint groups (eg. `SITES`).
@@ -483,7 +485,53 @@ Response body (JSON):
 }
 ```
 
+### Extra information for a specific endpoint on endpoint status results
 
+Some service endpoint status results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with the a/r results explicitly when url parameter info=true is set during request. For example:
+
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "info": {
+                  "Url": "https://cream01.afroditi.gr/path/to/service"
+               },
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL"
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
 <a id="3"></a>
 
