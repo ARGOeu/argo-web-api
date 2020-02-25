@@ -5,7 +5,10 @@ pipeline {
             args '-u jenkins:jenkins'
         }
     }
-    options { checkoutToSubdirectory('argo-web-api') }
+    options {
+        checkoutToSubdirectory('argo-web-api')
+        newContainerPerStage()
+    }
     environment {
         PROJECT_DIR='argo-web-api'
         GOPATH="${WORKSPACE}/go"
@@ -87,24 +90,23 @@ pipeline {
             agent{
                 docker {
                     image 'argo.registry:5000/debian-jessie-argodoc'
-                    args '-u jenkins:jenkins'
                 }
             }
             steps {
+                //when { branch "devel" }
                 echo 'Genarate docs...'
                 sh """
-                    cd doc/v2/
+                    cd ${WORKSPACE}/${PROJECT_DIR}/doc/v2/
                     mkdocs build --clean
-                    mkdir -p /home/repos
                     """
-                dir ("/home/repos") {
+                dir ("${WORKSPACE}") {
                     git branch: 'devel',
                         credentialsId: 'newgrnetci',
                         url: 'git@github.com:argoeu/argodoc'
                     sh """
-                        cp -R ${WORKDIR}/${PROJECT_DIR}/doc/doc/ ./argodoc/content/guides
-                        cp -R ${WORKDIR}/${PROJECT_DIR}/doc/v2/site ./argodoc/api/v2
-                        cd argodoc
+                        cp -R ${WORKSPACE}/${PROJECT_DIR}/doc/doc/ ${WORKSPACE}/argodoc/content/guides
+                        cp -R ${WORKSPACE}/${PROJECT_DIR}/doc/v2/site ${WORKSPACE}/argodoc/api/v2
+                        cd ${WORKSPACE}/argodoc
                         git status
                         ls -l content/guides
                         ls -l api/v2
@@ -115,12 +117,6 @@ pipeline {
     }
     post{
         success {
-            agent{
-                docker {
-                    image 'argo.registry:5000/debian-jessie-argodoc'
-                    args '-u jenkins:jenkins'
-                }
-            }
             script{
                 if ( env.BRANCH_NAME == 'devel' ) {
                     build job: '../../argo_swagger_docs', propagate: false
