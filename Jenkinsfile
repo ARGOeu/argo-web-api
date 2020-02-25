@@ -82,10 +82,45 @@ pipeline {
                     }
                 }
             }
-        } 
+        }
+        stage('Generate docs'){
+            agent{
+                docker {
+                    image 'argo.registry:5000/debian-jessie-argodoc'
+                    args '-u jenkins:jenkins'
+                }
+            }
+            steps {
+                echo 'Genarate docs...'
+                sh """
+                    cd doc/v2/
+                    mkdocs build --clean
+                    mkdir -p /home/repos
+                    """
+                dir ("/home/repos") {
+                    git branch: 'devel',
+                        credentialsId: 'newgrnetci',
+                        url: 'git@github.com:argoeu/argodoc'
+                    sh """
+                        cp -R ${WORKDIR}/${PROJECT_DIR}/doc/doc/ ./argodoc/content/guides
+                        cp -R ${WORKDIR}/${PROJECT_DIR}/doc/v2/site ./argodoc/api/v2
+                        cd argodoc
+                        git status
+                        ls -l content/guides
+                        ls -l api/v2
+                    """
+                }
+            }
+        }
     }
     post{
         success {
+            agent{
+                docker {
+                    image 'argo.registry:5000/debian-jessie-argodoc'
+                    args '-u jenkins:jenkins'
+                }
+            }
             script{
                 if ( env.BRANCH_NAME == 'devel' ) {
                     build job: '../../argo_swagger_docs', propagate: false
