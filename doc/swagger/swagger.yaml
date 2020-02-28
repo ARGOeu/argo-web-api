@@ -3676,6 +3676,8 @@ definitions:
                       properties:
                         name:
                           type: string
+                        info:
+                          type : object
                         statuses:
                           type: array
                           items:
