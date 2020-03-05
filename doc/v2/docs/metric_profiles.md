@@ -57,6 +57,7 @@ Json Response
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "date": "2019-10-10",
    "name": "ch.cern.SAM.ROC",
+   "description": "default profile",
    "services": [
     {
      "service": "CREAM-CE",
@@ -88,6 +89,7 @@ Json Response
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date" : "2019-11-01",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "",
    "services": [
     {
      "service": "CREAM-CE",
@@ -159,6 +161,7 @@ Json Response
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date" : "2019-11-01",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "a critical profile",
    "services": [
     {
      "service": "CREAM-CE",
@@ -218,6 +221,7 @@ Type            | Description                                                   
 ```json
 {
   "name": "test_profile",
+  "description": "a profile just for testing",
   "services": [
     {
       "service": "Service-A",
@@ -290,6 +294,7 @@ Type            | Description                                                   
 ```json
 {
   "name": "test_profile",
+  "description": "this profile is just for tests",
   "services": [
     {
       "service": "Service-A",
