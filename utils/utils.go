@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -12,8 +13,12 @@ const ymdForm = "20060102"
 // ParseZuluDate returns a Zulu representation of current time
 func ParseZuluDate(dateStr string) (int, string, error) {
 	parsedTime := time.Now().UTC()
+	var err error
 	if dateStr != "" {
-		parsedTime, _ = time.Parse(zuluDateOnly, dateStr)
+		parsedTime, err = time.Parse(zuluDateOnly, dateStr)
+		if err != nil {
+			return -1, dateStr, fmt.Errorf("date parameter value: %s is not in the valid form of YYYY-MM-DD", dateStr)
+		}
 	} else {
 		dateStr = parsedTime.Format(zuluDateOnly)
 	}
