@@ -66,10 +66,11 @@ func prepMultiQuery(dt int, name string) interface{} {
 				// metric_profiles collection is meant to have an index with date_integer:-1 and id:1 so
 				// when searching by date the documents are sorted with the recent timestamp first
 				// so we need the recent item available to our query timepoint which is specific date
-				"id":       bson.M{"$first": "$id"},
-				"date":     bson.M{"$first": "$date"},
-				"name":     bson.M{"$first": "$name"},
-				"services": bson.M{"$first": "$services"},
+				"id":          bson.M{"$first": "$id"},
+				"date":        bson.M{"$first": "$date"},
+				"name":        bson.M{"$first": "$name"},
+				"description": bson.M{"$first": "$description"},
+				"services":    bson.M{"$first": "$services"},
 			},
 		},
 		{
