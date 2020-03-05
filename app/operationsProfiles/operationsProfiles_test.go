@@ -412,6 +412,54 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 			}})
 }
 
+func (suite *OperationsProfilesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/operations_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/operations_profiles/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/operations_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/operations_profiles/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
 func (suite *OperationsProfilesTestSuite) TestList() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))

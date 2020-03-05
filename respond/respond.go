@@ -326,6 +326,19 @@ var BadRequestSimple = ResponseMessage{
 		Code:    "400",
 	}}
 
+// ErrBadRequestDetails provides an error messsage with specific details
+var ErrBadRequestDetails = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Bad Request",
+			Code:    "400",
+		},
+		Errors: []StatusResponse{
+			{Message: "Bad Request", Code: "400", Details: details},
+		},
+	}
+}
+
 // BadRequestBadJson is used to inform the user about malformed json body
 var BadRequestBadJSON = ResponseMessage{
 	Status: StatusResponse{
