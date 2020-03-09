@@ -214,6 +214,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			"name":         "ch.cern.SAM.ROC_CRITICAL",
 			"date_integer": 20191004,
 			"date":         "2019-10-04",
+			"description":  "critical profile",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
 					"metrics": []string{
@@ -240,6 +241,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			"name":         "ch.cern.SAM.ROC_CRITICAL",
 			"date_integer": 20191104,
 			"date":         "2019-11-04",
+			"description":  "critical profile",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE2",
 					"metrics": []string{
@@ -341,6 +343,7 @@ func (suite *MetricProfilesTestSuite) TestList() {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-11-04",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "critical profile",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -370,6 +373,7 @@ func (suite *MetricProfilesTestSuite) TestList() {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "date": "2019-06-04",
    "name": "ch.cern.SAM.ROC",
+   "description": "",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -428,6 +432,7 @@ func (suite *MetricProfilesTestSuite) TestListQueryName() {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "date": "2019-06-04",
    "name": "ch.cern.SAM.ROC",
+   "description": "",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -521,6 +526,7 @@ func (suite *MetricProfilesTestSuite) TestListOne() {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-11-04",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "critical profile",
    "services": [
     {
      "service": "CREAM-CE2",
@@ -654,6 +660,7 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
    "id": "{{id}}",
    "date": "2019-11-08",
    "name": "test_profile",
+   "description": "",
    "services": [
     {
      "service": "Service-A",
@@ -919,6 +926,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
   "name": "test_profile",
+  "description": "just for testing",
   "services": [
     {
       "service": "Service-AX",
@@ -956,6 +964,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
    "date": "2019-07-08",
    "name": "test_profile",
+   "description": "just for testing",
    "services": [
     {
      "service": "Service-AX",

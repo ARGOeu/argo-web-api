@@ -3970,6 +3970,10 @@ definitions:
     properties:
       id:
         type: string
+      name: 
+        type: string 
+      description: 
+        type: string
       services:
         type: array
         items:
