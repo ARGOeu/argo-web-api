@@ -49,6 +49,7 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"topology_groups.delete", "DELETE", "/groups", DeleteGroups},
 	{"topology_groups.list", "GET", "/groups", ListGroups},
 	{"topology_groups.insert", "POST", "/groups", CreateGroups},
+	{"topology_groups.options", "OPTIONS", "/groups", Options},
 	{"topology_endpoints.insert", "POST", "/endpoints", CreateEndpoints},
 	{"topology_endpoints.list", "GET", "/endpoints", ListEndpoints},
 	{"topology_endpoints.delete", "DELETE", "/endpoints", DeleteEndpoints},

@@ -28,9 +28,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 
@@ -88,15 +86,12 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	//Time Related
 	dateStr := urlValues.Get("date")
 
-	const zuluForm = "2006-01-02"
-	const ymdForm = "20060102"
-
-	ts := time.Now().UTC()
-	if dateStr != "" {
-		ts, _ = time.Parse(zuluForm, dateStr)
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
 	}
-
-	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -120,17 +115,17 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	serviceCol := session.DB(tenantDbConfig.Db).C("service_ar")
 	eGroupCol := session.DB(tenantDbConfig.Db).C("endpoint_group_ar")
 
-	err = serviceCol.Find(bson.M{"report": reportID, "date": tsYMD}).Distinct("name", &serviceResults)
+	err = serviceCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("name", &serviceResults)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	err = eGroupCol.Find(bson.M{"report": reportID, "date": tsYMD}).Distinct("name", &egroupResults)
+	err = eGroupCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("name", &egroupResults)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	err = eGroupCol.Find(bson.M{"report": reportID, "date": tsYMD}).Distinct("supergroup", &groupResults)
+	err = eGroupCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("supergroup", &groupResults)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -188,6 +183,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -249,6 +245,7 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -336,9 +333,9 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 	if err != nil {
@@ -386,6 +383,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -890,6 +888,7 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -984,9 +983,9 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
-
 	fGroup := fltrGroup{}
 	fGroup, _ = getReportFilters(report)
 
@@ -1054,6 +1053,7 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -1113,6 +1113,7 @@ func DeleteGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
