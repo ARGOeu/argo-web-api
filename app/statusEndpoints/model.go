@@ -41,13 +41,14 @@ type InputParams struct {
 
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
-	Report        string `bson:"report"`
-	Timestamp     string `bson:"timestamp"`
-	EndpointGroup string `bson:"endpoint_group"`
-	Service       string `bson:"service"`
-	Hostname      string `bson:"host"`
-	Status        string `bson:"status"`
-	DateInt       string `bson:"date_integer"`
+	Report        string            `bson:"report"`
+	Timestamp     string            `bson:"timestamp"`
+	EndpointGroup string            `bson:"endpoint_group"`
+	Service       string            `bson:"service"`
+	Hostname      string            `bson:"host"`
+	Status        string            `bson:"status"`
+	DateInt       string            `bson:"date_integer"`
+	Info          map[string]string `bson:"info"`
 }
 
 // json/xml response related structs
@@ -72,9 +73,10 @@ type serviceOUT struct {
 }
 
 type endpointOUT struct {
-	XMLName  xml.Name     `xml:"endpoint" json:"-"`
-	Name     string       `xml:"name,attr" json:"name"`
-	Statuses []*statusOUT `json:"statuses"`
+	XMLName  xml.Name          `xml:"endpoint" json:"-"`
+	Name     string            `xml:"name,attr" json:"name"`
+	Info     map[string]string `xml:"-" json:"info,omitempty"`
+	Statuses []*statusOUT      `json:"statuses"`
 }
 
 type statusOUT struct {
