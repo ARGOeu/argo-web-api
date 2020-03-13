@@ -20,7 +20,7 @@
  *
  */
 
-package statusEndpoints
+package statusFlatEndpoints
 
 import "encoding/xml"
 
@@ -53,30 +53,11 @@ type DataOutput struct {
 
 // json/xml response related structs
 
-type rootOUT struct {
-	XMLName        xml.Name            `xml:"root" json:"-"`
-	EndpointGroups []*endpointGroupOUT `json:"groups"`
-}
-
 type rootPagedOUT struct {
 	XMLName   xml.Name       `xml:"root" json:"-"`
 	Endpoints []*endpointOUT `json:"endpoints"`
 	PageToken string         `json:"nextPageToken,omitempty"`
 	PageSize  int            `json:"pageSize,omitempty"`
-}
-
-type endpointGroupOUT struct {
-	XMLName   xml.Name      `xml:"group" json:"-"`
-	Name      string        `xml:"name,attr" json:"name"`
-	GroupType string        `xml:"type,attr" json:"type"`
-	Services  []*serviceOUT `json:"services"`
-}
-
-type serviceOUT struct {
-	XMLName   xml.Name       `xml:"group" json:"-"`
-	Name      string         `xml:"name,attr" json:"name"`
-	GroupType string         `xml:"type,attr" json:"type"`
-	Endpoints []*endpointOUT `json:"endpoints"`
 }
 
 type endpointOUT struct {
