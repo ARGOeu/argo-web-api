@@ -2941,6 +2941,39 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /results/{report_name}/endpoints:
+    get:
+      summary: "Flat List A/R results of all endpoints"
+      description: "This method returns a flat list of all endpoint a/r results based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsFlatEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/FlatEndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
     get:
@@ -3611,6 +3644,31 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
+                    
+                    
+  FlatEndpointResultsResponse:
+    type: object
+    properties:
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            service:
+              type: string
+            supergroup:
+              type: string
+            results:
+              $ref: "#/definitions/results"
+      pageSize:
+        type: integer
+      nextPageToken:
+        type: string
+                        
 
   EndpointResultsResponse:
     type: object
