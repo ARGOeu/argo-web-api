@@ -23,9 +23,11 @@
 package results
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -93,9 +95,68 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
+
+}
+
+func createFlatEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, limit int, skip int) ([]byte, error) {
+
+	docRoot := &pageRoot{}
+
+	prevEndpoint := ""
+	endpoint := &Endpoint{}
+
+	endloop := len(results)
+
+	if len(results) > limit && limit > 0 {
+		endloop = len(results) - 1
+
+	}
+
+	for i := 0; i < endloop; i++ {
+		row := results[i]
+
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			endpoint = &Endpoint{
+				Name:       row.Name,
+				Type:       fmt.Sprintf("endpoint"),
+				Service:    row.Service,
+				SuperGroup: row.SuperGroup,
+				Info:       row.Info,
+			}
+			docRoot.Result = append(docRoot.Result, endpoint)
+
+		}
+		//we append the new availability values
+		endpoint.Availability = append(endpoint.Availability,
+			&Availability{
+				Timestamp:    timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability),
+				Unknown:      fmt.Sprintf("%g", row.Unknown),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+				Downtime:     fmt.Sprintf("%g", row.Down),
+			})
+
+	}
+
+	//docRoot.Result = docRoot.Result[:len(docRoot.Result)-1]
+
+	if limit > 0 {
+		if len(results) > limit {
+			docRoot.PageToken = base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(skip + limit)))
+		}
+		docRoot.PageSize = limit
+	}
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
 
 }
 
@@ -147,9 +208,8 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report repo
 
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
 
 }
 
@@ -201,9 +261,8 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report repo
 	}
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
 
 }
 
@@ -239,9 +298,9 @@ func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInt
 
 	if strings.ToLower(format) == "application/json" {
 		return json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		return xml.MarshalIndent(docRoot, " ", "  ")
 	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
+
 }
 
 func createErrorMessage(message string, code int, format string) ([]byte, error) {

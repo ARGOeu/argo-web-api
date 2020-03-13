@@ -23,8 +23,10 @@
 package results
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
@@ -34,6 +36,154 @@ import (
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 )
+
+// FlatListEndpointResults is responsible for handling request to flat list all available endpoint results
+func FlatListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+	supergroup := urlValues.Get("supergroup")
+	service := urlValues.Get("service")
+
+	skip := 0
+	tkStr := urlValues.Get("nextPageToken")
+	if tkStr != "" {
+		tk, err := base64.StdEncoding.DecodeString(tkStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+		skip, err = strconv.Atoi(string(tk))
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	limit := -1
+	limStr := urlValues.Get("pageSize")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	report := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+
+	if err != nil {
+		code = http.StatusNotFound
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		return code, h, output, err
+	}
+
+	input := endpointResultQuery{
+		basicQuery: basicQuery{
+			Name: vars["endpoint_name"],
+
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start_time"),
+			EndTime:     urlValues.Get("end_time"),
+			Report:      report,
+			Vars:        vars,
+		},
+		EndpointGroup: supergroup,
+		Service:       service,
+	}
+
+	tenantDB := session.DB(tenantDbConfig.Db)
+	errs := input.Validate(tenantDB)
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
+
+	results := []EndpointInterface{}
+
+	// Construct the query to mongodb based on the input
+	filter := bson.M{
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
+	}
+
+	if input.Name != "" {
+		filter["name"] = input.Name
+	}
+
+	if input.Service != "" {
+		filter["service"] = input.Service
+	}
+
+	if input.EndpointGroup != "" {
+		filter["supergroup"] = input.EndpointGroup
+	}
+
+	// Select the granularity of the search daily/monthly
+	if input.Granularity == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+		query := FlatDailyEndpoint(filter, limit, skip)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_ar", query, &results)
+	} else if input.Granularity == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := FlatMonthlyEndpoint(filter, limit, skip)
+		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_ar", query, &results)
+
+	}
+
+	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
+	output, err = createFlatEndpointResultView(results, report, input.Format, limit, skip)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+
+}
 
 // ListEndpointResults is responsible for handling request to list service flavor results
 func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -168,12 +318,47 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 
 }
 
+// FlatDailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
+func FlatDailyEndpoint(filter bson.M, limit int, skip int) []bson.M {
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$project": bson.M{
+			"_id":          1,
+			"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+			"name":         1,
+			"availability": 1,
+			"reliability":  1,
+			"unknown":      1,
+			"up":           1,
+			"down":         1,
+			"supergroup":   1,
+			"service":      1,
+			"info":         1,
+			"report":       1}},
+		{"$sort": bson.D{
+			{"name", 1},
+			{"service", 1},
+			{"supergroup", 1},
+			{"date", 1},
+		}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$skip": skip})
+		query = append(query, bson.M{"$limit": limit + 1})
+
+	}
+
+	return query
+}
+
 // DailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
 func DailyEndpoint(filter bson.M) []bson.M {
 	query := []bson.M{
 		{"$match": filter},
 		{"$group": bson.M{
 			"_id": bson.M{
+				"id":           "$_id",
 				"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
 				"name":         "$name",
 				"supergroup":   "$supergroup",
@@ -188,6 +373,7 @@ func DailyEndpoint(filter bson.M) []bson.M {
 		}},
 
 		{"$project": bson.M{
+			"_id":          "$_id.id",
 			"date":         "$_id.date",
 			"name":         "$_id.name",
 			"availability": "$_id.availability",
@@ -204,6 +390,55 @@ func DailyEndpoint(filter bson.M) []bson.M {
 			{"service", 1},
 			{"name", 1},
 			{"date", 1}}}}
+
+	return query
+}
+
+// FlatMonthlyEndpoint query to aggregate monthly a/r results from mongoDB
+func FlatMonthlyEndpoint(filter bson.M, limit int, skip int) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"service":    "$service",
+				"report":     "$report"},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"},
+			"info":       bson.M{"$first": "$info"}}},
+		{"$project": bson.M{
+			"date":       "$_id.date",
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"service":    "$_id.service",
+			"report":     "$_id.report",
+			"info":       "$info",
+			"unknown":    "$avgunknown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+		{"$sort": bson.D{
+			{"supergroup", 1},
+			{"name", 1},
+			{"date", 1}}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$skip": skip})
+		query = append(query, bson.M{"$limit": limit + 1})
+
+	}
 
 	return query
 }
