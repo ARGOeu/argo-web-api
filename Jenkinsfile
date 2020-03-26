@@ -55,6 +55,7 @@ pipeline {
                 withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
                                                              keyFileVariable: 'REPOKEY')]) {
                     sh "/home/jenkins/build-rpm.sh -w ${WORKSPACE} -b ${BRANCH_NAME} -d centos7 -p ${PROJECT_DIR} -s ${REPOKEY}"
+<<<<<<< HEAD
                 }
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
             }
@@ -79,10 +80,22 @@ pipeline {
                   sh '''
                   scp -i ${REPOKEY} -o StrictHostKeyChecking=no ${WORKSPACE}/*.rpm ${REPOUSER}@rpm-repo.argo.grnet.gr:/repos/ARGO/prod/centos7/
                   '''
+=======
+>>>>>>> ca0c326858a167fdb158cff2287e61fe7ba5a456
                 }
+                archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
             }
         }
         
+    }
+    post{
+        success {
+            script{
+                if ( env.BRANCH_NAME == 'devel' ) {
+                    build job: '/ARGO-utils/argo-swagger-docs', propagate: false
+                }
+            }
+        }
     }
     post{
         success {
