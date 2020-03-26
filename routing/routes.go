@@ -24,6 +24,7 @@ package routing
 
 import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
+	"github.com/ARGOeu/argo-web-api/app/downtimes"
 	"github.com/ARGOeu/argo-web-api/app/factors"
 	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
@@ -39,10 +40,12 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/topology"
+	"github.com/ARGOeu/argo-web-api/app/weights"
 	"github.com/ARGOeu/argo-web-api/version"
 )
 
 var routesV2 = []RouteV2{
+
 	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
@@ -60,4 +63,6 @@ var routesV2 = []RouteV2{
 	{"Tenants", "/admin", tenants.HandleSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 	{"Version", "", version.HandleSubrouter},
+	{"Downtimes", "", downtimes.HandleSubrouter},
+	{"Weights", "", weights.HandleSubrouter},
 }

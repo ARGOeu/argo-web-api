@@ -119,6 +119,7 @@ func restrictTenantOutput(results []Tenant) []Tenant {
 		rItem := Tenant{}
 		rItem.ID = tenant.ID
 		rItem.Info = tenant.Info
+		rItem.Topology = tenant.Topology
 		restricted = append(restricted, rItem)
 	}
 	return restricted
@@ -131,6 +132,7 @@ func removeNonUIUsers(results []Tenant) []Tenant {
 		rItem := Tenant{}
 		rItem.ID = tenant.ID
 		rItem.Info = tenant.Info
+		rItem.Topology = tenant.Topology
 		for _, user := range tenant.Users {
 			for _, role := range user.Roles {
 				if role == "admin_ui" {
@@ -172,6 +174,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	incoming := Tenant{}
+	incoming.Topology = TopologyInfo{TopoType: "", Feed: ""}
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
@@ -528,6 +531,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 
 	incoming := Tenant{}
+	incoming.Topology = TopologyInfo{TopoType: "", Feed: ""}
 
 	// ingest body data
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))

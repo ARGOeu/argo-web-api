@@ -19,7 +19,7 @@ DELETE: Delete an  Operations profile |This method can be used to delete an exis
 
 ## [GET]: List Operations Profiles
 
-This method can be used to retrieve a list of current  Operations profiles
+This method can be used to retrieve a list of current  Operations profiles. 
 
 ### Input
 
@@ -32,6 +32,7 @@ GET /operations_profiles
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
 `name`          | Operations profile name to be used as query                                                     | NO      
+`date`          | Date to retrieve a historic version of the operation profile. If no date parameter is provided the most current profile will be returned | NO
 
 #### Request headers
 
@@ -55,6 +56,7 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -109,6 +111,7 @@ Json Response
   },
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-11-02",
    "name": "ops2",
    "available_states": [
     "X,Y,Z"
@@ -176,6 +179,13 @@ This method can be used to retrieve specific Operations profile based on its id
 GET /operations_profiles/{ID}
 ```
 
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to retrieve a historic version of the operation profile. If no date parameter is provided the most current profile will be returned | NO
+
+
 #### Request headers
 
 ```
@@ -198,6 +208,7 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -271,6 +282,13 @@ POST /operations_profiles
 x-api-key: shared_key_value
 Accept: application/json
 ```
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to create a  new historic version of the operation profile. If no date parameter is provided current date will be supplied automatically | NO
+
 
 #### POST BODY
 
@@ -362,6 +380,13 @@ This method can be used to update information on an existing operations profile
 PUT /operations_profiles/{ID}
 ```
 
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to update a historic version of the operation profile. If no date parameter is provided the current date will be supplied automatically | NO
+
+
 #### Request headers
 
 ```
@@ -436,7 +461,7 @@ Json Response
 ```json
 {
  "status": {
-  "message": "Operations Profile successfully updated",
+  "message": "Operations Profile successfully updated (new snapshot created)",
   "code": "200"
  }
 }

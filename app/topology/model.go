@@ -49,3 +49,39 @@ type messageOUT struct {
 	Message string   `xml:"message" json:"message"`
 	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }
+
+type fltrEndpoint struct {
+	Group     []string
+	GroupType []string
+	Service   []string
+	Hostname  []string
+	Tags      string
+}
+
+type fltrGroup struct {
+	Group     []string
+	GroupType []string
+	Subgroup  []string
+	Tags      string
+}
+
+// Endpoint includes information on endpoint group topology
+type Endpoint struct {
+	Date      string            `bson:"date" json:"date"`
+	DateInt   int               `bson:"date_integer" json:"-"`
+	Group     string            `bson:"group" json:"group"`
+	GroupType string            `bson:"type" json:"type"`
+	Service   string            `bson:"service" json:"service"`
+	Hostname  string            `bson:"hostname" json:"hostname"`
+	Tags      map[string]string `bson:"tags" json:"tags"`
+}
+
+// Group includes information on  of group group topology
+type Group struct {
+	Date      string            `bson:"date" json:"date"`
+	DateInt   int               `bson:"date_integer" json:"-"`
+	Group     string            `bson:"group" json:"group"`
+	GroupType string            `bson:"type" json:"type"`
+	Subgroup  string            `bson:"subgroup" json:"subgroup"`
+	Tags      map[string]string `bson:"tags" json:"tags"`
+}

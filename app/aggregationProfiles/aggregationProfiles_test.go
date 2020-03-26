@@ -209,9 +209,12 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 			}})
 	// Seed database with metric profiles
 	c = session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer":      20191004,
+			"date":              "2019-10-04",
 			"name":              "critical",
 			"namespace":         "test",
 			"endpoint_group":    "sites",
@@ -249,7 +252,49 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 			}})
 	c.Insert(
 		bson.M{
+			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"date_integer":      20191104,
+			"date":              "2019-11-04",
+			"name":              "critical",
+			"namespace":         "test",
+			"endpoint_group":    "sites",
+			"metric_operation":  "AND",
+			"profile_operation": "AND",
+			"metric_profile": bson.M{
+				"name": "roc.critical",
+				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
+			},
+			"groups": []bson.M{
+				bson.M{"name": "compute2",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "CREAM-CE",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "ARC-CE",
+							"operation": "AND",
+						},
+					}},
+				bson.M{"name": "storage2",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SRMv2",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SRM",
+							"operation": "AND",
+						},
+					}},
+			}})
+	c.Insert(
+		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"date_integer":      20190404,
+			"date":              "2019-04-04",
 			"name":              "cloud",
 			"namespace":         "test",
 			"endpoint_group":    "sites",
@@ -273,6 +318,46 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 						},
 					}},
 				bson.M{"name": "images",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SERVICEC",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SERVICED",
+							"operation": "AND",
+						},
+					}},
+			}})
+	c.Insert(
+		bson.M{
+			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"date_integer":      20190504,
+			"date":              "2019-05-04",
+			"name":              "cloud",
+			"namespace":         "test",
+			"endpoint_group":    "sites",
+			"metric_operation":  "AND",
+			"profile_operation": "AND",
+			"metric_profile": bson.M{
+				"name": "roc.critical",
+				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
+			},
+			"groups": []bson.M{
+				bson.M{"name": "compute2",
+					"operation": "OR",
+					"services": []bson.M{
+						bson.M{
+							"name":      "SERVICEA",
+							"operation": "AND",
+						},
+						bson.M{
+							"name":      "SERVICEB",
+							"operation": "AND",
+						},
+					}},
+				bson.M{"name": "images2",
 					"operation": "OR",
 					"services": []bson.M{
 						bson.M{
@@ -334,49 +419,8 @@ func (suite *AggregationProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "cloud",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
-   },
-   "groups": [
-    {
-     "name": "compute",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEA",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICEB",
-       "operation": "AND"
-      }
-     ]
-    },
-    {
-     "name": "images",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEC",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICED",
-       "operation": "AND"
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "critical",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -388,7 +432,7 @@ func (suite *AggregationProfilesTestSuite) TestList() {
    },
    "groups": [
     {
-     "name": "compute",
+     "name": "compute2",
      "operation": "OR",
      "services": [
       {
@@ -402,7 +446,7 @@ func (suite *AggregationProfilesTestSuite) TestList() {
      ]
     },
     {
-     "name": "storage",
+     "name": "storage2",
      "operation": "OR",
      "services": [
       {
@@ -416,6 +460,49 @@ func (suite *AggregationProfilesTestSuite) TestList() {
      ]
     }
    ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-05-04",
+   "name": "cloud",
+   "namespace": "test",
+   "endpoint_group": "sites",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "name": "roc.critical",
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   },
+   "groups": [
+    {
+     "name": "compute2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEA",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICEB",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "images2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEC",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICED",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
   }
  ]
 }`
@@ -423,6 +510,90 @@ func (suite *AggregationProfilesTestSuite) TestList() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *AggregationProfilesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/aggregation_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/aggregation_profiles/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/aggregation_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/aggregation_profiles/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
+
+func (suite *AggregationProfilesTestSuite) TestListEmpty() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
+	c.DropCollection()
+
+	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	emptyList := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(emptyList, output, "Response body mismatch")
 
 }
 
@@ -446,6 +617,7 @@ func (suite *AggregationProfilesTestSuite) TestListQueryName() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-05-04",
    "name": "cloud",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -457,7 +629,7 @@ func (suite *AggregationProfilesTestSuite) TestListQueryName() {
    },
    "groups": [
     {
-     "name": "compute",
+     "name": "compute2",
      "operation": "OR",
      "services": [
       {
@@ -471,7 +643,7 @@ func (suite *AggregationProfilesTestSuite) TestListQueryName() {
      ]
     },
     {
-     "name": "images",
+     "name": "images2",
      "operation": "OR",
      "services": [
       {
@@ -550,6 +722,7 @@ func (suite *AggregationProfilesTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "critical",
    "namespace": "test",
    "endpoint_group": "sites",
@@ -561,7 +734,7 @@ func (suite *AggregationProfilesTestSuite) TestListOne() {
    },
    "groups": [
     {
-     "name": "compute",
+     "name": "compute2",
      "operation": "OR",
      "services": [
       {
@@ -575,7 +748,7 @@ func (suite *AggregationProfilesTestSuite) TestListOne() {
      ]
     },
     {
-     "name": "storage",
+     "name": "storage2",
      "operation": "OR",
      "services": [
       {
@@ -857,6 +1030,7 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{id}}",
+   "date": "2019-03-03",
    "name": "yolo",
    "namespace": "testing-namespace",
    "endpoint_group": "test",
@@ -900,7 +1074,7 @@ func (suite *AggregationProfilesTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/aggregation_profiles?date=2019-03-03", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1359,7 +1533,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Aggregation Profile successfully updated",
+  "message": "Aggregations Profile successfully updated (new history snapshot)",
   "code": "200"
  }
 }`
@@ -1372,6 +1546,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-12-12",
    "name": "yolo",
    "namespace": "testing-namespace",
    "endpoint_group": "test",
@@ -1415,7 +1590,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1434,7 +1609,7 @@ func (suite *AggregationProfilesTestSuite) TestUpdate() {
 
 	// Check that the item has actually updated
 	// run a list specific
-	request2, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()

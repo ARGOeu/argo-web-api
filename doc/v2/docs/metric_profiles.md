@@ -31,6 +31,7 @@ GET /metric_profiles
 Type            | Description                                                                                     | Required
 --------------- | ----------------------------------------------------------------------------------------------- | --------
 `name`          | metric profile name to be used as query                                                         | NO      
+`date`          | Date to retrieve a historic version of the metric profile. If no date parameter is provided the most current profile will be returned | NO
 
 ### Request headers
 
@@ -54,7 +55,9 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-10",
    "name": "ch.cern.SAM.ROC",
+   "description": "default profile",
    "services": [
     {
      "service": "CREAM-CE",
@@ -84,7 +87,9 @@ Json Response
   },
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date" : "2019-11-01",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "",
    "services": [
     {
      "service": "CREAM-CE",
@@ -125,6 +130,13 @@ This method can be used to retrieve specific metric profile based on its id
 GET /metric_profiles/{ID}
 ```
 
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to retrieve a historic version of the metric profile. If no date parameter is provided the most current profile will be returned | NO
+
+
 #### Request headers
 
 ```
@@ -147,7 +159,9 @@ Json Response
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date" : "2019-11-01",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "a critical profile",
    "services": [
     {
      "service": "CREAM-CE",
@@ -195,11 +209,19 @@ x-api-key: shared_key_value
 Accept: application/json
 ```
 
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to create a  new historic version of the metric profile. If no date parameter is provided current date will be supplied automatically | NO
+
 #### POST BODY
 
 ```json
 {
   "name": "test_profile",
+  "description": "a profile just for testing",
   "services": [
     {
       "service": "Service-A",
@@ -260,11 +282,19 @@ x-api-key: shared_key_value
 Accept: application/json
 ```
 
+
+#### Optional Query Parameters
+
+Type            | Description                                                                                     | Required
+--------------- | ----------------------------------------------------------------------------------------------- | --------
+`date`          | Date to update a  new historic version of the operation profile. If no date parameter is provided current date will be supplied automatically | NO
+
 #### PUT BODY
 
 ```json
 {
   "name": "test_profile",
+  "description": "this profile is just for tests",
   "services": [
     {
       "service": "Service-A",

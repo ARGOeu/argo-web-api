@@ -33,10 +33,53 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
 )
+
+// datastore collection name that contains threshold profile records
+const thColName = "thresholds_profiles"
+
+func prepMultiQuery(dt int, name string) interface{} {
+
+	matchQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+
+	if name != "" {
+		matchQuery["name"] = name
+	}
+
+	return []bson.M{
+		{
+			"$match": matchQuery,
+		},
+		{
+			"$group": bson.M{
+				"_id": bson.M{
+					"id": "$id",
+				},
+				// threshold_profile collection is meant to have an index with date_integer:-1 and id:1 so
+				// when searching by date the documents are sorted with the recent timestamp first
+				// so we need the recent item available to our query timepoint which is specific date
+				"id":    bson.M{"$first": "$id"},
+				"date":  bson.M{"$first": "$date"},
+				"name":  bson.M{"$first": "$name"},
+				"rules": bson.M{"$first": "$rules"},
+			},
+		},
+		{
+			"$sort": bson.M{"id": 1},
+		},
+	}
+
+}
+
+func prepQuery(dt int, id string) interface{} {
+
+	return bson.M{"date_integer": bson.M{"$lte": dt}, "id": id}
+
+}
 
 // ListOne handles the listing of one specific profile based on its given id
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -54,6 +97,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -67,26 +112,30 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		return code, h, output, err
 	}
 
-	filter := bson.M{"id": vars["ID"]}
-
 	// Retrieve Results from database
-	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, "thresholds_profiles", filter, "name", &results)
-
+	result := ThresholdsProfile{}
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+	thQuery := prepQuery(dt, vars["ID"])
+
+	thCol := session.DB(tenantDbConfig.Db).C(thColName)
+	err = thCol.Find(thQuery).One(&result)
+	if err != nil {
+		if err.Error() == "not found" {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
 	// Create view of the results
-	output, err = createListView(results, "Success", code) //Render the results into JSON
+	output, err = createListView([]ThresholdsProfile{result}, "Success", code) //Render the results into JSON
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -97,7 +146,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	return code, h, output, err
 }
 
-// List the existing metric profiles for the tenant making the request
+// List the existing thresholds profiles for the tenant making the request
 // Also there is an optional url param "name" to filter results by
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -116,6 +165,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	name := urlValues.Get("name")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -131,16 +182,23 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	// Retrieve Results from database
 
-	var filter interface{}
-	if len(urlValues["name"]) > 0 {
-		filter = bson.M{"name": urlValues["name"][0]}
-	} else {
-		filter = nil
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+	thQuery := prepMultiQuery(dt, name)
+
+	thCol := session.DB(tenantDbConfig.Db).C(thColName)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, "thresholds_profiles", filter, "name", &results)
-
+	err = thCol.Pipe(thQuery).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -174,6 +232,14 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
@@ -183,6 +249,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	incoming := ThresholdsProfile{}
+	incoming.DateInt = dt
+	incoming.Date = dateStr
 
 	// Try ingest request body
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -200,6 +268,26 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// check if the threshold profile's name is unique
+	results := []ThresholdsProfile{}
+	query := bson.M{"name": incoming.Name}
+
+	err = mongo.Find(session, tenantDbConfig.Db, thColName, query, "", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// If results are returned for the specific name
+	// then we already have an existing report and we must
+	// abort creation notifying the user
+	if len(results) > 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Thresholds profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
+		return code, h, output, err
+	}
+
 	// Validate States
 	var errList []string
 	errList = append(errList, incoming.Validate()...)
@@ -212,7 +300,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Generate new id
 	incoming.ID = mongo.NewUUID()
-	err = mongo.Insert(session, tenantDbConfig.Db, "thresholds_profiles", incoming)
+	err = mongo.Insert(session, tenantDbConfig.Db, thColName, incoming)
 
 	if err != nil {
 		panic(err)
@@ -224,7 +312,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Update function to update contents of an existing metric profile
+//Update function to update contents of an existing thresholds profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -234,16 +322,26 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	vars := mux.Vars(r)
-
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := ThresholdsProfile{}
+	incoming.Date = dateStr
+	incoming.DateInt = dt
 
 	// ingest body data
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
@@ -274,7 +372,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Retrieve Results from database
 	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, "thresholds_profiles", filter, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, thColName, filter, "name", &results)
 
 	if err != nil {
 		panic(err)
@@ -298,7 +396,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// run the update query
-	err = mongo.Update(session, tenantDbConfig.Db, "thresholds_profiles", filter, incoming)
+	err = mongo.Update(session, tenantDbConfig.Db, thColName, filter, incoming)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -346,7 +444,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Retrieve Results from database
 	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, "thresholds_profiles", filter, "name", &results)
+	err = mongo.Find(session, tenantDbConfig.Db, thColName, filter, "name", &results)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -360,7 +458,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	mongo.Remove(session, tenantDbConfig.Db, "thresholds_profiles", filter)
+	mongo.Remove(session, tenantDbConfig.Db, thColName, filter)
 
 	if err != nil {
 		code = http.StatusInternalServerError
