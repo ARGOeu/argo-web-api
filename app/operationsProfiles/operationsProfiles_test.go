@@ -208,10 +208,13 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 
 	// Seed database with operations profiles
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":             "ops1",
+			"date_integer":     20191004,
+			"date":             "2019-10-04",
 			"available_states": []string{"A,B,C"},
 			"defaults": bson.M{
 				"missing": "A",
@@ -255,6 +258,57 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "B",
 						}}},
 			}})
+	// Seed database with operations profiles
+	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.Insert(
+		bson.M{
+			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":             "ops1",
+			"date_integer":     20191104,
+			"date":             "2019-11-04",
+			"available_states": []string{"A,B,C"},
+			"defaults": bson.M{
+				"missing": "A",
+				"down":    "B",
+				"unknown": "C"},
+			"operations": []bson.M{
+				bson.M{
+					"name": "AND3",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "A",
+							"b": "B",
+							"x": "B",
+						},
+						bson.M{
+							"a": "A",
+							"b": "C",
+							"x": "C",
+						},
+						bson.M{
+							"a": "B",
+							"b": "C",
+							"x": "C",
+						}}},
+				bson.M{
+					"name": "OR3",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "A",
+							"b": "B",
+							"x": "A",
+						},
+						bson.M{
+							"a": "A",
+							"b": "C",
+							"x": "A",
+						},
+						bson.M{
+							"a": "B",
+							"b": "C",
+							"x": "B",
+						}}},
+			}})
 
 	// Seed database with operations profiles
 	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
@@ -262,6 +316,8 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":             "ops2",
+			"date_integer":     20190504,
+			"date":             "2019-05-04",
 			"available_states": []string{"X,Y,Z"},
 			"defaults": bson.M{
 				"missing": "X",
@@ -305,8 +361,105 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "Y",
 						}}},
 			}})
+	c.Insert(
+		bson.M{
+			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":             "ops2",
+			"date_integer":     20190804,
+			"date":             "2019-08-04",
+			"available_states": []string{"X,Y,Z"},
+			"defaults": bson.M{
+				"missing": "X",
+				"down":    "Y",
+				"unknown": "Z"},
+			"operations": []bson.M{
+				bson.M{
+					"name": "AND2",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "X",
+							"b": "Y",
+							"x": "Y",
+						},
+						bson.M{
+							"a": "X",
+							"b": "Z",
+							"x": "Z",
+						},
+						bson.M{
+							"a": "Y",
+							"b": "Z",
+							"x": "Z",
+						}}},
+				bson.M{
+					"name": "OR2",
+					"truth_table": []bson.M{
+						bson.M{
+							"a": "X",
+							"b": "Y",
+							"x": "X",
+						},
+						bson.M{
+							"a": "X",
+							"b": "Z",
+							"x": "X",
+						},
+						bson.M{
+							"a": "Y",
+							"b": "Z",
+							"x": "Y",
+						}}},
+			}})
 }
 
+func (suite *OperationsProfilesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/operations_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/operations_profiles/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/operations_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/operations_profiles/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
 func (suite *OperationsProfilesTestSuite) TestList() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))
@@ -327,6 +480,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -338,7 +492,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
    },
    "operations": [
     {
-     "name": "AND",
+     "name": "AND3",
      "truth_table": [
       {
        "a": "A",
@@ -358,7 +512,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
      ]
     },
     {
-     "name": "OR",
+     "name": "OR3",
      "truth_table": [
       {
        "a": "A",
@@ -381,6 +535,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
   },
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-08-04",
    "name": "ops2",
    "available_states": [
     "X,Y,Z"
@@ -392,7 +547,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
    },
    "operations": [
     {
-     "name": "AND",
+     "name": "AND2",
      "truth_table": [
       {
        "a": "X",
@@ -412,7 +567,7 @@ func (suite *OperationsProfilesTestSuite) TestList() {
      ]
     },
     {
-     "name": "OR",
+     "name": "OR2",
      "truth_table": [
       {
        "a": "X",
@@ -462,6 +617,7 @@ func (suite *OperationsProfilesTestSuite) TestListQueryName() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -473,7 +629,7 @@ func (suite *OperationsProfilesTestSuite) TestListQueryName() {
    },
    "operations": [
     {
-     "name": "AND",
+     "name": "AND3",
      "truth_table": [
       {
        "a": "A",
@@ -493,7 +649,7 @@ func (suite *OperationsProfilesTestSuite) TestListQueryName() {
      ]
     },
     {
-     "name": "OR",
+     "name": "OR3",
      "truth_table": [
       {
        "a": "A",
@@ -520,7 +676,6 @@ func (suite *OperationsProfilesTestSuite) TestListQueryName() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
-
 }
 
 func (suite *OperationsProfilesTestSuite) TestListOneNotFound() {
@@ -578,6 +733,7 @@ func (suite *OperationsProfilesTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ops1",
    "available_states": [
     "A,B,C"
@@ -589,7 +745,7 @@ func (suite *OperationsProfilesTestSuite) TestListOne() {
    },
    "operations": [
     {
-     "name": "AND",
+     "name": "AND3",
      "truth_table": [
       {
        "a": "A",
@@ -609,7 +765,7 @@ func (suite *OperationsProfilesTestSuite) TestListOne() {
      ]
     },
     {
-     "name": "OR",
+     "name": "OR3",
      "truth_table": [
       {
        "a": "A",
@@ -926,6 +1082,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{ID}}",
+   "date": "2019-12-12",
    "name": "tops1",
    "available_states": [
     "A",
@@ -983,7 +1140,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/operations_profiles?date=2019-12-12", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1007,7 +1164,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
 
-	c.Find(bson.M{"name": "tops1"}).One(&result)
+	c.Find(bson.M{"name": "tops1", "date": "2019-12-12"}).One(&result)
 	id := result["id"].(string)
 
 	// Apply id to output template and check
@@ -1015,7 +1172,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 
 	// Check that actually the item has been created
 	// Call List one with the specific ID
-	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/"+id, strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/"+id+"?date=2019-12-12", strings.NewReader(""))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -1028,6 +1185,7 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(strings.Replace(jsonCreated, "{{ID}}", id, 1), output2, "Response body mismatch")
+
 }
 
 func (suite *OperationsProfilesTestSuite) TestCreateNameAlreadyExists() {
@@ -1379,60 +1537,121 @@ func (suite *OperationsProfilesTestSuite) TestInvalidUpdate() {
 func (suite *OperationsProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
-	 "name": "tops1",
-	 "available_states": [
-		"A","B","C"
-	 ],
-	 "defaults": {
-		"down": "B",
-		"missing": "A",
-		"unknown": "C"
-	 },
-	 "operations": [
+	"name": "tops1",
+	"available_states": [
+	"A","B","C"
+	],
+	"defaults": {
+	"down": "B",
+	"missing": "A",
+	"unknown": "C"
+	},
+	"operations": [
+	{
+		"name": "AND66",
+		"truth_table": [
 		{
-		 "name": "AND",
-		 "truth_table": [
-			{
-			 "a": "A",
-			 "b": "B",
-			 "x": "B"
-			},
-			{
-			 "a": "A",
-			 "b": "C",
-			 "x": "C"
-			},
-			{
-			 "a": "B",
-			 "b": "C",
-			 "x": "C"
-			}
-		 ]
+			"a": "A",
+			"b": "B",
+			"x": "B"
 		},
 		{
-		 "name": "OR",
-		 "truth_table": [
-			{
-			 "a": "A",
-			 "b": "B",
-			 "x": "A"
-			},
-			{
-			 "a": "A",
-			 "b": "C",
-			 "x": "A"
-			},
-			{
-			 "a": "B",
-			 "b": "C",
-			 "x": "B"
-			}
-		 ]
+			"a": "A",
+			"b": "C",
+			"x": "C"
+		},
+		{
+			"a": "B",
+			"b": "C",
+			"x": "C"
 		}
-	 ]
-	}`
+		]
+	},
+	{
+		"name": "OR66",
+		"truth_table": [
+		{
+			"a": "A",
+			"b": "B",
+			"x": "A"
+		},
+		{
+			"a": "A",
+			"b": "C",
+			"x": "A"
+		},
+		{
+			"a": "B",
+			"b": "C",
+			"x": "B"
+		}
+		]
+	}
+	]
+}`
+
+	jsonInput2 := `{
+	"name": "tops1",
+	"available_states": [
+	"A","B","C"
+	],
+	"defaults": {
+	"down": "B",
+	"missing": "A",
+	"unknown": "C"
+	},
+	"operations": [
+	{
+		"name": "AND12",
+		"truth_table": [
+		{
+			"a": "A",
+			"b": "B",
+			"x": "B"
+		},
+		{
+			"a": "A",
+			"b": "C",
+			"x": "C"
+		},
+		{
+			"a": "B",
+			"b": "C",
+			"x": "C"
+		}
+		]
+	},
+	{
+		"name": "OR12",
+		"truth_table": [
+		{
+			"a": "A",
+			"b": "B",
+			"x": "A"
+		},
+		{
+			"a": "A",
+			"b": "C",
+			"x": "A"
+		},
+		{
+			"a": "B",
+			"b": "C",
+			"x": "B"
+		}
+		]
+	}
+	]
+}`
 
 	jsonOutput := `{
+ "status": {
+  "message": "Operations Profile successfully updated (new history snapshot)",
+  "code": "200"
+ }
+}`
+
+	jsonOutput2 := `{
  "status": {
   "message": "Operations Profile successfully updated",
   "code": "200"
@@ -1447,6 +1666,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-12-12",
    "name": "tops1",
    "available_states": [
     "A",
@@ -1460,7 +1680,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
    },
    "operations": [
     {
-     "name": "AND",
+     "name": "AND66",
      "truth_table": [
       {
        "a": "A",
@@ -1480,7 +1700,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
      ]
     },
     {
-     "name": "OR",
+     "name": "OR66",
      "truth_table": [
       {
        "a": "A",
@@ -1504,7 +1724,73 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	jsonUpdated2 := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-12-12",
+   "name": "tops1",
+   "available_states": [
+    "A",
+    "B",
+    "C"
+   ],
+   "defaults": {
+    "down": "B",
+    "missing": "A",
+    "unknown": "C"
+   },
+   "operations": [
+    {
+     "name": "AND12",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "B"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "C"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "C"
+      }
+     ]
+    },
+    {
+     "name": "OR12",
+     "truth_table": [
+      {
+       "a": "A",
+       "b": "B",
+       "x": "A"
+      },
+      {
+       "a": "A",
+       "b": "C",
+       "x": "A"
+      },
+      {
+       "a": "B",
+       "b": "C",
+       "x": "B"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1523,7 +1809,7 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
 
 	// Check that the item has actually updated
 	// run a list specific
-	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(""))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -1536,6 +1822,40 @@ func (suite *OperationsProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
+
+	request3, _ := http.NewRequest("PUT", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(jsonInput2))
+	request3.Header.Set("x-api-key", suite.clientkey)
+	request3.Header.Set("Accept", "application/json")
+	response3 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response3, request3)
+
+	code3 := response3.Code
+	output3 := response3.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code3, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	// Apply id to output template and check
+	suite.Equal(jsonOutput2, output3, "Response body mismatch")
+
+	// Check that the item has actually updated
+	// run a list specific
+	request4, _ := http.NewRequest("GET", "/api/v2/operations_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-12-12", strings.NewReader(""))
+	request4.Header.Set("x-api-key", suite.clientkey)
+	request4.Header.Set("Accept", "application/json")
+	response4 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response4, request4)
+
+	code4 := response4.Code
+	output4 := response4.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code4, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonUpdated2, output4, "Response body mismatch")
+
 }
 
 func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
@@ -1570,6 +1890,41 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 	// Compare the expected and actual json response
 
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *OperationsProfilesTestSuite) TestListEmpty() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(suite.tenantDbConf.Db).C("operations_profiles")
+	c.DropCollection()
+
+	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	emptyList := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(emptyList, output, "Response body mismatch")
 
 }
 

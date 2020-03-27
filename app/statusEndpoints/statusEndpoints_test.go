@@ -23,6 +23,7 @@
 package statusEndpoints
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -212,6 +213,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	c.Insert(bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
@@ -226,6 +228,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
 		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
@@ -236,6 +239,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
 		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
@@ -425,6 +429,9 @@ func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
      "endpoints": [
       {
        "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
        "statuses": [
         {
          "timestamp": "2015-05-01T00:00:00Z",
@@ -608,6 +615,9 @@ func (suite *StatusEndpointsTestSuite) TestLatestResults() {
      "endpoints": [
       {
        "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
        "statuses": [
         {
          "timestamp": "2015-05-01T00:00:00Z",
@@ -688,6 +698,9 @@ func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
      "endpoints": [
       {
        "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
        "statuses": [
         {
          "timestamp": "2015-05-01T00:00:00Z",
@@ -770,6 +783,7 @@ func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
 
 }
 

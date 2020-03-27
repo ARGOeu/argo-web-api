@@ -124,6 +124,7 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
+			host.Info = row.Info
 			ppService.Endpoints = append(ppService.Endpoints, host)
 			prevHostname = row.Hostname
 			ppHost = host

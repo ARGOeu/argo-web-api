@@ -87,6 +87,55 @@ func (suite *MetricProfilesTestSuite) SetupSuite() {
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
 
+func (suite *MetricProfilesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/metric_profiles/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/metric_profiles/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
+
 // This function runs before any test and setups the environment
 func (suite *MetricProfilesTestSuite) SetupTest() {
 
@@ -207,10 +256,14 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 
 	// Seed database with metric profiles
 	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-			"name": "ch.cern.SAM.ROC_CRITICAL",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":         "ch.cern.SAM.ROC_CRITICAL",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"description":  "critical profile",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
 					"metrics": []string{
@@ -233,8 +286,37 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"name": "ch.cern.SAM.ROC",
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+			"name":         "ch.cern.SAM.ROC_CRITICAL",
+			"date_integer": 20191104,
+			"date":         "2019-11-04",
+			"description":  "critical profile",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE2",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv3",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":         "ch.cern.SAM.ROC",
+			"date_integer": 20190504,
+			"date":         "2019-05-04",
 			"services": []bson.M{
 				bson.M{"service": "CREAM-CE",
 					"metrics": []string{
@@ -246,6 +328,34 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 						"emi.wn.WN-SoftVer"},
 				},
 				bson.M{"service": "SRMv2",
+					"metrics": []string{"hr.srce.SRM2-CertLifetime",
+						"org.sam.SRM-Del",
+						"org.sam.SRM-Get",
+						"org.sam.SRM-GetSURLs",
+						"org.sam.SRM-GetTURLs",
+						"org.sam.SRM-Ls",
+						"org.sam.SRM-LsDir",
+						"org.sam.SRM-Put"},
+				},
+			},
+		})
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+			"name":         "ch.cern.SAM.ROC",
+			"date_integer": 20190604,
+			"date":         "2019-06-04",
+			"services": []bson.M{
+				bson.M{"service": "CREAM-CE2",
+					"metrics": []string{
+						"emi.cream.CREAMCE-JobSubmit",
+						"emi.wn.WN-Bi",
+						"emi.wn.WN-Csh",
+						"hr.srce.CADist-Check",
+						"hr.srce.CREAMCE-CertLifetime",
+						"emi.wn.WN-SoftVer"},
+				},
+				bson.M{"service": "SRMv3",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -279,22 +389,22 @@ func (suite *MetricProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "name": "ch.cern.SAM.ROC",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
+   "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "critical profile",
    "services": [
     {
-     "service": "CREAM-CE",
+     "service": "CREAM-CE2",
      "metrics": [
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
       "emi.wn.WN-Csh",
-      "hr.srce.CADist-Check",
-      "hr.srce.CREAMCE-CertLifetime",
       "emi.wn.WN-SoftVer"
      ]
     },
     {
-     "service": "SRMv2",
+     "service": "SRMv3",
      "metrics": [
       "hr.srce.SRM2-CertLifetime",
       "org.sam.SRM-Del",
@@ -309,20 +419,24 @@ func (suite *MetricProfilesTestSuite) TestList() {
    ]
   },
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "name": "ch.cern.SAM.ROC_CRITICAL",
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-06-04",
+   "name": "ch.cern.SAM.ROC",
+   "description": "",
    "services": [
     {
-     "service": "CREAM-CE",
+     "service": "CREAM-CE2",
      "metrics": [
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
       "emi.wn.WN-Csh",
+      "hr.srce.CADist-Check",
+      "hr.srce.CREAMCE-CertLifetime",
       "emi.wn.WN-SoftVer"
      ]
     },
     {
-     "service": "SRMv2",
+     "service": "SRMv3",
      "metrics": [
       "hr.srce.SRM2-CertLifetime",
       "org.sam.SRM-Del",
@@ -365,10 +479,12 @@ func (suite *MetricProfilesTestSuite) TestListQueryName() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-06-04",
    "name": "ch.cern.SAM.ROC",
+   "description": "",
    "services": [
     {
-     "service": "CREAM-CE",
+     "service": "CREAM-CE2",
      "metrics": [
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
@@ -379,7 +495,7 @@ func (suite *MetricProfilesTestSuite) TestListQueryName() {
      ]
     },
     {
-     "service": "SRMv2",
+     "service": "SRMv3",
      "metrics": [
       "hr.srce.SRM2-CertLifetime",
       "org.sam.SRM-Del",
@@ -457,10 +573,12 @@ func (suite *MetricProfilesTestSuite) TestListOne() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "date": "2019-11-04",
    "name": "ch.cern.SAM.ROC_CRITICAL",
+   "description": "critical profile",
    "services": [
     {
-     "service": "CREAM-CE",
+     "service": "CREAM-CE2",
      "metrics": [
       "emi.cream.CREAMCE-JobSubmit",
       "emi.wn.WN-Bi",
@@ -469,7 +587,7 @@ func (suite *MetricProfilesTestSuite) TestListOne() {
      ]
     },
     {
-     "service": "SRMv2",
+     "service": "SRMv3",
      "metrics": [
       "hr.srce.SRM2-CertLifetime",
       "org.sam.SRM-Del",
@@ -589,7 +707,9 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
  "data": [
   {
    "id": "{{id}}",
+   "date": "2019-11-08",
    "name": "test_profile",
+   "description": "",
    "services": [
     {
      "service": "Service-A",
@@ -612,7 +732,7 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
  ]
 }`
 
-	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("POST", "/api/v2/metric_profiles?date=2019-11-08", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -855,9 +975,10 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
   "name": "test_profile",
+  "description": "just for testing",
   "services": [
     {
-      "service": "Service-A",
+      "service": "Service-AX",
       "metrics": [
         "metric.A.1",
         "metric.A.2",
@@ -866,7 +987,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
       ]
     },
     {
-      "service": "Service-B",
+      "service": "Service-BX",
       "metrics": [
         "metric.B.1",
         "metric.B.2"
@@ -877,7 +998,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Metric Profile successfully updated",
+  "message": "Metric Profile successfully updated (new history snapshot)",
   "code": "200"
  }
 }`
@@ -890,10 +1011,12 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
  "data": [
   {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-07-08",
    "name": "test_profile",
+   "description": "just for testing",
    "services": [
     {
-     "service": "Service-A",
+     "service": "Service-AX",
      "metrics": [
       "metric.A.1",
       "metric.A.2",
@@ -902,7 +1025,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
      ]
     },
     {
-     "service": "Service-B",
+     "service": "Service-BX",
      "metrics": [
       "metric.B.1",
       "metric.B.2"
@@ -913,7 +1036,7 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
  ]
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("PUT", "/api/v2/metric_profiles/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-07-08", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -946,6 +1069,41 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 	// Compare the expected and actual json response
 
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
+
+}
+
+func (suite *MetricProfilesTestSuite) TestListEmpty() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c.DropCollection()
+
+	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	emptyList := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(emptyList, output, "Response body mismatch")
 
 }
 

@@ -1,5 +1,5 @@
 ---
-title: 'API documentation | ARGO'
+title: "API documentation | ARGO"
 page_title: API - Reports
 font_title: fa fa-cogs
 description: API Calls for listing existing and creating new Reports
@@ -7,19 +7,21 @@ description: API Calls for listing existing and creating new Reports
 
 # API Calls
 
-Name                               | Description                                                    | Shortcut
----------------------------------- | -------------------------------------------------------------- | ------------------
-GET: List reports or single report | This method can be used to retrieve a list of existing reports | [ Description](#1)
-POST: Create a new report          | This method can be used to create a new report.                | [ Description](#2)
-PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3)
-DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4)
+| Name                               | Description                                                    | Shortcut           |
+| ---------------------------------- | -------------------------------------------------------------- | ------------------ |
+| GET: List reports or single report | This method can be used to retrieve a list of existing reports | [ Description](#1) |
+| POST: Create a new report          | This method can be used to create a new report.                | [ Description](#2) |
+| PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3) |
+| DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4) |
 
 <a id='1'></a>
 
 ## [GET]: List Reports
+
 This method can be used to retrieve a list of existing reports or a single report according to its ID.
 
 ### Input
+
 #### URL
 
 ```
@@ -36,9 +38,11 @@ Accept: application/json
 ```
 
 ### Response
+
 Headers: `Status: 200 OK`
 
 #### Response body
+
 Json Response
 
 ```json
@@ -67,11 +71,11 @@ Json Response
                 }
             },
             "thresholds": {
-                "availability": 80.00,
-                "reliability": 85.00,
-                "uptime": 80.00,
-                "unknown": 10.00,
-                "downtime": 10.00
+                "availability": 80.0,
+                "reliability": 85.0,
+                "uptime": 80.0,
+                "unknown": 10.0,
+                "downtime": 10.0
             },
             "profiles": [
                 {
@@ -107,10 +111,10 @@ Json Response
 }
 ```
 
-
 <a id='2'></a>
 
 ## [POST]: Create a new report
+
 This method can be used to create a new report
 
 ### Input
@@ -145,15 +149,15 @@ Accept: application/json
         }
     },
     "thresholds": {
-        "availability": 80.00,
-        "reliability": 85.00,
-        "uptime": 80.00,
-        "unknown": 10.00,
-        "downtime": 10.00
+        "availability": 80.0,
+        "reliability": 85.0,
+        "uptime": 80.0,
+        "unknown": 10.0,
+        "downtime": 10.0
     },
     "profiles": [
         {
-            "id":"422985a7-6386-4964-bc99-5ebd5d7b0aef",
+            "id": "422985a7-6386-4964-bc99-5ebd5d7b0aef",
             "type": "metric"
         },
         {
@@ -179,6 +183,7 @@ Accept: application/json
 ```
 
 ### Response
+
 Headers: `Status: 201 Created`
 
 #### Response Body
@@ -201,9 +206,11 @@ Headers: `Status: 201 Created`
 <a id='3'></a>
 
 ## [PUT]: Update an existing report
+
 This method can be used to update an existing report. This will replace all the fields in the record so all the old fields that need to be kept must be included in the json of the update request body
 
 ### Input
+
 #### URL
 
 ```
@@ -225,7 +232,7 @@ Accept: application/json
     "weight": "hepspec",
     "info": {
         "name": "newname",
-        "description": "newdescription",
+        "description": "newdescription"
     },
     "topology_schema": {
         "group": {
@@ -236,11 +243,11 @@ Accept: application/json
         }
     },
     "thresholds": {
-        "availability": 90.00,
-        "reliability": 95.00,
-        "uptime": 90.00,
-        "unknown": 15.00,
-        "downtime": 15.00
+        "availability": 90.0,
+        "reliability": 95.0,
+        "uptime": 90.0,
+        "unknown": 15.0,
+        "downtime": 15.0
     },
     "profiles": [
         {
@@ -273,6 +280,7 @@ Accept: application/json
 ```
 
 ### Response
+
 Headers: `Status: 200 OK`
 
 #### Response Body
@@ -289,9 +297,11 @@ Headers: `Status: 200 OK`
 <a id='4'></a>
 
 ## [DELETE]: Delete an existing report
+
 This method can be used to update an existing report
 
 ### Input
+
 #### URL
 
 ```
@@ -306,6 +316,7 @@ Accept: application/json
 ```
 
 ### Response
+
 Headers: `Status: 200 OK`
 
 #### Response Body
@@ -318,3 +329,28 @@ Headers: `Status: 200 OK`
     }
 }
 ```
+
+<a id='5'></a>
+
+## Notes on Report Filter tags and topology
+
+As we seen before a report can host a list of filter tags using the following list under the filed `filter_tags`:
+
+```json
+{
+    "filter_tags": [
+        {
+            "context": "a context description to define where the filter applies",
+            "name": "what to be filter",
+            "value": "filter pattern described here"
+        }
+    ]
+}
+```
+
+There are special argo contextes that are automatically picked up to filter group and endpoint topology. These contexts are described below:
+
+-   _context:_ `argo.group.filter.fields` - Used to apply filter on basic fields of group topology. Under this context the `name` targets the group field name and the `value` holds the actual field pattern
+-   _context:_ `argo.group.filter.tags` - Used to apply filter on tags of group topology. Under this context the `name` targets the group tag name and the `value` holds the actual field pattern
+-   _context:_ `argo.endpoint.filter.fields` - Used to apply filter on basic fields of endpoint topology. Under this context the `name` targets the endpoint field name and the `value` holds the actual field pattern
+-   _context:_ `argo.endpoint.filter.tags` - Used to apply filter on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
