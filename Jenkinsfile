@@ -65,5 +65,9 @@ pipeline {
                 }
             }
         }
+        always {
+            slackSend(channel: "argo-activity", message: "Message from einfra Jenkins Pipeline. :parrot: $PROJECT_DIR on $BRANCH_NAME [$JOB_NAME] <https://jenkins.einfra.grnet.gr/job/ARGO/job/argo-web-api/|Click Here>")
+
+        }
     }
 }
