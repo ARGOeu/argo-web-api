@@ -692,6 +692,51 @@ func (suite *ThresholdsProfilesTestSuite) TestUpdateNotFound() {
 
 }
 
+func (suite *ThresholdsProfilesTestSuite) TestUpdateSameName() {
+
+	jsonInput := `{
+  "name" : "thr02",
+  "rules": [
+    {
+      "metric": "metricB",
+      "thresholds": "time=2s;10;9:30;0;30"
+    }
+  ]
+}`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Conflict",
+  "code": "409"
+ },
+ "errors": [
+  {
+   "message": "Conflict",
+   "code": "409",
+   "details": "Thresholds profile with the same name already exists"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/thresholds_profiles/6ac7d555-1f8e-4a02-a502-720e8f11e50b?date=2019-11-12", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(409, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	// Apply id to output template and check
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *ThresholdsProfilesTestSuite) TestUpdate() {
 
 	jsonInput := `{
