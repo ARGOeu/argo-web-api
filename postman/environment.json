@@ -1,0 +1,25 @@
+{
+	"id": "5668ae87-b682-4406-900d-a4fcba3c0e96",
+	"name": "kevangel-test-webapi",
+	"values": [
+		{
+			"key": "api_host",
+			"value": "snf-13121.ok-kno.grnetcloud.net",
+			"enabled": true
+		},
+		{
+			"key": "tenant_uuid",
+			"value": "818be8e3-9060-4798-8516-f1153b3c6669",
+			"enabled": true
+		},
+		{
+			"key": "last_commit",
+			"value": "8e1fd9e9040f266f90c9fc0be645ae600c3bfd04",
+			"description": "",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2020-04-29T12:34:04.194Z",
+	"_postman_exported_using": "Postman/6.7.6"
+}
