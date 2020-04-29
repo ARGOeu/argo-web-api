@@ -66,7 +66,7 @@ pipeline {
                 echo 'Deploying to development environment'
                 withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
                                                              keyFileVariable: 'REPOKEY'),
-                                usernamePassword(credentialsId: 'jenkins-rpm-repo',usernameVariable: 'ARGO_TOKEN', passwordVariable: 'TOKEN_VAL')]) {
+                                usernamePassword(credentialsId: 'argo-token',usernameVariable: 'ARGO_TOKEN', passwordVariable: 'TOKEN_VAL')]) {
                     sh """
                         cd ${WORKSPACE}/${PROJECT}
                         npm install newman
