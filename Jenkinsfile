@@ -68,7 +68,7 @@ pipeline {
                                                              keyFileVariable: 'REPOKEY'),
                                 usernamePassword(credentialsId: 'argo-token',usernameVariable: 'ARGO_TOKEN', passwordVariable: 'TOKEN_VAL')]) {
                     sh """
-                        cd ${WORKSPACE}/${PROJECT}
+                        cd ${WORKSPACE}/${PROJECT_DIR}
                         npm install newman
                         cat ./deploy.sh | ssh -i ${REPOKEY} -o StrictHostKeyChecking=no root@snf-13121.ok-kno.grnetcloud.net DEP_PROJECT=argo-web-api DEP_VERSION=1.9.0 DEP_RELEASE=20200402153255.8e1fd9e.el7 /bin/bash
                         ./node_modules/newman/bin/newman.js run ./postman/web-api.postman_collection.json  -k -e ./postman/environment.json --env-var last_commit=8e1fd9e9040f266f90c9fc0be645ae600c3bfd04 --env-var api_key=${TOKEN_VAL}
