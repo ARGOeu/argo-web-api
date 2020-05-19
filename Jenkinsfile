@@ -41,7 +41,6 @@ pipeline {
             }
             steps {
                 dir ("${WORKSPACE}/grnet-ansible") {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', keyFileVariable: 'REPOKEY')]) {
                     git branch: "feature/DEVOPS-138",
                         credentialsId: 'kevangel79',
                         url: "git@github.com:/kevangel79/argo-ansible-deploy.git"
@@ -60,7 +59,6 @@ pipeline {
                         pipenv run ansible-playbook --private-key=${REPO_KEY} -i devel -l testVm13121 argo-ansible/update.yml -u root -vv
                     """
                     deleteDir()
-                    }
                 }
             }
         }
