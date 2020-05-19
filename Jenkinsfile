@@ -43,7 +43,7 @@ pipeline {
                 dir ("${WORKSPACE}/grnet-ansible") {
                     git branch: "feature/DEVOPS-138",
                         credentialsId: 'kevangel79',
-                        url: "git@github.com:/kevangel79/argo-ansible-deploy.git"
+                        url: "git@github.com:kevangel79/argo-ansible-deploy.git"
                     sh """
                         cd ${WORKSPACE}/grnet-ansible
                         git submodule init
