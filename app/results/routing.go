@@ -53,6 +53,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appEndpointRoutes = []respond.AppRoutes{
+
 	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
 	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", ListEndpointResults},
 	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
@@ -62,6 +63,7 @@ var appEndpointRoutes = []respond.AppRoutes{
 	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
 	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", ListEndpointResults},
 	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
+	{"results.get", "GET", "/endpoints", FlatListEndpointResults},
 	// normal routes to get endpoints included in a service
 
 }
@@ -82,6 +84,7 @@ var appGroupRoutes = []respond.AppRoutes{
 }
 
 var appRoutesV2 = []respond.AppRoutes{
+	{"results.options", "OPTIONS", "/{report_name}/endpoints", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
 	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
