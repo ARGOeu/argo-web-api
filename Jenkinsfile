@@ -44,6 +44,7 @@ pipeline {
                         pipenv run ansible-playbook --private-key=${REPO_KEY} -i devel -l testVm13121 argo-ansible/update.yml -u root -vv
                     """
                     deleteDir()
+                    }
                 }
             }
         }
