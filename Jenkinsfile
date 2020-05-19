@@ -23,14 +23,11 @@ pipeline {
             }
             steps {
                 dir ("${WORKSPACE}/${DOC_SOURCE}") {
-                    git branch: "${env.BRANCH_NAME}",
+                    git branch: "devel"",
                         credentialsId: 'jenkins-rpm-repo',
                         url: "git@github.com:ARGOeu/${DOC_SOURCE}.git"
                     sh """
                         cd ${WORKSPACE}/${DOC_SOURCE}/doc/v1
-                        mkdocs build --clean
-                        cp -R ${WORKSPACE}/${DOC_SOURCE}/doc/doc/ ${WORKSPACE}/${DOC_PROJECT}/content/guides
-                        cp -R ${WORKSPACE}/${DOC_SOURCE}/doc/v1/site/* ${WORKSPACE}/${DOC_PROJECT}/messaging/v1
                     """
                     deleteDir()
                 }
