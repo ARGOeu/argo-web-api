@@ -17,6 +17,25 @@ pipeline {
         GIT_COMMIT_DATE=sh(script: "date -d \"\$(cd ${WORKSPACE}/$PROJECT_DIR && git show -s --format=%ci ${GIT_COMMIT_HASH})\" \"+%Y%m%d%H%M%S\"",returnStdout: true).trim()
    }
     stages {
+        stage ('Build messaging docs'){
+            environment {
+                DOC_SOURCE="argo-messaging"
+            }
+            steps {
+                dir ("${WORKSPACE}/${DOC_SOURCE}") {
+                    git branch: "${env.BRANCH_NAME}",
+                        credentialsId: 'jenkins-rpm-repo',
+                        url: "git@github.com:ARGOeu/${DOC_SOURCE}.git"
+                    sh """
+                        cd ${WORKSPACE}/${DOC_SOURCE}/doc/v1
+                        mkdocs build --clean
+                        cp -R ${WORKSPACE}/${DOC_SOURCE}/doc/doc/ ${WORKSPACE}/${DOC_PROJECT}/content/guides
+                        cp -R ${WORKSPACE}/${DOC_SOURCE}/doc/v1/site/* ${WORKSPACE}/${DOC_PROJECT}/messaging/v1
+                    """
+                    deleteDir()
+                }
+            }
+        }
         stage('Deploy to devel') {
             agent { 
                 docker { 
