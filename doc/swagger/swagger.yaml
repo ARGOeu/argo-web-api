@@ -2439,6 +2439,39 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /status/{report_name}/endpoints:
+    get:
+      summary: "Flat List status results of all endpoints"
+      description: "This method returns a flat list of all endpoint status results based on a given report."
+      operationId: statusFlatEndpoints
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/FlatEndpointStatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
   /metric_result/{endpoint}:
     get:
@@ -3645,6 +3678,31 @@ definitions:
                   results:
                     $ref: "#/definitions/results"
                     
+  FlatEndpointStatusResponse:
+    type: object
+    properties:
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            service:
+              type: string
+            supergroup:
+              type: string
+            statuses:
+              type: array
+              items:
+                $ref: "#/definitions/timestamp_value"
+      pageSize:
+        type: integer
+      nextPageToken:
+        type: string
+
                     
   FlatEndpointResultsResponse:
     type: object
@@ -3734,8 +3792,6 @@ definitions:
                       properties:
                         name:
                           type: string
-                        info:
-                          type : object
                         statuses:
                           type: array
                           items:
@@ -4027,10 +4083,6 @@ definitions:
     type: object
     properties:
       id:
-        type: string
-      name: 
-        type: string 
-      description: 
         type: string
       services:
         type: array

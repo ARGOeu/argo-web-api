@@ -570,56 +570,35 @@ Status: 200 OK
 
 #### URL
 
-`/api/v2/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2`
+`/api/v2/results/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2`
 
 #### Response Body
 
 ```
 {
-  "results": [
+ "endpoints": [
+  {
+   "name": "host01.example.foo",
+   "service": "SERV-A",
+   "supergroup": "SITE-A",
+   "statuses": [
     {
-      "name": "e01",
-      "type": "endpoint",
-      "service": "service_a",
-      "supergroup": "ST01",
-      "results": [
-        {
-          "timestamp": "2015-06-22",
-          "availability": "98.26389",
-          "reliability": "98.26389",
-          "unknown": "0",
-          "uptime": "0.98264",
-          "downtime": "0"
-        },
-        {
-          "timestamp": "2015-06-23",
-          "availability": "54.03509",
-          "reliability": "81.48148",
-          "unknown": "0.01042",
-          "uptime": "0.53472",
-          "downtime": "0.33333"
-        }
-      ]
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
     },
     {
-      "name": "e02",
-      "type": "endpoint",
-      "service": "service_a",
-      "supergroup": "ST01",
-      "results": [
-        {
-          "timestamp": "2015-06-22",
-          "availability": "96.875",
-          "reliability": "96.875",
-          "unknown": "0",
-          "uptime": "0.96875",
-          "downtime": "0"
-        }
-      ]
+     "timestamp": "2015-05-01T08:47:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
     }
-  ],
-  "pageSize": 2,
-  "nextPageToken": "Mg=="
+   ]
+  }
+ ],
+ "nextPageToken": "Mg==",
+ "pageSize": 2
 }
 ```
 
@@ -627,31 +606,33 @@ Status: 200 OK
 
 #### URL
 
-`/api/v2/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
+`/api/v2/results/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
 
 #### Response Body
 
 ```
 {
-{
-  "results": [
+ "endpoints": [
+  {
+   "name": "host02.example.foo",
+   "service": "SERV-B",
+   "supergroup": "SITE-A",
+   "statuses": [
     {
-      "name": "e02",
-      "type": "endpoint",
-      "service": "service_a",
-      "supergroup": "ST01",
-      "results": [
-        {
-          "timestamp": "2015-06-22",
-          "availability": "96.875",
-          "reliability": "96.875",
-          "unknown": "0",
-          "uptime": "0.96875",
-          "downtime": "0"
-        }
-      ]
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T12:56:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
     }
-  ],
-  "pageSize": 2,
+   ]
+  }
+ ],
+ "pageSize": 2
 }
 ```
