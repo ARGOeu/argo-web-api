@@ -17,45 +17,6 @@ pipeline {
         GIT_COMMIT_DATE=sh(script: "date -d \"\$(cd ${WORKSPACE}/$PROJECT_DIR && git show -s --format=%ci ${GIT_COMMIT_HASH})\" \"+%Y%m%d%H%M%S\"",returnStdout: true).trim()
    }
     stages {
-        stage('Build') {
-            steps {
-                echo 'Build...'
-                sh """
-                mkdir -p ${WORKSPACE}/go/src/github.com/ARGOeu
-                ln -sf ${WORKSPACE}/${PROJECT_DIR} ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
-                rm -rf ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}/${PROJECT_DIR}
-                cd ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
-                go build
-                """
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Test & Coverage...'
-                sh """
-                mkdir /home/jenkins/mongo_data
-                mkdir /home/jenkins/mongo_log
-                mkdir /home/jenkins/mongo_run
-                mongod --dbpath /home/jenkins/mongo_data --logpath /home/jenkins/mongo_log/mongo.log --pidfilepath /home/jenkins/mongo_run/mongo.pid --fork
-                cd ${WORKSPACE}/go/src/github.com/ARGOeu/${PROJECT_DIR}
-                gocov test -p 1 \$(go list ./... | grep -v /vendor/) | gocov-xml > ${WORKSPACE}/coverage.xml
-                go test -p 1 \$(go list ./... | grep -v /vendor/) -v=1 | go-junit-report > ${WORKSPACE}/junit.xml
-                """
-                junit '**/junit.xml'
-                cobertura coberturaReportFile: '**/coverage.xml'
-
-            }
-        }
-        stage('Package') {
-            steps {
-                echo 'Building Rpm...'
-                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
-                                                             keyFileVariable: 'REPOKEY')]) {
-                    sh "/home/jenkins/build-rpm.sh -w ${WORKSPACE} -b ${BRANCH_NAME} -d centos7 -p ${PROJECT_DIR} -s ${REPOKEY}"
-                }
-                archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
-            }
-        }
         stage('Deploy to devel') {
             agent { 
                 docker { 
@@ -64,6 +25,7 @@ pipeline {
             }
             steps {
                 dir ("${WORKSPACE}/grnet-ansible") {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', keyFileVariable: 'REPOKEY')]) {
                     git branch: "feature/DEVOPS-138",
                         credentialsId: 'kevangel79',
                         url: "git@github.com:/kevangel79/argo-ansible-deploy.git"
@@ -75,10 +37,11 @@ pipeline {
                         git fetch origin/feature/DEVOPS-138
                         git checkout feature/DEVOPS-138
                         cd ..
-                        pip install -r argo-ansible/requirements.txt
-                        ansible-galaxy install -r argo-ansible/requirements.yml
+                        pipenv --python 2
+                        pipenv run pip install -r argo-ansible/requirements.txt
+                        pipenv run ansible-galaxy install -r argo-ansible/requirements.yml
                         echo ">>> Run ansible swagger role"
-                        ansible-playbook -h
+                        pipenv run ansible-playbook --private-key=${REPO_KEY} -i devel -l testVm13121 argo-ansible/update.yml -u root -vv
                     """
                     deleteDir()
                 }
