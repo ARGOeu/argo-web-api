@@ -59,23 +59,48 @@ pipeline {
         stage('Deploy to devel') {
             agent { 
                 docker { 
+                    image 'argo.registry:5000/epel-7-ams' 
+                }
+            }
+            steps {
+                dir ("${WORKSPACE}/grnet-ansible") {
+                    git branch: "feature/DEVOPS-138",
+                        credentialsId: 'kevangel79',
+                        url: "git@github.com:/kevangel79/argo-ansible-deploy.git"
+                    sh """
+                        cd ${WORKSPACE}/grnet-ansible
+                        git submodule init
+                        git submodule update
+                        cd argo-ansible
+                        git fetch origin/feature/DEVOPS-138
+                        git checkout feature/DEVOPS-138
+                        cd ..
+                        pip install -r argo-ansible/requirements.txt
+                        ansible-galaxy install -r argo-ansible/requirements.yml
+                        echo ">>> Run ansible swagger role"
+                        ansible-playbook -h
+                    """
+                    deleteDir()
+                }
+            }
+        }
+        stage('Run functional tests') {
+            agent { 
+                docker { 
                     image 'node:buster' 
                 }
             }
             steps {
-                echo 'Deploying to development environment'
-                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
-                                                             keyFileVariable: 'REPOKEY'),
-                                usernamePassword(credentialsId: 'argo-token',usernameVariable: 'ARGO_TOKEN', passwordVariable: 'TOKEN_VAL')]) {
+                echo 'Run functional tests at devel environment'
+                withCredentials([usernamePassword(credentialsId: 'argo-token',usernameVariable: 'ARGO_TOKEN', passwordVariable: 'TOKEN_VAL')]) {
                     sh """
                         cd ${WORKSPACE}/${PROJECT_DIR}
                         npm install newman
-                        cat ./deploy.sh | ssh -i ${REPOKEY} -o StrictHostKeyChecking=no root@snf-13121.ok-kno.grnetcloud.net DEP_PROJECT=argo-web-api DEP_VERSION=1.9.0 DEP_RELEASE=20200402153255.8e1fd9e.el7 /bin/bash
-                        ./node_modules/newman/bin/newman.js run ./postman/web-api.postman_collection.json  -k -e ./postman/environment.json --env-var last_commit=8e1fd9e9040f266f90c9fc0be645ae600c3bfd04 --env-var api_key=${TOKEN_VAL}
+                        ./node_modules/newman/bin/newman.js run ./postman/web-api.postman_collection.json  -k -e ./postman/environment.json --env-var last_commit=9bbfbd575cd79d3dbf246c017e6480bf50318fcc --env-var api_key=${TOKEN_VAL}
                     """
                 }
             }
-        } 
+        }
     }
     post{
         success {
