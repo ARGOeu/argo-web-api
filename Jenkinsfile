@@ -32,7 +32,7 @@ pipeline {
                         cd ${WORKSPACE}/grnet-ansible
                         git submodule init
                         git submodule update
-                        cat .gitmodule
+                        cat .gitmodules
                         cd argo-ansible
                         git branch
                         git remote -v
