@@ -25,7 +25,7 @@ pipeline {
             }
             steps {
                 dir ("${WORKSPACE}/grnet-ansible") {
-                    git branch: "ansible2.9",
+                    git branch: "master",
                         credentialsId: 'kevangel79',
                         url: "git@github.com:kevangel79/test111.git"
                     sh """
