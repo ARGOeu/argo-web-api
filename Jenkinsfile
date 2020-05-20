@@ -40,7 +40,6 @@ pipeline {
                         pipenv run pip install -r argo-ansible/requirements.txt
                         pipenv run ansible-galaxy install -r argo-ansible/requirements.yml
                         echo ">>> Run ansible swagger role"
-                        #pipenv run ansible-playbook --private-key=${REPO_KEY} -i devel -l testVm13121 argo-ansible/update.yml -u root -vv
                     """
                     deleteDir()
                 }
