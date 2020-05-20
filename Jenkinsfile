@@ -33,7 +33,6 @@ pipeline {
                         git submodule init
                         git submodule update
                         cd argo-ansible
-                        git fetch origin feature/DEVOPS-138
                         git checkout feature/DEVOPS-138
                         cd ..
                         pipenv --python 2
