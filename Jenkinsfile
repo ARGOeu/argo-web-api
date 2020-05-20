@@ -30,18 +30,12 @@ pipeline {
                         url: "git@github.com:kevangel79/argo-ansible-deploy.git"
                     sh """
                         cd ${WORKSPACE}/grnet-ansible
-                        cat .gitmodules
-                        git submodule update --init --recursive
-                        cd argo-ansible
-                        git branch
-                        git remote -v
-                        git checkout feature/DEVOPS-138
-                        cd ..
+                        ls -l argo-ansible/
                         pipenv --python 2
-                        pipenv run pip install -r argo-ansible/requirements.txt
-                        pipenv run ansible-galaxy install -r argo-ansible/requirements.yml
+                        pipenv run pip install -r argo-ansible2/requirements.txt
+                        pipenv run ansible-galaxy install -r argo-ansible2/requirements.yml
                         echo ">>> Run ansible swagger role"
-                        #pipenv run ansible-playbook --private-key='aaa' -i devel -l testVm13121 argo-ansible/update.yml -u root -vv
+                        #pipenv run ansible-playbook --private-key='aaa' -i devel -l testVm13121 argo-ansible2/update.yml -u root -vv
                     """
                     deleteDir()
                 }
