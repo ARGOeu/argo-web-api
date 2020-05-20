@@ -31,8 +31,7 @@ pipeline {
                     sh """
                         cd ${WORKSPACE}/grnet-ansible
                         cat .gitmodules
-                        git submodule init
-                        git submodule update
+                        git submodule update --init --recursive
                         cd argo-ansible
                         git branch
                         git remote -v
