@@ -17,22 +17,6 @@ pipeline {
         GIT_COMMIT_DATE=sh(script: "date -d \"\$(cd ${WORKSPACE}/$PROJECT_DIR && git show -s --format=%ci ${GIT_COMMIT_HASH})\" \"+%Y%m%d%H%M%S\"",returnStdout: true).trim()
    }
     stages {
-        stage ('Build messaging docs'){
-            environment {
-                DOC_SOURCE="argo-messaging"
-            }
-            steps {
-                dir ("${WORKSPACE}/${DOC_SOURCE}") {
-                    git branch: "devel",
-                        credentialsId: 'jenkins-rpm-repo',
-                        url: "git@github.com:ARGOeu/${DOC_SOURCE}.git"
-                    sh """
-                        cd ${WORKSPACE}/${DOC_SOURCE}/doc/v1
-                    """
-                    deleteDir()
-                }
-            }
-        }
         stage('Deploy to devel') {
             agent { 
                 docker { 
@@ -43,7 +27,7 @@ pipeline {
                 dir ("${WORKSPACE}/grnet-ansible") {
                     git branch: "ansible2.9",
                         credentialsId: 'kevangel79',
-                        url: "git@github.com:ARGOeu/argo-ansible-deploy.git"
+                        url: "git@github.com:kevangel79/test111.git"
                     sh """
                         cd ${WORKSPACE}/grnet-ansible
                         git submodule init
