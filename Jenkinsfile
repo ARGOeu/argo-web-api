@@ -30,9 +30,9 @@ pipeline {
                         url: "git@github.com:kevangel79/argo-ansible-deploy.git"
                     sh """
                         cd ${WORKSPACE}/grnet-ansible
+                        cat .gitmodules
                         git submodule init
                         git submodule update
-                        cat .gitmodules
                         cd argo-ansible
                         git branch
                         git remote -v
