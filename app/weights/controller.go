@@ -47,6 +47,9 @@ func prepMultiQuery(dt int, name string) interface{} {
 				"groups":      bson.M{"$first": "$groups"},
 			},
 		},
+		{
+			"$sort": bson.M{"id": 1},
+		},
 	}
 
 }
@@ -78,6 +81,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 	session, err := mongo.OpenSession(tenantDbConfig)
@@ -180,6 +184,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 	wQuery := prepQuery(dt, vars["ID"])
@@ -244,6 +249,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 	wQuery := prepMultiQuery(dt, name)
@@ -287,11 +293,16 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
-
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)

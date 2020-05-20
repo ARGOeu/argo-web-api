@@ -20,10 +20,9 @@
  *
  */
 
-package statusEndpoints
+package statusFlatEndpoints
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -390,405 +389,408 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 
 }
 
-func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
-	respXML1 := `<root>
- <group name="HG-03-AUTH" type="SITES">
-  <group name="CREAM-CE" type="service">
-   <endpoint name="cream01.afroditi.gr">
-    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-    <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
-   </endpoint>
-  </group>
- </group>
-</root>`
+func (suite *StatusEndpointsTestSuite) TestFlatListStatusEndpoints() {
 
-	respXML2 := `<root>
- <group name="EL-01-AUTH" type="EUDAT_SITES">
-  <group name="srv.typeA" type="service">
-   <endpoint name="host01.eudat.gr">
-    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-    <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
-   </endpoint>
-  </group>
- </group>
-</root>`
+	type expReq struct {
+		method string
+		url    string
+		code   int
+		result string
+		key    string
+	}
 
-	respJSON1 := `{
- "groups": [
+	expReqs := []expReq{
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
   {
-   "name": "HG-03-AUTH",
-   "type": "SITES",
-   "services": [
+   "name": "cream01.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   },
+   "statuses": [
     {
-     "name": "CREAM-CE",
-     "type": "service",
-     "endpoints": [
-      {
-       "name": "cream01.afroditi.gr",
-       "info": {
-        "Url": "http://example.foo/path/to/service"
-       },
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T01:00:00Z",
-         "value": "CRITICAL"
-        },
-        {
-         "timestamp": "2015-05-01T05:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "OK"
-        }
-       ]
-      }
-     ]
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  },
+  {
+   "name": "cream02.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T08:47:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T12:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  },
+  {
+   "name": "cream03.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T04:40:00Z",
+     "value": "UNKNOWN"
+    },
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
     }
    ]
   }
  ]
-}`
-	respJSON2 := `{
- "groups": [
+}`},
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_B/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z",
+			code: 200,
+			key:  "KEY2",
+			result: `{
+ "endpoints": [
   {
-   "name": "EL-01-AUTH",
-   "type": "EUDAT_SITES",
-   "services": [
+   "name": "host01.eudat.gr",
+   "service": "srv.typeA",
+   "supergroup": "EL-01-AUTH",
+   "statuses": [
     {
-     "name": "srv.typeA",
-     "type": "service",
-     "endpoints": [
-      {
-       "name": "host01.eudat.gr",
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T01:00:00Z",
-         "value": "CRITICAL"
-        },
-        {
-         "timestamp": "2015-05-01T05:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "OK"
-        }
-       ]
-      }
-     ]
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
     }
    ]
   }
  ]
-}`
+}`},
 
-	respUnauthorized := `{
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=3",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream01.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   },
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "Mw==",
+ "pageSize": 3
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=3&nextPageToken=Mw==",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream02.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T08:47:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T12:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "Ng==",
+ "pageSize": 3
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=3&nextPageToken=Ng==",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream03.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T04:40:00Z",
+     "value": "UNKNOWN"
+    },
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ],
+ "pageSize": 3
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream01.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   },
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T01:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T05:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  },
+  {
+   "name": "cream02.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "NA==",
+ "pageSize": 4
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=NA==",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream02.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T08:47:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T12:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  },
+  {
+   "name": "cream03.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T04:40:00Z",
+     "value": "UNKNOWN"
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "OA==",
+ "pageSize": 4
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=OA==",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream03.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ],
+ "pageSize": 4
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=OA==",
+			code: 401,
+			key:  "KEYWRONG",
+			result: `{
  "status": {
   "message": "Unauthorized",
   "code": "401",
   "details": "You need to provide a correct authentication token using the header 'x-api-key'"
  }
-}`
+}`,
+		},
+	}
 
-	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
-		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+	for _, expReq := range expReqs {
+		request, _ := http.NewRequest(expReq.method, expReq.url, strings.NewReader(""))
+		request.Header.Set("x-api-key", expReq.key)
+		request.Header.Set("Accept", "application/json")
 
-	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA/endpoints" +
-		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+		response := httptest.NewRecorder()
 
-	// 1. EGI XML REQUEST
-	// init the response placeholder
-	response := httptest.NewRecorder()
-	// Prepare the request object for fist tenant
-	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add accept xml header
-	request.Header.Set("Accept", "application/xml")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respXML1, response.Body.String(), "Response body mismatch")
+		suite.router.ServeHTTP(response, request)
 
-	// 2. EUDAT XML REQUEST
-	// init the response placeholder
-	response = httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add accept xml header
-	request.Header.Set("Accept", "application/xml")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY2")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respXML2, response.Body.String(), "Response body mismatch")
+		suite.Equal(expReq.code, response.Code, "Incorrect HTTP response code")
+		// Compare the expected and actual xml response
+		suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")
 
-	// 3. EGI JSON REQUEST
-	// init the response placeholder
-	response = httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
-
-	// 4. EUDAT JSON REQUEST
-	// init the response placeholder
-	response = httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY2")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
-
-	// 5. WRONG KEY REQUEST
-	// init the response placeholder
-	response = httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEYISWRONG")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(401, response.Code, "Response code mismatch")
-	// Compare the expected and actual xml response
-	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
-
-}
-
-func (suite *StatusEndpointsTestSuite) TestLatestResults() {
-
-	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
-		"?start_time=2015-05-03T00:00:00Z&end_time=2015-05-03T23:00:00Z"
-
-	fullurl2 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
-		"?start_time=2015-05-02T00:00:00Z&end_time=2015-05-02T23:00:00Z"
-
-	respJSON1 := `{
- "groups": [
-  {
-   "name": "HG-03-AUTH",
-   "type": "SITES",
-   "services": [
-    {
-     "name": "CREAM-CE",
-     "type": "service",
-     "endpoints": [
-      {
-       "name": "cream01.afroditi.gr",
-       "info": {
-        "Url": "http://example.foo/path/to/service"
-       },
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T01:00:00Z",
-         "value": "CRITICAL"
-        },
-        {
-         "timestamp": "2015-05-01T05:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "OK"
-        }
-       ]
-      }
-     ]
-    }
-   ]
-  }
- ]
-}`
-
-	respEmptyJSON := `{
-   "groups": null
- }`
-
-	// init the response placeholder
-	response := httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respEmptyJSON, response.Body.String(), "Response body mismatch")
-
-	// init the response placeholder
-	response2 := httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request2, _ := http.NewRequest("GET", fullurl2, strings.NewReader(""))
-	// add json accept header
-	request2.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request2.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response2, request2)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response2.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON1, response2.Body.String(), "Response body mismatch")
-
-}
-
-func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
-
-	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE/endpoints" +
-		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
-
-	respJSON1 := `{
- "groups": [
-  {
-   "name": "HG-03-AUTH",
-   "type": "SITES",
-   "services": [
-    {
-     "name": "CREAM-CE",
-     "type": "service",
-     "endpoints": [
-      {
-       "name": "cream01.afroditi.gr",
-       "info": {
-        "Url": "http://example.foo/path/to/service"
-       },
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T01:00:00Z",
-         "value": "CRITICAL"
-        },
-        {
-         "timestamp": "2015-05-01T05:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "OK"
-        }
-       ]
-      },
-      {
-       "name": "cream02.afroditi.gr",
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T08:47:00Z",
-         "value": "WARNING"
-        },
-        {
-         "timestamp": "2015-05-01T12:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "OK"
-        }
-       ]
-      },
-      {
-       "name": "cream03.afroditi.gr",
-       "statuses": [
-        {
-         "timestamp": "2015-05-01T00:00:00Z",
-         "value": "OK"
-        },
-        {
-         "timestamp": "2015-05-01T04:40:00Z",
-         "value": "UNKNOWN"
-        },
-        {
-         "timestamp": "2015-05-01T06:00:00Z",
-         "value": "CRITICAL"
-        },
-        {
-         "timestamp": "2015-05-01T23:59:59Z",
-         "value": "CRITICAL"
-        }
-       ]
-      }
-     ]
-    }
-   ]
-  }
- ]
-}`
-
-	// init the response placeholder
-	response := httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
+	}
 
 }
 
 func (suite *StatusEndpointsTestSuite) TestOptionsStatusEndpoints() {
-	request, _ := http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints", strings.NewReader(""))
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/status/Report_A/endpoints", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -797,21 +799,6 @@ func (suite *StatusEndpointsTestSuite) TestOptionsStatusEndpoints() {
 	code := response.Code
 	output := response.Body.String()
 	headers := response.HeaderMap
-
-	suite.Equal(200, code, "Error in response code")
-	suite.Equal("", output, "Expected empty response body")
-	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
-	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
-
-	request, _ = http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints/endpoint_a", strings.NewReader(""))
-
-	response = httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code = response.Code
-	output = response.Body.String()
-	headers = response.HeaderMap
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")

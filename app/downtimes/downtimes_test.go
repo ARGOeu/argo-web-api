@@ -295,6 +295,54 @@ func (suite *DowntimesTestSuite) TestCreateBadJson() {
 
 }
 
+func (suite *DowntimesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/downtimes/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/downtimes/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
 func (suite *DowntimesTestSuite) TestCreate() {
 
 	jsonInput := `{
@@ -411,19 +459,6 @@ func (suite *DowntimesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-13",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-13T02:00:33Z",
-     "end_time": "2019-10-13T23:33:00Z"
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-13",
    "name": "Critical",
@@ -445,6 +480,19 @@ func (suite *DowntimesTestSuite) TestList() {
      "service": "service-C",
      "start_time": "2019-10-13T20:00:33Z",
      "end_time": "2019-10-13T22:15:00Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-13",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-13T02:00:33Z",
+     "end_time": "2019-10-13T23:33:00Z"
     }
    ]
   }
@@ -476,25 +524,6 @@ func (suite *DowntimesTestSuite) TestListPast() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-11",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-11T02:00:33Z",
-     "end_time": "2019-10-11T23:33:00Z"
-    },
-    {
-     "hostname": "host-02",
-     "service": "service-02",
-     "start_time": "2019-10-11T16:00:33Z",
-     "end_time": "2019-10-11T16:45:00Z"
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-11",
    "name": "Critical",
@@ -516,6 +545,25 @@ func (suite *DowntimesTestSuite) TestListPast() {
      "service": "service-C",
      "start_time": "2019-10-11T20:00:33Z",
      "end_time": "2019-10-11T22:15:00Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-10-11",
+   "name": "NonCritical",
+   "endpoints": [
+    {
+     "hostname": "host-01",
+     "service": "service-01",
+     "start_time": "2019-10-11T02:00:33Z",
+     "end_time": "2019-10-11T23:33:00Z"
+    },
+    {
+     "hostname": "host-02",
+     "service": "service-02",
+     "start_time": "2019-10-11T16:00:33Z",
+     "end_time": "2019-10-11T16:45:00Z"
     }
    ]
   }

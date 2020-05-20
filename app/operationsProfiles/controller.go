@@ -74,6 +74,9 @@ func prepMultiQuery(dt int, name string) interface{} {
 				"operations":       bson.M{"$first": "$operations"},
 			},
 		},
+		{
+			"$sort": bson.M{"id": 1},
+		},
 	}
 
 }
@@ -121,6 +124,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 	opsQuery := prepQuery(dt, vars["ID"])
@@ -186,6 +190,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 	opsQuery := prepMultiQuery(dt, name)
@@ -237,6 +242,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
@@ -323,18 +329,19 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
-
-	// Set Content-Type response Header value
-	contentType := r.Header.Get("Accept")
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)

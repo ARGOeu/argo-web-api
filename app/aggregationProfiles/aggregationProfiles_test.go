@@ -419,49 +419,6 @@ func (suite *AggregationProfilesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-05-04",
-   "name": "cloud",
-   "namespace": "test",
-   "endpoint_group": "sites",
-   "metric_operation": "AND",
-   "profile_operation": "AND",
-   "metric_profile": {
-    "name": "roc.critical",
-    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
-   },
-   "groups": [
-    {
-     "name": "compute2",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEA",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICEB",
-       "operation": "AND"
-      }
-     ]
-    },
-    {
-     "name": "images2",
-     "operation": "OR",
-     "services": [
-      {
-       "name": "SERVICEC",
-       "operation": "AND"
-      },
-      {
-       "name": "SERVICED",
-       "operation": "AND"
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-11-04",
    "name": "critical",
@@ -503,6 +460,49 @@ func (suite *AggregationProfilesTestSuite) TestList() {
      ]
     }
    ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
+   "date": "2019-05-04",
+   "name": "cloud",
+   "namespace": "test",
+   "endpoint_group": "sites",
+   "metric_operation": "AND",
+   "profile_operation": "AND",
+   "metric_profile": {
+    "name": "roc.critical",
+    "id": "5637d684-1f8e-4a02-a502-720e8f11e432"
+   },
+   "groups": [
+    {
+     "name": "compute2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEA",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICEB",
+       "operation": "AND"
+      }
+     ]
+    },
+    {
+     "name": "images2",
+     "operation": "OR",
+     "services": [
+      {
+       "name": "SERVICEC",
+       "operation": "AND"
+      },
+      {
+       "name": "SERVICED",
+       "operation": "AND"
+      }
+     ]
+    }
+   ]
   }
  ]
 }`
@@ -510,6 +510,55 @@ func (suite *AggregationProfilesTestSuite) TestList() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *AggregationProfilesTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/aggregation_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/aggregation_profiles/some-uuid?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/aggregation_profiles?date=2020-02", Data: ""},
+		reqHeader{Method: "PUT", Path: "/api/v2/aggregation_profiles/some-id?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
 
 }
 

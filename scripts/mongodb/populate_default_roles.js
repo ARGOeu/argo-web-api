@@ -19,7 +19,7 @@ function populate_default_roles() {
     print("INFO\tOpened argo_core db");
     db.roles.insert([
         {
-            resource: "topology.list",
+            resource: "topology_stats.list",
             roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
@@ -152,6 +152,34 @@ function populate_default_roles() {
         {
             resource: "recomputations.update",
             roles: ["admin", "editor", "admin_ui"]
+        },
+        {
+            resource: "topology_endpoints.insert",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_endpoints.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_endpoints.delete",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups.insert",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups.delete",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_groups_report.list",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

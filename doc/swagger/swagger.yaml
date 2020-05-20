@@ -1745,7 +1745,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /topology/{report_name}:
+  /topology/stats/{report_name}:
     get:
       summary: "List topology statistics for a specific report"
       description: "This request lists number of groups and services contained in the report"
@@ -1774,6 +1774,330 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /topology/groups:
+    post:
+      summary: Create a new group topology per date
+      operationId: topology_groups.create
+      description: Create a new group topology which maps top level groups to subgroups
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "group_resource"
+          in: "body"
+          description: "Json description of group topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/TopologyGroups'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '409':
+          description: Content already created for specific date
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    get:
+      summary: List group topology per date
+      operationId: topology_groups.list
+      description: List group topology per date
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: name
+          type: string
+          description: filter results by group name
+        - in: query
+          name: type
+          type: string
+          description: filter results by group type
+        - in: query
+          name: subgroup
+          type: string
+          description: filter results by subgroup
+        - in: query
+          name: tags
+          type: string
+          description: filter results by tags using the pattern tags=key:value,key:value etc...
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resources listed
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    
+    delete:
+      summary: Delete topology of groups for a specific date
+      operationId: topology_groups.delete
+      description: Delete a list of groups (topology) for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: groups topology definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /topology/groups/by_report/{report_name}:
+    get:
+      summary: List group topology per date and filter by report
+      operationId: topology_groups_report.list
+      description: List group topology per date and filter by report
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: report_name
+          type: string
+          description: filter results based on selected report
+          required: true
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: filtered topology resources listed based on report
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  
+      
+          
+  /topology/endpoints:
+    post:
+      summary: Create a new endpoints topology resource
+      operationId: topology_endpoints.create
+      description: Create a new endpoints topology resource which maps endpoints to endpoint groups
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "endpoint_resource"
+          in: "body"
+          description: "Json description of endpoint topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/TopologyEndpoints'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+    get:
+      summary: List topology endpoints per date
+      operationId: topology_endpoints.list
+      description: List topology endpoints per date
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: name
+          type: string
+          description: filter results by group name
+        - in: query
+          name: type
+          type: string
+          description: filter results by group type
+        - in: query
+          name: service
+          type: string
+          description: filter results by service
+        - in: query
+          name: hostname
+          type: string
+          description: filter results by hostname
+        - in: query
+          name: tags
+          type: string
+          description: filter results by tags using the pattern tags=key:value,key:value etc...
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource listed
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+    delete:
+      summary: Delete topology of endpoints for a specific date
+      operationId: topology_endpoints.delete
+      description: Delete a list of endpoints (topology) for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Endpoint topology definition Deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /topology/endpoints/by_report/{report_name}:
+    get:
+      summary: List endpoint topology per date and filter by report
+      operationId: topology_endpoints_report.list
+      description: List endpoint topology per date and filter by report
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: report_name
+          type: string
+          description: filter results based on selected report
+          required: true
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: filtered topology resources listed based on report
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /latest/{report_name}/{lgroup_type}:
     get:
@@ -2105,6 +2429,39 @@ paths:
           description: "Successful retrieval of statuses"
           schema:
             $ref: "#/definitions/StatusMetricResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+          
+  /status/{report_name}/endpoints:
+    get:
+      summary: "Flat List status results of all endpoints"
+      description: "This method returns a flat list of all endpoint status results based on a given report."
+      operationId: statusFlatEndpoints
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/FlatEndpointStatusResponse"
         400:
           $ref: "#/responses/404"
         401:
@@ -2617,6 +2974,39 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /results/{report_name}/endpoints:
+    get:
+      summary: "Flat List A/R results of all endpoints"
+      description: "This method returns a flat list of all endpoint a/r results based on a given report. Results can be retrieved on daily or monthly granularity."
+      operationId: resultsFlatEndpoints
+      tags:
+        - Results
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/FlatEndpointResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
   /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
     get:
@@ -3118,6 +3508,52 @@ responses:
 
 definitions:
 
+  TopologyEndpoint:
+    type: object
+    properties:
+      group:
+        type: string
+        description: "name of the endpoint group"
+      type:
+        type: string
+        description: "type of the endpoint group, for example: SITES or SERVICEGROUPS etc... "
+      service:
+        type: string
+        description: "service type of the endpoint belonging to the endpoint group"
+      hostname:
+        type: string
+        description: "hostname of the endpoint belonging to the endpoint group"
+      tags:
+        type: object
+        description: "key value tags"
+
+  TopologyEndpoints:
+    type: array
+    items:
+      $ref: '#/definitions/TopologyEndpoint'
+      
+  TopologyGroups:
+    type: array
+    items:
+      $ref: '#/definitions/TopologyGroup'
+      
+  TopologyGroup:
+    type: object
+    properties:
+      group:
+        type: string
+        description: "name of the topology group"
+      type:
+        type: string
+        description: "type of the topology group, eg. PROJECTS, NGIS etc... "
+      subgroup:
+        type: string
+        description: "name of subgroup contained in the top level group"
+      tags:
+        type: object
+        description: "key value tags"
+      
+
   FactorsResponse:
     type: object
     properties:
@@ -3241,6 +3677,56 @@ definitions:
                     type: string
                   results:
                     $ref: "#/definitions/results"
+                    
+  FlatEndpointStatusResponse:
+    type: object
+    properties:
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            service:
+              type: string
+            supergroup:
+              type: string
+            statuses:
+              type: array
+              items:
+                $ref: "#/definitions/timestamp_value"
+      pageSize:
+        type: integer
+      nextPageToken:
+        type: string
+
+                    
+  FlatEndpointResultsResponse:
+    type: object
+    properties:
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            service:
+              type: string
+            supergroup:
+              type: string
+            results:
+              $ref: "#/definitions/results"
+      pageSize:
+        type: integer
+      nextPageToken:
+        type: string
+                        
 
   EndpointResultsResponse:
     type: object
@@ -3272,6 +3758,8 @@ definitions:
                           type: string
                         type:
                           type: string
+                        info:
+                          type : object
                         results:
                           $ref: "#/definitions/results"
 
@@ -4127,6 +4615,13 @@ definitions:
               type: string
             password:
               type: string
+      topology:
+        type: object
+        properties:
+          type: 
+            type: string
+          feed:
+            type: string
       users:
         type: array
         items:

@@ -483,6 +483,53 @@ Response body (JSON):
 }
 ```
 
+### Extra information for a specific endpoint on endpoint status results
+
+Some service endpoint status results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. For example:
+
+
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "info": {
+                  "Url": "https://cream01.afroditi.gr/path/to/service"
+               },
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL"
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 
 <a id="3"></a>
@@ -994,3 +1041,139 @@ Response body (JSON):
   ]
 }
 ```
+
+
+<a id="6"></a>
+
+# [GET]: Flat List of status timelines for all available service Endpoints
+
+The following methods can be used to obtain a tenant's flat list of all service endpoints status timelines. The api authenticates the tenant using the api-key within the x-api-key header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
+## [GET] Endpoints Status timelines
+
+### Input
+
+Request a flat list of all endpoint status timelines
+
+```
+/status/{report_name}/endpoints?[start_time]&[end_time]&[granularity]&[pageSize]&[nextPageToken]
+```
+
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start_time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end_time]`    | UTC time in W3C format                                                                          | YES      |
+| `[pageSize]` | How many results to return per request (-1 means return all results) | NO       | -1       |
+| `[nextPageToken]` | token to proceed to the next page | NO       |  |
+
+#### Path Parameters
+
+| Name                    | Description                                                                                           | Required | Default value |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report_name}`         | Name of the report that contains all the information about the profile, filter tags, group types etc. | YES      |
+
+#### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
+
+##### Response
+
+```
+Status: 200 OK
+```
+
+## Request endpoint a/r under service: `service_a`
+
+#### URL
+
+`/api/v2/status/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&pageSize=2`
+
+#### Response Body
+
+```
+{
+  "results": [
+    {
+      "name": "e01",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "98.26389",
+          "reliability": "98.26389",
+          "unknown": "0",
+          "uptime": "0.98264",
+          "downtime": "0"
+        },
+        {
+          "timestamp": "2015-06-23",
+          "availability": "54.03509",
+          "reliability": "81.48148",
+          "unknown": "0.01042",
+          "uptime": "0.53472",
+          "downtime": "0.33333"
+        }
+      ]
+    },
+    {
+      "name": "e02",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "96.875",
+          "reliability": "96.875",
+          "unknown": "0",
+          "uptime": "0.96875",
+          "downtime": "0"
+        }
+      ]
+    }
+  ],
+  "pageSize": 2,
+  "nextPageToken": "Mg=="
+}
+```
+
+## Request to see next page of results
+
+#### URL
+
+`/api/v2/status/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
+
+#### Response Body
+
+```
+{
+{
+  "results": [
+    {
+      "name": "e02",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "96.875",
+          "reliability": "96.875",
+          "unknown": "0",
+          "uptime": "0.96875",
+          "downtime": "0"
+        }
+      ]
+    }
+  ],
+  "pageSize": 2,
+}
+```
+

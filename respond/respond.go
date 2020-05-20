@@ -326,6 +326,19 @@ var BadRequestSimple = ResponseMessage{
 		Code:    "400",
 	}}
 
+// ErrBadRequestDetails provides an error messsage with specific details
+var ErrBadRequestDetails = func(details string) ResponseMessage {
+	return ResponseMessage{
+		Status: StatusResponse{
+			Message: "Bad Request",
+			Code:    "400",
+		},
+		Errors: []StatusResponse{
+			{Message: "Bad Request", Code: "400", Details: details},
+		},
+	}
+}
+
 // BadRequestBadJson is used to inform the user about malformed json body
 var BadRequestBadJSON = ResponseMessage{
 	Status: StatusResponse{
@@ -350,6 +363,16 @@ var NotFound = ResponseMessage{
 		Message: "Not Found",
 		Code:    "404",
 		Details: "item with the specific ID was not found on the server",
+	},
+}
+
+var ErrNotFoundQuery = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Not Found",
+		Code:    "404",
+	},
+	Errors: []StatusResponse{
+		{Message: "Not Found", Code: "404", Details: "Specific query returned no items"},
 	},
 }
 

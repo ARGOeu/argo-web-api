@@ -56,12 +56,13 @@ func (suite *topologyTestSuite) SetupSuite() {
 
 	const testConfig = `
 	[server]
-	bindip = ""
-	port = 8080
-	maxprocs = 4
-	cache = false
-	lrucache = 700000000
-	gzip = true
+    bindip = ""
+    port = 8080
+    maxprocs = 4
+    cache = false
+    lrucache = 700000000
+    gzip = true
+	reqsizelimit = 1073741824
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
@@ -163,7 +164,47 @@ func (suite *topologyTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
-			"resource": "topology.list",
+			"resource": "topology_endpoints_report.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_groups_report.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_groups.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_groups.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_groups.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_endpoints.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_stats.list",
 			"roles":    []string{"editor", "viewer"},
 		})
 	c.Insert(
@@ -440,10 +481,2346 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49435",
+		"info": bson.M{
+			"name":        "Critical2",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943x",
+		"info": bson.M{
+			"name":        "Critical3",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "ORG",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943p",
+		"info": bson.M{
+			"name":        "Critical4",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "PROJECT",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"name":  "name1",
+				"value": "value1"},
+			bson.M{
+				"name":  "name2",
+				"value": "value2"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943d",
+		"info": bson.M{
+			"name":        "Critical5",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "PROJECT",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.tags",
+				"name":    "infrastructure",
+				"value":   "Devel"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical6",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "PROJECT",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.tags",
+				"name":    "certification",
+				"value":   "Certified"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical7",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical8",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "service",
+				"value":   "service_1"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "Critical9",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "service",
+				"value":   "service_1"},
+			bson.M{
+				"context": "argo.endpoint.filter.tags",
+				"name":    "monitored",
+				"value":   "YesNo"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
+			"name":        "CriticalCombine",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			bson.M{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host1.site_a.foo"},
+			bson.M{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host2.site_a.foo"},
+		}})
+	// Seed database with endpoint topology
+	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "Y"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "Prod", "monitored": "YesNo"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITEC",
+			"type":         "SITES",
+			"hostname":     "host1.site_c.foo",
+			"service":      "service_3",
+			"tags":         bson.M{"production": "Prod", "monitored": "No"},
+		},
+		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		},
+		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "Y"},
+		},
+		bson.M{
+			"date":         "2015-06-11",
+			"date_integer": 20150611,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1Prod", "monitored": "YesNo"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host1.site_b.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "1"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host2.site_a.foo",
+			"service":      "service_2",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host3.site_a.foo",
+			"service":      "service_3",
+			"tags":         bson.M{"production": "0", "monitored": "0", "scope": "TEST"},
+		},
+		bson.M{
+			"date":         "2015-08-10",
+			"date_integer": 20150810,
+			"group":        "SITEA",
+			"type":         "SITES",
+			"hostname":     "host0.site_a.foo",
+			"service":      "service_x",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		},
+		bson.M{
+			"date":         "2015-08-10",
+			"date_integer": 20150810,
+			"group":        "SITEB",
+			"type":         "SITES",
+			"hostname":     "host0.site_b.foo",
+			"service":      "service_x",
+			"tags":         bson.M{"production": "0", "monitored": "0"},
+		})
+	// Seed database with group topology
+	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGI1",
+			"type":         "NGIS",
+			"subgroup":     "SITEC",
+			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITE_01",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		},
+		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI0",
+			"type":         "NGIS",
+			"subgroup":     "SITE_02",
+			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
+		},
+		bson.M{
+			"date":         "2015-06-10",
+			"date_integer": 20150610,
+			"group":        "NGI1",
+			"type":         "NGIS",
+			"subgroup":     "SITE_101",
+			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-06-22",
+			"date_integer": 20150622,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEA",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIA",
+			"type":         "NGIS",
+			"subgroup":     "SITEB",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-07-22",
+			"date_integer": 20150722,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2015-08-11",
+			"date_integer": 20150811,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEXYZ",
+			"tags":         bson.M{"infrastructure": "Devel", "certification": "Uncertified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEXZ",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "NGIX",
+			"type":         "NGIS",
+			"subgroup":     "SITEX",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
+		},
+		bson.M{
+			"date":         "2020-01-11",
+			"date_integer": 20200111,
+			"group":        "ORGB",
+			"type":         "ORG",
+			"subgroup":     "SITEORG",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
+		},
+		bson.M{
+			"date":         "2012-01-11",
+			"date_integer": 20200111,
+			"group":        "PR01",
+			"type":         "PROJECT",
+			"subgroup":     "SITEPROJECT",
+			"tags":         bson.M{"infrastructure": "Devel", "certification": "Certified"},
+		})
+
 }
 
-// TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly
-func (suite *topologyTestSuite) TestListServiceFlavorAvailabilityMonthly() {
+func (suite *topologyTestSuite) TestBadDate() {
+
+	badDate := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date parameter value: 2020-02 is not in the valid form of YYYY-MM-DD"
+  }
+ ]
+}`
+
+	type reqHeader struct {
+		Method string
+		Path   string
+		Data   string
+	}
+
+	requests := []reqHeader{
+		reqHeader{Method: "GET", Path: "/api/v2/topology/endpoints?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/topology/endpoints/by_report/Critical?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/topology/endpoints?date=2020-02", Data: ""},
+		reqHeader{Method: "DELETE", Path: "/api/v2/topology/endpoints?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/topology/groups?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/topology/groups/by_report/Critical?date=2020-02", Data: ""},
+		reqHeader{Method: "POST", Path: "/api/v2/topology/groups?date=2020-02", Data: ""},
+		reqHeader{Method: "DELETE", Path: "/api/v2/topology/groups?date=2020-02", Data: ""},
+		reqHeader{Method: "GET", Path: "/api/v2/topology/stats/Critical?date=2020-02", Data: ""},
+	}
+
+	for _, r := range requests {
+		request, _ := http.NewRequest(r.Method, r.Path, strings.NewReader(r.Data))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, code, "Internal Server Error")
+		// Compare the expected and actual json response
+		suite.Equal(badDate, output, "Response body mismatch")
+
+	}
+
+}
+
+func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
+
+	expJSON := `{
+ "message": "Topology of 3 endpoints created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJSON2 := `{
+ "message": "Topology already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	jsonInput := `	[
+	 {"group": "SITE_A", "hostname": "host1.site-a.foo", "type": "SITES", "service": "a.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_A", "hostname": "host2.site-b.foo", "type": "SITES", "service": "b.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}},
+	 {"group": "SITE_B", "hostname": "host1.site-a.foo", "type": "SITES", "service": "c.service.foo", "tags": {"scope": "TENANT", "production": "1", "monitored": "1"}}
+	]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON2, output2, "Creation failed")
+
+}
+
+func (suite *topologyTestSuite) TestCreateGroupTopology() {
+
+	expJSON := `{
+ "message": "Topology of 3 groups created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJSON2 := `{
+ "message": "Topology already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	jsonInput := `	[
+	 {"group": "NGIA", "type": "NGIS", "service": "SITEA", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}},
+	 {"group": "NGIA", "type": "NGIS", "service": "SITEB", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}},
+	 {"group": "NGIZ", "type": "NGIS", "service": "SITEZ", "tags": {"scope": "FEDERATION", "infrastructure": "Production", "certification": "Certified"}}
+	]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/groups?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/groups?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON2, output2, "Creation failed")
+
+}
+
+func (suite *topologyTestSuite) TestListFilterEndpointTags() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=monitored:Y*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=production:1*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "1Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=monitored:Yes,monitored:Y",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+	}
+}
+func (suite *topologyTestSuite) TestListFilterGroupTags() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:production",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:dev*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:*test",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=certification:Cert*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:devel,infrastructure:production",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical2",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXYZ",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Devel"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXZ",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical3",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2020-01-11",
+   "group": "ORGB",
+   "type": "ORG",
+   "subgroup": "SITEORG",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical4",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical5",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical6",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/Critical7?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups/by_report/CriticalCombine?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical7?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical8?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/Critical9?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints/by_report/CriticalCombine?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListFilterGroups() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&group=NGIA",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&group=NGIA&subgroup=SITEB",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=*A",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=A*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=*A&subgroup=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListFilterEndpoints() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=SITEA",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=B*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*site_b*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=SITES",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+		TestReq{
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=BITES",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`},
+
+		TestReq{
+			Path: "/api/v2/topology/endpoints?group=*A&group=*B",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+
+	}
+}
+
+func (suite *topologyTestSuite) TestListEndpoints() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestDeleteEndpoints() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 2 endpoints deleted for date: 2015-08-10",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints2() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-06-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestListEndpoints3() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-07-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_3",
+   "hostname": "host3.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0",
+    "scope": "TEST"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestListEndpoints4() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-08-15", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-08-10",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_a.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-08-10",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_b.foo",
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListEndpoints5() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-01-01", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestListGroups() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXYZ",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Devel"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEXZ",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2020-01-11",
+   "group": "ORGB",
+   "type": "ORG",
+   "subgroup": "SITEORG",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2012-01-11",
+   "group": "PR01",
+   "type": "PROJECT",
+   "subgroup": "SITEPROJECT",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Devel"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups2() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-06-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups3() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-07-30", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-07-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-07-22",
+   "group": "NGIX",
+   "type": "NGIS",
+   "subgroup": "SITEX",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListGroups5() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-01-01", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestDeleteGroups() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/groups?date=2015-07-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 3 groups deleted for date: 2015-07-22",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/groups?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
+}
+
+// TestListTopologyStats
+func (suite *topologyTestSuite) TestListTopologyStats() {
 
 	expJSON := `{
  "status": {
@@ -474,7 +2851,7 @@ func (suite *topologyTestSuite) TestListServiceFlavorAvailabilityMonthly() {
  }
 }`
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/Critical?date=2015-06-22", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/stats/Critical?date=2015-06-22", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
