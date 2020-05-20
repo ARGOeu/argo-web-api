@@ -25,7 +25,7 @@ pipeline {
             }
             steps {
                 dir ("${WORKSPACE}/grnet-ansible") {
-                    git branch: "master",
+                    git branch: "feature/DEVOPS-138",
                         credentialsId: 'kevangel79',
                         url: "git@github.com:kevangel79/argo-ansible-deploy.git"
                     sh """
