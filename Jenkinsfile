@@ -32,7 +32,10 @@ pipeline {
                         cd ${WORKSPACE}/grnet-ansible
                         git submodule init
                         git submodule update
+                        cat .gitmodule
                         cd argo-ansible
+                        git branch
+                        git remote -v
                         git checkout feature/DEVOPS-138
                         cd ..
                         pipenv --python 2
