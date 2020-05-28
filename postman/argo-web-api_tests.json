@@ -1,0 +1,398 @@
+{
+	"info": {
+		"_postman_id": "ae7504e3-d702-4f91-aea9-0fe4053de9f0",
+		"name": "web-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "test version",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e783b1c8-d2da-4ed9-95bf-73b4ecdc3662",
+						"exec": [
+							"",
+							"pm.test(\"Verify version\", function () {",
+							"    let jsonData = pm.response.json();",
+							"    let commit = pm.environment.get(\"last_commit\");",
+							"    pm.expect(jsonData.commit).to.eql(commit);",
+							"});",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{api_key}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/version?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"version"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						}
+					]
+				},
+				"description": "test web api\t"
+			},
+			"response": []
+		},
+		{
+			"name": "list tenants",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f65f4d0e-0e13-454a-94b3-c08b449a184f",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/admin/tenants?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"admin",
+						"tenants"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						},
+						{
+							"key": "x-api-key",
+							"value": "{{api_key}}",
+							"disabled": true
+						}
+					]
+				},
+				"description": "test web api\t"
+			},
+			"response": []
+		},
+		{
+			"name": "create new tenant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a2396416-44ef-443c-87bb-86c09696cded",
+						"exec": [
+							"",
+							"pm.test(\"Get tenant uuid\", function () {",
+							"    let jsonData = pm.response.json();",
+							"    pm.environment.set(\"tenant_uuid\",jsonData.data.id);",
+							"});",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"info\": {\n    \"website\": \"foo.example.com\",\n    \"description\": \"a test tenant\",\n    \"image\": \"string\",\n    \"email\": \"info@foo.example.com\",\n    \"name\": \"FOO\"\n  },\n  \"topology\": {\n    \"feed\": \"string\",\n    \"type\": \"string\"\n  },\n  \"db_conf\": [\n    {\n      \"username\": \"string\",\n      \"password\": \"string\",\n      \"port\": 0,\n      \"store\": \"string\",\n      \"server\": \"string\"\n    }\n  ],\n  \"users\": [\n    {\n      \"name\": \"test-admin\",\n      \"api-key\": \"foo.test.secret.key\",\n      \"roles\": [\n        \"admin\"\n      ],\n      \"email\": \"foo@example.com\"\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/admin/tenants?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"admin",
+						"tenants"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						},
+						{
+							"key": "x-api-key",
+							"value": "{{api_key}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a specific tenant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fa6a71d7-f1f5-45fc-9dc9-bda8cf4c42d3",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/admin/tenants/{{tenant_uuid}}?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"admin",
+						"tenants",
+						"{{tenant_uuid}}"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						},
+						{
+							"key": "x-api-key",
+							"value": "{{api_key}}",
+							"disabled": true
+						}
+					]
+				},
+				"description": "test web api\t"
+			},
+			"response": []
+		},
+		{
+			"name": "update specific tenant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "46e43ff0-fc9f-431a-acdd-500e0a2b4b3b",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/admin/tenants/{{tenant_uuid}}?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"admin",
+						"tenants",
+						"{{tenant_uuid}}"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						},
+						{
+							"key": "x-api-key",
+							"value": "{{api_key}}",
+							"disabled": true
+						}
+					]
+				},
+				"description": "test web api\t"
+			},
+			"response": []
+		},
+		{
+			"name": "delete specific tenant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4b7ef416-1042-41e4-9f6b-1914e7d8c732",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{api_host}}/api/v2/admin/tenants/{{tenant_uuid}}?",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"api",
+						"v2",
+						"admin",
+						"tenants",
+						"{{tenant_uuid}}"
+					],
+					"query": [
+						{
+							"key": "Accept",
+							"value": "application/json",
+							"disabled": true
+						},
+						{
+							"key": "x-api-key",
+							"value": "{{api_key}}",
+							"disabled": true
+						}
+					]
+				},
+				"description": "test web api\t"
+			},
+			"response": []
+		}
+	]
+}

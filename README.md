@@ -52,3 +52,15 @@ The ARGO Web API provides the Serving Layer of ARGO. It is comprised of a high p
 8. To generate and serve godoc (@port 6060)
 
         godoc -http=:6060
+
+
+## Postman tests
+
+Run the postman tests by importing the json files from ./postman directory to your postman instance
+or you can run the test by simply executing the following command
+
+- LAST_COMMIT should be the latest commit of the deployed artifact
+- TOKEN_VAL is an access token that is set in the service.
+
+`npm install newman`
+`./node_modules/newman/bin/newman.js run ./postman/argo-web-api_tests.json  -k -e ./postman/env.json --env-var last_commit=$LAST_COMMIT api_key=${TOKEN_VAL}`
