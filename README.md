@@ -57,7 +57,7 @@ The ARGO Web API provides the Serving Layer of ARGO. It is comprised of a high p
 ## Postman tests
 
 Run the postman tests by importing the json files from ./postman directory to your postman instance
-or you can run the test by simply executing the following command
+or you can run the tests by simply executing the following command
 
 - LAST_COMMIT should be the latest commit of the deployed artifact
 - TOKEN_VAL is an access token that is set in the service.
