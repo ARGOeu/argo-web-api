@@ -55,12 +55,13 @@ The ARGO Web API provides the Serving Layer of ARGO. It is comprised of a high p
 
 
 ## Postman tests
+Once you finished with the installation you can run the postman tests that are located in the ./postman directory.
+If you have a postman client you can import the files to your collections and environment variables respectively.
+if you prefer to use the command line you may follow the steps showed bellow
 
-Run the postman tests by importing the json files from ./postman directory to your postman instance
-or you can run the tests by simply executing the following command
+Declare the variables bellow
+- `COMMIT` should be the commit of the artifact that is deployed
+- `TOKEN` is an access token that is set in the service
 
-- LAST_COMMIT should be the latest commit of the deployed artifact
-- TOKEN_VAL is an access token that is set in the service.
-
-`npm install newman`
-`./node_modules/newman/bin/newman.js run ./postman/argo-web-api_tests.json  -k -e ./postman/env.json --env-var last_commit=$LAST_COMMIT api_key=${TOKEN_VAL}`
+       $ cd postman && npm install newman 
+       $ ./node_modules/newman/bin/newman.js run ./argo-web-api_tests.json  -k -e ./postman/env.json --env-var last_commit=$COMMIT api_key=$TOKEN`
