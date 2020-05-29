@@ -395,6 +395,29 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	// check if the thresholds profile's name is unique
+	if incoming.Name != results[0].Name {
+
+		results = []ThresholdsProfile{}
+		query := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
+
+		err = mongo.Find(session, tenantDbConfig.Db, thColName, query, "", &results)
+
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		// If results are returned for the specific name
+		// then we already have an existing thresholds profile and we must
+		// abort creation notifying the user
+		if len(results) > 0 {
+			output, _ = respond.MarshalContent(respond.ErrConflict("Thresholds profile with the same name already exists"), contentType, "", " ")
+			code = http.StatusConflict
+			return code, h, output, err
+		}
+	}
+
 	// run the update query
 	err = mongo.Update(session, tenantDbConfig.Db, thColName, filter, incoming)
 
