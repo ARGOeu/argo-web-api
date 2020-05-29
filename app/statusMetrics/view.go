@@ -27,7 +27,6 @@ import (
 	"encoding/xml"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/hbase"
@@ -58,18 +57,6 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 }
 
 func createView(results []DataOutput, input InputParams, endDate string) ([]byte, error) {
-
-	// calculate part of the timestamp that closes the timeline of each item
-	var extraTS string
-
-	tsNow := time.Now().UTC()
-	today := tsNow.Format("2006-01-02")
-
-	if strings.Split(endDate, "T")[0] == today {
-		extraTS = "T" + strings.Split(tsNow.Format(zuluForm), "T")[1]
-	} else {
-		extraTS = "T23:59:59Z"
-	}
 
 	output := []byte("reponse output")
 	err := error(nil)
@@ -126,14 +113,6 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 
 		if row.Metric != prevMetric {
 
-			// close the status timeline of item by adding a new status item at 23:59 or at current time
-			if ppMetric != nil {
-				eStatus := &statusOUT{}
-				latestStatus := ppMetric.Statuses[len(ppMetric.Statuses)-1]
-				eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
-				eStatus.Value = latestStatus.Value
-				ppMetric.Statuses = append(ppMetric.Statuses, eStatus)
-			}
 			metric := &metricOUT{}
 			//Add the prev status as the firstone
 
@@ -154,15 +133,6 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 		status.Value = row.Status
 		ppMetric.Statuses = append(ppMetric.Statuses, status)
 
-	}
-
-	// close the status timeline of the last item by adding a new status item at 23:59 or at current time
-	if ppMetric != nil {
-		eStatus := &statusOUT{}
-		latestStatus := ppMetric.Statuses[len(ppMetric.Statuses)-1]
-		eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
-		eStatus.Value = latestStatus.Value
-		ppMetric.Statuses = append(ppMetric.Statuses, eStatus)
 	}
 
 	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
