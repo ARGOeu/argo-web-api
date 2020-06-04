@@ -52,3 +52,14 @@ The ARGO Web API provides the Serving Layer of ARGO. It is comprised of a high p
 8. To generate and serve godoc (@port 6060)
 
         godoc -http=:6060
+
+## Credits
+
+The ARGO Messaging Service is developed by [GRNET](http://www.grnet.gr)
+
+The work represented by this software was partially funded by:
+- EGI Foundation
+- EGI-ENGAGE project through the European Union (EU) Horizon 2020 program under Grant number 654142.
+- EOSC-Hub project through the European Union (EU) Horizon 2020 program under Grant number 77753642.
+- EUDAT2020 European Union’s H2020 Program under Contract No. 654065.
+
