@@ -2472,6 +2472,44 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+  
+  /status/{report_name}/metrics/{metric_name}:
+    get:
+      summary: "Flat List endpoint metric results by metric name"
+      description: "This method returns a flat list of all endpoint status results based on a given metric."
+      operationId: statusFlatMetrics
+      tags:
+        - Status
+      produces:
+        - "application/json"
+        - "application/xml"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - name: "metric_name"
+          in: path
+          description: "The name of the probe (metric)"
+          required: true
+          type: string
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/FlatMetricsStatusResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
   /metric_result/{endpoint}:
     get:
@@ -3702,6 +3740,36 @@ definitions:
         type: integer
       nextPageToken:
         type: string
+
+
+  FlatMetricsStatusResponse:
+    type: object
+    properties:
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            service:
+              type: string
+            supergroup:
+              type: string
+            metric:
+              type: string
+            statuses:
+              type: array
+              items:
+                $ref: "#/definitions/timestamp_value"
+      pageSize:
+        type: integer
+      nextPageToken:
+        type: string
+        
+
 
                     
   FlatEndpointResultsResponse:
