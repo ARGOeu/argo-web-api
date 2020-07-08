@@ -163,6 +163,8 @@ type ServiceEndpointGroup struct {
 type Endpoint struct {
 	XMLName      xml.Name          `xml:"group" json:"-"`
 	Name         string            `xml:"name,attr" json:"name"`
+	Service      string            `xml:"service,attr,omitempty" json:"service,omitempty"`
+	SuperGroup   string            `xml:"supergroup,attr,omitempty" json:"supergroup,omitempty"`
 	Type         string            `xml:"type,attr" json:"type"`
 	Info         map[string]string `xml:"-" json:"info,omitempty"`
 	Availability []interface{}     `json:"results"`
@@ -199,6 +201,13 @@ type SuperGroup struct {
 	Type      string        `xml:"type,attr" json:"type"`
 	Endpoints []interface{} `json:"endpoints,omitempty"`
 	Results   []interface{} `json:"results,omitempty"`
+}
+
+type pageRoot struct {
+	XMLName   xml.Name      `xml:"root" json:"-"`
+	Result    []interface{} `json:"results"`
+	PageToken string        `json:"nextPageToken,omitempty"`
+	PageSize  int           `json:"pageSize,omitempty"`
 }
 
 type root struct {

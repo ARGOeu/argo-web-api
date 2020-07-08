@@ -20,7 +20,7 @@
  *
  */
 
-package statusEndpoints
+package statusFlatEndpoints
 
 import (
 	"encoding/base64"
@@ -54,101 +54,6 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 	}
 
 	return dResult
-}
-
-func createView(results []DataOutput, input InputParams, endDate string) ([]byte, error) {
-
-	// calculate part of the timestamp that closes the timeline of each item
-	var extraTS string
-
-	tsNow := time.Now().UTC()
-	today := tsNow.Format("2006-01-02")
-
-	if strings.Split(endDate, "T")[0] == today {
-		extraTS = "T" + strings.Split(tsNow.Format(zuluForm), "T")[1]
-	} else {
-		extraTS = "T23:59:59Z"
-	}
-
-	output := []byte("reponse output")
-	err := error(nil)
-
-	docRoot := &rootOUT{}
-
-	if len(results) == 0 {
-		if strings.EqualFold(input.format, "application/json") {
-			output, err = json.MarshalIndent(docRoot, " ", "  ")
-		} else {
-			output, err = xml.MarshalIndent(docRoot, " ", "  ")
-		}
-		return output, err
-	}
-
-	prevHostname := ""
-	prevEndpointGroup := ""
-	prevService := ""
-
-	var ppHost *endpointOUT
-	var ppEndpointGroup *endpointGroupOUT
-	var ppService *serviceOUT
-
-	for _, row := range results {
-
-		if row.EndpointGroup != prevEndpointGroup && row.EndpointGroup != "" {
-			endpointGroup := &endpointGroupOUT{}
-			endpointGroup.Name = row.EndpointGroup
-			endpointGroup.GroupType = input.groupType
-			docRoot.EndpointGroups = append(docRoot.EndpointGroups, endpointGroup)
-			prevEndpointGroup = row.EndpointGroup
-			ppEndpointGroup = endpointGroup
-		}
-
-		if row.Service != prevService && row.Service != "" {
-			service := &serviceOUT{}
-			service.Name = row.Service
-			service.GroupType = "service"
-			ppEndpointGroup.Services = append(ppEndpointGroup.Services, service)
-
-			prevService = row.Service
-			ppService = service
-		}
-
-		if row.Hostname != prevHostname && row.Hostname != "" {
-			// close the status timeline of item by adding a new status item at 23:59 or at current time
-			if ppHost != nil {
-				eStatus := &statusOUT{}
-				latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
-				eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
-				eStatus.Value = latestStatus.Value
-				ppHost.Statuses = append(ppHost.Statuses, eStatus)
-			}
-
-			host := &endpointOUT{} //create new host
-			host.Name = row.Hostname
-			host.Info = row.Info
-			ppService.Endpoints = append(ppService.Endpoints, host)
-			prevHostname = row.Hostname
-			ppHost = host
-		}
-
-		status := &statusOUT{}
-		status.Timestamp = row.Timestamp
-		status.Value = row.Status
-		ppHost.Statuses = append(ppHost.Statuses, status)
-
-	}
-	// close the status timeline of the last item by adding a new status item at 23:59 or at current time
-	if ppHost != nil {
-		eStatus := &statusOUT{}
-		latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
-		eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
-		eStatus.Value = latestStatus.Value
-		ppHost.Statuses = append(ppHost.Statuses, eStatus)
-	}
-
-	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
-	return output, err
-
 }
 
 func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int) ([]byte, error) {
@@ -211,8 +116,12 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
 			host.Info = row.Info
+			host.Service = row.Service
+			host.SuperGroup = row.EndpointGroup
 			docRoot.Endpoints = append(docRoot.Endpoints, host)
 			prevHostname = row.Hostname
+			prevEndpointGroup = row.EndpointGroup
+			prevService = row.Service
 			ppHost = host
 		}
 
@@ -222,18 +131,29 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
 	}
+
+	lastSevice := results[len(results)-1].Service
+	lastEndpointGroup := results[len(results)-1].EndpointGroup
+	lastHostname := results[len(results)-1].Hostname
 	// close the status timeline of the last item by adding a new status item at 23:59 or at current time
+
 	if ppHost != nil {
-		eStatus := &statusOUT{}
-		latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
-		eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
-		eStatus.Value = latestStatus.Value
-		ppHost.Statuses = append(ppHost.Statuses, eStatus)
+		if (limit < 0) ||
+			(limit > 0 && len(results) <= limit) ||
+			(limit > 0 && len(results) > limit &&
+				(lastEndpointGroup != ppHost.SuperGroup || lastSevice != ppHost.Service || lastHostname != ppHost.Name)) {
+			eStatus := &statusOUT{}
+			latestStatus := ppHost.Statuses[len(ppHost.Statuses)-1]
+			eStatus.Timestamp = strings.Split(latestStatus.Timestamp, "T")[0] + extraTS
+			eStatus.Value = latestStatus.Value
+			ppHost.Statuses = append(ppHost.Statuses, eStatus)
+		}
 	}
 
 	if limit > 0 {
 		if len(results) > limit {
 			docRoot.PageToken = base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(skip + limit)))
+
 		}
 		docRoot.PageSize = limit
 	}

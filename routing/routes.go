@@ -35,6 +35,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/results"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpointGroups"
 	"github.com/ARGOeu/argo-web-api/app/statusEndpoints"
+	"github.com/ARGOeu/argo-web-api/app/statusFlatEndpoints"
+	"github.com/ARGOeu/argo-web-api/app/statusFlatMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusMetrics"
 	"github.com/ARGOeu/argo-web-api/app/statusServices"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
@@ -50,10 +52,12 @@ var routesV2 = []RouteV2{
 	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
 	{"Metric Result", "/metric_result", metricResult.HandleSubrouter},
+	{"Status endpoint flat timelines", "/status", statusFlatEndpoints.HandleSubrouter},
+	{"Status metric flat timelines", "/status", statusFlatMetrics.HandleSubrouter},
 	{"Status metric timelines", "/status", statusMetrics.HandleSubrouter},
+	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Status service timelines", "/status", statusServices.HandleSubrouter},
 	{"Status endpoint group timelines", "/status", statusEndpointGroups.HandleSubrouter},
-	{"Status endpoint timelines", "/status", statusEndpoints.HandleSubrouter},
 	{"Recomputations", "", recomputations2.HandleSubrouter},
 	{"Metric Profiles", "", metricProfiles.HandleSubrouter},
 	{"Reports", "", reports.HandleSubrouter},

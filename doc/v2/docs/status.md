@@ -9,6 +9,8 @@ API calls for retrieving monitoring status results
 | GET: List Service  Status Timelines |This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group). | <a href="#3">Description</a>|
 | GET: List Endpoint Group Status Timelines| This method may be used to retrieve endpoint group status timelines. | <a href="#4">Description</a>|
 | GET: Metric Result | This method may be used to retrieve a specific and detailed metric result. | <a href="#5">Description</a>|
+| GET: Flat list of Endpoint timelines | This method may be used to retrieve a flat list of all available endpoint status results | <a href="#6">Description</a>|
+| GET: Flat list of Metric timelines for a specific metric | This method may be used to retrieve a flat list of all available endpoint metric status timelines filtered by a specific metric | <a href="#7">Description</a>|
 
 <a id="1"></a>
 
@@ -1039,5 +1041,270 @@ Response body (JSON):
       ]
     }
   ]
+}
+```
+
+
+<a id="6"></a>
+
+# [GET]: Flat List of status timelines for all available service Endpoints
+
+The following methods can be used to obtain a tenant's flat list of all service endpoints status timelines. The api authenticates the tenant using the api-key within the x-api-key header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
+## [GET] Endpoints Status timelines
+
+### Input
+
+Request a flat list of all endpoint status timelines
+
+```
+/status/{report_name}/endpoints?[start_time]&[end_time]&[granularity]&[pageSize]&[nextPageToken]
+```
+
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start_time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end_time]`    | UTC time in W3C format                                                                          | YES      |
+| `[pageSize]` | How many results to return per request (-1 means return all results) | NO       | -1       |
+| `[nextPageToken]` | token to proceed to the next page | NO       |  |
+
+#### Path Parameters
+
+| Name                    | Description                                                                                           | Required | Default value |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report_name}`         | Name of the report that contains all the information about the profile, filter tags, group types etc. | YES      |
+
+#### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
+
+##### Response
+
+```
+Status: 200 OK
+```
+
+## Request endpoint a/r under service: `service_a`
+
+#### URL
+
+`/api/v2/status/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&pageSize=2`
+
+#### Response Body
+
+```
+{
+  "results": [
+    {
+      "name": "e01",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "98.26389",
+          "reliability": "98.26389",
+          "unknown": "0",
+          "uptime": "0.98264",
+          "downtime": "0"
+        },
+        {
+          "timestamp": "2015-06-23",
+          "availability": "54.03509",
+          "reliability": "81.48148",
+          "unknown": "0.01042",
+          "uptime": "0.53472",
+          "downtime": "0.33333"
+        }
+      ]
+    },
+    {
+      "name": "e02",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "96.875",
+          "reliability": "96.875",
+          "unknown": "0",
+          "uptime": "0.96875",
+          "downtime": "0"
+        }
+      ]
+    }
+  ],
+  "pageSize": 2,
+  "nextPageToken": "Mg=="
+}
+```
+
+## Request to see next page of results
+
+#### URL
+
+`/api/v2/status/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
+
+#### Response Body
+
+```
+{
+  "results": [
+    {
+      "name": "e02",
+      "type": "endpoint",
+      "service": "service_a",
+      "supergroup": "ST01",
+      "results": [
+        {
+          "timestamp": "2015-06-22",
+          "availability": "96.875",
+          "reliability": "96.875",
+          "unknown": "0",
+          "uptime": "0.96875",
+          "downtime": "0"
+        }
+      ]
+    }
+  ],
+  "pageSize": 2,
+}
+```
+
+
+<a id="7"></a>
+
+# [GET]: Flat List of status timelines for all available endpoint metrics filter by a specific metric
+
+The following method can be used to obtain a tenant's flat list of all available service endpoints metric status timelines filtered by a specific metric. The api authenticates the tenant using the api-key within the x-api-key header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
+## [GET] Endpoints Status timelines
+
+### Input
+
+Request a flat list of all endpoint metric status timelines filtered by a specific metric
+
+```
+/status/{report_name}/metrics/{metric_name}?[start_time]&[end_time]&[granularity]&[pageSize]&[nextPageToken]
+```
+
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start_time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end_time]`    | UTC time in W3C format                                                                          | YES      |
+| `[pageSize]` | How many results to return per request (-1 means return all results) | NO       | -1       |
+| `[nextPageToken]` | token to proceed to the next page | NO       |  |
+
+#### Path Parameters
+
+| Name                    | Description                                                                                           | Required | Default value |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report_name}`         | Name of the report that contains all the information about the profile, filter tags, group types etc. | YES      |
+| `{metric_name}`         | Name of the metric to filter results by | YES      |
+
+#### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
+
+##### Response
+
+```
+Status: 200 OK
+```
+
+## Request endpoint a/r under service: `service_a`
+
+#### URL
+
+`/api/v2/status/{report_name}/metrics/someService-FileTransfer?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&pageSize=2`
+
+#### Response Body
+
+```
+{
+  "results": [
+    {
+      "type":"endpoint_metric",
+      "name": "someservice.example.gr",
+      "service": "someService",
+      "supergroup": "GROUPA",
+      "metric": "someService-FileTransfer",
+      "statuses": [
+        {
+          "timestamp": "2015-04-30T23:59:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T01:00:00Z",
+          "value": "CRITICAL"
+        }
+      ]
+    }
+  ],
+  "nextPageToken": "Mg==",
+  "pageSize": 2
+}
+```
+
+## Request to see next page of results
+
+#### URL
+
+`/api/v2/status/{report_name}/metrics/someService-FileTransfer?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
+
+#### Response Body
+
+```
+{
+  "results": [
+    {
+      "type":"endpoint_metric",
+      "name": "someservice.example.gr",
+      "service": "someService",
+      "supergroup": "GROUPA",
+      "metric": "someService-FileTransfer",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        }
+      ]
+    },
+    {
+      "type":"endpoint_metric",
+      "name": "someservice2.example.gr",
+      "service": "someService",
+      "supergroup": "GROUPA",
+      "metric": "someService-FileTransfer",
+      "statuses": [
+        {
+          "timestamp": "2015-04-30T23:59:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "OK"
+        }
+      ]
+    }
+  ],
+  "nextPageToken": "NA==",
+  "pageSize": 2
 }
 ```

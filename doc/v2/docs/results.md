@@ -6,6 +6,7 @@
 | GET: List Availability and Reliability results for an endpoint group          | This method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity.                    | [Description](#2) |
 | GET: List Availability and Reliability results for a Service Flavor           | This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity.                                                                   | [Description](#3) |
 | GET: List Availability and Reliability results for an Endpoint                | This method retrieves the results of a specified service endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity.                                                                 | [Description](#4) |
+| GET: Flat List of all endpoints Availability and Reliability results                | This method retrieves the results in a flat list of all service endpoints that where computed based on a given report. Results can be retrieved on daily or monthly granularity. Pagination is supported.                                                                 | [Description](#5) |
 
 <a id="1"></a>
 
@@ -517,5 +518,121 @@ Some service endpoint a/r have additional information regarding the specific ser
       ]
     }
   ]
+}
+```
+
+<a id="5"></a>
+
+# [GET]: Flat List Availabilities and Reliabilities for all service Endpoints
+
+The following methods can be used to obtain a tenant's flat list of all service endpoints Availability and Reliability result. The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
+## [GET] Endpoints A/R
+
+### Input
+
+Request a flat list of all endpoint a/r 
+
+```
+/results/{report_name}/endpoints?[start_time]&[end_time]&[granularity]&[pageSize]&[nextPageToken]
+```
+
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start_time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end_time]`    | UTC time in W3C format                                                                          | YES      |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly` or `daily` | NO       | `daily`       |
+| `[pageSize]` | How many results to return per request (-1 means return all results) | NO       | -1       |
+| `[nextPageToken]` | token to proceed to the next page | NO       |  |
+
+#### Path Parameters
+
+| Name                    | Description                                                                                           | Required | Default value |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report_name}`         | Name of the report that contains all the information about the profile, filter tags, group types etc. | YES      |
+
+#### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/xml" or "application/json"
+```
+
+##### Response
+
+```
+Status: 200 OK
+```
+
+## Request endpoint a/r under service: `service_a`
+
+#### URL
+
+`/api/v2/results/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2`
+
+#### Response Body
+
+```
+{
+ "endpoints": [
+  {
+   "name": "host01.example.foo",
+   "service": "SERV-A",
+   "supergroup": "SITE-A",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T08:47:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  }
+ ],
+ "nextPageToken": "Mg==",
+ "pageSize": 2
+}
+```
+
+## Request to see next page of results
+
+#### URL
+
+`/api/v2/results/{report_name}/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:23:59Z&granularity=daily&pageSize=2&nextPageToken=Mg==`
+
+#### Response Body
+
+```
+{
+ "endpoints": [
+  {
+   "name": "host02.example.foo",
+   "service": "SERV-B",
+   "supergroup": "SITE-A",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T12:56:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "OK"
+    }
+   ]
+  }
+ ],
+ "pageSize": 2
 }
 ```

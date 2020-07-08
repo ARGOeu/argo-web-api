@@ -20,7 +20,7 @@
  *
  */
 
-package statusEndpoints
+package statusFlatMetrics
 
 import "encoding/xml"
 
@@ -36,6 +36,7 @@ type InputParams struct {
 	group     string
 	service   string
 	hostname  string
+	metric    string
 	format    string
 }
 
@@ -47,43 +48,28 @@ type DataOutput struct {
 	Service       string            `bson:"service"`
 	Hostname      string            `bson:"host"`
 	Status        string            `bson:"status"`
+	Metric        string            `bson:"metric"`
 	DateInt       string            `bson:"date_integer"`
 	Info          map[string]string `bson:"info"`
+	PrevTimestamp string            `bson:"previous_timestamp"`
+	PrevStatus    string            `bson:"previous_state"`
 }
 
 // json/xml response related structs
 
-type rootOUT struct {
-	XMLName        xml.Name            `xml:"root" json:"-"`
-	EndpointGroups []*endpointGroupOUT `json:"groups"`
-}
-
 type rootPagedOUT struct {
 	XMLName   xml.Name       `xml:"root" json:"-"`
-	Endpoints []*endpointOUT `json:"endpoints"`
+	Endpoints []*endpointOUT `json:"endpoint_metrics"`
 	PageToken string         `json:"nextPageToken,omitempty"`
 	PageSize  int            `json:"pageSize,omitempty"`
 }
 
-type endpointGroupOUT struct {
-	XMLName   xml.Name      `xml:"group" json:"-"`
-	Name      string        `xml:"name,attr" json:"name"`
-	GroupType string        `xml:"type,attr" json:"type"`
-	Services  []*serviceOUT `json:"services"`
-}
-
-type serviceOUT struct {
-	XMLName   xml.Name       `xml:"group" json:"-"`
-	Name      string         `xml:"name,attr" json:"name"`
-	GroupType string         `xml:"type,attr" json:"type"`
-	Endpoints []*endpointOUT `json:"endpoints"`
-}
-
 type endpointOUT struct {
-	XMLName    xml.Name          `xml:"endpoint" json:"-"`
+	XMLName    xml.Name          `xml:"endpoint_metric" json:"-"`
 	Name       string            `xml:"name,attr" json:"name"`
 	Service    string            `xml:"service,attr,omitempty" json:"service,omitempty"`
 	SuperGroup string            `xml:"supergroup,attr,omitempty" json:"supergroup,omitempty"`
+	Metric     string            `xml:"metric,attr,omitempty" json:"metric,omitempty"`
 	Info       map[string]string `xml:"-" json:"info,omitempty"`
 	Statuses   []*statusOUT      `json:"statuses"`
 }
