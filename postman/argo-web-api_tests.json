@@ -6093,6 +6093,1529 @@
 				}
 			],
 			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "a/r results",
+			"item": [
+				{
+					"name": "get specific tenants a/r top level results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e99f36c6-1fff-4e4b-a277-fd8b6330fc8c",
+								"exec": [
+									"const schema = {",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"results\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"endpoints\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"results\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"timestamp\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"availability\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"reliability\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"unknown\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"uptime\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"downtime\": {",
+									"                              \"type\": \"string\"",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"timestamp\",",
+									"                            \"availability\",",
+									"                            \"reliability\",",
+									"                            \"unknown\",",
+									"                            \"uptime\",",
+									"                            \"downtime\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"results\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"endpoints\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"results\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.results.length).to.be.above(20);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "aee0666b-fe93-48b9-bbff-8631e95e8752",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/results/{{report}}/{{group_type}}?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"results",
+								"{{report}}",
+								"{{group_type}}"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants status top level results",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "5781c96b-3070-460f-942a-c5aa22d121d0",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "9bceef99-8374-4a65-8f4a-864d7ee6ddb2",
+								"exec": [
+									"const schema = {",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"groups\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"statuses\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"timestamp\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"value\": {",
+									"                      \"type\": \"string\",",
+									"                      \"enum\": [\"OK\",\"CRITICAL\",\"MISSING\",\"WARNING\",\"DOWNTIME\"]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"timestamp\",",
+									"                    \"value\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"statuses\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"groups\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.groups.length).to.be.above(20); ",
+									" ",
+									"",
+									"    ",
+									"    ",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/status/{{report}}/{{group_type}}?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"status",
+								"{{report}}",
+								"{{group_type}}"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants a/r service results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "eb1ed94c-5639-4514-a52f-23951dc49eec",
+								"exec": [
+									"const schema = {",
+									"  ",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"results\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"serviceflavors\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"results\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"timestamp\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"availability\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"reliability\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"unknown\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"uptime\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"downtime\": {",
+									"                              \"type\": \"string\"",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"timestamp\",",
+									"                            \"availability\",",
+									"                            \"reliability\",",
+									"                            \"unknown\",",
+									"                            \"uptime\",",
+									"                            \"downtime\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"results\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"serviceflavors\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"results\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.results.length).to.be.above(0);",
+									"    pm.expect(jsonData.results[0].serviceflavors.length).to.be.above(1);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "03f35f33-3f16-4482-b251-aa44aebf1f33",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/results/{{report}}/{{group_type}}/{{group}}/services?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"results",
+								"{{report}}",
+								"{{group_type}}",
+								"{{group}}",
+								"services"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants status service results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cad3180a-9b41-42da-9672-e20abf32c18c",
+								"exec": [
+									"const schema = {",
+									"  ",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"groups\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"services\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"statuses\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"timestamp\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"value\": {",
+									"                              \"type\": \"string\",",
+									"                              \"enum\": [\"OK\", \"WARNING\", \"CRITICAL\", \"MISSING\", \"UNKNOWN\"]",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"timestamp\",",
+									"                            \"value\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"statuses\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"services\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"groups\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.groups.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services.length).to.be.above(1);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "e16eb4d0-8ef1-49c9-a71d-0fcfd44bc7cd",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/status/{{report}}/{{group_type}}/{{group}}/services?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"status",
+								"{{report}}",
+								"{{group_type}}",
+								"{{group}}",
+								"services"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants a/r endpoints results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3b7d8bab-15a4-470e-9cc4-8d3b4b9d008b",
+								"exec": [
+									"const schema = {",
+									"",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"results\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"serviceflavors\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"endpoints\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"name\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"type\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"results\": {",
+									"                              \"type\": \"array\",",
+									"                              \"items\": [",
+									"                                {",
+									"                                  \"type\": \"object\",",
+									"                                  \"properties\": {",
+									"                                    \"timestamp\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"availability\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"reliability\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"unknown\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"uptime\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"downtime\": {",
+									"                                      \"type\": \"string\"",
+									"                                    }",
+									"                                  },",
+									"                                  \"required\": [",
+									"                                    \"timestamp\",",
+									"                                    \"availability\",",
+									"                                    \"reliability\",",
+									"                                    \"unknown\",",
+									"                                    \"uptime\",",
+									"                                    \"downtime\"",
+									"                                  ]",
+									"                                }",
+									"                              ]",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"name\",",
+									"                            \"type\",",
+									"                            \"results\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"endpoints\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"serviceflavors\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"results\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.results.length).to.be.above(0);",
+									"    pm.expect(jsonData.results[0].serviceflavors.length).to.be.above(0);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b7865162-8419-4efb-8367-f44b3fc35c5a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/results/{{report}}/{{group_type}}/{{group}}/services/{{service}}/endpoints?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"results",
+								"{{report}}",
+								"{{group_type}}",
+								"{{group}}",
+								"services",
+								"{{service}}",
+								"endpoints"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants flat paginated a/r endpoints results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f4c18b10-9fb4-4120-8db0-79e83f254b4a",
+								"exec": [
+									"const schema = {",
+									" ",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"results\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"service\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"supergroup\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"results\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"timestamp\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"availability\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"reliability\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"unknown\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"uptime\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"downtime\": {",
+									"                      \"type\": \"string\"",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"timestamp\",",
+									"                    \"availability\",",
+									"                    \"reliability\",",
+									"                    \"unknown\",",
+									"                    \"uptime\",",
+									"                    \"downtime\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"service\",",
+									"            \"supergroup\",",
+									"            \"type\",",
+									"            \"results\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    },",
+									"    \"nextPageToken\": {",
+									"      \"type\": \"string\"",
+									"    },",
+									"    \"pageSize\": {",
+									"      \"type\": \"integer\"",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"results\",",
+									"    \"nextPageToken\",",
+									"    \"pageSize\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.results.length).to.eql(8);",
+									"    pm.expect(jsonData.results[0].results.length).to.be.above(0);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "91df0a4d-52bc-4e81-a910-229d57f2db0d",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/results/{{report}}/endpoints?start_time={{start_time}}&end_time={{end_time}}&pageSize=8",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"results",
+								"{{report}}",
+								"endpoints"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								},
+								{
+									"key": "pageSize",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants flat paginated status metric results by metric type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e7bac45f-b976-4930-b8a2-be70929bd266",
+								"exec": [
+									"const schema = {",
+									"",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"endpoint_metrics\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"service\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"supergroup\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"metric\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"statuses\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"timestamp\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"value\": {",
+									"                      \"type\": \"string\"",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"timestamp\",",
+									"                    \"value\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"service\",",
+									"            \"supergroup\",",
+									"            \"metric\",",
+									"            \"statuses\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    },",
+									"    \"nextPageToken\": {",
+									"      \"type\": \"string\"",
+									"    },",
+									"    \"pageSize\": {",
+									"      \"type\": \"integer\"",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"endpoint_metrics\",",
+									"    \"nextPageToken\",",
+									"    \"pageSize\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"   ",
+									"    pm.expect(jsonData.endpoint_metrics.length).to.be.above(0);",
+									"    pm.expect(jsonData.endpoint_metrics[0].statuses.length).to.be.above(8);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "536069d9-8612-46df-bac5-9e08045aa9a9",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/status/{{report}}/metrics/{{metric}}?start_time={{start_time}}&end_time={{end_time}}&pageSize=8",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"status",
+								"{{report}}",
+								"metrics",
+								"{{metric}}"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								},
+								{
+									"key": "pageSize",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants status endpoints results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "440c76c9-f1c4-494b-81f8-c95f52057e1a",
+								"exec": [
+									"const schema = {",
+									"  ",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"groups\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"services\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"endpoints\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"name\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"statuses\": {",
+									"                              \"type\": \"array\",",
+									"                              \"items\": [",
+									"                                {",
+									"                                  \"type\": \"object\",",
+									"                                  \"properties\": {",
+									"                                    \"timestamp\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"value\": {",
+									"                                      \"type\": \"string\",",
+									"                                      \"enum\": [\"OK\",\"WARNING\",\"CRITICAL\",\"MISSING\",\"UNKNOWN\"]",
+									"                                    }",
+									"                                  },",
+									"                                  \"required\": [",
+									"                                    \"timestamp\",",
+									"                                    \"value\"",
+									"                                  ]",
+									"                                }",
+									"                              ]",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"name\",",
+									"                            \"statuses\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"endpoints\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"services\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"groups\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									" ",
+									"    pm.expect(jsonData.groups.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services[0].endpoints.length).to.be.above(0);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "5b60abb0-f87d-4342-a2db-1fd4796e4114",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/status/{{report}}/{{group_type}}/{{group}}/services/{{service}}/endpoints?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"status",
+								"{{report}}",
+								"{{group_type}}",
+								"{{group}}",
+								"services",
+								"{{service}}",
+								"endpoints"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get specific tenants status metrics results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "53c126e5-3ef0-4082-9eea-28e45dc8472f",
+								"exec": [
+									"const schema = {",
+									" ",
+									"  \"type\": \"object\",",
+									"  \"properties\": {",
+									"    \"groups\": {",
+									"      \"type\": \"array\",",
+									"      \"items\": [",
+									"        {",
+									"          \"type\": \"object\",",
+									"          \"properties\": {",
+									"            \"name\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"type\": {",
+									"              \"type\": \"string\"",
+									"            },",
+									"            \"services\": {",
+									"              \"type\": \"array\",",
+									"              \"items\": [",
+									"                {",
+									"                  \"type\": \"object\",",
+									"                  \"properties\": {",
+									"                    \"name\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"type\": {",
+									"                      \"type\": \"string\"",
+									"                    },",
+									"                    \"endpoints\": {",
+									"                      \"type\": \"array\",",
+									"                      \"items\": [",
+									"                        {",
+									"                          \"type\": \"object\",",
+									"                          \"properties\": {",
+									"                            \"name\": {",
+									"                              \"type\": \"string\"",
+									"                            },",
+									"                            \"metrics\": {",
+									"                              \"type\": \"array\",",
+									"                              \"items\": [",
+									"                                {",
+									"                                  \"type\": \"object\",",
+									"                                  \"properties\": {",
+									"                                    \"name\": {",
+									"                                      \"type\": \"string\"",
+									"                                    },",
+									"                                    \"statuses\": {",
+									"                                      \"type\": \"array\",",
+									"                                      \"items\": [",
+									"                                        {",
+									"                                          \"type\": \"object\",",
+									"                                          \"properties\": {",
+									"                                            \"timestamp\": {",
+									"                                              \"type\": \"string\"",
+									"                                            },",
+									"                                            \"value\": {",
+									"                                              \"type\": \"string\",",
+									"                                              \"enum\": [\"OK\", \"WARNING\", \"CRITICAL\", \"MISSING\", \"UNKNOWN\"]",
+									"                                            }",
+									"                                          },",
+									"                                          \"required\": [",
+									"                                            \"timestamp\",",
+									"                                            \"value\"",
+									"                                          ]",
+									"                                        }",
+									"                                      ]",
+									"                                    }",
+									"                                  },",
+									"                                  \"required\": [",
+									"                                    \"name\",",
+									"                                    \"statuses\"",
+									"                                  ]",
+									"                                }",
+									"                              ]",
+									"                            }",
+									"                          },",
+									"                          \"required\": [",
+									"                            \"name\",",
+									"                            \"metrics\"",
+									"                          ]",
+									"                        }",
+									"                      ]",
+									"                    }",
+									"                  },",
+									"                  \"required\": [",
+									"                    \"name\",",
+									"                    \"type\",",
+									"                    \"endpoints\"",
+									"                  ]",
+									"                }",
+									"              ]",
+									"            }",
+									"          },",
+									"          \"required\": [",
+									"            \"name\",",
+									"            \"type\",",
+									"            \"services\"",
+									"          ]",
+									"        }",
+									"      ]",
+									"    }",
+									"  },",
+									"  \"required\": [",
+									"    \"groups\"",
+									"  ]",
+									"}",
+									"",
+									"pm.test(\"Validate schema\", () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"check_respone_data\", function() {",
+									"    ",
+									"    let jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.groups.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services[0].endpoints.length).to.be.above(0);",
+									"    pm.expect(jsonData.groups[0].services[0].endpoints[0].metrics.length).to.be.above(0);",
+									"",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "0c335393-8c65-4f16-8052-06e1f8ac2021",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"type": "text",
+								"value": "{{result_tenant_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "https://{{api_host}}/api/v2/status/{{report}}/{{group_type}}/{{group}}/services/{{service}}/endpoints/{{endpoint}}/metrics/{{metric}}?start_time={{start_time}}&end_time={{end_time}}",
+							"protocol": "https",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"status",
+								"{{report}}",
+								"{{group_type}}",
+								"{{group}}",
+								"services",
+								"{{service}}",
+								"endpoints",
+								"{{endpoint}}",
+								"metrics",
+								"{{metric}}"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "{{start_time}}"
+								},
+								{
+									"key": "end_time",
+									"value": "{{end_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
 		}
 	],
 	"protocolProfileBehavior": {}
