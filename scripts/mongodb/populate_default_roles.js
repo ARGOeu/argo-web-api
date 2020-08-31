@@ -180,6 +180,14 @@ function populate_default_roles() {
         {
             resource: "topology_groups_report.list",
             roles: ["admin", "editor"]
+        },
+        {
+            resource: "feeds.topo.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "feeds.topo.update",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
