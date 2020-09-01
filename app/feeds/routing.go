@@ -14,7 +14,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{Name: "feeds.topo.update", Verb: "PUT", Path: "/feeds/topology", SubrouterHandler: UpdateTopo},
-	{Name: "feeds.topo.get", Verb: "GET", Path: "/feeds/topology", SubrouterHandler: ListTopo},
-	{Name: "feeds.topo.options", Verb: "OPTIONS", Path: "/feeds/topology", SubrouterHandler: Options},
+	{Name: "feeds.topo.update", Verb: "PUT", Path: "/topology", SubrouterHandler: UpdateTopo},
+	{Name: "feeds.topo.get", Verb: "GET", Path: "/topology", SubrouterHandler: ListTopo},
+	{Name: "feeds.topo.options", Verb: "OPTIONS", Path: "/topology", SubrouterHandler: Options},
 }

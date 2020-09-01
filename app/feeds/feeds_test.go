@@ -61,7 +61,7 @@ func (suite *FeedsTestSuite) SetupSuite() {
 	suite.clientkey = "123456"
 
 	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
-	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
+	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/feeds").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
 
