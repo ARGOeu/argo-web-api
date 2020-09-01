@@ -26,6 +26,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/aggregationProfiles"
 	"github.com/ARGOeu/argo-web-api/app/downtimes"
 	"github.com/ARGOeu/argo-web-api/app/factors"
+	"github.com/ARGOeu/argo-web-api/app/feeds"
 	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
@@ -48,6 +49,7 @@ import (
 
 var routesV2 = []RouteV2{
 
+	{"Feeds", "/feeds", feeds.HandleSubrouter},
 	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
 	{"Results", "/results", results.HandleSubrouter},
