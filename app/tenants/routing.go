@@ -42,9 +42,11 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"tenants.create", "POST", "/tenants", Create},
 	{"tenants.update_status", "PUT", "/tenants/{ID}/status", UpdateStatus},
 	{"tenants.create_user", "POST", "/tenants/{ID}/users", CreateUser},
+	{"tenants.update_user", "PUT", "/tenants/{ID}/users/{USER_ID}", UpdateUser},
 	{"tenants.update", "PUT", "/tenants/{ID}", Update},
 	{"tenants.delete", "DELETE", "/tenants/{ID}", Delete},
 	{"tenants.options", "OPTIONS", "/tenants", Options},
 	{"tenants.options", "OPTIONS", "/tenants/{ID}", Options},
 	{"tenants.options", "OPTIONS", "/tenants/{ID}/users", Options},
+	{"tenants.options", "OPTIONS", "/tenants/{ID}/users/{USER_ID}", Options},
 }

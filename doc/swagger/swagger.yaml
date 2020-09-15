@@ -374,6 +374,61 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /admin/tenants/{TENANT_ID}/users/{USER_ID}:
+    put:
+      summary: Update a user
+      operationId: tenants.UpdateUser
+      description: Update an existing user on specific tenant
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - name: "user"
+          in: "body"
+          description: "Json description of the user to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: User Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /admin/users:byID/{USER_ID}:
     get:
