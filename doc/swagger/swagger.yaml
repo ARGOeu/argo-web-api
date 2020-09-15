@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: ARGO web api
   description: "ARGO is a lightweight service for Service Level Monitoring designed for medium and large sized e-Infrastructures. This swagger UI interface provides access to the ARGO web api, which in turn can be used for either retrieving Availability/Reliability and status results or for defining profiles and reports that should be used within the SLM computations. The ARGO web api is multitenant and can hence be used by multiple e-Infrastructure providers. To list, add, update or remove tenants use the Tenants resource below. Under all other resources use per given tenant the corresponding api key."
-  version: 1.6.3
+  version: 1.9.1
   contact:
     name: ARGO Developers
     url: http://argoeu.github.io/
@@ -310,6 +310,56 @@ paths:
             $ref: '#/definitions/Status_error'
         '404':
           description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /admin/tenants/{TENANT_ID}/users:
+    post:
+      summary: Create a new user on existing tenant
+      operationId: tenants.CreateUser
+      description: Create a new user on existing tenant
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "user"
+          in: "body"
+          description: "Json description of the user to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: User Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -2112,7 +2162,6 @@ paths:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/lgroupType"
-        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
