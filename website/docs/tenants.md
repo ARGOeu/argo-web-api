@@ -18,7 +18,7 @@ title: Tenants
 | PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
 | POST: Renew User's API key | This method can be used to renew user's api key | [ Description](#10) |
 | DELETE: Delete Users  | This method can be used to remove and delete a user from a specific tenant| [ Description](#11) |
-
+| GET: List Users  | This method can be used to list all users that belong to a specific tenant| [ Description](#12) |
 
 
 <a id='1'></a>
@@ -950,7 +950,7 @@ Json Response
 }
 ```
 
-<a id='10'></a>
+<a id='11'></a>
 
 ## [DELETE]: Delete User
 
@@ -985,4 +985,62 @@ Json Response
   "code": "200"
  }
 }
+```
+
+<a id='12'></a>
+
+## [GET]: List all avaliable users that belong to a specific tenant
+This method can be used to list all available users that are members of a specific tenant
+
+### Input
+
+```
+GET /admin/tenants/{ID}/users
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "acb74194-553a-11e9-8647-d663bd873d93",
+   "name": "user_a",
+   "email": "user_a@email.com",
+   "api_key": "user_a_key",
+   "roles": [
+    "admin",
+    "admin_ui"
+   ]
+  },
+  {
+   "id": "acb74432-553a-11e9-8647-d663bd873d93",
+   "name": "user_b",
+   "email": "user_b@email.com",
+   "api_key": "user_b_key",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}
+
 ```

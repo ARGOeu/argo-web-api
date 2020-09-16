@@ -704,7 +704,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
-// Delete function used to implement remove tenant request
+// GetUserByID returns user by id given
 func GetUserByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -1126,6 +1126,67 @@ func DeleteUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	output, err = createMsgView("User succesfully deleted", 200) //Render the results into JSON
 
 	code = http.StatusOK
+	return code, h, output, err
+}
+
+// ListUsers function that implements the http GET request that retrieves
+// all avaiable users in tenant
+func ListUsers(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Create structure to hold query results
+	results := []Tenant{}
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+
+	// Query collection tenants for the specific tenant id
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// After successfully retrieving the db results
+	// call the createView function to render them into idented xml
+	output, err = createUserListView(results[0].Users, "Success", code)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
 
