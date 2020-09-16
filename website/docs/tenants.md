@@ -17,6 +17,7 @@ title: Tenants
 | POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
 | PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
 | POST: Renew User's API key | This method can be used to renew user's api key | [ Description](#10) |
+| DELETE: Delete Users  | This method can be used to remove and delete a user from a specific tenant| [ Description](#11) |
 
 
 
@@ -946,5 +947,42 @@ Json Response
   "data": {
     "api_key": "s3cr3tT0k3n"
   }
+}
+```
+
+<a id='10'></a>
+
+## [DELETE]: Delete User
+
+This method can be used to remove and delete a user from a tenant
+
+### Input
+
+```
+DELETE /admin/tenants/{ID}/users/{USER_ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+ "status": {
+  "message": "User succesfully deleted",
+  "code": "200"
+ }
 }
 ```

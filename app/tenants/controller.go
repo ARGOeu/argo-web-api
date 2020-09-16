@@ -1041,6 +1041,94 @@ func UpdateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
+// DeleteUser implements deletion and removal of user from tenant
+func DeleteUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Create structure to hold query results
+	results := []Tenant{}
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+
+	// Query collection tenants for the specific tenant id
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	tenant := results[0]
+
+	userID := vars["USER_ID"]
+	found := false
+	for indx, user := range tenant.Users {
+		if user.ID == userID {
+			found = true
+			tenant.Users = append(tenant.Users[:indx], tenant.Users[indx+1:]...)
+		}
+	}
+
+	if !found {
+		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := validateTenantUsers(tenant, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// run the update query
+
+	tenant.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	filter := bson.M{"id": vars["ID"]}
+	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", filter, tenant)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("User succesfully deleted", 200) //Render the results into JSON
+
+	code = http.StatusOK
+	return code, h, output, err
+}
+
 // Refresh token renews user's api key
 func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
