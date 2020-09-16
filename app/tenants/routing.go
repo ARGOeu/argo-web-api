@@ -45,6 +45,7 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"tenants.list_users", "GET", "/tenants/{ID}/users", ListUsers},
 	{"tenants.update_user", "PUT", "/tenants/{ID}/users/{USER_ID}", UpdateUser},
 	{"tenants.delete_user", "DELETE", "/tenants/{ID}/users/{USER_ID}", DeleteUser},
+	{"tenants.get_user", "GET", "/tenants/{ID}/users/{USER_ID}", GetUser},
 	{"tenants.user_refresh_token", "POST", "/tenants/{ID}/users/{USER_ID}/renew_api_key", RefreshToken},
 	{"tenants.update", "PUT", "/tenants/{ID}", Update},
 	{"tenants.delete", "DELETE", "/tenants/{ID}", Delete},

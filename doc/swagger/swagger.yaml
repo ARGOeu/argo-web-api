@@ -502,6 +502,44 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+    get:
+      summary: Get user info
+      operationId: tenants.GetUser
+      description: Get information of specific user member of specific tenant
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string  
+      responses:
+        '200':
+          description: User information
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
             
   /admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
     post:
