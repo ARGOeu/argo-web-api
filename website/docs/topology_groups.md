@@ -44,7 +44,7 @@ Accept: application/json
     {
         "group": "NGIA",
         "type": "NGIS",
-        "service": "SITEA",
+        "subgroup": "SITEA",
         "tags": {
             "scope": "FEDERATION",
             "infrastructure": "Production",
@@ -54,7 +54,7 @@ Accept: application/json
     {
         "group": "NGIA",
         "type": "NGIS",
-        "service": "SITEB",
+        "subgroup": "SITEB",
         "tags": {
             "scope": "FEDERATION",
             "infrastructure": "Production",
@@ -64,7 +64,7 @@ Accept: application/json
     {
         "group": "PROJECTZ",
         "type": "PROJECT",
-        "service": "SITEZ",
+        "subgroup": "SITEZ",
         "tags": {
             "scope": "FEDERATION",
             "infrastructure": "Production",
