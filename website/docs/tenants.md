@@ -14,6 +14,9 @@ title: Tenants
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
+| POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
+
+
 
 <a id='1'></a>
 
@@ -799,5 +802,59 @@ Json Response
         "message": "Tenant successfully updated",
         "code": "200"
     }
+}
+```
+
+<a id='8'></a>
+
+## [POST]: Create new user 
+
+This method can be used to create a new user on existing tenant
+
+### Input
+
+```
+POST /admin/tenants/{ID}/users
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+  {
+    "name":"new_user",
+    "email":"new_user@email.com",
+    "roles": [
+        "admin"
+    ]
+  }`
+```
+
+### Response
+
+Headers: `Status: 201 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+ "status": {
+  "message": "User was successfully created",
+  "code": "201"
+ },
+ "data": {
+  "id": "1cb883eb-8b40-428d-bce6-8ec23a9f3ca8",
+  "links": {
+   "self": "https:///api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/1cb883eb-8b40-428d-bce6-8ec23a9f3ca8"
+  }
+ }
 }
 ```

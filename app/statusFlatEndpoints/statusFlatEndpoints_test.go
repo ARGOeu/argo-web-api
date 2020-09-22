@@ -71,7 +71,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argotest_endpoints"
+    db = "argotest_flatendpoints"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -110,7 +110,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_endpoints_egi",
+				"database": "argotest_flatendpoints_egi",
 				"username": "",
 				"password": ""},
 		},
@@ -135,7 +135,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_endpoints_eudat",
+				"database": "argotest_flatendpoints_eudat",
 				"username": "",
 				"password": ""},
 		},
@@ -814,9 +814,9 @@ func (suite *StatusEndpointsTestSuite) TearDownTest() {
 
 	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
 
-	session.DB("argotest_endpoints").DropDatabase()
-	session.DB("argotest_endpoints_eudat").DropDatabase()
-	session.DB("argotest_endpoints_egi").DropDatabase()
+	session.DB("argotest_flatendpoints").DropDatabase()
+	session.DB("argotest_flatendpoints_eudat").DropDatabase()
+	session.DB("argotest_flatendpoints_egi").DropDatabase()
 }
 
 // This is the first function called when go test is issued

@@ -27,6 +27,7 @@
 package tenants
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -811,6 +812,112 @@ func validateTenantUsers(tenant Tenant, session *mgo.Session, cfg config.Config)
 
 	return errMsg, errCode
 
+}
+
+func genToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
+
+// CreateUser function is used to implement the create user request.
+// The request is an http POST request with the user description
+// provided as json structure in the request body
+func CreateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Create structure to hold query results
+	results := []Tenant{}
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+
+	// Query collection tenants for the specific tenant id
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// Try ingest request body
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+
+	incoming := TenantUser{}
+
+	// Parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	tenant := results[0]
+
+	// add a new uuid to the user
+	incoming.ID = mongo.NewUUID()
+	// generate a new user token
+	incoming.APIkey = genToken()
+
+	tenant.Users = append(tenant.Users, incoming)
+
+	if errMsg, errCode := validateTenantUsers(tenant, session, cfg); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// run the update query
+
+	tenant.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	filter := bson.M{"id": vars["ID"]}
+	err = mongo.Update(session, cfg.MongoDB.Db, "tenants", filter, tenant)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view of the results
+	output, err = createUserRefView(incoming, "User was successfully created", 201, r) //Render the results into JSON
+
+	code = http.StatusCreated
+	return code, h, output, err
 }
 
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

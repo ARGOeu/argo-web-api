@@ -129,6 +129,7 @@ function populate_default_roles() {
             roles: ["super_admin", "super_admin_restricted", "super_admin_ui"]
         },
         { resource: "tenants.update_status", roles: ["super_admin"] },
+        { resource: "tenants.create_user", roles: ["super_admin"] },
         {
             resource: "metricResult.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]
