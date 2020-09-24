@@ -84,6 +84,7 @@ Code:
 Status: 200 OK
 ```
 Response body (XML):
+
 ```
 <root>
 	<group name="HG-03-AUTH" type="SITES">
