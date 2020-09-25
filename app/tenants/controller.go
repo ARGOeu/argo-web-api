@@ -1190,6 +1190,83 @@ func ListUsers(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	return code, h, output, err
 }
 
+// GetUser gets a specific user in a specific tenant
+func GetUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	// Create structure to hold query results
+	results := []Tenant{}
+
+	// Try to open the mongo session
+	session, err := mongo.OpenSession(cfg.MongoDB)
+	defer session.Close()
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+
+	// Query collection tenants for the specific tenant id
+	err = mongo.Find(session, cfg.MongoDB.Db, "tenants", query, "name", &results)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Check if nothing found
+	if len(results) < 1 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	tenant := results[0]
+	var foundUser TenantUser
+	userID := vars["USER_ID"]
+	found := false
+	for _, user := range tenant.Users {
+		if user.ID == userID {
+			found = true
+			foundUser = user
+		}
+	}
+
+	if !found {
+		output, _ = respond.MarshalContent(respond.NotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// After successfully retrieving the db results
+	// call the createView function to render them into idented xml
+	output, err = createUserView(foundUser, "Success", code, "")
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
 // Refresh token renews user's api key
 func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 

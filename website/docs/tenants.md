@@ -1044,3 +1044,68 @@ Json Response
 }
 
 ```
+
+<a id='13'></a>
+
+## [GET]: Get user
+This method can be used to get information on specific user of a specific tenant
+
+### Input
+
+```
+GET /admin/tenants/{ID}/users/{USER_ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "acb74432-553a-11e9-8647-d663bd873d93",
+   "name": "user_a",
+   "email": "user_a@email.com",
+   "api_key": "user_a_key",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

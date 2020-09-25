@@ -237,6 +237,11 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"resource": "tenants.get_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "tenants.user_refresh_token",
 			"roles":    []string{"super_admin"},
 		})
@@ -994,6 +999,43 @@ func (suite *TenantTestSuite) TestListTenantUsers() {
     "admin_ui"
    ]
   },
+  {
+   "id": "acb74432-553a-11e9-8647-d663bd873d93",
+   "name": "thor",
+   "email": "thor@email.com",
+   "api_key": "TH0RK3Y",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+// TestGetTenantUser returns info on a specific user in a specific tenant
+func (suite *TenantTestSuite) TestGetTenantUser() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74432-553a-11e9-8647-d663bd873d93", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
   {
    "id": "acb74432-553a-11e9-8647-d663bd873d93",
    "name": "thor",
