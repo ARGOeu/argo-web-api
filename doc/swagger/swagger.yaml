@@ -374,6 +374,38 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+    get:
+      summary: List all available users
+      operationId: tenants.ListUSers
+      description: List all available users in a tenant 
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list of all available user
+          schema:
+            $ref: '#/definitions/Users_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
             
   /admin/tenants/{TENANT_ID}/users/{USER_ID}:
     put:

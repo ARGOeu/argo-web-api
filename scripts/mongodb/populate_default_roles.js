@@ -133,6 +133,7 @@ function populate_default_roles() {
         { resource: "tenants.update_user", roles: ["super_admin"] },
         { resource: "tenants.user_refresh_token", roles: ["super_admin"] },
         { resource: "tenants.delete_user", roles: ["super_admin"] },
+        { resource: "tenants.list_users", roles: ["super_admin"] },
         {
             resource: "metricResult.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]

@@ -66,6 +66,22 @@ func createListView(results []Tenant, msg string, code int) ([]byte, error) {
 
 }
 
+// createUserListView constructs the list response template and exports it as json
+func createUserListView(results []TenantUser, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 // createUserView constructs the list response template and exports it as json(used for user display)
 func createUserView(tenantUser TenantUser, msg string, code int, exportFilter string) ([]byte, error) {
 
