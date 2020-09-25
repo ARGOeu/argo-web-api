@@ -429,6 +429,47 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a user from tenant
+      operationId: tenant.DeleteUser
+      description: Delete a specific user from an existing tenant
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant definition"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: User Deleted and removed from tenant
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
             
   /admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
     post:
