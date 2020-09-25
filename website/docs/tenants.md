@@ -16,6 +16,7 @@ title: Tenants
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
 | POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
 | PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
+| POST: Renew User's API key | This method can be used to renew user's api key | [ Description](#10) |
 
 
 
@@ -905,5 +906,45 @@ Json Response
   "message": "User succesfully updated",
   "code": "200"
  }
+}
+```
+
+<a id='10'></a>
+
+## [POST]: Renew User API key
+
+This method can be used to renew a user's api access key
+
+### Input
+
+```
+POST /admin/tenants/{ID}/users/{USER_ID}/renew_api_key
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "User api key succesfully renewed",
+    "code": "200"
+  },
+  "data": {
+    "api_key": "s3cr3tT0k3n"
+  }
 }
 ```

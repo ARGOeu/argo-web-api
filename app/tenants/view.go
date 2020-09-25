@@ -137,3 +137,19 @@ func createMsgView(msg string, code int) ([]byte, error) {
 	output, err := json.MarshalIndent(docRoot, "", " ")
 	return output, err
 }
+
+// CreateRenewedToken constructs a message resposne with the renewed token
+func createRenewedToken(apiKey string, msg string, code int) ([]byte, error) {
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+		Data: Token{
+			APIkey: apiKey,
+		},
+	}
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}

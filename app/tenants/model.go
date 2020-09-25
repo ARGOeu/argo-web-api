@@ -127,3 +127,9 @@ type SelfReference struct {
 type Links struct {
 	Self string `json:"self"`
 }
+
+// Token
+
+type Token struct {
+	APIkey string `json:"api_key"`
+}

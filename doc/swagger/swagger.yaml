@@ -429,6 +429,55 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
+    post:
+      summary: Renew a user's api key
+      operationId: tenants.UserRenewKey
+      description: Renew a user's api key
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User key renewed
+          schema:
+            $ref: '#/definitions/RenewedToken'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /admin/users:byID/{USER_ID}:
     get:
@@ -4142,6 +4191,17 @@ definitions:
                           type: string
                           description: "The detailed output message of the probe (metric)"
 
+  RenewedToken:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/Status'
+      data:
+        type: object
+        properties:
+          api_key: 
+            type: string
+  
   Self_reference:
     type: object
     properties:
