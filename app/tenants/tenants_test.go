@@ -222,6 +222,11 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"resource": "tenants.update_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "tenants.get_status",
 			"roles":    []string{"super_admin"},
 		})
@@ -942,6 +947,64 @@ func (suite *TenantTestSuite) TestTenantCreateUser() {
 	suite.Equal(201, code, "Internal Server Error")
 	//Compare the expected and actual xml response
 	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", user.ID, 2), output, "Response body mismatch")
+
+}
+
+// TestTenantUpdateUser test the utility call of updating a new user tha belongs to the tenant
+func (suite *TenantTestSuite) TestTenantUpdateUser() {
+
+	// create json input data for the request
+	putData := `
+  {
+    "name": "updated_username",
+    "email":"updated@email.com",
+    "roles": [
+        "admin", "viewer"
+    ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "User succesfully updated",
+  "code": "200"
+ }
+}`
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74194-553a-11e9-8647-d663bd873d93", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result Tenant
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	found := false
+	for _, usr := range result.Users {
+		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
+			found = true
+			suite.Equal("updated@email.com", usr.Email, "Email not updated")
+			suite.Equal("updated_username", usr.Name, "name not updated")
+		}
+
+	}
+
+	suite.Equal(true, found, "updated user issue")
+	suite.Equal(200, code, "Internal Server Error")
+	//Compare the expected and actual xml response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
 

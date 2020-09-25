@@ -15,6 +15,7 @@ title: Tenants
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
 | POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
+| PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
 
 
 
@@ -855,6 +856,54 @@ Json Response
   "links": {
    "self": "https:///api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/1cb883eb-8b40-428d-bce6-8ec23a9f3ca8"
   }
+ }
+}
+```
+
+<a id='9'></a>
+
+## [PUT]: Update user 
+
+This method can be used to update an existing user in a specific tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/users/{USER_ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+  {
+    "name":"new_user",
+    "email":"new_user@email.com",
+    "roles": [
+        "admin"
+    ]
+  }`
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+ "status": {
+  "message": "User succesfully updated",
+  "code": "200"
  }
 }
 ```
