@@ -33,11 +33,12 @@ module.exports = {
       links: [
         {
           title: 'Docs',
-          items: [
-            {
-              label: 'Explore Documentation',
-              to: 'docs/',
-            },
+          items: [{
+            to: 'docs/',
+            activeBasePath: 'docs',
+            label: 'Explore Documentation',
+            position: 'left',
+          },
           ],
         },
         {
@@ -67,8 +68,6 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          // It is recommended to set document id as docs home page (`docs/` path).
-          homePageId: 'tenants',
           sidebarPath: require.resolve('./sidebars.js'),
         },
         theme: {

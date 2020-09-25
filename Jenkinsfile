@@ -60,10 +60,7 @@ pipeline {
         }
         stage ('Deploy Docs') {
             when {
-                anyOf {
-                    changeset 'docs/**'
-                    changeset 'website/**'
-                }
+                changeset 'website/**'
             }
             agent {
                 docker {

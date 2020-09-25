@@ -1,6 +1,7 @@
 ---
 id: tenants
 title: Tenants
+slug: /
 ---
 
 ## API Calls

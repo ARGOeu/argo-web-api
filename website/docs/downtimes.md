@@ -200,16 +200,20 @@ Accept: application/json
 
 ```json
 {
-    "name": "weight_set3",
-    "weight_type": "hepspec2",
-    "group_type": "SITES",
-    "groups": [
-        { "name": "site-a", "value": 336 },
-        { "name": "site-b", "value": 343 },
-        { "name": "site-c", "value": 553 },
-        { "name": "site-d", "value": 435 },
-        { "name": "site-e", "value": 3.33 },
-        { "name": "site-f", "value": 323.3 }
+    "name": "downtimes_set",
+    "endpoints": [
+        {
+            "hostname": "host-foo",
+            "service": "service-new-foo",
+            "start_time": "2019-10-11T23:10:00Z",
+            "end_time": "2019-10-11T23:25:00Z"
+        },
+        {
+            "hostname": "host-bar",
+            "service": "service-new-bar",
+            "start_time": "2019-10-11T23:40:00Z",
+            "end_time": "2019-10-11T23:55:00Z"
+        }
     ]
 }
 ```
@@ -335,6 +339,7 @@ Headers: `Status: 200 OK`
 Json Response
 
 ```json
+
 {
     "status": {
         "message": "Downtimes resource Successfully Deleted",
