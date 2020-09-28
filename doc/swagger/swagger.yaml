@@ -34,6 +34,8 @@ tags:
     description: Status results in detail
   - name: MetricResult
     description: Retrieve the full output of a  metric result
+  - name: Issues
+    description: List of problematic endpoints
 paths:
 
 
@@ -3412,6 +3414,50 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /issues/{REPORT_NAME}/endpoints:
+    get:
+      summary: List problematic endpoints
+      operationId: issues.ListEndpoints
+      description: List endpoints that are in problematic status (critical, warning, missing etc)
+      tags:
+        - Issues
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "filter"
+          in: "query"
+          description: "name of the problematic status to filter by"
+          required: false
+          type: string
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with problematic endpoints
+          schema:
+            $ref: '#/definitions/Endpoint_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /factors:
     get:
@@ -3809,6 +3855,34 @@ responses:
       $ref: '#/definitions/Status_error'
 
 definitions:
+
+  Endpoint_list:
+    type: array
+    items:
+      $ref: '#/definitions/Endpoint'
+
+  Endpoint:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: "name of the endpoint"
+      endpoint_group:
+        type: string
+        description: "name of the group the endpoint belongs to"
+      service:
+        type: string
+        description: "name of the service the endpoint hosts"
+      status:
+        type: string
+        description: "status value"
+      timestamp:
+        type: string
+        description: "ISO8601 timestamp since when the status last updated"
+      info:
+        type: object
+        description: "optional dictionary with various other information about the endpoint"
+
 
   TopologyEndpoint:
     type: object
