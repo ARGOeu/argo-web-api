@@ -194,6 +194,10 @@ function populate_default_roles() {
         {
             resource: "feeds.topo.update",
             roles: ["admin", "editor"]
+        },
+        {
+            resource: "issues.list_endpoints",
+            roles: ["admin", "editor", "viewer"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
