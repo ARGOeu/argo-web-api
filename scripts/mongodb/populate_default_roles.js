@@ -198,6 +198,18 @@ function populate_default_roles() {
         {
             resource: "issues.list_endpoints",
             roles: ["admin", "editor", "viewer"]
+        },
+        {
+            resource: "downtimes.list",
+            roles: ["admin", "editor", "viewer"]
+        },
+        {
+            resource: "downtimes.delete",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "downtimes.create",
+            roles: ["admin", "editor"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
