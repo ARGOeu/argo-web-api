@@ -1627,131 +1627,12 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /downtimes/{PROFILE_ID}:
-    get:
-      summary: List a specific downtimes resource
-      operationId: downtimes.ListOne
-      description: List one specific downtimes resource targeted by it's unique id
-      tags:
-        - Downtimes
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-      responses:
-        '200':
-          description: A list with a downtimes resource
-          schema:
-            $ref: '#/definitions/Downtimes_list'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
-    put:
-      summary: update an existing downtimes resource
-      operationId: downtimes.Update
-      description: update information on a specific downtimes resource which is targeted by it's unique id
-      tags:
-        - Downtimes
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-        - name: "weights_resource"
-          in: "body"
-          description: "Json description of the dowtimes resource to be updated"
-          required: true
-          schema:
-            $ref: '#/definitions/Weights'
-      responses:
-        '201':
-          description: Downtimes resource Updated
-          schema:
-            $ref: '#/definitions/Status'
-        '400':
-          description: Bad request due to malformed JSON in put body
-          schema:
-            $ref: '#/definitions/Status_error'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
-    delete:
-      summary: Delete a downtimes resource
-      operationId: downtimes.Delete
-      description: Delete a specific downtimes resource which is targeted by it's unique id
-      tags:
-        - Downtimes
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Downtimes resource deleted
-          schema:
-            $ref: '#/definitions/Status'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
+
+    
 
   /downtimes:
     get:
-      summary: List all downtimes resource
+      summary: List all downtimes resources for specific name
       operationId: downtimes.List
       description: List available downtimes resources
       tags:
@@ -1760,6 +1641,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of downtimes resources
@@ -1793,8 +1675,9 @@ paths:
           description: "Json description of the downtimes resource to be created"
           required: true
           schema:
-            $ref: '#/definitions/Weights'
+            $ref: '#/definitions/Downtimes'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Downtimes resource Created
@@ -1806,6 +1689,39 @@ paths:
             $ref: '#/definitions/Status_error'
         '401':
           description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a downtimes resource
+      operationId: downtimes.Delete
+      description: Delete a specific downtimes resource which is targeted by it's unique id
+      tags:
+        - Downtimes
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+
+      responses:
+        '200':
+          description: Downtimes resource deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -4756,9 +4672,7 @@ definitions:
   Downtimes:
     type: object
     properties:
-      id:
-        type: string
-      name:
+      date:
         type: string
       endpoints:
         type: array
