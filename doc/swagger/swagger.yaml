@@ -2353,6 +2353,8 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  
 
   /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
@@ -3402,6 +3404,158 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /feeds/topology:
+    get:
+      summary: List of topology feed parameters
+      operationId: feeds.topology.list
+      description: list of topology feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with a topology feed parameters
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update toplogy feed parameters
+      operationId: feeds.topo.update
+      description: update topology feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_topo_resource"
+          in: "body"
+          description: "Json description of the feeds topology resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+      responses:
+        '201':
+          description: Feeds topology resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  
+  /feeds/weights:
+    get:
+      summary: List of weights feed parameters
+      operationId: feeds.weights.list
+      description: list of weights feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with weights feed parameters
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update weights feeds parameters
+      operationId: feeds.weights.update
+      description: update weights feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_topo_resource"
+          in: "body"
+          description: "Json description of the feeds weights resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+      responses:
+        '201':
+          description: Feeds weights resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
           
   /recomputations/{ID}/status:
     post:
@@ -4846,6 +5000,34 @@ definitions:
               type: string
             context:
               type: string
+  
+  FeedsTopo:
+    type: object
+    properties:
+      type:
+        type: string
+      feed_url: 
+        type: string
+      paginated:
+        type: string
+      fetch_type:
+        type: array
+        items:
+          type: string
+      uid_endpoints:
+        type: string
+        
+  FeedsWeights:
+    type: object
+    properties:
+      type:
+        type: string
+      feed_url: 
+        type: string
+      weight_type:
+        type: string
+      group_type:
+        type: string
 
   TopologyResponse:
     type: object

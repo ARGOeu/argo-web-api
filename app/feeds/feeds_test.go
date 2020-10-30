@@ -166,8 +166,19 @@ func (suite *FeedsTestSuite) SetupTest() {
 			"resource": "feeds.topo.update",
 			"roles":    []string{"editor"},
 		})
+	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
+	c.Insert(
+		bson.M{
+			"resource": "feeds.weights.get",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "feeds.weights.update",
+			"roles":    []string{"editor"},
+		})
 
-	// Seed database with feeds
+	// Seed database with topology feeds
 	c = session.DB(suite.tenantDbConf.Db).C("feeds_topology")
 	c.Insert(
 		bson.M{
@@ -177,6 +188,92 @@ func (suite *FeedsTestSuite) SetupTest() {
 			"fetch_type":    []string{"item1", "item2"},
 			"uid_endpoints": "endpointA",
 		})
+
+	// Seed database with weights feeds
+	c = session.DB(suite.tenantDbConf.Db).C("feeds_weights")
+	c.Insert(
+		bson.M{
+			"type":        "vapor",
+			"feed_url":    "https://somewhere.foo.bar/weight/feed",
+			"weight_type": "hepspec2006 cpu",
+			"group_type":  "SITES",
+		})
+
+}
+
+func (suite *FeedsTestSuite) TestUpdateFeedWeights() {
+
+	jsonInput := `
+  {
+   "type": "vapor",
+   "feed_url": "https://somewhere2.foo.bar/weights/feed",
+   "weight_type": "hepspec2006 memory",
+   "group_type": "SITES"
+  }
+`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Feeds resource succesfully updated",
+  "code": "200"
+ },
+ "data": [
+  {
+   "type": "vapor",
+   "feed_url": "https://somewhere2.foo.bar/weights/feed",
+   "weight_type": "hepspec2006 memory",
+   "group_type": "SITES"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/feeds/weights", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *FeedsTestSuite) TestListWeights() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/feeds/weights", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	feedsTopoJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "type": "vapor",
+   "feed_url": "https://somewhere.foo.bar/weight/feed",
+   "weight_type": "hepspec2006 cpu",
+   "group_type": "SITES"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(feedsTopoJSON, output, "Response body mismatch")
 
 }
 
@@ -228,6 +325,7 @@ func (suite *FeedsTestSuite) TestUpdateFeedTopo() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
 }
 
 func (suite *FeedsTestSuite) TestListTopo() {
