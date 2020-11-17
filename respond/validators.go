@@ -41,6 +41,16 @@ func validateDate(dateStr string) error {
 	return nil
 }
 
+// ValidateDateOnly validates an input date if its in the "YYYY-MM-DD" format
+func ValidateDateOnly(dateStr string) error {
+	_, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ValidateMetricParams validates the parameters required for the metric call
 func ValidateMetricParams(queries url.Values) []ErrorResponse {
 
 	var errs []ErrorResponse
@@ -67,6 +77,7 @@ func ValidateMetricParams(queries url.Values) []ErrorResponse {
 
 }
 
+// ValidateResultsParams validates the input parameters required for the result related calls
 func ValidateResultsParams(queries url.Values) []ErrorResponse {
 
 	var errs []ErrorResponse
@@ -129,6 +140,7 @@ func ValidateResultsParams(queries url.Values) []ErrorResponse {
 
 }
 
+// ValidateStatusParams validates the input parameters required for the status related calls
 func ValidateStatusParams(queries url.Values) []ErrorResponse {
 
 	var errs []ErrorResponse

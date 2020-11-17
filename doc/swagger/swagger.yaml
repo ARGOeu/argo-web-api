@@ -3538,6 +3538,16 @@ paths:
         - "application/xml"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - name: "date"
+          in: "query"
+          type: string
+          description: "specific date in YYYY-MM-DD format to retrieve relevant recomputations that cover this date"
+          required: false
+        - name: "report"
+          in: "query"
+          type: string
+          description: "filter recomputation requests by report name"
+          required: false
       responses:
         200:
           description: "Successful retrieval of recomputations"
