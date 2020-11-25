@@ -92,16 +92,16 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	incoming := Weights{}
-	incoming.DateInt = dt
-	incoming.Date = dateStr
 
 	// Try ingest request body
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Parse body json
@@ -110,6 +110,9 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		code = 400
 		return code, h, output, err
 	}
+
+	incoming.DateInt = dt
+	incoming.Date = dateStr
 
 	// check if the weights resource name is unique
 	results := []Weights{}
@@ -137,7 +140,8 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err = mongo.Insert(session, tenantDbConfig.Db, weightCol, incoming)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -308,16 +312,16 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := Weights{}
-	incoming.DateInt = dt
-	incoming.Date = dateStr
 
 	// ingest body data
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 	// parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
@@ -326,6 +330,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	incoming.DateInt = dt
+	incoming.Date = dateStr
+
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 	if err != nil {
@@ -333,7 +340,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 	// create filter to retrieve specific profile with id
-	filter := bson.M{"id": vars["ID"], "date_integer": bson.M{"$lte": dt}}
+	filter := bson.M{"id": vars["ID"]}
 
 	incoming.ID = vars["ID"]
 
@@ -342,7 +349,8 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	err = mongo.Find(session, tenantDbConfig.Db, weightCol, filter, "name", &results)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Check if nothing found
@@ -352,7 +360,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// check if the operations profile's name is unique
+	// check if the weights dataset name is unique
 	if incoming.Name != results[0].Name {
 
 		results = []Weights{}
