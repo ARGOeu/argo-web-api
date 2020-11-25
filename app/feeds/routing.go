@@ -17,4 +17,7 @@ var appRoutesV2 = []respond.AppRoutes{
 	{Name: "feeds.topo.update", Verb: "PUT", Path: "/topology", SubrouterHandler: UpdateTopo},
 	{Name: "feeds.topo.get", Verb: "GET", Path: "/topology", SubrouterHandler: ListTopo},
 	{Name: "feeds.topo.options", Verb: "OPTIONS", Path: "/topology", SubrouterHandler: Options},
+	{Name: "feeds.weights.update", Verb: "PUT", Path: "/weights", SubrouterHandler: UpdateWeights},
+	{Name: "feeds.weights.get", Verb: "GET", Path: "/weights", SubrouterHandler: ListWeights},
+	{Name: "feeds.weights.options", Verb: "OPTIONS", Path: "/weights", SubrouterHandler: Options},
 }
