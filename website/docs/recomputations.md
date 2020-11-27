@@ -8,10 +8,11 @@ title: Recomputation Requests
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
 GET: List Recomputation Requests         | This method can be used to retrieve a list of current Recomputation requests.          | [ Description](#1)
-POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#2)
-DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#3)
-POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#4)
-DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#5)
+GET: Get a specific recomputatiomn by id | This method can be used to retrieve a specific recomputation by id                     | [ Description](#2)
+POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#3)
+DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#4)
+POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#5)
+DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#6)
 
 
 <a id='1'></a>
@@ -25,6 +26,14 @@ This method can be used to retrieve a list of current Recomputation requests.
 GET /recomputations
 ```
 
+#### Optional Query Parameters
+
+| Type     | Description                                                                                                                             | Required |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `report` | Filter recomputations by report name                                                                                                    | NO       |
+| `date`   | Specific date to retrieve all relevant recomputations that their period include this date                                               | NO       |
+
+
 
 #### Request headers
 
@@ -33,7 +42,7 @@ x-api-key: shared_key_value
 Accept: application/json
 ```
 
-### Response
+#### Response
 Headers: `Status: 200 OK`
 
 #### Response body
@@ -43,12 +52,196 @@ Json Response
 {
 "root": [
      {
-          "requester_name": "Arya Stark",
-          "requester_email": "astark@shadowguild.com",
+          "id": "56db43ee-f331-46ca-b0fd-4555b4aa1cfc",
+          "requester_name": "John Doe",
+          "requester_email": "JohnDoe@foo.com",
           "reason": "power cuts",
           "start_time": "2015-01-10T12:00:00Z",
           "end_time": "2015-01-30T23:00:00Z",
-          "report": "EGI_Critical",
+          "report": "Critical",
+          "exclude": [
+           "Gluster"
+          ],
+          "status": "running",
+          "timestamp": "2015-02-01T14:58:40",
+          "history": [
+              { 
+                  "status": "pending", 
+                  "timestamp" : "2015-02-01T14:58:40"
+              },
+              { 
+                  "status": "approved", 
+                  "timestamp" : "2015-02-02T08:58:40"
+              },
+              { 
+                  "status": "running", 
+                  "timestamp" : "2015-02-02T09:10:40"
+              },
+
+          ]
+     },
+     {
+          "id": "f68b43ee-f331-46ca-b0fd-4555b4aa1cfc",
+          "requester_name": "John Doe",
+          "requester_email": "JohnDoe@foo.com",
+          "reason": "power cuts",
+          "start_time": "2015-03-10T12:00:00Z",
+          "end_time": "2015-03-30T23:00:00Z",
+          "report": "OPS-Critical",
+          "exclude": [
+           "Gluster"
+          ],
+          "status": "running",
+          "timestamp": "2015-02-01T14:58:40",
+          "history": [
+              { 
+                  "status": "pending", 
+                  "timestamp" : "2015-04-01T14:58:40"
+              },
+              { 
+                  "status": "approved", 
+                  "timestamp" : "2015-04-02T08:58:40"
+              },
+              { 
+                  "status": "running", 
+                  "timestamp" : "2015-04-02T09:10:40"
+              },
+
+          ]
+     }
+ ]
+}
+```
+
+### Example Request #2 
+```
+GET /recomputations?date=2015-03-15
+```
+
+#### Response
+Headers: `Status: 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+"root": [
+     {
+          "id": "f68b43ee-f331-46ca-b0fd-4555b4aa1cfc",
+          "requester_name": "John Doe",
+          "requester_email": "JohnDoe@foo.com",
+          "reason": "power cuts",
+          "start_time": "2015-03-10T12:00:00Z",
+          "end_time": "2015-03-30T23:00:00Z",
+          "report": "OPS-Critical",
+          "exclude": [
+           "Gluster"
+          ],
+          "status": "running",
+          "timestamp": "2015-02-01T14:58:40",
+          "history": [
+              { 
+                  "status": "pending", 
+                  "timestamp" : "2015-04-01T14:58:40"
+              },
+              { 
+                  "status": "approved", 
+                  "timestamp" : "2015-04-02T08:58:40"
+              },
+              { 
+                  "status": "running", 
+                  "timestamp" : "2015-04-02T09:10:40"
+              },
+
+          ]
+     }
+ ]
+}
+```
+
+### Example Request #3 
+```
+GET /recomputations?report=OPS-Critical
+```
+
+#### Response
+Headers: `Status: 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+"root": [
+     {
+          "id": "f68b43ee-f331-46ca-b0fd-4555b4aa1cfc",
+          "requester_name": "John Doe",
+          "requester_email": "JohnDoe@foo.com",
+          "reason": "power cuts",
+          "start_time": "2015-03-10T12:00:00Z",
+          "end_time": "2015-03-30T23:00:00Z",
+          "report": "OPS-Critical",
+          "exclude": [
+           "Gluster"
+          ],
+          "status": "running",
+          "timestamp": "2015-02-01T14:58:40",
+          "history": [
+              { 
+                  "status": "pending", 
+                  "timestamp" : "2015-04-01T14:58:40"
+              },
+              { 
+                  "status": "approved", 
+                  "timestamp" : "2015-04-02T08:58:40"
+              },
+              { 
+                  "status": "running", 
+                  "timestamp" : "2015-04-02T09:10:40"
+              },
+
+          ]
+     }
+ ]
+}
+```
+
+<a id='2'></a>
+
+## [GET]: Get specific recomputation request by id
+This method can be used to retrieve a specific recomputation request by its id
+
+### Input
+
+```
+GET /recomputations/{ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### Response
+Headers: `Status: 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+"root": [
+     {
+          "id": "56db43ee-f331-46ca-b0fd-4555b4aa1cfc",
+          "requester_name": "John Doe",
+          "requester_email": "JohnDoe@foo.com",
+          "reason": "power cuts",
+          "start_time": "2015-01-10T12:00:00Z",
+          "end_time": "2015-01-30T23:00:00Z",
+          "report": "Critical",
           "exclude": [
            "Gluster"
           ],
@@ -70,12 +263,10 @@ Json Response
 
           ]
      }
- ]
-}
 ```
 
 
-<a id='2'></a>
+<a id='3'></a>
 
 ## [POST]: Create a new recomputation request
 This method can be used to insert a new recomputation request onto the Compute Engine.
@@ -108,7 +299,7 @@ Type         | Description                                                      
 ### Response
 Headers: `Status: 201 Created`
 
-<a id='3'></a>
+<a id='4'></a>
 
 ## [DELETE]: Delete a specific recomputation
 
@@ -126,7 +317,7 @@ Accept: application/json
 ### Response
 `Status 200 OK`
 
-<a id='4'></a>
+<a id='5'></a>
 
 ## [POST]: Change status of recomputation
 
@@ -174,7 +365,7 @@ Json Response
 ```
 
 
-<a id='5'></a>
+<a id='6'></a>
 
 ## [DELETE]: Reset status of a specific recomputation
 
