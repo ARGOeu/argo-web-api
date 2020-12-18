@@ -129,6 +129,12 @@ function populate_default_roles() {
             roles: ["super_admin", "super_admin_restricted", "super_admin_ui"]
         },
         { resource: "tenants.update_status", roles: ["super_admin"] },
+        { resource: "tenants.create_user", roles: ["super_admin"] },
+        { resource: "tenants.update_user", roles: ["super_admin"] },
+        { resource: "tenants.user_refresh_token", roles: ["super_admin"] },
+        { resource: "tenants.delete_user", roles: ["super_admin"] },
+        { resource: "tenants.list_users", roles: ["super_admin"] },
+        { resource: "tenants.get_user", roles: ["super_admin"] },
         {
             resource: "metricResult.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]
@@ -179,6 +185,30 @@ function populate_default_roles() {
         },
         {
             resource: "topology_groups_report.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "feeds.topo.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "feeds.topo.update",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "issues.list_endpoints",
+            roles: ["admin", "editor", "viewer"]
+        },
+        {
+            resource: "downtimes.list",
+            roles: ["admin", "editor", "viewer"]
+        },
+        {
+            resource: "downtimes.delete",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "downtimes.create",
             roles: ["admin", "editor"]
         }
     ]);

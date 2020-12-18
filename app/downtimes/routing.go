@@ -15,10 +15,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var appRoutesV2 = []respond.AppRoutes{
 	{Name: "downtimes.create", Verb: "POST", Path: "/downtimes", SubrouterHandler: Create},
-	{Name: "downtimes.update", Verb: "PUT", Path: "/downtimes/{ID}", SubrouterHandler: Update},
 	{Name: "downtimes.list", Verb: "GET", Path: "/downtimes", SubrouterHandler: List},
-	{Name: "downtimes.get", Verb: "GET", Path: "/downtimes/{ID}", SubrouterHandler: ListOne},
-	{Name: "downtimes.delete", Verb: "DELETE", Path: "/downtimes/{ID}", SubrouterHandler: Delete},
+	{Name: "downtimes.delete", Verb: "DELETE", Path: "/downtimes", SubrouterHandler: Delete},
 	{Name: "downtimes.options", Verb: "OPTIONS", Path: "/downtimes", SubrouterHandler: Options},
-	{Name: "downtimes.options", Verb: "OPTIONS", Path: "/downtimes/{ID}", SubrouterHandler: Options},
 }

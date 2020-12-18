@@ -1,7 +1,7 @@
 pipeline {
     agent { 
         docker { 
-            image 'argo.registry:5000/epel-7-mgo' 
+            image 'argo.registry:5000/epel-7-mgo1.14' 
             args '-u jenkins:jenkins'
         }
     }
@@ -11,6 +11,8 @@ pipeline {
     }
     environment {
         PROJECT_DIR='argo-web-api'
+        GH_USER = 'newgrnetci'
+        GH_EMAIL = '<argo@grnet.gr>'
         GOPATH="${WORKSPACE}/go"
         GIT_COMMIT=sh(script: "cd ${WORKSPACE}/$PROJECT_DIR && git log -1 --format=\"%H\"",returnStdout: true).trim()
         GIT_COMMIT_HASH=sh(script: "cd ${WORKSPACE}/$PROJECT_DIR && git log -1 --format=\"%H\" | cut -c1-7",returnStdout: true).trim()
@@ -55,6 +57,33 @@ pipeline {
                 }
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
             }
+        }
+        stage ('Deploy Docs') {
+            when {
+                changeset 'website/**'
+            }
+            agent {
+                docker {
+                    image 'node:buster'
+                }
+            }
+            steps {
+                echo 'Publish argo-web-api docs...'
+                sh '''
+                    cd $WORKSPACE/$PROJECT_DIR
+                    cd website
+                    npm install
+                '''
+                sshagent (credentials: ['jenkins-master']) {
+                    sh '''
+                        cd $WORKSPACE/$PROJECT_DIR/website
+                        mkdir ~/.ssh && ssh-keyscan -H github.com > ~/.ssh/known_hosts
+                        git config --global user.email ${GH_EMAIL}
+                        git config --global user.name ${GH_USER}
+                        GIT_USER=${GH_USER} USE_SSH=true npm run deploy
+                    '''
+                }
+            }
         } 
     }
     post{
@@ -65,6 +94,9 @@ pipeline {
             script{
                 if ( env.BRANCH_NAME == 'devel' ) {
                     build job: '/ARGO-utils/argo-swagger-docs', propagate: false
+                    build job: '/ARGO/argodoc/devel', propagate: false
+                } else if ( env.BRANCH_NAME == 'master' ) {
+                    build job: '/ARGO/argodoc/master', propagate: false
                 }
                 if ( env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'devel' ) {
                     slackSend( message: ":rocket: New version for <$BUILD_URL|$PROJECT_DIR>:$BRANCH_NAME Job: $JOB_NAME !")

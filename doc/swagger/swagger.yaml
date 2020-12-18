@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: ARGO web api
   description: "ARGO is a lightweight service for Service Level Monitoring designed for medium and large sized e-Infrastructures. This swagger UI interface provides access to the ARGO web api, which in turn can be used for either retrieving Availability/Reliability and status results or for defining profiles and reports that should be used within the SLM computations. The ARGO web api is multitenant and can hence be used by multiple e-Infrastructure providers. To list, add, update or remove tenants use the Tenants resource below. Under all other resources use per given tenant the corresponding api key."
-  version: 1.6.3
+  version: 1.9.1
   contact:
     name: ARGO Developers
     url: http://argoeu.github.io/
@@ -34,6 +34,8 @@ tags:
     description: Status results in detail
   - name: MetricResult
     description: Retrieve the full output of a  metric result
+  - name: Issues
+    description: List of problematic endpoints
 paths:
 
 
@@ -310,6 +312,271 @@ paths:
             $ref: '#/definitions/Status_error'
         '404':
           description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /admin/tenants/{TENANT_ID}/users:
+    post:
+      summary: Create a new user on existing tenant
+      operationId: tenants.CreateUser
+      description: Create a new user on existing tenant
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "user"
+          in: "body"
+          description: "Json description of the user to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: User Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    get:
+      summary: List all available users
+      operationId: tenants.ListUSers
+      description: List all available users in a tenant 
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list of all available user
+          schema:
+            $ref: '#/definitions/Users_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /admin/tenants/{TENANT_ID}/users/{USER_ID}:
+    put:
+      summary: Update a user
+      operationId: tenants.UpdateUser
+      description: Update an existing user on specific tenant
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - name: "user"
+          in: "body"
+          description: "Json description of the user to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: User Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '422':
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a user from tenant
+      operationId: tenant.DeleteUser
+      description: Delete a specific user from an existing tenant
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant definition"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: User Deleted and removed from tenant
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    get:
+      summary: Get user info
+      operationId: tenants.GetUser
+      description: Get information of specific user member of specific tenant
+      tags:
+        - Tenants
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string  
+      responses:
+        '200':
+          description: User information
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+            
+  /admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
+    post:
+      summary: Renew a user's api key
+      operationId: tenants.UserRenewKey
+      description: Renew a user's api key
+      tags:
+        - Tenants
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "TENANT_ID"
+          in: "path"
+          description: "id of the tenant"
+          required: true
+          type: string
+        - name: "USER_ID"
+          in: "path"
+          description: "id of the user"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User key renewed
+          schema:
+            $ref: '#/definitions/RenewedToken'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -1360,131 +1627,12 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /downtimes/{PROFILE_ID}:
-    get:
-      summary: List a specific downtimes resource
-      operationId: downtimes.ListOne
-      description: List one specific downtimes resource targeted by it's unique id
-      tags:
-        - Downtimes
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-      responses:
-        '200':
-          description: A list with a downtimes resource
-          schema:
-            $ref: '#/definitions/Downtimes_list'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
-    put:
-      summary: update an existing downtimes resource
-      operationId: downtimes.Update
-      description: update information on a specific downtimes resource which is targeted by it's unique id
-      tags:
-        - Downtimes
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-        - name: "weights_resource"
-          in: "body"
-          description: "Json description of the dowtimes resource to be updated"
-          required: true
-          schema:
-            $ref: '#/definitions/Weights'
-      responses:
-        '201':
-          description: Downtimes resource Updated
-          schema:
-            $ref: '#/definitions/Status'
-        '400':
-          description: Bad request due to malformed JSON in put body
-          schema:
-            $ref: '#/definitions/Status_error'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
-    delete:
-      summary: Delete a downtimes resource
-      operationId: downtimes.Delete
-      description: Delete a specific downtimes resource which is targeted by it's unique id
-      tags:
-        - Downtimes
-      produces:
-        - "application/json"
-      parameters:
-        - $ref: "#/parameters/apiKey"
-        - name: "PROFILE_ID"
-          in: "path"
-          description: "id of the downtimes resource"
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Downtimes resource deleted
-          schema:
-            $ref: '#/definitions/Status'
-        '401':
-          description: Unauthorized user
-          schema:
-            $ref: '#/definitions/Status_error'
-        '404':
-          description: Item not found
-          schema:
-            $ref: '#/definitions/Status_error'
-        '406':
-          description: Content Not acceptable
-          schema:
-            $ref: '#/definitions/Status_error'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Status_error'
+
+    
 
   /downtimes:
     get:
-      summary: List all downtimes resource
+      summary: List all downtimes resources for specific name
       operationId: downtimes.List
       description: List available downtimes resources
       tags:
@@ -1493,6 +1641,7 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: A list of downtimes resources
@@ -1526,8 +1675,9 @@ paths:
           description: "Json description of the downtimes resource to be created"
           required: true
           schema:
-            $ref: '#/definitions/Weights'
+            $ref: '#/definitions/Downtimes'
         - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
       responses:
         '200':
           description: Downtimes resource Created
@@ -1539,6 +1689,39 @@ paths:
             $ref: '#/definitions/Status_error'
         '401':
           description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    delete:
+      summary: Delete a downtimes resource
+      operationId: downtimes.Delete
+      description: Delete a specific downtimes resource which is targeted by it's unique id
+      tags:
+        - Downtimes
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+
+      responses:
+        '200':
+          description: Downtimes resource deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
           schema:
             $ref: '#/definitions/Status_error'
         '406':
@@ -2112,7 +2295,6 @@ paths:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/lgroupType"
-        - $ref: "#/parameters/lgroupName"
         - $ref: "#/parameters/latestDate"
         - $ref: "#/parameters/latestFilter"
         - $ref: "#/parameters/latestLimit"
@@ -2171,6 +2353,8 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  
 
   /status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
@@ -3148,6 +3332,50 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /issues/{REPORT_NAME}/endpoints:
+    get:
+      summary: List problematic endpoints
+      operationId: issues.ListEndpoints
+      description: List endpoints that are in problematic status (critical, warning, missing etc)
+      tags:
+        - Issues
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "filter"
+          in: "query"
+          description: "name of the problematic status to filter by"
+          required: false
+          type: string
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with problematic endpoints
+          schema:
+            $ref: '#/definitions/Endpoint_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /factors:
     get:
@@ -3176,6 +3404,158 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
+          
+  /feeds/topology:
+    get:
+      summary: List of topology feed parameters
+      operationId: feeds.topology.list
+      description: list of topology feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with a topology feed parameters
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update toplogy feed parameters
+      operationId: feeds.topo.update
+      description: update topology feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_topo_resource"
+          in: "body"
+          description: "Json description of the feeds topology resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+      responses:
+        '201':
+          description: Feeds topology resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  
+  /feeds/weights:
+    get:
+      summary: List of weights feed parameters
+      operationId: feeds.weights.list
+      description: list of weights feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with weights feed parameters
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update weights feeds parameters
+      operationId: feeds.weights.update
+      description: update weights feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_topo_resource"
+          in: "body"
+          description: "Json description of the feeds weights resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsTopo'
+      responses:
+        '201':
+          description: Feeds weights resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
           
   /recomputations/{ID}/status:
     post:
@@ -3312,6 +3692,16 @@ paths:
         - "application/xml"
       parameters:
         - $ref: "#/parameters/apiKey"
+        - name: "date"
+          in: "query"
+          type: string
+          description: "specific date in YYYY-MM-DD format to retrieve relevant recomputations that cover this date"
+          required: false
+        - name: "report"
+          in: "query"
+          type: string
+          description: "filter recomputation requests by report name"
+          required: false
       responses:
         200:
           description: "Successful retrieval of recomputations"
@@ -3545,6 +3935,34 @@ responses:
       $ref: '#/definitions/Status_error'
 
 definitions:
+
+  Endpoint_list:
+    type: array
+    items:
+      $ref: '#/definitions/Endpoint'
+
+  Endpoint:
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: "name of the endpoint"
+      endpoint_group:
+        type: string
+        description: "name of the group the endpoint belongs to"
+      service:
+        type: string
+        description: "name of the service the endpoint hosts"
+      status:
+        type: string
+        description: "status value"
+      timestamp:
+        type: string
+        description: "ISO8601 timestamp since when the status last updated"
+      info:
+        type: object
+        description: "optional dictionary with various other information about the endpoint"
+
 
   TopologyEndpoint:
     type: object
@@ -4038,6 +4456,17 @@ definitions:
                           type: string
                           description: "The detailed output message of the probe (metric)"
 
+  RenewedToken:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/Status'
+      data:
+        type: object
+        properties:
+          api_key: 
+            type: string
+  
   Self_reference:
     type: object
     properties:
@@ -4407,9 +4836,7 @@ definitions:
   Downtimes:
     type: object
     properties:
-      id:
-        type: string
-      name:
+      date:
         type: string
       endpoints:
         type: array
@@ -4583,6 +5010,34 @@ definitions:
               type: string
             context:
               type: string
+  
+  FeedsTopo:
+    type: object
+    properties:
+      type:
+        type: string
+      feed_url: 
+        type: string
+      paginated:
+        type: string
+      fetch_type:
+        type: array
+        items:
+          type: string
+      uid_endpoints:
+        type: string
+        
+  FeedsWeights:
+    type: object
+    properties:
+      type:
+        type: string
+      feed_url: 
+        type: string
+      weight_type:
+        type: string
+      group_type:
+        type: string
 
   TopologyResponse:
     type: object

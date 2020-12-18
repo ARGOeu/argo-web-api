@@ -217,6 +217,36 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"resource": "tenants.create_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.update_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.list_users",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.delete_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.get_user",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "tenants.user_refresh_token",
+			"roles":    []string{"super_admin"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "tenants.get_status",
 			"roles":    []string{"super_admin"},
 		})
@@ -882,6 +912,296 @@ func (suite *TenantTestSuite) TestUpdateTenant() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+// TestTenantCreateUser test the utility call of adding a new user to the tenant
+func (suite *TenantTestSuite) TestTenantCreateUser() {
+
+	// create json input data for the request
+	putData := `
+  {
+    "name":"new_user",
+    "email":"new_user@email.com",
+    "roles": [
+        "admin"
+    ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "User was successfully created",
+  "code": "201"
+ },
+ "data": {
+  "id": "{{ID}}",
+  "links": {
+   "self": "https:///api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/{{ID}}"
+  }
+ }
+}`
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result Tenant
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	user := result.Users[len(result.Users)-1]
+
+	suite.Equal(201, code, "Internal Server Error")
+	//Compare the expected and actual xml response
+	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", user.ID, 2), output, "Response body mismatch")
+
+}
+
+// TestListTenantUsers returns a list of all available users in a specific tenant
+func (suite *TenantTestSuite) TestListTenantUsers() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "acb74194-553a-11e9-8647-d663bd873d93",
+   "name": "cap",
+   "email": "cap@email.com",
+   "api_key": "C4PK3Y",
+   "roles": [
+    "admin",
+    "admin_ui"
+   ]
+  },
+  {
+   "id": "acb74432-553a-11e9-8647-d663bd873d93",
+   "name": "thor",
+   "email": "thor@email.com",
+   "api_key": "TH0RK3Y",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+// TestGetTenantUser returns info on a specific user in a specific tenant
+func (suite *TenantTestSuite) TestGetTenantUser() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74432-553a-11e9-8647-d663bd873d93", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "acb74432-553a-11e9-8647-d663bd873d93",
+   "name": "thor",
+   "email": "thor@email.com",
+   "api_key": "TH0RK3Y",
+   "roles": [
+    "admin"
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+// TestTenantUpdateUser test the utility call of updating a new user tha belongs to the tenant
+func (suite *TenantTestSuite) TestTenantUpdateUser() {
+
+	// create json input data for the request
+	putData := `
+  {
+    "name": "updated_username",
+    "email":"updated@email.com",
+    "roles": [
+        "admin", "viewer"
+    ]
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "User succesfully updated",
+  "code": "200"
+ }
+}`
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74194-553a-11e9-8647-d663bd873d93", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result Tenant
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	found := false
+	for _, usr := range result.Users {
+		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
+			found = true
+			suite.Equal("updated@email.com", usr.Email, "Email not updated")
+			suite.Equal("updated_username", usr.Name, "name not updated")
+		}
+
+	}
+
+	suite.Equal(true, found, "updated user issue")
+	suite.Equal(200, code, "Internal Server Error")
+	//Compare the expected and actual xml response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+// TestTenantDeleteUser test the call of deleting a user from tenant
+func (suite *TenantTestSuite) TestTenantDeleteUser() {
+
+	jsonOutput := `{
+ "status": {
+  "message": "User succesfully deleted",
+  "code": "200"
+ }
+}`
+	request, _ := http.NewRequest("DELETE", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74194-553a-11e9-8647-d663bd873d93", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result Tenant
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	found := false
+	for _, usr := range result.Users {
+		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
+			found = true
+		}
+
+	}
+
+	suite.Equal(false, found, "deleted user issue")
+	suite.Equal(200, code, "Internal Server Error")
+	//Compare the expected and actual xml response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+// TestTenantRefreshUserToken tests the request to refresh a user token
+func (suite *TenantTestSuite) TestTenantRefreshUserToken() {
+
+	jsonOutput := `{
+ "status": {
+  "message": "User api key succesfully renewed",
+  "code": "200"
+ },
+ "data": {
+  "api_key": "{{APIKEY}}"
+ }
+}`
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/users/acb74194-553a-11e9-8647-d663bd873d93/renew_api_key", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// check that the element has actually been Deleted
+	// connect to mongodb
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+	// try to retrieve item
+	var result Tenant
+	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
+	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+
+	token := ""
+	for _, usr := range result.Users {
+		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
+			token = usr.APIkey
+		}
+	}
+
+	suite.Equal(200, code, "Internal Server Error")
+	//Compare the expected and actual xml response
+	suite.Equal(strings.Replace(jsonOutput, "{{APIKEY}}", token, 1), output, "Response body mismatch")
 
 }
 

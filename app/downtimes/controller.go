@@ -12,12 +12,12 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
-	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 //Create a new downtimes resource
-const downtimeCol = "downtimes"
+const downtimeColName = "downtimes"
 
 func prepMultiQuery(dt int, name string) interface{} {
 
@@ -50,6 +50,16 @@ func prepMultiQuery(dt int, name string) interface{} {
 		},
 	}
 
+}
+
+func getCloseDate(c *mgo.Collection, dt int) int {
+	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	result := Downtimes{}
+	err := c.Find(dateQuery).One(&result)
+	if err != nil {
+		return -1
+	}
+	return result.DateInt
 }
 
 func prepQuery(dt int, id string) interface{} {
@@ -103,6 +113,25 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		panic(err)
 	}
 
+	// check if topology already exists for current day
+
+	existing := Downtimes{}
+	downtimeCol := session.DB(tenantDbConfig.Db).C(downtimeColName)
+	err = downtimeCol.Find(bson.M{"date_integer": dt}).One(&existing)
+	if err != nil {
+		// Stop at any error except not found. We want to have not found
+		if err.Error() != "not found" {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+		// else continue correctly -
+	} else {
+		// If found we need to inform user that the downtimes set is already created for this date
+		output, err = createMsgView(fmt.Sprintf("Downtimes already exists for date: %s, please either update it or delete it first!", dateStr), 409)
+		code = 409
+		return code, h, output, err
+	}
+
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
@@ -110,105 +139,15 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// check if the downtimes resource name is unique
-	results := []Downtimes{}
-	query := bson.M{"name": incoming.Name}
-
-	err = mongo.Find(session, tenantDbConfig.Db, downtimeCol, query, "", &results)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// If results are returned for the specific name
-	// then we already have an existing report and we must
-	// abort creation notifying the user
-	if len(results) > 0 {
-		output, _ = respond.MarshalContent(respond.ErrConflict("Downtimes resource with the same name already exists"), contentType, "", " ")
-		code = http.StatusConflict
-		return code, h, output, err
-	}
-
-	// Generate new downtimes id
-	incoming.ID = mongo.NewUUID()
-
-	err = mongo.Insert(session, tenantDbConfig.Db, downtimeCol, incoming)
+	err = mongo.Insert(session, tenantDbConfig.Db, downtimeColName, incoming)
 
 	if err != nil {
 		panic(err)
 	}
 
 	// Create view of the results
-	output, err = createRefView(incoming, "Downtimes resource succesfully created", 201, r) //Render the results into JSON
+	output, err = createMsgView(fmt.Sprintf("Downtimes set created for date: %s", dateStr), 201) //Render the results into JSON
 	code = 201
-	return code, h, output, err
-}
-
-// ListOne handles the listing of one weight resource based on its given id
-func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-
-	//STANDARD DECLARATIONS START
-
-	code := http.StatusOK
-	h := http.Header{}
-	output := []byte("")
-	err := error(nil)
-	charset := "utf-8"
-
-	//STANDARD DECLARATIONS END
-
-	// Set Content-Type response Header value
-	contentType := r.Header.Get("Accept")
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	vars := mux.Vars(r)
-	urlValues := r.URL.Query()
-	dateStr := urlValues.Get("date")
-
-	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// Retrieve Results from database
-	result := Downtimes{}
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-	dQuery := prepQuery(dt, vars["ID"])
-
-	dCol := session.DB(tenantDbConfig.Db).C(downtimeCol)
-	err = dCol.Find(dQuery).One(&result)
-	if err != nil {
-		if err.Error() == "not found" {
-			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-			code = 404
-			return code, h, output, err
-		}
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// Create view of the results
-	output, err = createListView([]Downtimes{result}, "Success", code) //Render the results into JSON
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
 }
 
@@ -231,7 +170,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
-	name := urlValues.Get("name")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -251,9 +189,16 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
-	dQuery := prepMultiQuery(dt, name)
 
-	dCol := session.DB(tenantDbConfig.Db).C(downtimeCol)
+	dCol := session.DB(tenantDbConfig.Db).C(downtimeColName)
+
+	expDate := getCloseDate(dCol, dt)
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -261,7 +206,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	results := []Downtimes{}
-	err = dCol.Pipe(dQuery).All(&results)
+	err = dCol.Find(bson.M{"date_integer": expDate}).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -276,120 +221,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	return code, h, output, err
-}
-
-//Update function to update contents of an existing weights resource
-func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
-	//STANDARD DECLARATIONS START
-	code := http.StatusOK
-	h := http.Header{}
-	output := []byte("")
-	err := error(nil)
-	charset := "utf-8"
-	//STANDARD DECLARATIONS END
-
-	// Set Content-Type response Header value
-	contentType := r.Header.Get("Accept")
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-
-	vars := mux.Vars(r)
-	urlValues := r.URL.Query()
-	dateStr := urlValues.Get("date")
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	incoming := Downtimes{}
-	incoming.DateInt = dt
-	incoming.Date = dateStr
-
-	// ingest body data
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
-	if err != nil {
-		panic(err)
-	}
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-	// parse body json
-	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
-		code = 400
-		return code, h, output, err
-	}
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-	// create filter to retrieve specific downtimes resource with id
-	filter := bson.M{"id": vars["ID"], "date_integer": bson.M{"$lte": dt}}
-
-	incoming.ID = vars["ID"]
-
-	// Retrieve Results from database
-	results := []Downtimes{}
-	err = mongo.Find(session, tenantDbConfig.Db, downtimeCol, filter, "name", &results)
-
-	if err != nil {
-		panic(err)
-	}
-
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
-	// check if the downtimes resource name is unique
-	if incoming.Name != results[0].Name {
-
-		results = []Downtimes{}
-		query := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
-
-		err = mongo.Find(session, tenantDbConfig.Db, downtimeCol, query, "", &results)
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		// If results are returned for the specific name
-		// then we already have an existing downtimes resource and we must
-		// abort creation notifying the user
-		if len(results) > 0 {
-			output, _ = respond.MarshalContent(respond.ErrConflict("Downtimes resource with the same name already exists"), contentType, "", " ")
-			code = http.StatusConflict
-			return code, h, output, err
-		}
-	}
-	// run the update query
-	dCol := session.DB(tenantDbConfig.Db).C(downtimeCol)
-	info, err := dCol.Upsert(bson.M{"id": vars["ID"], "date_integer": dt}, incoming)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	updMsg := "Downtimes resource successfully updated"
-
-	if info.Updated <= 0 {
-		updMsg = "Downtimes resource successfully updated (new history snapshot)"
-	}
-
-	// Create view for response message
-	output, err = createMsgView(updMsg, 200) //Render the results into JSON
-	code = 200
 	return code, h, output, err
 }
 
@@ -410,7 +241,15 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	vars := mux.Vars(r)
+	urlValues := r.URL.Query()
+
+	dateStr := urlValues.Get("date")
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -426,45 +265,29 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	defer mongo.CloseSession(session)
 
 	if err != nil {
+
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	filter := bson.M{"id": vars["ID"]}
-
-	// Retrieve Results from database
-	results := []Downtimes{}
-	err = mongo.Find(session, tenantDbConfig.Db, downtimeCol, filter, "name", &results)
-
+	dCol := session.DB(tenantDbConfig.Db).C(downtimeColName)
+	err = dCol.Remove(bson.M{"date_integer": dt})
 	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+		if err.Error() == "not found" {
+			output, err = createMsgView(fmt.Sprintf("Downtimes dataset not found for date: %s", dateStr), 404)
+			code = http.StatusNotFound
+			return code, h, output, err
 
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
+		}
 
-	mongo.Remove(session, tenantDbConfig.Db, downtimeCol, filter)
-
-	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
 	// Create view of the results
-	output, err = createMsgView("Downtimes resource successfully deleted", 200) //Render the results into JSON
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	output, err = createMsgView(fmt.Sprintf("Downtimes set deleted for date: %s", dateStr), 200)
 	return code, h, output, err
+
 }
 
 // Options request handler

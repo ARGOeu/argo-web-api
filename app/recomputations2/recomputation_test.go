@@ -432,6 +432,205 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
 
 }
 
+func (suite *RecomputationsProfileTestSuite) TestListRecomputationsWithPeriodA() {
+
+	urls := []string{
+		"/api/v2/recomputations?date=2015-01-10",
+		"/api/v2/recomputations?date=2015-01-11",
+		"/api/v2/recomputations?date=2015-01-14",
+		"/api/v2/recomputations?date=2015-01-16",
+		"/api/v2/recomputations?date=2015-01-20",
+		"/api/v2/recomputations?date=2015-01-29",
+		"/api/v2/recomputations?date=2015-01-30",
+	}
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
+   "requester_name": "Arya Stark",
+   "requester_email": "astark@shadowguild.com",
+   "reason": "power cuts",
+   "start_time": "2015-01-10T12:00:00Z",
+   "end_time": "2015-01-30T23:00:00Z",
+   "report": "EGI_Critical",
+   "exclude": [
+    "SITE2",
+    "SITE4"
+   ],
+   "status": "running",
+   "timestamp": "2015-02-01T14:58:40Z",
+   "history": [
+    {
+     "status": "pending",
+     "timestamp": "2015-02-01T14:58:40Z"
+    },
+    {
+     "status": "running",
+     "timestamp": "2015-02-01T16:58:40Z"
+    }
+   ]
+  }
+ ]
+}`
+
+	for _, url := range urls {
+		request, _ := http.NewRequest("GET", url, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(200, code, "Internal Server Error")
+		// Compare the expected and actual xml response
+		suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+	}
+
+}
+
+func (suite *RecomputationsProfileTestSuite) TestListRecomputationsWithPeriodB() {
+
+	urls := []string{
+		"/api/v2/recomputations?date=2015-03-10",
+		"/api/v2/recomputations?date=2015-03-11",
+		"/api/v2/recomputations?date=2015-03-14",
+		"/api/v2/recomputations?date=2015-03-16",
+		"/api/v2/recomputations?date=2015-03-20",
+		"/api/v2/recomputations?date=2015-03-29",
+		"/api/v2/recomputations?date=2015-03-30",
+	}
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+   "requester_name": "John Snow",
+   "requester_email": "jsnow@wall.com",
+   "reason": "reasons",
+   "start_time": "2015-03-10T12:00:00Z",
+   "end_time": "2015-03-30T23:00:00Z",
+   "report": "EGI_Critical",
+   "exclude": [
+    "SITE1",
+    "SITE3"
+   ],
+   "status": "pending",
+   "timestamp": "2015-04-01T14:58:40Z",
+   "history": [
+    {
+     "status": "pending",
+     "timestamp": "2015-04-01T14:58:40Z"
+    }
+   ]
+  }
+ ]
+}`
+
+	for _, url := range urls {
+		request, _ := http.NewRequest("GET", url, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(200, code, "Internal Server Error")
+		// Compare the expected and actual xml response
+		suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+	}
+
+}
+
+func (suite *RecomputationsProfileTestSuite) TestListRecomputationsWithPeriodC() {
+	urls := []string{
+		"/api/v2/recomputations?date=2015-01-01",
+		"/api/v2/recomputations?date=2015-01-09",
+		"/api/v2/recomputations?date=2015-02-14",
+		"/api/v2/recomputations?date=2015-02-16",
+		"/api/v2/recomputations?date=2015-04-20",
+		"/api/v2/recomputations?date=2015-04-29",
+		"/api/v2/recomputations?date=2015-05-30",
+		"/api/v2/recomputations?date=2015-01-30&report=Foo",
+		"/api/v2/recomputations?date=2015-03-15&report=Bar",
+	}
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": []
+}`
+
+	for _, url := range urls {
+		request, _ := http.NewRequest("GET", url, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(200, code, "Internal Server Error")
+		// Compare the expected and actual xml response
+		suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+	}
+
+}
+
+func (suite *RecomputationsProfileTestSuite) TestListRecomputationsWithPeriodError() {
+	request, _ := http.NewRequest("GET", "/api/v2/recomputations?date=2020-03-303", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "date argument should be in the YYYY-MM-DD format"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(400, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(recomputationRequestsJSON, output, "Response body mismatch")
+
+}
+
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	submission := IncomingRecomputation{
 		StartTime:      "2015-01-10T12:00:00Z",

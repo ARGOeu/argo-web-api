@@ -23,7 +23,6 @@
 package statusEndpoints
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -783,7 +782,6 @@ func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
 	suite.Equal(200, response.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 }
 

@@ -55,15 +55,27 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	urlValues := r.URL.Query()
+	// date argument expected in the format YYYY-MM-DD
+	qDate := urlValues.Get("date")
+	qReport := urlValues.Get("report")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
-	filter := IncomingRecomputation{
-		StartTime: urlValues.Get("start_time"),
-		EndTime:   urlValues.Get("end_time"),
-		Reason:    urlValues.Get("reason"),
-		Report:    urlValues.Get("report"),
+	filter := bson.M{}
+
+	// check if there are relevant recomputations for given date
+	if qDate != "" {
+		if respond.ValidateDateOnly(qDate) != nil {
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails("date argument should be in the YYYY-MM-DD format"), contentType, "", " ")
+			code = http.StatusBadRequest
+			return code, h, output, err
+		}
+
+		filter["$where"] = fmt.Sprintf("'%s' >= this.start_time.split('T')[0] && '%s' <= this.end_time.split('T')[0]", qDate, qDate)
+	}
+	if qReport != "" {
+		filter["report"] = qReport
 	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)

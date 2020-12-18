@@ -187,7 +187,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 	c.EnsureIndexKey("-date_integer", "id")
 	c.Insert(
 		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+
 			"date_integer": 20191011,
 			"date":         "2019-10-11",
 			"name":         "Critical",
@@ -199,7 +199,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+
 			"date_integer": 20191012,
 			"date":         "2019-10-12",
 			"name":         "Critical",
@@ -211,7 +211,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+
 			"date_integer": 20191013,
 			"date":         "2019-10-13",
 			"name":         "Critical",
@@ -219,35 +219,6 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-13T04:00:33Z", "end_time": "2019-10-13T15:33:00Z"},
 				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-13T12:00:33Z", "end_time": "2019-10-13T12:33:00Z"},
 				bson.M{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-13T20:00:33Z", "end_time": "2019-10-13T22:15:00Z"},
-			},
-		})
-	c.Insert(
-		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"date_integer": 20191011,
-			"date":         "2019-10-11",
-			"name":         "NonCritical",
-			"endpoints": []bson.M{
-				bson.M{"hostname": "host-01", "service": "service-01", "start_time": "2019-10-11T02:00:33Z", "end_time": "2019-10-11T23:33:00Z"},
-				bson.M{"hostname": "host-02", "service": "service-02", "start_time": "2019-10-11T16:00:33Z", "end_time": "2019-10-11T16:45:00Z"},
-			},
-		})
-	c.Insert(
-		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"date_integer": 20191012,
-			"date":         "2019-10-12",
-			"name":         "NonCritical",
-			"endpoints":    []bson.M{},
-		})
-	c.Insert(
-		bson.M{
-			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-			"date_integer": 20191013,
-			"date":         "2019-10-13",
-			"name":         "NonCritical",
-			"endpoints": []bson.M{
-				bson.M{"hostname": "host-01", "service": "service-01", "start_time": "2019-10-13T02:00:33Z", "end_time": "2019-10-13T23:33:00Z"},
 			},
 		})
 
@@ -319,9 +290,7 @@ func (suite *DowntimesTestSuite) TestBadDate() {
 
 	requests := []reqHeader{
 		reqHeader{Method: "GET", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
-		reqHeader{Method: "GET", Path: "/api/v2/downtimes/some-uuid?date=2020-02", Data: ""},
 		reqHeader{Method: "POST", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
-		reqHeader{Method: "PUT", Path: "/api/v2/downtimes/some-id?date=2020-02", Data: ""},
 	}
 
 	for _, r := range requests {
@@ -355,14 +324,8 @@ func (suite *DowntimesTestSuite) TestCreate() {
 
 	jsonOutput := `{
  "status": {
-  "message": "Downtimes resource succesfully created",
+  "message": "Downtimes set created for date: 2019-11-29",
   "code": "201"
- },
- "data": {
-  "id": "{{id}}",
-  "links": {
-   "self": "https:///api/v2/downtimes/{{id}}"
-  }
  }
 }`
 
@@ -373,9 +336,7 @@ func (suite *DowntimesTestSuite) TestCreate() {
  },
  "data": [
   {
-   "id": "{{id}}",
    "date": "2019-11-29",
-   "name": "downtimes_set",
    "endpoints": [
     {
      "hostname": "new-host-foo",
@@ -406,25 +367,10 @@ func (suite *DowntimesTestSuite) TestCreate() {
 	// Check that we must have a 200 ok code
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Resonse Body Mismatch")
 
-	// Grab id from mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-	// Retrieve id from database
-	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("downtimes")
-	c.Find(bson.M{"name": "downtimes_set"}).One(&result)
-	id := result["id"].(string)
-
-	// Apply id to output template and check
-	suite.Equal(strings.Replace(jsonOutput, "{{id}}", id, 2), output, "Response body mismatch")
-
-	// Check that actually the item has been created
 	// Call List one with the specific id
-	request2, _ := http.NewRequest("GET", "/api/v2/downtimes/"+id, strings.NewReader(jsonInput))
+	request2, _ := http.NewRequest("GET", "/api/v2/downtimes?date=2019-11-29", strings.NewReader(jsonInput))
 	request2.Header.Set("x-api-key", suite.clientkey)
 	request2.Header.Set("Accept", "application/json")
 	response2 := httptest.NewRecorder()
@@ -436,7 +382,7 @@ func (suite *DowntimesTestSuite) TestCreate() {
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
-	suite.Equal(strings.Replace(jsonCreated, "{{id}}", id, 2), output2, "Response body mismatch")
+	suite.Equal(jsonCreated, output2, "Response body mismatch")
 
 }
 
@@ -459,9 +405,7 @@ func (suite *DowntimesTestSuite) TestList() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-13",
-   "name": "Critical",
    "endpoints": [
     {
      "hostname": "host-A",
@@ -480,19 +424,6 @@ func (suite *DowntimesTestSuite) TestList() {
      "service": "service-C",
      "start_time": "2019-10-13T20:00:33Z",
      "end_time": "2019-10-13T22:15:00Z"
-    }
-   ]
-  },
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-13",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-13T02:00:33Z",
-     "end_time": "2019-10-13T23:33:00Z"
     }
    ]
   }
@@ -524,9 +455,7 @@ func (suite *DowntimesTestSuite) TestListPast() {
  },
  "data": [
   {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
    "date": "2019-10-11",
-   "name": "Critical",
    "endpoints": [
     {
      "hostname": "host-A",
@@ -545,25 +474,6 @@ func (suite *DowntimesTestSuite) TestListPast() {
      "service": "service-C",
      "start_time": "2019-10-11T20:00:33Z",
      "end_time": "2019-10-11T22:15:00Z"
-    }
-   ]
-  },
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-10-11",
-   "name": "NonCritical",
-   "endpoints": [
-    {
-     "hostname": "host-01",
-     "service": "service-01",
-     "start_time": "2019-10-11T02:00:33Z",
-     "end_time": "2019-10-11T23:33:00Z"
-    },
-    {
-     "hostname": "host-02",
-     "service": "service-02",
-     "start_time": "2019-10-11T16:00:33Z",
-     "end_time": "2019-10-11T16:45:00Z"
     }
    ]
   }
@@ -630,323 +540,18 @@ func (suite *DowntimesTestSuite) TearDownTest() {
 
 }
 
-func (suite *DowntimesTestSuite) TestListOneNotFound() {
-
-	jsonInput := `{}`
-
-	jsonOutput := `{
- "status": {
-  "message": "Not Found",
-  "code": "404"
- },
- "errors": [
-  {
-   "message": "Not Found",
-   "code": "404",
-   "details": "item with the specific ID was not found on the server"
-  }
- ]
-}`
-
-	request, _ := http.NewRequest("GET", "/api/v2/downtimes/wrong-id", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-	// Check that we must have a 200 ok code
-	suite.Equal(404, code, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	suite.Equal(jsonOutput, output, "Response body mismatch")
-
-}
-
-func (suite *DowntimesTestSuite) TestListOne() {
-
-	request, _ := http.NewRequest("GET", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-
-	downtimesJSON := `{
- "status": {
-  "message": "Success",
-  "code": "200"
- },
- "data": [
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "date": "2019-10-13",
-   "name": "Critical",
-   "endpoints": [
-    {
-     "hostname": "host-A",
-     "service": "service-A",
-     "start_time": "2019-10-13T04:00:33Z",
-     "end_time": "2019-10-13T15:33:00Z"
-    },
-    {
-     "hostname": "host-B",
-     "service": "service-B",
-     "start_time": "2019-10-13T12:00:33Z",
-     "end_time": "2019-10-13T12:33:00Z"
-    },
-    {
-     "hostname": "host-C",
-     "service": "service-C",
-     "start_time": "2019-10-13T20:00:33Z",
-     "end_time": "2019-10-13T22:15:00Z"
-    }
-   ]
-  }
- ]
-}`
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual json response
-	suite.Equal(downtimesJSON, output, "Response body mismatch")
-
-}
-
-func (suite *DowntimesTestSuite) TestUpdateNameAlreadyExists() {
-
-	jsonInput := `{
-  
-   "name": "Critical",
-   "endpoints": [
-    {
-     "hostname": "host-A",
-     "service": "service-A",
-     "start_time": "2019-10-11T04:00:33Z",
-     "end_time": "2019-10-11T15:33:00Z"
-    },
-    {
-     "hostname": "host-B",
-     "service": "service-B",
-     "start_time": "2019-10-11T12:00:33Z",
-     "end_time": "2019-10-11T12:33:00Z"
-    },
-    {
-     "hostname": "host-C",
-     "service": "service-C",
-     "start_time": "2019-10-11T20:00:33Z",
-     "end_time": "2019-10-11T22:15:00Z"
-    }
-   ]
-  }`
-
-	jsonOutput := `{
- "status": {
-  "message": "Conflict",
-  "code": "409"
- },
- "errors": [
-  {
-   "message": "Conflict",
-   "code": "409",
-   "details": "Downtimes resource with the same name already exists"
-  }
- ]
-}`
-
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-
-	suite.Equal(409, code)
-	suite.Equal(jsonOutput, output)
-
-}
-
-func (suite *DowntimesTestSuite) TestUpdateBadJson() {
-
-	jsonInput := `{
-		"name": "downtimes_set",
-		"endpoints": [
-	
-`
-
-	jsonOutput := `{
- "status": {
-  "message": "Bad Request",
-  "code": "400"
- },
- "errors": [
-  {
-   "message": "Bad Request",
-   "code": "400",
-   "details": "Request Body contains malformed JSON, thus rendering the Request Bad"
-  }
- ]
-}`
-
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-	// Check that we must have a 200 ok code
-	suite.Equal(400, code, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	suite.Equal(jsonOutput, output, "Response body mismatch")
-
-}
-
-func (suite *DowntimesTestSuite) TestUpdateNotFound() {
-
-	jsonInput := `{}`
-
-	jsonOutput := `{
- "status": {
-  "message": "Not Found",
-  "code": "404"
- },
- "errors": [
-  {
-   "message": "Not Found",
-   "code": "404",
-   "details": "item with the specific ID was not found on the server"
-  }
- ]
-}`
-
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/wrong-id", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-	// Check that we must have a 200 ok code
-	suite.Equal(404, code, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	suite.Equal(jsonOutput, output, "Response body mismatch")
-
-}
-
-func (suite *DowntimesTestSuite) TestUpdate() {
-
-	jsonInput := `{
-   "name": "downtimes_set",
-   "endpoints": [
-	{"hostname":"updated-host-foo","service":"service-new-foo","start_time":"2019-11-30T23:10:00Z","end_time":"2019-11-30T23:25:00Z"},
-	{"hostname":"updated-host-bar","service":"service-new-bar","start_time":"2019-11-30T23:40:00Z","end_time":"2019-11-30T23:55:00Z"}
-  ]
- }`
-
-	jsonOutput := `{
- "status": {
-  "message": "Downtimes resource successfully updated (new history snapshot)",
-  "code": "200"
- }
-}`
-
-	jsonUpdated := `{
- "status": {
-  "message": "Success",
-  "code": "200"
- },
- "data": [
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
-   "date": "2019-11-30",
-   "name": "downtimes_set",
-   "endpoints": [
-    {
-     "hostname": "updated-host-foo",
-     "service": "service-new-foo",
-     "start_time": "2019-11-30T23:10:00Z",
-     "end_time": "2019-11-30T23:25:00Z"
-    },
-    {
-     "hostname": "updated-host-bar",
-     "service": "service-new-bar",
-     "start_time": "2019-11-30T23:40:00Z",
-     "end_time": "2019-11-30T23:55:00Z"
-    }
-   ]
-  }
- ]
-}`
-
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c?date=2019-11-30", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	// Apply id to output template and check
-	suite.Equal(jsonOutput, output, "Response body mismatch")
-
-	// Check that the item has actually updated
-	// run a list specific
-	request2, _ := http.NewRequest("GET", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(jsonInput))
-	request2.Header.Set("x-api-key", suite.clientkey)
-	request2.Header.Set("Accept", "application/json")
-	response2 := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response2, request2)
-
-	code2 := response2.Code
-	output2 := response2.Body.String()
-	// Check that we must have a 200 ok code
-	suite.Equal(200, code2, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	suite.Equal(jsonUpdated, output2, "Response body mismatch")
-
-}
-
 func (suite *DowntimesTestSuite) TestDeleteNotFound() {
 
 	jsonInput := `{}`
 
 	jsonOutput := `{
  "status": {
-  "message": "Not Found",
+  "message": "Downtimes dataset not found for date: 2020-02-11",
   "code": "404"
- },
- "errors": [
-  {
-   "message": "Not Found",
-   "code": "404",
-   "details": "item with the specific ID was not found on the server"
-  }
- ]
+ }
 }`
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes/wrong-id", strings.NewReader(jsonInput))
+	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes?date=2020-02-11", strings.NewReader(jsonInput))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -965,7 +570,7 @@ func (suite *DowntimesTestSuite) TestDeleteNotFound() {
 
 func (suite *DowntimesTestSuite) TestDelete() {
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes?date=2019-10-11", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -977,7 +582,7 @@ func (suite *DowntimesTestSuite) TestDelete() {
 
 	metricProfileJSON := `{
  "status": {
-  "message": "Downtimes resource successfully deleted",
+  "message": "Downtimes set deleted for date: 2019-10-11",
   "code": "200"
  }
 }`
@@ -996,10 +601,42 @@ func (suite *DowntimesTestSuite) TestDelete() {
 	// try to retrieve item
 	var result map[string]interface{}
 	c := session.DB(suite.tenantDbConf.Db).C("downtimes")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	err = c.Find(bson.M{"date_integer": 20191011}).One(&result)
+	// suite.NotEqual(err, nil, "No not found error")
+	// suite.Equal(err.Error(), "not found", "No not found error")
+}
 
-	suite.NotEqual(err, nil, "No not found error")
-	suite.Equal(err.Error(), "not found", "No not found error")
+func (suite *DowntimesTestSuite) TestCreateDateConflict() {
+
+	jsonInput := `{
+		"name": "downtimes_set",
+		"endpoints": [
+		 {"hostname":"new-host-foo","service":"service-new-foo","start_time":"2019-10-11T23:10:00Z","end_time":"2019-10-11T23:20:00Z"},
+		 {"hostname":"new-host-bar","service":"service-new-bar","start_time":"2019-10-11T23:40:00Z","end_time":"2019-10-11T23:50:00Z"}
+	   ]
+	  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Downtimes already exists for date: 2019-10-11, please either update it or delete it first!",
+  "code": "409"
+ }
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/downtimes?date=2019-10-11", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 409 code
+	suite.Equal(409, code, "Internal Server Error")
+	// Compare the expected and actual json response
+
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 }
 
 func (suite *DowntimesTestSuite) TestCreateForbidViewer() {
@@ -1032,37 +669,9 @@ func (suite *DowntimesTestSuite) TestCreateForbidViewer() {
 	suite.Equal(jsonOutput, output, "Response body mismatch")
 }
 
-func (suite *DowntimesTestSuite) TestUpdateForbidViewer() {
-
-	jsonInput := `{}`
-
-	jsonOutput := `{
- "status": {
-  "message": "Access to the resource is Forbidden",
-  "code": "403"
- }
-}`
-
-	request, _ := http.NewRequest("PUT", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e007", strings.NewReader(jsonInput))
-	request.Header.Set("x-api-key", "VIEWERKEY")
-	request.Header.Set("Accept", "application/json")
-	response := httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-
-	code := response.Code
-	output := response.Body.String()
-	// Check that we must have a 200 ok code
-	suite.Equal(403, code, "Internal Server Error")
-	// Compare the expected and actual json response
-
-	suite.Equal(jsonOutput, output, "Response body mismatch")
-
-}
-
 func (suite *DowntimesTestSuite) TestDeleteForbidViewer() {
 
-	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes/6ac7d684-1f8e-4a02-a502-720e8f11e50b", strings.NewReader(""))
+	request, _ := http.NewRequest("DELETE", "/api/v2/downtimes?date=2019-10-11", strings.NewReader(""))
 	request.Header.Set("x-api-key", "VIEWERKEY")
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
