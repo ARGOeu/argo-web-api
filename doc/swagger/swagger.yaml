@@ -1958,6 +1958,35 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
+  /topology/tags:
+    get:
+      summary: "List topology tags and values"
+      description: "This request lists the available tags and their distinct values present in the daily topology items"
+      operationId: topology.tags
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/topoDate"
+
+      responses:
+        200:
+          description: "Successful retrieval of latest metric data"
+          schema:
+            $ref: "#/definitions/TopologyTags_list"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+          
   /topology/groups:
     post:
       summary: Create a new group topology per date
@@ -5084,6 +5113,38 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/User'
+          
+          
+  TopologyTags_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/TopologyTags'
+    
+  
+  TopologyTags:
+    type: array
+    items:
+      type: object
+      properties:
+        name: 
+          type: string
+        values:
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+              
 
   User:
     type: object

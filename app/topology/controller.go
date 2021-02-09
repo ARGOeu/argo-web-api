@@ -28,6 +28,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
@@ -149,6 +150,97 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	}
 
 	return code, h, output, err
+}
+
+// ListTopoTags list statistics the distinct values appearing for each tag in topology items
+func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	urlValues := r.URL.Query()
+	dateStr := urlValues.Get("date")
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Open session to tenant database
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	colEndpoint := session.DB(tenantDbConfig.Db).C(endpointColName)
+	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
+
+	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+
+	expDate := getCloseDate(colEndpoint, dt)
+
+	resTagsEndpoint := []TagValues{}
+	resTagsGroup := []TagValues{}
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	err = colEndpoint.Pipe(prepTagAggr(expDate)).All(&resTagsEndpoint)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	expDate = getCloseDate(colGroup, dt)
+
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	err = colGroup.Pipe(prepTagAggr(expDate)).All(&resTagsGroup)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// sort unique tag values in each tag occurence
+	for _, tg := range resTagsEndpoint {
+		sort.Strings(tg.Values)
+	}
+
+	for _, tg := range resTagsGroup {
+		sort.Strings(tg.Values)
+	}
+
+	resTags := []TagInfo{{Name: "endpoints", Values: resTagsEndpoint}, {Name: "groups", Values: resTagsGroup}}
+
+	output, err = createListTags(resTags, "Success", code) //Render the results into JSON
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+
 }
 
 // ListEndpoints by date
@@ -614,6 +706,23 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 	}
 
 	return query
+}
+
+func prepTagAggr(date int) []bson.M {
+
+	aggr := []bson.M{
+		{"$match": bson.M{"date_integer": date}},
+		{"$project": bson.M{"_id": 0, "tags": bson.M{"$objectToArray": "$tags"}}},
+		{"$unwind": "$tags"},
+		{"$replaceRoot": bson.M{"newRoot": "$tags"}},
+		{"$project": bson.M{"k": "$k", "v": bson.M{"$split": []string{"$v", ", "}}}},
+		{"$unwind": "$v"},
+		{"$group": bson.M{"_id": "$k", "v": bson.M{"$addToSet": "$v"}}},
+		{"$sort": bson.M{"_id": 1}},
+	}
+
+	return aggr
+
 }
 
 func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
