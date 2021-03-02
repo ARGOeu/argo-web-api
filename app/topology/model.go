@@ -85,3 +85,15 @@ type Group struct {
 	Subgroup  string            `bson:"subgroup" json:"subgroup"`
 	Tags      map[string]string `bson:"tags" json:"tags"`
 }
+
+// TagInfo groups all tags for a topology type
+type TagInfo struct {
+	Name   string      `json:"name"`
+	Values []TagValues `json:"values"`
+}
+
+// TagValues holds each value appearing for each tag
+type TagValues struct {
+	Name   string   `bson:"_id" json:"name"`
+	Values []string `bson:"v" json:"values"`
+}
