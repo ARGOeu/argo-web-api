@@ -445,6 +445,25 @@ func (suite *ReportTestSuite) SetupTest() {
 						}}},
 			}})
 
+	// Seed database with weights
+	c = session.DB(suite.tenantDbConf.Db).C("weights")
+	c.EnsureIndexKey("-date_integer", "id")
+	c.Insert(
+		bson.M{
+			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e533",
+			"name":         "Critical",
+			"date_integer": 20191004,
+			"date":         "2019-10-04",
+			"weight_type":  "hepsepc",
+			"group_type":   "SITES",
+			"groups": []bson.M{
+				bson.M{"name": "SITE-A", "value": 1673},
+				bson.M{"name": "SITE-B", "value": 1234},
+				bson.M{"name": "SITE-C", "value": 523},
+				bson.M{"name": "SITE-D", "value": 2},
+			},
+		})
+
 	// Now seed the report DEFINITIONS
 	c = session.DB(suite.tenantDbConf.Db).C(reportsColl)
 	c.Insert(bson.M{
@@ -526,6 +545,95 @@ func (suite *ReportTestSuite) SetupTest() {
 		}})
 }
 
+func (suite *ReportTestSuite) TestCreateReportWrongProfileType() {
+
+	// create json input data for the request
+	postData := `{
+    "info": {
+        "name": "Foo_Report",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric_wrong"
+            
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations"
+         
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation"
+            
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e533",
+			"type": "weight_wrong"
+		}
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	responseJSON := `{
+ "status": {
+  "message": "Unprocessable Entity",
+  "code": "422"
+ },
+ "errors": [
+  {
+   "message": "Profile type invalid",
+   "code": "422",
+   "details": "Profile type metric_wrong is invalid"
+  },
+  {
+   "message": "Profile type invalid",
+   "code": "422",
+   "details": "Profile type weight_wrong is invalid"
+  }
+ ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("POST", "https://myapi.test.com/api/v2/reports", strings.NewReader(postData))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 422 error code
+	suite.Equal(422, code, "Incorrect Error Code")
+	// Compare the expected and actual xml response
+	suite.Equal(responseJSON, output, "Response body mismatch")
+}
+
 // TestCreateReport function implements testing the http POST create report request.
 // Request requires admin authentication and gets as input a json body containing
 // all the available information to be added to the datastore
@@ -550,19 +658,23 @@ func (suite *ReportTestSuite) TestCreateReport() {
 	"profiles": [
         {
 			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-            "type": "metric",
-            "name": "profile1"
+            "type": "metric"
+            
         },
 		{
 			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
-            "type": "operations",
-            "name": "profile2"
+            "type": "operations"
+         
         },
         {
 			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
-            "type": "aggregation",
-            "name": "profile3"
-        }
+            "type": "aggregation"
+            
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e533",
+			"type": "weights"
+		}
     ],
     "filter_tags": [
         {
@@ -660,6 +772,11 @@ func (suite *ReportTestSuite) TestCreateReport() {
      "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
      "name": "profile3",
      "type": "aggregation"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e533",
+     "name": "Critical",
+     "type": "weights"
     }
    \],
    "filter_tags": \[
