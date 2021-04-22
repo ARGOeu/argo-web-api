@@ -59,6 +59,10 @@ Accept: application/json
             "scope": "FEDERATION",
             "infrastructure": "Production",
             "certification": "Certified"
+        },
+        "notifications": {
+                "contacts": ["email01@example.com"],
+                "enabled": true
         }
     },
     {
@@ -183,6 +187,10 @@ Status: 200 OK
             "tags": {
                 "certification": "Certified",
                 "infrastructure": "Production"
+            },
+            "notifications": {
+                "contacts": ["email01@example.com"],
+                "enabled": true
             }
         }
     ]
@@ -289,6 +297,10 @@ Status: 200 OK
             "tags": {
                 "certification": "Certified",
                 "infrastructure": "Production"
+            },
+            "notifications": {
+                "contacts": ["email01@example.com"],
+                "enabled": true
             }
         },
         {

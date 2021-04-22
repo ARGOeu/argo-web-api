@@ -879,13 +879,14 @@ func (suite *topologyTestSuite) SetupTest() {
 			"tags":         bson.M{"production": "0", "monitored": "0"},
 		},
 		bson.M{
-			"date":         "2015-08-10",
-			"date_integer": 20150810,
-			"group":        "SITEB",
-			"type":         "SITES",
-			"hostname":     "host0.site_b.foo",
-			"service":      "service_x",
-			"tags":         bson.M{"production": "0", "monitored": "0"},
+			"date":          "2015-08-10",
+			"date_integer":  20150810,
+			"group":         "SITEB",
+			"type":          "SITES",
+			"hostname":      "host0.site_b.foo",
+			"service":       "service_x",
+			"tags":          bson.M{"production": "0", "monitored": "0"},
+			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
 		})
 	// Seed database with group topology
 	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
@@ -1021,12 +1022,13 @@ func (suite *topologyTestSuite) SetupTest() {
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
 		},
 		bson.M{
-			"date":         "2012-01-11",
-			"date_integer": 20200111,
-			"group":        "PR01",
-			"type":         "PROJECT",
-			"subgroup":     "SITEPROJECT",
-			"tags":         bson.M{"infrastructure": "Devel", "certification": "Certified"},
+			"date":          "2012-01-11",
+			"date_integer":  20200111,
+			"group":         "PR01",
+			"type":          "PROJECT",
+			"subgroup":      "SITEPROJECT",
+			"tags":          bson.M{"infrastructure": "Devel", "certification": "Certified"},
+			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
 		})
 
 }
@@ -1662,6 +1664,13 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "certification": "Certified",
     "infrastructure": "Devel"
@@ -1684,6 +1693,13 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "certification": "Certified",
     "infrastructure": "Devel"
@@ -1706,6 +1722,13 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "certification": "Certified",
     "infrastructure": "Devel"
@@ -2175,6 +2198,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2197,6 +2227,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2230,6 +2267,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2252,6 +2296,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2274,6 +2325,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2318,6 +2376,13 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2381,6 +2446,13 @@ func (suite *topologyTestSuite) TestListEndpoints() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2601,6 +2673,13 @@ func (suite *topologyTestSuite) TestListEndpoints4() {
    "type": "SITES",
    "service": "service_x",
    "hostname": "host0.site_b.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
@@ -2709,6 +2788,13 @@ func (suite *topologyTestSuite) TestListGroups() {
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "certification": "Certified",
     "infrastructure": "Devel"

@@ -67,23 +67,31 @@ type fltrGroup struct {
 
 // Endpoint includes information on endpoint group topology
 type Endpoint struct {
-	Date      string            `bson:"date" json:"date"`
-	DateInt   int               `bson:"date_integer" json:"-"`
-	Group     string            `bson:"group" json:"group"`
-	GroupType string            `bson:"type" json:"type"`
-	Service   string            `bson:"service" json:"service"`
-	Hostname  string            `bson:"hostname" json:"hostname"`
-	Tags      map[string]string `bson:"tags" json:"tags"`
+	Date          string            `bson:"date" json:"date"`
+	DateInt       int               `bson:"date_integer" json:"-"`
+	Group         string            `bson:"group" json:"group"`
+	GroupType     string            `bson:"type" json:"type"`
+	Service       string            `bson:"service" json:"service"`
+	Hostname      string            `bson:"hostname" json:"hostname"`
+	Notifications *Notifications    `bson:"notifications" json:"notifications,omitempty"`
+	Tags          map[string]string `bson:"tags" json:"tags"`
 }
 
 // Group includes information on  of group group topology
 type Group struct {
-	Date      string            `bson:"date" json:"date"`
-	DateInt   int               `bson:"date_integer" json:"-"`
-	Group     string            `bson:"group" json:"group"`
-	GroupType string            `bson:"type" json:"type"`
-	Subgroup  string            `bson:"subgroup" json:"subgroup"`
-	Tags      map[string]string `bson:"tags" json:"tags"`
+	Date          string            `bson:"date" json:"date"`
+	DateInt       int               `bson:"date_integer" json:"-"`
+	Group         string            `bson:"group" json:"group"`
+	GroupType     string            `bson:"type" json:"type"`
+	Subgroup      string            `bson:"subgroup" json:"subgroup"`
+	Notifications *Notifications    `bson:"notifications" json:"notifications,omitempty"`
+	Tags          map[string]string `bson:"tags" json:"tags"`
+}
+
+// Notifications holds notification information about topology items
+type Notifications struct {
+	Contacts []string `bson:"contacts" json:"contacts,omitempty"`
+	Enabled  bool     `bson:"enabled" json:"enabled,omitempty"`
 }
 
 // TagInfo groups all tags for a topology type

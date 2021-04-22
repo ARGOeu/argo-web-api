@@ -60,7 +60,8 @@ Accept: application/json
         "hostname": "host1.site-a.foo",
         "type": "SITES",
         "service": "c.service.foo",
-        "tags": { "scope": "TENANT", "production": "1", "monitored": "1" }
+        "tags": { "scope": "TENANT", "production": "1", "monitored": "1" },
+        "notifications": {"contacts": ["email01@example.com"], "enabled": true}
     }
 ]
 ```
@@ -185,6 +186,10 @@ Status: 200 OK
                 "scope": "TENANT",
                 "production": "1",
                 "monitored": "1"
+            },
+            "notifications": {
+                "contacts": ["email01@example.com"],
+                "enabled": true
             }
         }
     ]
@@ -307,6 +312,10 @@ Status: 200 OK
                 "scope": "TENANT",
                 "production": "1",
                 "monitored": "1"
+            },
+            "notifications": {
+                "contacts": ["email01@example.com"],
+                "enabled": true
             }
         }
     ]
