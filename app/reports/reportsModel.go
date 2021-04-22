@@ -157,6 +157,7 @@ var validators = map[string]string{
 	"aggregation": "aggregation_profiles",
 	"operations":  "operations_profiles",
 	"thresholds":  "thresholds_profiles",
+	"weights":     "weights",
 }
 
 // ValidateProfiles ensures that the profiles in a report actually exist in the database and
@@ -178,6 +179,14 @@ func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.Error
 				continue
 			}
 			report.Profiles[idx].Name = result.(bson.M)["name"].(string)
+		} else {
+			errs = append(errs,
+				respond.ErrorResponse{
+					Message: "Profile type invalid",
+					Code:    "422",
+					Details: fmt.Sprintf("Profile type %s is invalid", element.Type),
+				})
+			continue
 		}
 	}
 	return errs

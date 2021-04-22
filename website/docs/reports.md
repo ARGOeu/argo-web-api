@@ -352,3 +352,110 @@ There are special argo contextes that are automatically picked up to filter grou
 -   _context:_ `argo.group.filter.tags` - Used to apply filter on tags of group topology. Under this context the `name` targets the group tag name and the `value` holds the actual field pattern
 -   _context:_ `argo.endpoint.filter.fields` - Used to apply filter on basic fields of endpoint topology. Under this context the `name` targets the endpoint field name and the `value` holds the actual field pattern
 -   _context:_ `argo.endpoint.filter.tags` - Used to apply filter on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
+
+<a id='6'></a>
+
+## Notes on Optional profile references
+
+In the report's `profiles` list of references, along with the mandatory `metric`, `operations` and `aggregation` profiles, the user can declare references to the optinally used `thresholds` and `weights` profiles. User of the report must ensure that the declared reference `ids` are legit for each corresponding profile type. 
+
+Example of report with all profile type references declared:
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+            "tenant": "TenantA",
+            "disabled": false,
+            "info": {
+                "name": "Report_A",
+                "description": "report aaaaa",
+                "created": "2015-9-10 13:43:00",
+                "updated": "2015-10-11 13:43:00"
+            },
+            "topology_schema": {
+                "group": {
+                    "type": "NGI",
+                    "group": {
+                        "type": "SITE"
+                    }
+                }
+            },
+            "thresholds": {
+                "availability": 80.0,
+                "reliability": 85.0,
+                "uptime": 80.0,
+                "unknown": 10.0,
+                "downtime": 10.0
+            },
+            "profiles": [
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+                    "name": "profile1",
+                    "type": "metric"
+                },
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+                    "name": "profile2",
+                    "type": "operations"
+                },
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+                    "name": "profile3",
+                    "type": "aggregation"
+                },
+                {
+                    "id": "vac7d684-1f8e-4a02-a502-720e8f11e555",
+                    "name": "profile_38393",
+                    "type": "thresholds"
+                },
+                {
+                    "id": "rac65684-ff8e-5a02-6502-720e8f11e50q",
+                    "name": "profile_393",
+                    "type": "weights"
+                }
+            ],
+            "filter_tags": [
+                {
+                    "name": "name1",
+                    "value": "value1",
+                    "context": ""
+                },
+                {
+                    "name": "name2",
+                    "value": "value2",
+                    "context": ""
+                }
+            ]
+        }
+    ]
+}
+```
+
+During report creation, in case of wrong profile type reference defined or wrong profile uuid the following type of error will occur as a response:
+
+```json
+{
+    "status": {
+        "message": "Unprocessable Entity",
+        "code": "422"
+    },
+    "errors": [
+        {
+            "message": "Profile id not found",
+            "code": "422",
+            "details": "No profile in operations_profiles was found with id 93930-wrong-id"
+        },
+        {
+            "message": "Profile type invalid",
+            "code": "422",
+            "details": "Profile type whatever_profile is invalid"
+        }
+    ]
+}
+```
