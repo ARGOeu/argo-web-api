@@ -3405,6 +3405,162 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /trends/{REPORT_NAME}/flapping/metrics:
+    get:
+      summary: List trends for top flapping service endpoint metrics
+      operationId: trends.FlappingMetrics
+      description: List top flapping service endpoint metrics (that change status frequently)
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with flapping metrics
+          schema:
+            $ref: '#/definitions/Trends_metrics_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /trends/{REPORT_NAME}/flapping/endpoints:
+    get:
+      summary: List trends for top flapping service endpoints
+      operationId: trends.FlappingEdpoints
+      description: List top flapping service endpoints (that change status frequently)
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with flapping endpoints
+          schema:
+            $ref: '#/definitions/Trends_endpoints_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /trends/{REPORT_NAME}/flapping/services:
+    get:
+      summary: List trends for top flapping services
+      operationId: trends.FlappingServices
+      description: List top flapping services (that change status frequently)
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with flapping services
+          schema:
+            $ref: '#/definitions/Trends_services_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+
+  /trends/{REPORT_NAME}/flapping/groups:
+    get:
+      summary: List trends for top flapping endpoint groups
+      operationId: trends.FlappingGroups
+      description: List top flapping endpoint groups (that change status frequently)
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with flapping endpoint groups
+          schema:
+            $ref: '#/definitions/Trends_groups_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /factors:
     get:
@@ -4646,6 +4802,92 @@ definitions:
             details:
               type: string
               
+              
+  Trends_metrics:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      metric:
+        type: string
+      flapping:
+        type: integer
+        
+  Trends_endpoints:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      flapping:
+        type: integer
+        
+  Trends_services:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      flapping:
+        type: integer 
+
+  Trends_groups:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      flapping:
+        type: integer 
+        
+  
+  Trends_metrics_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_metrics'
+          
+  Trends_endpoints_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_endpoints'
+          
+          
+  Trends_services_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_services'
+          
+  Trends_groups_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_groups'
 
   Downtimes_list:
     type: object

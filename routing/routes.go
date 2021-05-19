@@ -44,6 +44,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 	"github.com/ARGOeu/argo-web-api/app/thresholdsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/topology"
+	"github.com/ARGOeu/argo-web-api/app/trends"
 	"github.com/ARGOeu/argo-web-api/app/weights"
 	"github.com/ARGOeu/argo-web-api/version"
 )
@@ -51,6 +52,7 @@ import (
 var routesV2 = []RouteV2{
 
 	{"Issues", "/issues", issues.HandleSubrouter},
+	{"Trends", "/trends", trends.HandleSubrouter},
 	{"Feeds", "/feeds", feeds.HandleSubrouter},
 	{"Topology", "/topology", topology.HandleSubrouter},
 	{"Latest", "/latest", latest.HandleSubrouter},
