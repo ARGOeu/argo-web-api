@@ -195,6 +195,42 @@ func (suite *TrendsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_metrics")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-1",
+		"flipflop": 55,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-2",
+		"flipflop": 40,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"metric":   "web-check",
+		"flipflop": 12,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-XB",
+		"service":  "service-XA",
+		"endpoint": "hosta.examplex2.foo",
+		"metric":   "web-check",
+		"flipflop": 25,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
@@ -270,6 +306,31 @@ func (suite *TrendsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoints")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"flipflop": 25,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"flipflop": 2,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-XB",
+		"service":  "service-XA",
+		"endpoint": "hosta.exampleX2.foo",
+		"flipflop": 35,
+	})
+
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
@@ -321,6 +382,28 @@ func (suite *TrendsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_services")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"flipflop": 25,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"flipflop": 16,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-XB",
+		"service":  "service-XA",
+		"flipflop": 3,
+	})
+
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
@@ -365,6 +448,18 @@ func (suite *TrendsTestSuite) SetupTest() {
 
 	// seed the status detailed trends group data
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoint_groups")
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"flipflop": 35,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-XB",
+		"flipflop": 3,
+	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
@@ -535,6 +630,154 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 		expReq{
 			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "flapping": 55
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 40
+    },
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "endpoint": "hosta.examplex2.foo",
+     "metric": "web-check",
+     "flapping": 25
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 12
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "flapping": 100
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 72
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 20
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 12
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-04-01&end_date=2015-05-02&top=3&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "flapping": 55
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 40
+    },
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "endpoint": "hosta.examplex2.foo",
+     "metric": "web-check",
+     "flapping": 25
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "flapping": 100
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 72
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 20
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-05-01&end_date=2015-05-02&top=3",
 			code:   200,
 			key:    "KEY1",
@@ -647,6 +890,116 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 		expReq{
 			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "endpoint": "hosta.exampleX2.foo",
+     "flapping": 35
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "flapping": 25
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "flapping": 2
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "flapping": 103
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "flapping": 19
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "flapping": 8
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-04-01&end_date=2015-05-02&top=2&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "endpoint": "hosta.exampleX2.foo",
+     "flapping": 35
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "flapping": 25
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "flapping": 103
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "flapping": 19
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-05-01&end_date=2015-05-02&top=2",
 			code:   200,
 			key:    "KEY1",
@@ -697,6 +1050,106 @@ func (suite *TrendsTestSuite) TestTrends() {
    "endpoint_group": "SITE-B",
    "service": "service-A",
    "flapping": 9
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 25
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "flapping": 16
+    },
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "flapping": 3
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 98
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "flapping": 23
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "flapping": 9
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-04-01&end_date=2015-05-02&top=2&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 25
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "flapping": 16
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 98
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "flapping": 23
+    }
+   ]
   }
  ]
 }`,
@@ -785,6 +1238,80 @@ func (suite *TrendsTestSuite) TestTrends() {
   {
    "endpoint_group": "SITE-B",
    "flapping": 9
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 35
+    },
+    {
+     "endpoint_group": "SITE-XB",
+     "flapping": 3
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 66
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "flapping": 9
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-04-01&end_date=2015-05-02&top=1&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 35
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 66
+    }
+   ]
   }
  ]
 }`,
