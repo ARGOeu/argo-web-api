@@ -23,6 +23,7 @@
 package trends
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -139,6 +140,10 @@ func (suite *TrendsTestSuite) SetupTest() {
 		bson.M{
 			"resource": "trends.flapping_endpoint_groups",
 			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
+			"resource": "trends.status_metrics",
+			"roles":    []string{"editor", "viewer"},
 		})
 
 	// get dbconfiguration based on the tenant
@@ -191,6 +196,130 @@ func (suite *TrendsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+
+	// seed the status detailed trends metric data
+	c = session.DB(suite.tenantDbConf.Db).C("status_trends_metrics")
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-1",
+		"status":   "CRITICAL",
+		"trends":   55,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-2",
+		"status":   "WARNING",
+		"trends":   40,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"metric":   "web-check",
+		"status":   "UNKNOWN",
+		"trends":   12,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150401,
+		"group":    "SITE-XB",
+		"service":  "service-XA",
+		"endpoint": "hosta.examplex2.foo",
+		"metric":   "web-check",
+		"status":   "CRITICAL",
+		"trends":   25,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150501,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-1",
+		"status":   "WARNING",
+		"trends":   55,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150501,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-2",
+		"status":   "CRITICAL",
+		"trends":   40,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150501,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"metric":   "web-check",
+		"status":   "WARNING",
+		"trends":   12,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150501,
+		"group":    "SITE-B",
+		"service":  "service-A",
+		"endpoint": "hosta.example2.foo",
+		"metric":   "web-check",
+		"status":   "UNKNOWN",
+		"trends":   5,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-1",
+		"status":   "UNKNOWN",
+		"trends":   45,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-2",
+		"status":   "UNKNOWN",
+		"trends":   32,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"metric":   "web-check",
+		"status":   "WARNING",
+		"trends":   8,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-B",
+		"service":  "service-A",
+		"endpoint": "hosta.example2.foo",
+		"metric":   "web-check",
+		"status":   "CRITICAL",
+		"trends":   7,
+	})
+
 	// seed the status detailed trends metric data
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_metrics")
 	c.Insert(bson.M{
@@ -1335,6 +1464,446 @@ func (suite *TrendsTestSuite) TestTrends() {
  ]
 }`,
 		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-05-01&end_date=2015-05-02",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "CRITICAL",
+     "events": 40
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "status": "CRITICAL",
+     "events": 7
+    }
+   ]
+  },
+  {
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "UNKNOWN",
+     "events": 45
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "UNKNOWN",
+     "events": 32
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "status": "UNKNOWN",
+     "events": 5
+    }
+   ]
+  },
+  {
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "WARNING",
+     "events": 55
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "WARNING",
+     "events": 20
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-05-01&end_date=2015-05-02&top=1",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "CRITICAL",
+     "events": 40
+    }
+   ]
+  },
+  {
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "UNKNOWN",
+     "events": 45
+    }
+   ]
+  },
+  {
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "WARNING",
+     "events": 55
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "CRITICAL",
+     "events": 55
+    },
+    {
+     "endpoint_group": "SITE-XB",
+     "service": "service-XA",
+     "endpoint": "hosta.examplex2.foo",
+     "metric": "web-check",
+     "status": "CRITICAL",
+     "events": 25
+    }
+   ]
+  },
+  {
+   "date": "2015-04",
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "UNKNOWN",
+     "events": 12
+    }
+   ]
+  },
+  {
+   "date": "2015-04",
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "WARNING",
+     "events": 40
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "CRITICAL",
+     "events": 40
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "status": "CRITICAL",
+     "events": 7
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "UNKNOWN",
+     "events": 45
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "UNKNOWN",
+     "events": 32
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "status": "UNKNOWN",
+     "events": 5
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "WARNING",
+     "events": 55
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "WARNING",
+     "events": 20
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "CRITICAL",
+     "events": 55
+    }
+   ]
+  },
+  {
+   "date": "2015-04",
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "UNKNOWN",
+     "events": 12
+    }
+   ]
+  },
+  {
+   "date": "2015-04",
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "WARNING",
+     "events": 40
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "CRITICAL",
+     "events": 40
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "UNKNOWN",
+     "events": 45
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "WARNING",
+     "events": 55
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics?date=2015-05-01",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "status": "CRITICAL",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "CRITICAL",
+     "events": 40
+    }
+   ]
+  },
+  {
+   "status": "UNKNOWN",
+   "top": [
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "status": "UNKNOWN",
+     "events": 5
+    }
+   ]
+  },
+  {
+   "status": "WARNING",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-1",
+     "status": "WARNING",
+     "events": 55
+    },
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "WARNING",
+     "events": 12
+    }
+   ]
+  }
+ ]
+}`,
+		},
 	}
 
 	for _, expReq := range expReqs {
@@ -1348,7 +1917,9 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 		suite.Equal(expReq.code, response.Code, "Incorrect HTTP response code")
 		// Compare the expected and actual xml response
-		suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")
+		if !(suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")) {
+			fmt.Println(response.Body.String())
+		}
 
 	}
 

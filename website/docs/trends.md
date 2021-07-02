@@ -3,6 +3,304 @@ id:  trends
 title: trends
 ---
 
+## API calls to find status trends among metrics
+
+This API call displays the top metrics by state (e.g. CRITICAL, WARNING etc) over a period of dates - optionally by monthly aggregation - for a specific report
+
+### [GET]: Daily Status trends in service endpoint metrics
+This method may be used to retrieve a list of top status service endpoint metrics. 
+
+### Input
+
+```
+/trends/{report_name}/status/metrics?date=2020-05-01
+```
+
+#### Path Parameters
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`report_name`| name of the report| YES |  |
+
+#### Url Parameters
+
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
+
+
+#### Headers
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+```
+
+#### Response Code
+```
+Status: 200 OK
+```
+
+
+###### Example Request:
+URL:
+```
+/trends/{report_name}/status/metrics?date=2020-05-01
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "status": "CRITICAL",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "status": "CRITICAL",
+          "events": 40
+        }
+      ]
+    },
+    {
+      "status": "UNKNOWN",
+      "top": [
+        {
+          "endpoint_group": "SITE-B",
+          "service": "service-A",
+          "endpoint": "hosta.example2.foo",
+          "metric": "web-check",
+          "status": "UNKNOWN",
+          "events": 5
+        }
+      ]
+    },
+    {
+      "status": "WARNING",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "WARNING",
+          "events": 55
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-B",
+          "endpoint": "hostb.example.foo",
+          "metric": "web-check",
+          "status": "WARNING",
+          "events": 12
+        }
+      ]
+    }
+  ]
+}
+```
+
+###### Example Request with Range and top number of results:
+URL:
+```
+/trends/{report_name}/flapping/metrics?start_date=2020-05-01&end_date=2021-06-15&top=1
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "status": "CRITICAL",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "status": "CRITICAL",
+          "events": 40
+        }
+      ]
+    },
+    {
+      "status": "UNKNOWN",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "UNKNOWN",
+          "events": 45
+        }
+      ]
+    },
+    {
+      "status": "WARNING",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "WARNING",
+          "events": 55
+        }
+      ]
+    }
+  ]
+}
+```
+
+###### Example Request with granularity=monthly option enabled:
+URL:
+```
+/trends/{report_name}/flapping/metrics?start_date=2020-04-01&end_date=2021-05-31&granularity=monthly&top=1
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "date": "2015-04",
+      "status": "CRITICAL",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "CRITICAL",
+          "events": 55
+        }
+      ]
+    },
+    {
+      "date": "2015-04",
+      "status": "UNKNOWN",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-B",
+          "endpoint": "hostb.example.foo",
+          "metric": "web-check",
+          "status": "UNKNOWN",
+          "events": 12
+        }
+      ]
+    },
+    {
+      "date": "2015-04",
+      "status": "WARNING",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "status": "WARNING",
+          "events": 40
+        }
+      ]
+    },
+    {
+      "date": "2015-05",
+      "status": "CRITICAL",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "status": "CRITICAL",
+          "events": 40
+        }
+      ]
+    },
+    {
+      "date": "2015-05",
+      "status": "UNKNOWN",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "UNKNOWN",
+          "events": 45
+        }
+      ]
+    },
+    {
+      "date": "2015-05",
+      "status": "WARNING",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "status": "WARNING",
+          "events": 55
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## API calls to find flapping trends among metrics, endpoints, services and groups by Date
 
 Flapping items are the ones that change state too frequently causing a lot of alarms and notifications. State flapping might be the case of wrong configuration. 

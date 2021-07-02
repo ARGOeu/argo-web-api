@@ -39,8 +39,10 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"trends.flapping_endpoints", "GET", "/{report_name}/flapping/endpoints", ListFlappingEndpoints},
 	{"trends.flapping_services", "GET", "/{report_name}/flapping/services", ListFlappingServices},
 	{"trends.flapping_endpoint_groups", "GET", "/{report_name}/flapping/groups", ListFlappingEndpointGroups},
+	{"trends.status_metrics", "GET", "/{report_name}/status/metrics", ListStatusMetrics},
 	{"trends.options", "OPTIONS", "/{report_name}/flapping/metrics", Options},
 	{"trends.options", "OPTIONS", "/{report_name}/flapping/endpoints", Options},
 	{"trends.options", "OPTIONS", "/{report_name}/flapping/services", Options},
 	{"trends.options", "OPTIONS", "/{report_name}/flapping/groups", Options},
+	{"trends.options", "OPTIONS", "/{report_name}/status/metrics", Options},
 }
