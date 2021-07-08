@@ -350,8 +350,10 @@ There are special argo contextes that are automatically picked up to filter grou
 
 -   _context:_ `argo.group.filter.fields` - Used to apply filter on basic fields of group topology. Under this context the `name` targets the group field name and the `value` holds the actual field pattern
 -   _context:_ `argo.group.filter.tags` - Used to apply filter on tags of group topology. Under this context the `name` targets the group tag name and the `value` holds the actual field pattern
+-   _context:_ `argo.group.filter.tags.array` - Used to apply filter, containing a list of comma separated values, on tags of group topology. Under this context the `name` targets the group tag name and the `value` holds the actual field pattern
 -   _context:_ `argo.endpoint.filter.fields` - Used to apply filter on basic fields of endpoint topology. Under this context the `name` targets the endpoint field name and the `value` holds the actual field pattern
 -   _context:_ `argo.endpoint.filter.tags` - Used to apply filter on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
+-   _context:_ `argo.endpoint.filter.tags.array` - Used to apply filter, containing a list of comma separated values, on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
 
 <a id='6'></a>
 
