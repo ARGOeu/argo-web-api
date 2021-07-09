@@ -43,6 +43,8 @@ const flapEndpoints = "flipflop_trends_endpoints"
 const flapServices = "flipflop_trends_services"
 const flapMetrics = "flipflop_trends_metrics"
 
+type list []interface{}
+
 func getDateRange(urlValues url.Values) (int, int, error) {
 	dateStr := urlValues.Get("date")
 	startDateStr := urlValues.Get("start_date")
@@ -103,18 +105,28 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Mongo Session
-	results := []MetricData{}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	metricCollection := session.DB(tenantDbConfig.Db).C(flapMetrics)
 
 	// Query the detailed metric results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	startDate, endDate, err := getDateRange(urlValues)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	limit := -1
 	limStr := urlValues.Get("top")
@@ -126,14 +138,62 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 		}
 	}
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
+	granularity := urlValues.Get("granularity")
 
 	// query for metrics
 	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []MonthMetricData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month":    bson.M{"$substr": list{"$date", 0, 6}},
+					"group":    "$group",
+					"service":  "$service",
+					"endpoint": "$endpoint",
+					"metric":   "$metric"},
+				"flipflop": bson.M{"$sum": "$flipflop"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "service": "$_id.service", "endpoint": "$_id.endpoint", "metric": "$_id.metric", "flipflop": "$flipflop"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+
+		err = metricCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createMonthMetricListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
+
+	// continue by calculating non monthly bucketed results
+	results := []MetricData{}
 
 	query := []bson.M{
 		{"$match": filter},
@@ -200,13 +260,26 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	endpointCollection := session.DB(tenantDbConfig.Db).C(flapEndpoints)
 
 	// Query the detailed endpoint results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	startDate, endDate, err := getDateRange(urlValues)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	limit := -1
 	limStr := urlValues.Get("top")
@@ -218,14 +291,58 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 		}
 	}
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
+	granularity := urlValues.Get("granularity")
 
 	// query for metrics
 	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []MonthEndpointData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month":    bson.M{"$substr": list{"$date", 0, 6}},
+					"group":    "$group",
+					"service":  "$service",
+					"endpoint": "$endpoint"},
+				"flipflop": bson.M{"$sum": "$flipflop"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "service": "$_id.service", "endpoint": "$_id.endpoint", "flipflop": "$flipflop"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+
+		err = endpointCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createMonthEndpointListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
 
 	query := []bson.M{
 		{"$match": filter},
@@ -290,13 +407,26 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	servicesCollection := session.DB(tenantDbConfig.Db).C(flapServices)
 
 	// Query the detailed service results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	startDate, endDate, err := getDateRange(urlValues)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
 
 	limit := -1
 	limStr := urlValues.Get("top")
@@ -308,14 +438,57 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 		}
 	}
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
+	granularity := urlValues.Get("granularity")
 
 	// query for metrics
 	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []MonthServiceData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month":   bson.M{"$substr": list{"$date", 0, 6}},
+					"group":   "$group",
+					"service": "$service"},
+				"flipflop": bson.M{"$sum": "$flipflop"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "service": "$_id.service", "flipflop": "$flipflop"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+
+		err = servicesCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createMonthServiceListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
 
 	query := []bson.M{
 		{"$match": filter},
@@ -377,11 +550,19 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	eGroupsCollection := session.DB(tenantDbConfig.Db).C(flapEndpointGroups)
 
 	// Query the detailed endpoint group results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	startDate, endDate, err := getDateRange(urlValues)
 
@@ -401,8 +582,56 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 		return code, h, output, err
 	}
 
+	granularity := urlValues.Get("granularity")
+
 	// query for metrics
 	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []MonthEndpointGroupData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month": bson.M{"$substr": list{"$date", 0, 6}},
+					"group": "$group"},
+				"flipflop": bson.M{"$sum": "$flipflop"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "flipflop": "$flipflop"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"top": "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+
+		err = eGroupsCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createMonthEndpointGroupListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
 
 	query := []bson.M{
 		{"$match": filter},

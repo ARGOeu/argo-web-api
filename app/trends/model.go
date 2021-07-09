@@ -27,6 +27,27 @@ import "encoding/xml"
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "2006-01-02"
 
+//MonthMetricData holds flapping information about monthly metrics
+type MonthMetricData struct {
+	Date string       `bson:"date" json:"date"`
+	Top  []MetricData `bson:"top" json:"top"`
+}
+
+type MonthEndpointData struct {
+	Date string         `bson:"date" json:"date"`
+	Top  []EndpointData `bson:"top" json:"top"`
+}
+
+type MonthServiceData struct {
+	Date string        `bson:"date" json:"date"`
+	Top  []ServiceData `bson:"top" json:"top"`
+}
+
+type MonthEndpointGroupData struct {
+	Date string              `bson:"date" json:"date"`
+	Top  []EndpointGroupData `bson:"top" json:"top"`
+}
+
 // MetricData holds flapping information about metrics
 type MetricData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`

@@ -29,6 +29,7 @@ This method may be used to retrieve a list of top flapping service endpoint metr
 |`start_date`| define start date to view problematic endpoints over range | NO |  |
 |`end_date`| define end date to view problematic endpoints over range | NO |  |
 |`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
 
 
 #### Headers
@@ -150,6 +151,87 @@ Reponse body:
 }
 ```
 
+###### Example Request with granularity=monthly option enabled:
+URL:
+```
+/trends/{report_name}/flapping/metrics?start_date=2020-04-01&end_date=2021-05-31&granularity=monthly&top=3
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "date": "2015-04",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "flapping": 55
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "flapping": 40
+        },
+        {
+          "endpoint_group": "SITE-XB",
+          "service": "service-XA",
+          "endpoint": "hosta.examplex2.foo",
+          "metric": "web-check",
+          "flapping": 25
+        }
+      ]
+    },
+    {
+      "date": "2015-05",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-1",
+          "flapping": 100
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "check-2",
+          "flapping": 72
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-B",
+          "endpoint": "hostb.example.foo",
+          "metric": "web-check",
+          "flapping": 20
+        }
+      ]
+    }
+  ]
+}
+```
+
 
 ### [GET]: Daily Flapping trends in service endpoints 
 This method may be used to retrieve a list of top flapping service endpoints
@@ -173,6 +255,7 @@ This method may be used to retrieve a list of top flapping service endpoints
 |`start_date`| define start date to view problematic endpoints over range | NO |  |
 |`end_date`| define end date to view problematic endpoints over range | NO |  |
 |`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
 
 
 #### Headers
@@ -275,6 +358,69 @@ Reponse body:
 }
 ```
 
+###### Example Request with granularity=monthly option enabled
+URL:
+```
+/trends/{report_name}/flapping/endpoints?start_date=2020-04-01&end_date=2020-05-31&top=2&granularity=monthly
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "date": "2015-04",
+      "top": [
+        {
+          "endpoint_group": "SITE-XB",
+          "service": "service-XA",
+          "endpoint": "hosta.exampleX2.foo",
+          "flapping": 35
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "flapping": 25
+        }
+      ]
+    },
+    {
+      "date": "2015-05",
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "flapping": 103
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-B",
+          "endpoint": "hostb.example.foo",
+          "flapping": 19
+        }
+      ]
+    }
+  ]
+}
+```
+
 
 ### [GET]: Daily Flapping trends in services
 This method may be used to retrieve a list of top flapping services
@@ -298,6 +444,7 @@ This method may be used to retrieve a list of top flapping services
 |`start_date`| define start date to view problematic endpoints over range | NO |  |
 |`end_date`| define end date to view problematic endpoints over range | NO |  |
 |`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
 
 
 #### Headers
@@ -390,6 +537,55 @@ Reponse body:
 }
 ```
 
+###### Example Request with granularity=monthly option enabled:
+URL:
+```
+/trends/{report_name}/flapping/services?start_date=2020-04-01&end_date=2020-05-31&top=1&granularity=monthly
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 25
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "flapping": 98
+    }
+   ]
+  }
+ ]
+}
+```
+
 ### [GET]: Daily Flapping trends in endpoint groups
 This method may be used to retrieve a list of top endpoint groups
 
@@ -412,6 +608,7 @@ This method may be used to retrieve a list of top endpoint groups
 |`start_date`| define start date to view problematic endpoints over range | NO |  |
 |`end_date`| define end date to view problematic endpoints over range | NO |  |
 |`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
 
 
 #### Headers
@@ -492,5 +689,52 @@ Reponse body:
       "flapping": 75
     }
   ]
+}
+```
+
+###### Example Request with granularity=monthly option enabled
+URL:
+```
+/trends/{report_name}/flapping/groups?start_date=2020-04-01&end_date=2020-05-31&top=1&granularity=monthly
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 35
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "flapping": 66
+    }
+   ]
+  }
+ ]
 }
 ```
