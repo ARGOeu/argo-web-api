@@ -23,8 +23,11 @@
 package trends
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
@@ -39,6 +42,42 @@ const flapEndpointGroups = "flipflop_trends_endpoint_groups"
 const flapEndpoints = "flipflop_trends_endpoints"
 const flapServices = "flipflop_trends_services"
 const flapMetrics = "flipflop_trends_metrics"
+
+func getDateRange(urlValues url.Values) (int, int, error) {
+	dateStr := urlValues.Get("date")
+	startDateStr := urlValues.Get("start_date")
+	endDateStr := urlValues.Get("end_date")
+
+	// if date declared as url parameter use it exclusively as a start and end date
+	if dateStr != "" {
+		date, _, err := utils.ParseZuluDate(dateStr)
+		if err != nil {
+			return -1, -1, err
+		}
+		return date, date, nil
+	}
+
+	if startDateStr != "" && endDateStr != "" {
+		startDate, _, err := utils.ParseZuluDate(startDateStr)
+		if err != nil {
+			return -1, -1, err
+		}
+		endDate, _, err := utils.ParseZuluDate(endDateStr)
+		if err != nil {
+			return -1, -1, err
+		}
+		return startDate, endDate, nil
+	}
+
+	if (startDateStr == "" && endDateStr != "") || (startDateStr != "" && endDateStr == "") {
+		return -1, -1, errors.New("Please use either a date url parameter or a combination of start_date " +
+			"and end_date parameters to declare range")
+	}
+
+	date, _, err := utils.ParseZuluDate(dateStr)
+	return date, date, err
+
+}
 
 // FlatFlappingMetrics returns a list of top flapping metrics for the day
 func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -75,7 +114,17 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 	// Query the detailed metric results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
 
-	_, dateStr, err := utils.ParseZuluDate(urlValues.Get("date"))
+	startDate, endDate, err := getDateRange(urlValues)
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -83,7 +132,35 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	err = metricCollection.Find(bson.M{"report": reportID, "date": dateStr}).All(&results)
+	// query for metrics
+	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"group":    "$group",
+				"service":  "$service",
+				"endpoint": "$endpoint",
+				"metric":   "$metric"},
+			"flipflop": bson.M{"$sum": "$flipflop"},
+		}},
+
+		{"$project": bson.M{
+			"group":    "$_id.group",
+			"service":  "$_id.service",
+			"endpoint": "$_id.endpoint",
+			"metric":   "$_id.metric",
+			"flipflop": "$flipflop"}},
+		{"$sort": bson.D{
+			{"flipflop", -1}}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$limit": limit})
+
+	}
+
+	err = metricCollection.Pipe(query).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -129,7 +206,17 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 	// Query the detailed endpoint results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
 
-	_, dateStr, err := utils.ParseZuluDate(urlValues.Get("date"))
+	startDate, endDate, err := getDateRange(urlValues)
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -137,7 +224,33 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	err = endpointCollection.Find(bson.M{"report": reportID, "date": dateStr}).All(&results)
+	// query for metrics
+	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"group":    "$group",
+				"service":  "$service",
+				"endpoint": "$endpoint"},
+			"flipflop": bson.M{"$sum": "$flipflop"},
+		}},
+
+		{"$project": bson.M{
+			"group":    "$_id.group",
+			"service":  "$_id.service",
+			"endpoint": "$_id.endpoint",
+			"flipflop": "$flipflop"}},
+		{"$sort": bson.D{
+			{"flipflop", -1}}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$limit": limit})
+
+	}
+
+	err = endpointCollection.Pipe(query).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -183,7 +296,17 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 	// Query the detailed service results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
 
-	_, dateStr, err := utils.ParseZuluDate(urlValues.Get("date"))
+	startDate, endDate, err := getDateRange(urlValues)
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -191,7 +314,30 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 		return code, h, output, err
 	}
 
-	err = servicesCollection.Find(bson.M{"report": reportID, "date": dateStr}).All(&results)
+	// query for metrics
+	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"group":   "$group",
+				"service": "$service"},
+			"flipflop": bson.M{"$sum": "$flipflop"},
+		}},
+		{"$project": bson.M{
+			"group":    "$_id.group",
+			"service":  "$_id.service",
+			"flipflop": "$flipflop"}},
+		{"$sort": bson.D{
+			{"flipflop", -1}}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$limit": limit})
+
+	}
+
+	err = servicesCollection.Pipe(query).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -237,7 +383,17 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 	// Query the detailed endpoint group results
 	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
 
-	_, dateStr, err := utils.ParseZuluDate(urlValues.Get("date"))
+	startDate, endDate, err := getDateRange(urlValues)
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -245,7 +401,28 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 		return code, h, output, err
 	}
 
-	err = eGroupsCollection.Find(bson.M{"report": reportID, "date": dateStr}).All(&results)
+	// query for metrics
+	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"group": "$group"},
+			"flipflop": bson.M{"$sum": "$flipflop"},
+		}},
+		{"$project": bson.M{
+			"group":    "$_id.group",
+			"flipflop": "$flipflop"}},
+		{"$sort": bson.D{
+			{"flipflop", -1}}}}
+
+	if limit > 0 {
+		query = append(query, bson.M{"$limit": limit})
+
+	}
+
+	err = eGroupsCollection.Pipe(query).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

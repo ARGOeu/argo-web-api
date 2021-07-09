@@ -3417,6 +3417,9 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
         - $ref: "#/parameters/apiKey"
         - name: "REPORT_NAME"
           in: "path"
@@ -3456,6 +3459,9 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
         - $ref: "#/parameters/apiKey"
         - name: "REPORT_NAME"
           in: "path"
@@ -3495,6 +3501,9 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
         - $ref: "#/parameters/apiKey"
         - name: "REPORT_NAME"
           in: "path"
@@ -3534,6 +3543,9 @@ paths:
         - "application/json"
       parameters:
         - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
         - $ref: "#/parameters/apiKey"
         - name: "REPORT_NAME"
           in: "path"
@@ -3962,6 +3974,21 @@ parameters:
     type: string
     description: "target date to retrieve a historic version of the profile"
     default: todays_date in YYYY-MM-DD format
+  trendsStartDate:
+    name: "start_date"
+    in: "query"
+    type: string
+    description: "start date used to define a range of results"
+  trendsEndDate:
+    name: "end_date"
+    in: "query"
+    type: string
+    description: "end date used to define a range of results"
+  trendsTop:
+    name: "top"
+    in: "query"
+    type: string
+    description: "define a number of top results"
   topoDate:
     name: "date"
     in: "query"

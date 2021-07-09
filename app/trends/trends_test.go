@@ -195,7 +195,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_metrics")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"endpoint": "hosta.example.foo",
@@ -204,7 +204,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"endpoint": "hosta.example.foo",
@@ -213,7 +213,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"endpoint": "hostb.example.foo",
@@ -222,19 +222,55 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-B",
 		"service":  "service-A",
 		"endpoint": "hosta.example2.foo",
 		"metric":   "web-check",
 		"flipflop": 5,
 	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-1",
+		"flipflop": 45,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"metric":   "check-2",
+		"flipflop": 32,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"metric":   "web-check",
+		"flipflop": 8,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-B",
+		"service":  "service-A",
+		"endpoint": "hosta.example2.foo",
+		"metric":   "web-check",
+		"flipflop": 7,
+	})
 
 	// seed the status detailed trends endpoint data
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoints")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"endpoint": "hosta.example.foo",
@@ -242,7 +278,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"endpoint": "hostb.example.foo",
@@ -250,50 +286,108 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-B",
 		"service":  "service-A",
 		"endpoint": "hosta.example2.foo",
 		"flipflop": 5,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"endpoint": "hosta.example.foo",
+		"flipflop": 48,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"endpoint": "hostb.example.foo",
+		"flipflop": 7,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-B",
+		"service":  "service-A",
+		"endpoint": "hosta.example2.foo",
+		"flipflop": 3,
 	})
 
 	// seed the status detailed trends service data
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_services")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 55,
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 12,
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-B",
 		"service":  "service-A",
 		"flipflop": 5,
+	})
+
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-A",
+		"flipflop": 43,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"service":  "service-B",
+		"flipflop": 11,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-B",
+		"service":  "service-A",
+		"flipflop": 4,
 	})
 
 	// seed the status detailed trends group data
 	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoint_groups")
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-A",
 		"flipflop": 55,
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date":     "2015-05-01",
+		"date":     20150501,
 		"group":    "SITE-B",
 		"flipflop": 5,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-A",
+		"flipflop": 11,
+	})
+	c.Insert(bson.M{
+		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date":     20150502,
+		"group":    "SITE-B",
+		"flipflop": 4,
 	})
 
 }
@@ -434,6 +528,282 @@ func (suite *TrendsTestSuite) TestTrends() {
   {
    "endpoint_group": "SITE-B",
    "flapping": 5
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-05-01&end_date=2015-05-02&top=3",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "metric": "check-1",
+   "flapping": 100
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "metric": "check-2",
+   "flapping": 72
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "endpoint": "hostb.example.foo",
+   "metric": "web-check",
+   "flapping": 20
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-05-01&end_date=2015-05-02",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "metric": "check-1",
+   "flapping": 100
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "metric": "check-2",
+   "flapping": 72
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "endpoint": "hostb.example.foo",
+   "metric": "web-check",
+   "flapping": 20
+  },
+  {
+   "endpoint_group": "SITE-B",
+   "service": "service-A",
+   "endpoint": "hosta.example2.foo",
+   "metric": "web-check",
+   "flapping": 12
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-05-01&end_date=2015-05-02",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "flapping": 103
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "endpoint": "hostb.example.foo",
+   "flapping": 19
+  },
+  {
+   "endpoint_group": "SITE-B",
+   "service": "service-A",
+   "endpoint": "hosta.example2.foo",
+   "flapping": 8
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-05-01&end_date=2015-05-02&top=2",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "endpoint": "hosta.example.foo",
+   "flapping": 103
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "endpoint": "hostb.example.foo",
+   "flapping": 19
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-05-01&end_date=2015-05-02",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "flapping": 98
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "flapping": 23
+  },
+  {
+   "endpoint_group": "SITE-B",
+   "service": "service-A",
+   "flapping": 9
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-05-01&end_date=2015-05-02&top=2",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-A",
+   "flapping": 98
+  },
+  {
+   "endpoint_group": "SITE-A",
+   "service": "service-B",
+   "flapping": 23
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01",
+			code:   400,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?end_date=2015-05-01",
+			code:   400,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01&end_date=2015-05-02",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "flapping": 66
+  },
+  {
+   "endpoint_group": "SITE-B",
+   "flapping": 9
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01&end_date=2015-05-02&top=1",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "endpoint_group": "SITE-A",
+   "flapping": 66
   }
  ]
 }`,

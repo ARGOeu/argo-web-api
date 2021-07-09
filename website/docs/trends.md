@@ -26,6 +26,9 @@ This method may be used to retrieve a list of top flapping service endpoint metr
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
 
 
 #### Headers
@@ -39,7 +42,6 @@ Accept: application/json or application/xml
 Status: 200 OK
 ```
 
-### Response body
 
 ###### Example Request:
 URL:
@@ -98,6 +100,56 @@ Reponse body:
 }
 ```
 
+###### Example Request with Range and top number of results:
+URL:
+```
+/trends/{report_name}/flapping/metrics?start_date=2020-05-01&end_date=2021-06-15&top=3
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-A",
+      "endpoint": "hosta.example.foo",
+      "metric": "check-1",
+      "flapping": 255
+    },
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-A",
+      "endpoint": "hosta.example.foo",
+      "metric": "check-2",
+      "flapping": 340
+    },
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-B",
+      "endpoint": "hostb.example.foo",
+      "metric": "web-check",
+      "flapping": 112
+    }
+  ]
+}
+```
+
 
 ### [GET]: Daily Flapping trends in service endpoints 
 This method may be used to retrieve a list of top flapping service endpoints
@@ -118,6 +170,9 @@ This method may be used to retrieve a list of top flapping service endpoints
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
 
 
 #### Headers
@@ -131,7 +186,6 @@ Accept: application/json or application/xml
 Status: 200 OK
 ```
 
-### Response body
 
 ###### Example Request:
 URL:
@@ -180,6 +234,48 @@ Reponse body:
 }
 ```
 
+###### Example Request with date range and top number of results:
+URL:
+```
+/trends/{report_name}/flapping/endpoints?start_date=2020-05-01&end_date=2020-05-15&top=2
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-A",
+      "endpoint": "hosta.example.foo",
+      "flapping": 83
+    },
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-B",
+      "endpoint": "hostb.example.foo",
+      "flapping": 53
+    }
+  ]
+}
+```
+
+
 ### [GET]: Daily Flapping trends in services
 This method may be used to retrieve a list of top flapping services
 
@@ -199,6 +295,9 @@ This method may be used to retrieve a list of top flapping services
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
 
 
 #### Headers
@@ -212,7 +311,6 @@ Accept: application/json or application/xml
 Status: 200 OK
 ```
 
-### Response body
 
 ###### Example Request:
 URL:
@@ -258,6 +356,40 @@ Reponse body:
 }
 ```
 
+###### Example Request with date range and top number of results:
+URL:
+```
+/trends/{report_name}/flapping/services?start_date=2020-05-01&end_date=2020-07-05&top=1
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "endpoint_group": "SITE-A",
+      "service": "service-A",
+      "flapping": 955
+    }
+  ]
+}
+```
+
 ### [GET]: Daily Flapping trends in endpoint groups
 This method may be used to retrieve a list of top endpoint groups
 
@@ -277,6 +409,9 @@ This method may be used to retrieve a list of top endpoint groups
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
 
 
 #### Headers
@@ -289,8 +424,6 @@ Accept: application/json or application/xml
 ```
 Status: 200 OK
 ```
-
-### Response body
 
 ###### Example Request:
 URL:
@@ -324,6 +457,39 @@ Reponse body:
     {
       "endpoint_group": "SITE-B",
       "flapping": 5
+    }
+  ]
+}
+```
+
+###### Example Request with date range and top number of results:
+URL:
+```
+/trends/{report_name}/flapping/groups?start_date=2020-05-01&end_date=2020-05-03&top=1
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "endpoint_group": "SITE-A",
+      "flapping": 75
     }
   ]
 }
