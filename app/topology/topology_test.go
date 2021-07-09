@@ -23,6 +23,7 @@
 package topology
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -746,6 +747,33 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "hostname",
 				"value":   "host2.site_a.foo"},
 		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a5553z",
+		"info": bson.M{
+			"name":        "CriticalScope",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "argo.endpoint.filter.tags.array",
+				"name":    "scope",
+				"value":   "tier2, tier1"},
+		}})
+
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
 	c.EnsureIndexKey("-date_integer", "group")
@@ -822,7 +850,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "SITES",
 			"hostname":     "host1.site_a.foo",
 			"service":      "service_1",
-			"tags":         bson.M{"production": "1", "monitored": "1"},
+			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "test,tier"},
 		},
 		bson.M{
 			"date":         "2015-06-22",
@@ -831,7 +859,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "SITES",
 			"hostname":     "host2.site_a.foo",
 			"service":      "service_2",
-			"tags":         bson.M{"production": "1", "monitored": "1"},
+			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "tier1, lala"},
 		},
 		bson.M{
 			"date":         "2015-06-22",
@@ -840,7 +868,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "SITES",
 			"hostname":     "host1.site_b.foo",
 			"service":      "service_1",
-			"tags":         bson.M{"production": "1", "monitored": "1"},
+			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "tier1, tier2, foo"},
 		},
 		bson.M{
 			"date":         "2015-07-22",
@@ -1800,6 +1828,38 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
   }
  ]
 }`},
+
+		{
+			Path: "/api/v2/topology/groups/by_report/CriticalScope?date=2015-06-22",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -1816,8 +1876,9 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 		// Check that we must have a 200 ok code
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
-		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
-
+		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
+			fmt.Println(output)
+		}
 	}
 }
 
@@ -1927,6 +1988,42 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
    "tags": {
     "monitored": "YesNo",
     "production": "Prod"
+   }
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/endpoints/by_report/CriticalScope?date=2015-06-22",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1",
+    "scope": "tier1, lala"
+   }
+  },
+  {
+   "date": "2015-06-22",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "1",
+    "production": "1",
+    "scope": "tier1, tier2, foo"
    }
   }
  ]
@@ -2545,7 +2642,8 @@ func (suite *topologyTestSuite) TestListEndpoints2() {
    "hostname": "host1.site_a.foo",
    "tags": {
     "monitored": "1",
-    "production": "1"
+    "production": "1",
+    "scope": "test,tier"
    }
   },
   {
@@ -2556,7 +2654,8 @@ func (suite *topologyTestSuite) TestListEndpoints2() {
    "hostname": "host2.site_a.foo",
    "tags": {
     "monitored": "1",
-    "production": "1"
+    "production": "1",
+    "scope": "tier1, lala"
    }
   },
   {
@@ -2567,7 +2666,8 @@ func (suite *topologyTestSuite) TestListEndpoints2() {
    "hostname": "host1.site_b.foo",
    "tags": {
     "monitored": "1",
-    "production": "1"
+    "production": "1",
+    "scope": "tier1, tier2, foo"
    }
   }
  ]
@@ -2576,6 +2676,7 @@ func (suite *topologyTestSuite) TestListEndpoints2() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 func (suite *topologyTestSuite) TestListEndpoints3() {

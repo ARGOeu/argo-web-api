@@ -867,6 +867,24 @@ func getReportEndpointGroupType(r reports.MongoInterface) string {
 	return ""
 }
 
+func getReportTagsArray(tag reports.Tag) string {
+
+	// split multiple values using commas as delimeter
+	vals := strings.Split(tag.Value, ",")
+	// trim values from space
+	result := ""
+	for i := range vals {
+		val := strings.TrimSpace(vals[i])
+		result = result + tag.Name + ":*" + val + "*"
+		if i < len(vals)-1 {
+			result = result + ","
+		}
+	}
+
+	return result
+
+}
+
 // getReportFilters reads a report definition and extracs all related group and endpoint filters
 func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 	// prepare filter structs for groups and endpoints
@@ -882,6 +900,18 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 	// Iterate over report filter tags
 	for _, tag := range r.Tags {
 
+		if tag.Context == "argo.group.filter.tags.array" {
+			// check if it has special context refering to group filtering based on tags
+			// then construct / update group tag string
+
+			if !groupFirst {
+				groupTags = groupTags + ","
+			} else {
+				groupFirst = false
+			}
+			groupTags = groupTags + getReportTagsArray(tag)
+
+		}
 		if tag.Context == "argo.group.filter.tags" {
 			// check if it has special context refering to group filtering based on tags
 			// then construct / update group tag string
@@ -904,6 +934,16 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			} else if tag.Name == "subgroup" {
 				fGroup.Subgroup = append(fGroup.Subgroup, tag.Value)
 			}
+		} else if tag.Context == "argo.endpoint.filter.tags.array" {
+			// check if it has special context refering to endpoint filtering based on tags
+			// then construct / update endpoint tag string
+
+			if !endpointFirst {
+				endpointTags = endpointTags + ","
+			} else {
+				endpointFirst = false
+			}
+			endpointTags = endpointTags + getReportTagsArray(tag)
 		} else if tag.Context == "argo.endpoint.filter.tags" {
 			// check if it has special context refering to endpoint filtering based on tags
 			// then construct / update endpoint tag string
