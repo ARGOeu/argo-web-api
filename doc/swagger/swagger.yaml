@@ -3405,6 +3405,51 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+  
+  /trends/{REPORT_NAME}/status/metrics:
+    get:
+      summary: List trends for top status service endpoint metrics
+      operationId: trends.StatusMetrics
+      description: List top status service endpoint metrics by status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status metrics per status
+          schema:
+            $ref: '#/definitions/Trends_status_metrics_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
+  
+  
             
   /trends/{REPORT_NAME}/flapping/metrics:
     get:
@@ -4839,6 +4884,23 @@ definitions:
             details:
               type: string
               
+
+  Trends_status_metrics:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      metric:
+        type: string
+      status:
+        type: string
+      events:
+        type: integer
+
               
   Trends_metrics:
     type: object
@@ -4884,6 +4946,28 @@ definitions:
       flapping:
         type: integer 
         
+  
+  
+  Trends_status_metrics_group:
+    type: object
+    properties:
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_metrics'
+          
+  Trends_status_metrics_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_metrics_group'
+  
   
   Trends_metrics_list:
     type: object

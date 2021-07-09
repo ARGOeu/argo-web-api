@@ -30,6 +30,22 @@ import (
 )
 
 // createMetricListView constructs the list response template and exports it as json
+func createStatusMetricListView(results []StatusGroupMetricData, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
+// createMetricListView constructs the list response template and exports it as json
 func createMetricListView(results []MetricData, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
@@ -79,6 +95,22 @@ func createEndpointListView(results []EndpointData, msg string, code int) ([]byt
 
 // createEndpointGroupListView constructs the list response template and exports it as json
 func createEndpointGroupListView(results []EndpointGroupData, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
+// createStatusMonthMetricListView constructs the list response template and exports it as json
+func createStatusMonthMetricListView(results []StatusMonthMetricData, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
