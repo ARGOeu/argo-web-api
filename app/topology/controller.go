@@ -729,6 +729,7 @@ func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) [
 
 	// prepare match query for applying filtering on the groups based on report
 	groupMatch := prepGroupQuery(date, fgroup)
+
 	// prepare match query for applying further filtering on already filtered by groups endpoints based on report
 	endpointMatch := prepEndpointQuery(date, fendpoint)
 
@@ -1033,6 +1034,7 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	}
 
 	groupType := getReportGroupType(report)
+	egroupType := getReportEndpointGroupType(report)
 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -1047,7 +1049,11 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	fGroup, fEndpoint = getReportFilters(report)
 
 	if groupType != "" {
-		fGroup.GroupType = append(fGroup.GroupType)
+		fGroup.GroupType = append(fGroup.GroupType, groupType)
+	}
+
+	if egroupType != "" {
+		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
 	expDate := getCloseDate(colGroup, dt)
