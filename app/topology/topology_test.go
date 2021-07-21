@@ -774,6 +774,32 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "tier2, tier1"},
 		}})
 
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a5553z",
+		"info": bson.M{
+			"name":        "CriticalGT",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "ORG",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "whatever",
+				"name":    "scope",
+				"value":   "tier2, tier1"},
+		}})
+
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
 	c.EnsureIndexKey("-date_integer", "group")
@@ -915,6 +941,26 @@ func (suite *topologyTestSuite) SetupTest() {
 			"service":       "service_x",
 			"tags":          bson.M{"production": "0", "monitored": "0"},
 			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
+		},
+		bson.M{
+			"date":          "2021-01-11",
+			"date_integer":  20210111,
+			"group":         "SVORG",
+			"type":          "SERVICEGROUPS",
+			"hostname":      "host0.serv_org.foo",
+			"service":       "service_x",
+			"tags":          bson.M{"production": "0", "monitored": "0"},
+			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
+		},
+		bson.M{
+			"date":          "2021-01-11",
+			"date_integer":  20210111,
+			"group":         "SITEORG",
+			"type":          "SITES",
+			"hostname":      "host0.site_org.foo",
+			"service":       "service_x",
+			"tags":          bson.M{"production": "0", "monitored": "0"},
+			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
 		})
 	// Seed database with group topology
 	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
@@ -1042,15 +1088,23 @@ func (suite *topologyTestSuite) SetupTest() {
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
 		},
 		bson.M{
-			"date":         "2020-01-11",
-			"date_integer": 20200111,
+			"date":         "2021-01-11",
+			"date_integer": 20210111,
 			"group":        "ORGB",
 			"type":         "ORG",
 			"subgroup":     "SITEORG",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
 		},
 		bson.M{
-			"date":          "2012-01-11",
+			"date":         "2021-01-11",
+			"date_integer": 20210111,
+			"group":        "ORGB",
+			"type":         "ORG",
+			"subgroup":     "SVORG",
+			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
+		},
+		bson.M{
+			"date":          "2020-01-11",
 			"date_integer":  20200111,
 			"group":         "PR01",
 			"type":          "PROJECT",
@@ -1616,7 +1670,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 
 	expected := []TestReq{
 		{
-			Path: "/api/v2/topology/groups/by_report/Critical2",
+			Path: "/api/v2/topology/groups/by_report/Critical2?date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1657,7 +1711,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/groups/by_report/Critical3",
+			Path: "/api/v2/topology/groups/by_report/Critical3?date=2021-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1666,10 +1720,20 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
  },
  "data": [
   {
-   "date": "2020-01-11",
+   "date": "2021-01-11",
    "group": "ORGB",
    "type": "ORG",
    "subgroup": "SITEORG",
+   "tags": {
+    "certification": "Uncertified",
+    "infrastructure": "Production"
+   }
+  },
+  {
+   "date": "2021-01-11",
+   "group": "ORGB",
+   "type": "ORG",
+   "subgroup": "SVORG",
    "tags": {
     "certification": "Uncertified",
     "infrastructure": "Production"
@@ -1679,7 +1743,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 }`},
 
 		{
-			Path: "/api/v2/topology/groups/by_report/Critical4",
+			Path: "/api/v2/topology/groups/by_report/Critical4?date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1688,7 +1752,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
  },
  "data": [
   {
-   "date": "2012-01-11",
+   "date": "2020-01-11",
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
@@ -1708,7 +1772,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 }`},
 
 		{
-			Path: "/api/v2/topology/groups/by_report/Critical5",
+			Path: "/api/v2/topology/groups/by_report/Critical5?date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1717,7 +1781,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
  },
  "data": [
   {
-   "date": "2012-01-11",
+   "date": "2020-01-11",
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
@@ -1737,7 +1801,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 }`},
 
 		{
-			Path: "/api/v2/topology/groups/by_report/Critical6",
+			Path: "/api/v2/topology/groups/by_report/Critical6?date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -1746,7 +1810,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
  },
  "data": [
   {
-   "date": "2012-01-11",
+   "date": "2020-01-11",
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
@@ -1877,8 +1941,10 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
 		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
+			fmt.Println(exp.Path)
 			fmt.Println(output)
 		}
+
 	}
 }
 
@@ -2030,6 +2096,36 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
 }`},
 
 		{
+			Path: "/api/v2/topology/endpoints/by_report/CriticalGT?date=2021-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2021-01-11",
+   "group": "SITEORG",
+   "type": "SITES",
+   "service": "service_x",
+   "hostname": "host0.site_org.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
+   "tags": {
+    "monitored": "0",
+    "production": "0"
+   }
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/endpoints/by_report/CriticalCombine?date=2015-01-11",
 			Code: 200,
 			JSON: `{
@@ -2079,7 +2175,6 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
 		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
-
 	}
 }
 
@@ -2238,7 +2333,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
 
 	expected := []TestReq{
 		{
-			Path: "/api/v2/topology/endpoints?group=SITEA",
+			Path: "/api/v2/topology/endpoints?group=SITEA&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2260,7 +2355,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?group=B*",
+			Path: "/api/v2/topology/endpoints?group=B*&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2270,7 +2365,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  "data": []
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*",
+			Path: "/api/v2/topology/endpoints?service=serv*&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2310,7 +2405,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*site_b*",
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*site_b*&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2339,7 +2434,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*",
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2379,7 +2474,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B",
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2408,7 +2503,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=SITES",
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=SITES&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2437,7 +2532,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
  ]
 }`},
 		{
-			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=BITES",
+			Path: "/api/v2/topology/endpoints?service=serv*&hostname=*.foo*&group=*B&type=BITES&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2448,7 +2543,7 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
 }`},
 
 		{
-			Path: "/api/v2/topology/endpoints?group=*A&group=*B",
+			Path: "/api/v2/topology/endpoints?group=*A&group=*B&date=2020-02-11",
 			Code: 200,
 			JSON: `{
  "status": {
@@ -2527,22 +2622,29 @@ func (suite *topologyTestSuite) TestListEndpoints() {
  },
  "data": [
   {
-   "date": "2015-08-10",
-   "group": "SITEA",
+   "date": "2021-01-11",
+   "group": "SITEORG",
    "type": "SITES",
    "service": "service_x",
-   "hostname": "host0.site_a.foo",
+   "hostname": "host0.site_org.foo",
+   "notifications": {
+    "contacts": [
+     "contact01@email.example.foo",
+     "contact02@email.example.foo"
+    ],
+    "enabled": true
+   },
    "tags": {
     "monitored": "0",
     "production": "0"
    }
   },
   {
-   "date": "2015-08-10",
-   "group": "SITEB",
-   "type": "SITES",
+   "date": "2021-01-11",
+   "group": "SVORG",
+   "type": "SERVICEGROUPS",
    "service": "service_x",
-   "hostname": "host0.site_b.foo",
+   "hostname": "host0.serv_org.foo",
    "notifications": {
     "contacts": [
      "contact01@email.example.foo",
@@ -2828,7 +2930,7 @@ func (suite *topologyTestSuite) TestListEndpoints5() {
 
 func (suite *topologyTestSuite) TestListGroups() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/topology/groups", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2020-02-01", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -2876,16 +2978,6 @@ func (suite *topologyTestSuite) TestListGroups() {
   },
   {
    "date": "2020-01-11",
-   "group": "ORGB",
-   "type": "ORG",
-   "subgroup": "SITEORG",
-   "tags": {
-    "certification": "Uncertified",
-    "infrastructure": "Production"
-   }
-  },
-  {
-   "date": "2012-01-11",
    "group": "PR01",
    "type": "PROJECT",
    "subgroup": "SITEPROJECT",
