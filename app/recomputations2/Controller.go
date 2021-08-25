@@ -79,6 +79,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -123,6 +124,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		ID: vars["ID"],
 	}
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -166,6 +168,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -237,6 +240,7 @@ func ResetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -323,6 +327,7 @@ func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
 	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
 
 	if err != nil {
 		code = http.StatusInternalServerError
