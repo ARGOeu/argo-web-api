@@ -403,31 +403,7 @@ func (suite *DowntimesTestSuite) TestList() {
   "message": "Success",
   "code": "200"
  },
- "data": [
-  {
-   "date": "2019-10-13",
-   "endpoints": [
-    {
-     "hostname": "host-A",
-     "service": "service-A",
-     "start_time": "2019-10-13T04:00:33Z",
-     "end_time": "2019-10-13T15:33:00Z"
-    },
-    {
-     "hostname": "host-B",
-     "service": "service-B",
-     "start_time": "2019-10-13T12:00:33Z",
-     "end_time": "2019-10-13T12:33:00Z"
-    },
-    {
-     "hostname": "host-C",
-     "service": "service-C",
-     "start_time": "2019-10-13T20:00:33Z",
-     "end_time": "2019-10-13T22:15:00Z"
-    }
-   ]
-  }
- ]
+ "data": []
 }`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
