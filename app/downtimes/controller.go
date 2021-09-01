@@ -199,6 +199,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
+	if !(len(results) > 0) {
+		downtimes := Downtimes{Date: dateStr, Endpoints: []Downtime{}}
+		results = append(results, downtimes)
+	}
+
 	// Create view of the results
 	output, err = createListView(results, "Success", code) //Render the results into JSON
 

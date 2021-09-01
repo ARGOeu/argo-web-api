@@ -386,9 +386,9 @@ func (suite *DowntimesTestSuite) TestCreate() {
 
 }
 
-func (suite *DowntimesTestSuite) TestList() {
+func (suite *DowntimesTestSuite) TestListNotFound() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/downtimes", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/downtimes?date=2020-05-05", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -403,7 +403,12 @@ func (suite *DowntimesTestSuite) TestList() {
   "message": "Success",
   "code": "200"
  },
- "data": []
+ "data": [
+  {
+   "date": "2020-05-05",
+   "endpoints": []
+  }
+ ]
 }`
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
