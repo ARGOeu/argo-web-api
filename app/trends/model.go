@@ -34,10 +34,23 @@ type StatusMonthMetricData struct {
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
+//StatusMonthEndpointData holds status information about monthly endpoints
+type StatusMonthEndpointData struct {
+	Date   string               `bson:"date" json:"date"`
+	Status string               `bson:"status" json:"status"`
+	Top    []StatusEndpointData `bson:"top" json:"top"`
+}
+
 //StatusGroupMetricData holds status information about monthly metrics
 type StatusGroupMetricData struct {
 	Status string             `bson:"status" json:"status"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
+}
+
+//StatusGroupEndpointData holds status information about monthly endpoints
+type StatusGroupEndpointData struct {
+	Status string               `bson:"status" json:"status"`
+	Top    []StatusEndpointData `bson:"top" json:"top"`
 }
 
 //MonthMetricData holds flapping information about monthly metrics
@@ -78,6 +91,14 @@ type StatusMetricData struct {
 	Metric        string `bson:"metric" json:"metric"`
 	Status        string `bson:"status" json:"status"`
 	Events        int    `bson:"events" json:"events"`
+}
+
+type StatusEndpointData struct {
+	EndpointGroup string `bson:"group" json:"endpoint_group"`
+	Service       string `bson:"service" json:"service"`
+	Endpoint      string `bson:"endpoint" json:"endpoint"`
+	Status        string `bson:"status" json:"status"`
+	Duration      int    `bson:"duration" json:"duration_in_minutes"`
 }
 
 // EndpointData holds flapping information about endpoints
