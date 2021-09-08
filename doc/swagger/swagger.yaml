@@ -4997,6 +4997,7 @@ definitions:
         type: string
       status:
         type: string
+<<<<<<< HEAD
       events:
         type: integer
         
@@ -5009,6 +5010,8 @@ definitions:
         type: string
       status:
         type: string
+=======
+>>>>>>> 0fae46e (ARGO-3279 Create Endpoint status trends view)
       events:
         type: integer
 

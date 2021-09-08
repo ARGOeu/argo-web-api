@@ -109,7 +109,7 @@ type StatusMetricData struct {
 	Events        int    `bson:"events" json:"events"`
 }
 
-// StatusMetricData holds status trend information about endpoints
+// StatusEndpointData holds status trend information about endpoints
 type StatusEndpointData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Service       string `bson:"service" json:"service"`
