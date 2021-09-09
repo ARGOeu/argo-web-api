@@ -48,6 +48,13 @@ type StatusMonthServiceData struct {
 	Top    []StatusServiceData `bson:"top" json:"top"`
 }
 
+//StatusMonthEgroupData holds monthly status trends information about endpoint groups
+type StatusMonthEgroupData struct {
+	Date   string             `bson:"date" json:"date"`
+	Status string             `bson:"status" json:"status"`
+	Top    []StatusEgroupData `bson:"top" json:"top"`
+}
+
 //StatusGroupMetricData holds grouped monthly status trends information about metrics
 type StatusGroupMetricData struct {
 	Status string             `bson:"status" json:"status"`
@@ -58,6 +65,12 @@ type StatusGroupMetricData struct {
 type StatusGroupEndpointData struct {
 	Status string               `bson:"status" json:"status"`
 	Top    []StatusEndpointData `bson:"top" json:"top"`
+}
+
+//StatusGroupEgroupData holds grouped monthly status trends information about endpoint groups
+type StatusGroupEgroupData struct {
+	Status string             `bson:"status" json:"status"`
+	Top    []StatusEgroupData `bson:"top" json:"top"`
 }
 
 //StatusGroupServiceData holds grouped monthly status trends information about services
@@ -109,11 +122,7 @@ type StatusMetricData struct {
 	Events        int    `bson:"events" json:"events"`
 }
 
-<<<<<<< HEAD
 // StatusEndpointData holds status trend information about endpoints
-=======
-// StatusMetricData holds status trend information about endpoints
->>>>>>> e07cc78 (ARGO-3280 create status trends view for services)
 type StatusEndpointData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Service       string `bson:"service" json:"service"`
@@ -126,6 +135,13 @@ type StatusEndpointData struct {
 type StatusServiceData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Service       string `bson:"service" json:"service"`
+	Status        string `bson:"status" json:"status"`
+	Duration      int    `bson:"duration" json:"duration_in_minutes"`
+}
+
+// StatusEgroupData holds status trend information about endpoint groups
+type StatusEgroupData struct {
+	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Status        string `bson:"status" json:"status"`
 	Duration      int    `bson:"duration" json:"duration_in_minutes"`
 }
