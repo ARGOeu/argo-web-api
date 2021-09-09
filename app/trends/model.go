@@ -109,7 +109,11 @@ type StatusMetricData struct {
 	Events        int    `bson:"events" json:"events"`
 }
 
+<<<<<<< HEAD
 // StatusEndpointData holds status trend information about endpoints
+=======
+// StatusMetricData holds status trend information about endpoints
+>>>>>>> e07cc78 (ARGO-3280 create status trends view for services)
 type StatusEndpointData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Service       string `bson:"service" json:"service"`

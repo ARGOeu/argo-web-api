@@ -473,7 +473,11 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 					"group":   "$group",
 					"service": "$service",
 					"status":  "$status"},
+<<<<<<< HEAD
 				"duration": bson.M{"$sum": "$duration"},
+=======
+				"duration": bson.M{"$sum": "$trends"},
+>>>>>>> e07cc78 (ARGO-3280 create status trends view for services)
 			}},
 			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"duration", -1}}},
 			{
@@ -520,7 +524,11 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 				"group":   "$group",
 				"service": "$service",
 				"status":  "$status"},
+<<<<<<< HEAD
 			"duration": bson.M{"$sum": "$duration"},
+=======
+			"duration": bson.M{"$sum": "$trends"},
+>>>>>>> e07cc78 (ARGO-3280 create status trends view for services)
 		}},
 		{"$sort": bson.D{{"_id.status", 1}, {"duration", -1}}},
 		{

@@ -5014,6 +5014,18 @@ definitions:
 >>>>>>> 0fae46e (ARGO-3279 Create Endpoint status trends view)
       events:
         type: integer
+        
+  Trends_status_services:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      status:
+        type: string
+      events:
+        type: integer
 
               
   Trends_metrics:
