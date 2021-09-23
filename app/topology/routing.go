@@ -54,6 +54,8 @@ var appRoutesV2 = []respond.AppRoutes{
 	{"topology_endpoints.list", "GET", "/endpoints", ListEndpoints},
 	{"topology_endpoints.delete", "DELETE", "/endpoints", DeleteEndpoints},
 	{"topology_endpoints.options", "OPTIONS", "/endpoints", Options},
+	{"topology_tags.list", "GET", "/tags", ListTopoTags},
+	{"topology_tags.options", "OPTIONS", "/tags", Options},
 	{"topology_stats.list", "GET", "/stats/{report_name}", routeCheckGroup},
 	{"topology.options", "OPTIONS", "/stats/{report_name}", Options},
 }
@@ -93,20 +95,20 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 	// default generic group names
-	group_type := "group"
-	endpoint_group_type := "endpoint_group"
+	groupType := "group"
+	endpointGroupType := "endpoint_group"
 
 	// if specific group names are available in report use them
 	if result.Topology.Group != nil {
-		group_type = result.Topology.Group.Type
+		groupType = result.Topology.Group.Type
 		if result.Topology.Group.Group != nil {
-			endpoint_group_type = result.Topology.Group.Group.Type
+			endpointGroupType = result.Topology.Group.Group.Type
 		}
 	}
 
 	// set group names as part of the context
-	context.Set(r, "group_type", group_type)
-	context.Set(r, "endpoint_group_type", endpoint_group_type)
+	context.Set(r, "group_type", groupType)
+	context.Set(r, "endpoint_group_type", endpointGroupType)
 	return ListTopoStats(r, cfg)
 
 }

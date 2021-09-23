@@ -386,9 +386,9 @@ func (suite *DowntimesTestSuite) TestCreate() {
 
 }
 
-func (suite *DowntimesTestSuite) TestList() {
+func (suite *DowntimesTestSuite) TestListNotFound() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/downtimes", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v2/downtimes?date=2020-05-05", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -405,27 +405,8 @@ func (suite *DowntimesTestSuite) TestList() {
  },
  "data": [
   {
-   "date": "2019-10-13",
-   "endpoints": [
-    {
-     "hostname": "host-A",
-     "service": "service-A",
-     "start_time": "2019-10-13T04:00:33Z",
-     "end_time": "2019-10-13T15:33:00Z"
-    },
-    {
-     "hostname": "host-B",
-     "service": "service-B",
-     "start_time": "2019-10-13T12:00:33Z",
-     "end_time": "2019-10-13T12:33:00Z"
-    },
-    {
-     "hostname": "host-C",
-     "service": "service-C",
-     "start_time": "2019-10-13T20:00:33Z",
-     "end_time": "2019-10-13T22:15:00Z"
-    }
-   ]
+   "date": "2020-05-05",
+   "endpoints": []
   }
  ]
 }`

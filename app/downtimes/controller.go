@@ -151,7 +151,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-// List the existing weight resources for the tenant making the request
+// List the existing downtime resource for the exact date requested
 func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -192,24 +192,16 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	dCol := session.DB(tenantDbConfig.Db).C(downtimeColName)
 
-	expDate := getCloseDate(dCol, dt)
-
-	if expDate < 0 {
-		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	results := []Downtimes{}
-	err = dCol.Find(bson.M{"date_integer": expDate}).All(&results)
+	err = dCol.Find(bson.M{"date_integer": dt}).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	if !(len(results) > 0) {
+		downtimes := Downtimes{Date: dateStr, Endpoints: []Downtime{}}
+		results = append(results, downtimes)
 	}
 
 	// Create view of the results
@@ -224,7 +216,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-//Delete weights resource based on ID
+//delete downtimes resource based on ID
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
