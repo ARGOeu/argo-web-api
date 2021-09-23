@@ -45,6 +45,7 @@ const flapMetrics = "flipflop_trends_metrics"
 const statusMetrics = "status_trends_metrics"
 const statusEndpoints = "status_trends_endpoints"
 const statusServices = "status_trends_services"
+const statusEgroups = "status_trends_groups"
 
 type list []interface{}
 
@@ -548,6 +549,158 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 	}
 
 	output, err = createStatusServiceListView(results, "Success", 200)
+
+	return code, h, output, err
+}
+
+// ListStatusEgroups returns a list of top status endpoint groups (in duration) for the day
+func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("List Flapping Metrics")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	egroupCollection := session.DB(tenantDbConfig.Db).C(statusEgroups)
+
+	// Query the detailed status services trend results
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	startDate, endDate, err := getDateRange(urlValues)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	granularity := urlValues.Get("granularity")
+
+	// query for endpoint groups
+	filter := bson.M{"report": reportID, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []StatusMonthEgroupData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month":  bson.M{"$substr": list{"$date", 0, 6}},
+					"group":  "$group",
+					"status": "$status"},
+				"duration": bson.M{"$sum": "$duration"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"duration", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month", "status": "$_id.status"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "status": "$_id.status", "duration": "$duration"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"status": "$_id.status",
+				"top":    bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"status": "$_id.status",
+				"top":    "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}}})
+
+		err = egroupCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createStatusMonthEgroupListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
+
+	// continue by calculating non monthly bucketed results
+	results := []StatusGroupEgroupData{}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"group":  "$group",
+				"status": "$status"},
+			"duration": bson.M{"$sum": "$duration"},
+		}},
+		{"$sort": bson.D{{"_id.status", 1}, {"duration", -1}}},
+		{
+			"$group": bson.M{
+				"_id": bson.M{"status": "$_id.status"},
+				"top": bson.M{"$push": bson.M{"group": "$_id.group", "status": "$_id.status", "duration": "$duration"}}}},
+	}
+
+	// trim down the list in each month-bucket according to the limit parameter
+	if limit > 0 {
+		query = append(query, bson.M{"$project": bson.M{"status": "$_id.status",
+			"top": bson.M{"$slice": list{"$top", limit}}}})
+	} else {
+		query = append(query, bson.M{"$project": bson.M{"status": "$_id.status",
+			"top": "$top"}})
+	}
+
+	// sort end results by month bucket ascending
+	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+
+	err = egroupCollection.Pipe(query).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createStatusEgroupListView(results, "Success", 200)
 
 	return code, h, output, err
 }

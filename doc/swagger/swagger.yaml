@@ -3535,6 +3535,50 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
   
+  /trends/{REPORT_NAME}/status/groups:
+    get:
+      summary: List trends for top status endpoint group trends
+      operationId: trends.StatusEgroups
+      description: List top endpoint groups by status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status trends for endpoint groups
+          schema:
+            $ref: '#/definitions/Trends_status_egroups_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  
+  
             
   /trends/{REPORT_NAME}/flapping/metrics:
     get:
@@ -5011,6 +5055,16 @@ definitions:
         type: string
       events:
         type: integer
+        
+  Trends_status_egroups:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      status:
+        type: string
+      events:
+        type: integer
 
               
   Trends_metrics:
@@ -5058,6 +5112,17 @@ definitions:
         type: integer 
         
         
+  Trends_status_egroups_group:
+    type: object
+    properties:
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_egroups'
+        
+        
   Trends_status_services_group:
     type: object
     properties:
@@ -5089,6 +5154,17 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Trends_status_metrics'
+          
+          
+  Trends_status_egroups_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_egroups_group'
           
   Trends_status_services_list:
     type: object

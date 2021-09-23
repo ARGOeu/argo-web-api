@@ -29,6 +29,22 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
+// createStatusEgroupListView constructs the list response template and exports it as json
+func createStatusEgroupListView(results []StatusGroupEgroupData, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 // createStatusServiceListView constructs the list response template and exports it as json
 func createStatusServiceListView(results []StatusGroupServiceData, msg string, code int) ([]byte, error) {
 
@@ -127,6 +143,22 @@ func createEndpointListView(results []EndpointData, msg string, code int) ([]byt
 
 // createEndpointGroupListView constructs the list response template and exports it as json
 func createEndpointGroupListView(results []EndpointGroupData, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
+// createStatusMonthEgroupListView constructs the list response template and exports it as json
+func createStatusMonthEgroupListView(results []StatusMonthEgroupData, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{
 		Status: respond.StatusResponse{
