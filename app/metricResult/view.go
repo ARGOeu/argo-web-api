@@ -45,6 +45,7 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 	hostname := &HostXML{
 		Name: results[0].Hostname,
+		Info: results[0].Info,
 	}
 	docRoot.Result = append(docRoot.Result, hostname)
 
@@ -63,6 +64,7 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 			metric.Name = result.Metric
 			metric.Service = result.Service
+
 		}
 
 		if result.Metric != prevMetric || result.Service != prevService {
@@ -110,11 +112,13 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 
 	hostname := &HostXML{
 		Name: result.Hostname,
+		Info: result.Info,
 	}
 	docRoot.Result = append(docRoot.Result, hostname)
 
 	metric := &MetricXML{
-		Name: result.Metric,
+		Name:    result.Metric,
+		Service: result.Service,
 	}
 	hostname.Metrics = append(hostname.Metrics, metric)
 

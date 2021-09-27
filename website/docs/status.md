@@ -259,6 +259,61 @@ Response body (JSON):
 }
 ```
 
+### Extra endpoint information on metric status results
+
+Some service metric status results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. For example:
+
+
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "info": {
+                  "Url": "https://cream01.afroditi.gr/path/to/service"
+               },
+              "metrics": [
+                {
+                  "name": "emi.cream.CREAMCE-JobSubmit",
+                  "statuses": [
+                    {
+                      "timestamp": "2015-04-30T23:59:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T01:00:00Z",
+                      "value": "CRITICAL"
+                    },
+                    {
+                      "timestamp": "2015-05-02T01:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T23:59:59Z",
+                      "value": "OK"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+
 <a id="2"></a>
 
 

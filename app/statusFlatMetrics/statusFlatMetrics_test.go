@@ -369,6 +369,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
@@ -385,6 +386,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
@@ -401,6 +403,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -417,6 +420,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
@@ -433,6 +437,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
@@ -449,6 +454,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -552,6 +558,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -576,6 +585,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host2.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -671,6 +683,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -705,6 +720,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-05-01T05:00:00Z",
@@ -717,6 +735,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host2.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",

@@ -161,6 +161,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-04-30T23:59:00Z",
 		"summary":            "Cream status is ok",
+		"info":               bson.M{"URL": "http://creamce.example.com"},
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
@@ -174,6 +175,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"time_integer":       10000,
 		"previous_state":     "OK",
 		"previous_timestamp": "2015-05-01T00:00:00Z",
+		"info":               bson.M{"URL": "http://creamce.example.com"},
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
@@ -184,6 +186,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"service":            "CREAM-CE",
 		"host":               "cream01.afroditi.gr",
 		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"info":               bson.M{"URL": "http://creamce.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -198,7 +201,7 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
 
 	respXML := ` <root>
    <host name="cream01.afroditi.gr">
-     <metric name="emi.cream.CREAMCE-JobSubmit">
+     <metric name="emi.cream.CREAMCE-JobSubmit" service="CREAM-CE">
        <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL">
          <summary>Cream status is CRITICAL</summary>
          <message>Cream job submission test failed</message>
@@ -211,9 +214,13 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
    "root": [
      {
        "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
        "Metrics": [
          {
            "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
            "Details": [
              {
                "Timestamp": "2015-05-01T01:00:00Z",
@@ -267,6 +274,9 @@ func (suite *metricResultTestSuite) TestMultipleMetricResults() {
    "root": [
      {
        "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
        "Metrics": [
          {
            "Name": "emi.cream.CREAMCE-JobSubmit",
@@ -315,6 +325,9 @@ func (suite *metricResultTestSuite) TestMultipleMetricResultsNonOK() {
    "root": [
      {
        "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
        "Metrics": [
          {
            "Name": "emi.cream.CREAMCE-JobSubmit",
@@ -351,6 +364,9 @@ func (suite *metricResultTestSuite) TestMultipleMetricResultsCritical() {
    "root": [
      {
        "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
        "Metrics": [
          {
            "Name": "emi.cream.CREAMCE-JobSubmit",
@@ -405,6 +421,9 @@ func (suite *metricResultTestSuite) TestMultipleMetricResultsOK() {
    "root": [
      {
        "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
        "Metrics": [
          {
            "Name": "emi.cream.CREAMCE-JobSubmit",

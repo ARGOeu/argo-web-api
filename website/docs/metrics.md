@@ -315,3 +315,66 @@ Reponse body:
    ]
  }
 ```
+
+### Extra endpoint information on metric results
+
+Some metric results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. For example:
+
+
+
+```
+{
+   "root": [
+     {
+       "Name": "www.example.com",
+       "info": {
+                  "Url": "https://example.com/path/to/service/check"
+               },
+       "Metrics": [
+         {
+           "Name": "httpd_check",
+           "Service": "httpd",
+           "Details": [
+             {
+               "Timestamp": "2015-06-20T12:00:00Z",
+               "Value": "OK",
+               "Summary": "httpd is ok",
+               "Message": "all checks ok"
+             },
+             {
+               "Timestamp": "2015-06-20T23:00:00Z",
+               "Value": "OK",
+               "Summary": "httpd is ok",
+               "Message": "all checks ok"
+             }
+           ]
+         },
+         {
+           "Name": "httpd_memory",
+           "Service": "httpd",
+           "Details": [
+             {
+               "Timestamp": "2015-06-20T06:00:00Z",
+               "Value": "OK",
+               "Summary": "memcheck ok",
+               "Message": "memory under 20%"
+             },
+             {
+               "Timestamp": "2015-06-20T09:00:00Z",
+               "Value": "OK",
+               "Summary": "memcheck ok",
+               "Message": "memory under 20%"
+             },
+             {
+               "Timestamp": "2015-06-20T18:00:00Z",
+               "Value": "OK",
+               "Summary": "memcheck ok",
+               "Message": "memory under 20%"
+             },
+           ]
+         }
+       ]
+     }
+   ]
+ }
+```
