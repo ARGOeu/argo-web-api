@@ -32,19 +32,21 @@ type metricResultQuery struct {
 
 // metricResultOutput structure holds mongo results
 type metricResultOutput struct {
-	Timestamp string `bson:"timestamp"`
-	Hostname  string `bson:"host"`
-	Service   string `bson:"service"`
-	Metric    string `bson:"metric"`
-	Status    string `bson:"status"`
-	Summary   string `bson:"summary"`
-	Message   string `bson:"message"`
+	Timestamp string            `bson:"timestamp"`
+	Hostname  string            `bson:"host"`
+	Service   string            `bson:"service"`
+	Metric    string            `bson:"metric"`
+	Status    string            `bson:"status"`
+	Summary   string            `bson:"summary"`
+	Message   string            `bson:"message"`
+	Info      map[string]string `bson:"info"`
 }
 
 // HostXML struct used as xml block
 type HostXML struct {
-	XMLName xml.Name `xml:"host" json:"-"`
-	Name    string   `xml:"name,attr"`
+	XMLName xml.Name          `xml:"host" json:"-"`
+	Name    string            `xml:"name,attr"`
+	Info    map[string]string `xml:"-" json:"info,omitempty"`
 	Metrics []*MetricXML
 }
 
@@ -53,6 +55,7 @@ type MetricXML struct {
 	XMLName xml.Name `xml:"metric" json:"-"`
 	Name    string   `xml:"name,attr"`
 	Service string   `xml:"service,attr,omitempty" json:"Service,omitempty"`
+
 	Details []*StatusXML
 }
 

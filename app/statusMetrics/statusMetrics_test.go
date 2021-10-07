@@ -369,6 +369,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
@@ -385,6 +386,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
@@ -401,6 +403,7 @@ func (suite *StatusMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -497,6 +500,9 @@ func (suite *StatusMetricsTestSuite) TestListStatusMetrics() {
      "endpoints": [
       {
        "name": "someservice.example.gr",
+       "info": {
+        "URL": "http://host.example.com"
+       },
        "metrics": [
         {
          "name": "someService-FileTransfer",
