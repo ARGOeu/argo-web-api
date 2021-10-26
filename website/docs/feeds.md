@@ -10,6 +10,8 @@ title: Feeds
 | PUT: Update feed topology info | This method can be used to update feed topology information parameters | [ Description](#2) |
 | GET: Feed Weights information   | This method can be used to retrieve a list of feed weights parameters         | [ Description](#3) |
 | PUT: Update feed weights info | This method can be used to update feed weights information parameters | [ Description](#4) |
+| GET: Feed Data information   | This method can be used to retrieve a list of feed data information parameters         | [ Description](#5) |
+| PUT: Update Data weights info | This method can be used to update feed data  information parameters | [ Description](#6) |
 
 <a id='1'></a>
 
@@ -167,7 +169,7 @@ Json Response
 }
 ```
 
-<a id='2'></a>
+<a id='4'></a>
 
 ## [PUT]: Update topology feed parameters
 This method is used to upadte topology feed parameters
@@ -219,4 +221,91 @@ Json Response
   ]
 }
 ```
+<a id='5'></a>
 
+## [GET]: List Feed Data parameters
+
+This method can be used to retrieve a list of feed data information parameters. Data feeds refer to data coming from other tenants and used in combined reports
+
+### Input
+
+```
+GET /feeds/data
+```
+
+
+### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "tenants": ["TENANT_X", "TENANT_Y"]
+    }
+  ]
+}
+```
+
+<a id='6'></a>
+
+## [PUT]: Update data feed parameters
+This method is used to update data feed parameters
+
+### Input
+
+```
+PUT /feeds/data
+```
+
+#### PUT BODY
+```json
+{
+  "tenants": ["TENANT_Z", "TENANT_W"]
+}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "Feeds resource succesfully updated",
+    "code": "200"
+  },
+  "data": [
+    {
+        "tenants": ["TENANT_Z", "TENANT_W"]
+    }
+  ]
+}
+```

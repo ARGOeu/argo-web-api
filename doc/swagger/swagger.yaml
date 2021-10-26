@@ -3907,8 +3907,84 @@ paths:
           schema:
             $ref: '#/definitions/FeedsTopo'
       responses:
-        '201':
+        '200':
           description: Feeds weights resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
+  
+  /feeds/data:
+    get:
+      summary: List of data feed parameters
+      operationId: feeds.data.list
+      description: list of data feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with data feed parameters
+          schema:
+            $ref: '#/definitions/FeedsData'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update data feeds parameters
+      operationId: feeds.data.update
+      description: update data feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_data_resource"
+          in: "body"
+          description: "Json description of the feeds data resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsData'
+      responses:
+        '200':
+          description: Feeds data resource Updated
           schema:
             $ref: '#/definitions/Status'
         '400':
@@ -5631,6 +5707,16 @@ definitions:
               type: string
             context:
               type: string
+  
+  FeedsData:
+    type: object
+    properties:
+      tenants:
+        type: array
+        items:
+          type: string
+  
+  
   
   FeedsTopo:
     type: object
