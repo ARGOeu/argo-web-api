@@ -1,380 +1,243 @@
 ---
-id: metric_results
-title: Metric Resulst
+id: metrics
+title: Metrics
 ---
+## API Calls
 
-## API call for retrieving detailed metric result.
+| Name                                  | Description                                                                     | Shortcut           |
+| ------------------------------------- | ------------------------------------------------------------------------------- | ------------------ |
+| GET: List Metrics (Admin)   | This method can be used to retrieve a list of all metrics         | [ Description](#1) |
+| PUT: Update Metrics (Admin) | This method can be used to update the list of metrics | [ Description](#2) |
+| GET: List Metrics  | This method can be used to retrieve a list of metrics (as a tenant user)        | [ Description](#3) |
+| PUT: List Metrics by report | This method can be used to retrieve a list of metrics included in a report (as a tenant user) | [ Description](#4) |
 
-### [GET]: Metric Result
 
-This method may be used to retrieve a specific service metric result.
+<a id='1'></a>
 
-### Input
+## [GET]: List Metrics (Admin)
 
-```
-/metric_result/{hostname}/{metric_name}?[exec_time]
-```
-
-#### Path Parameters
-| Type | Description | Required | Default value |
-|------|-------------|----------|---------------|
-|`hostname`| hostname of service endpoint| YES |  |
-|`metric_name`| name of the metric| YES |  |
-
-#### Url Parameters
-
-| Type | Description | Required | Default value |
-|------|-------------|----------|---------------|
-|`exec_time`| The execution date of query in zulu format| YES |  |
-
-___Notes___:
-`exec_time` : The execution date of query in zulu format. In order to get the correct execution time get status results for all metrics (under a given endpoint, service and endpoint group). ( GET /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics List)
-
-#### Headers
-```
-x-api-key: shared_key_value
-Accept: application/json or application/xml
-```
-
-#### Response Code
-```
-Status: 200 OK
-```
-
-### Response body
-
-###### Example Request:
-URL:
-```
-/api/v2/metric_result/www.example.com/httpd_check?exec_time=2015-06-20T12:00:00Z
-```
-Headers:
-```
-x-api-key: shared_key_value
-Accept: application/json or application/xml
-
-```
-###### Example Response:
-
-Code:
-```
-Status: 200 OK
-```
-Reponse body:
-```
- {
-   "root": [
-     {
-       "Name": "www.example.com",
-       "Metrics": [
-         {
-           "Name": "httpd_check",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T12:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             }
-           ]
-         }
-       ]
-     }
-   ]
- }
- 
-```
-
-## [GET]: Multiple Metric Results for a specific host, on a specific day
-
-This method may be used to retrieve multiple service metric results for a specific host on a specific day
+This method can be used to retrieve a list of all metrics. This is an administrative method. The Metric list is common for all tenants
 
 ### Input
 
 ```
-/metric_result/{hostname}?[exec_time]
+GET /admin/metrics
 ```
 
-#### Path Parameters
-| Type | Description | Required | Default value |
-|------|-------------|----------|---------------|
-|`hostname`| hostname of service endpoint| YES |  |
+
+### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "name": "test_metric_1",
+      "tags": [
+        "network",
+        "internal"
+      ]
+    },
+    {
+      "name": "test_metric_2",
+      "tags": [
+        "disk",
+        "agent"
+      ]
+    },
+    {
+      "name": "test_metric_3",
+      "tags": [
+        "aai"
+      ]
+    }
+  ]
+}
+```
+
+<a id='2'></a>
+
+## [PUT]: Update Metrics information
+This method is used to update the list of metrics. This is an administrative method. The list of metrics is common for all tenants
+
+### Input
+
+```
+PUT /admin/metrics
+```
+
+#### PUT BODY
+```json
+  [
+  {
+    "name": "metric1",
+    "tags": [
+      "tag1",
+      "tag2"
+    ]
+  }
+]
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "Metrics resource succesfully updated",
+    "code": "200"
+  },
+  "data": [
+    {
+      "name": "metric1",
+      "tags": [
+        "tag1",
+        "tag2"
+      ]
+    }
+  ]
+}
+```
+
+
+<a id='3'></a>
+
+## [GET]: List Metrics (as a tenant user)
+
+This method can be used to retrieve the list of metrics as a tenant user. The list of metrics is common for all tenants but accessible from each tenant.
+
+### Input
+
+```
+GET /metrics
+```
+
+
+### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "name": "test_metric_1",
+      "tags": [
+        "network",
+        "internal"
+      ]
+    },
+    {
+      "name": "test_metric_2",
+      "tags": [
+        "disk",
+        "agent"
+      ]
+    },
+    {
+      "name": "test_metric_3",
+      "tags": [
+        "aai"
+      ]
+    }
+  ]
+}
+```
+
+
+<a id='4'></a>
+
+## [PUT]: List metrics by report (as a tenant user)
+This method is used to retrieve a list of metrics that are included in the metric profile of a specific report.
+
+### Input
+
+```
+PUT /metrics/by_report/{report_name}
+```
 
 #### Url Parameters
 
-| Type | Description | Required | Default value |
-|------|-------------|----------|---------------|
-|`exec_time`| The execution date of query in zulu format - timepart is irrelevant (can be 00:00:00Z) | YES |  |
-|`filter`| Filter metric results by statuses: non-ok, ok, critical, warning | NO |  |
+| Type          | Description              | Required | Default value |
+| ------------- | ------------------------ | -------- | ------------- |
+| `report_name` | target a specific report | YES      | none          |
+| `date`        | target a specific date   | NO       | today's date  |
 
-___Notes___:
-`exec_time` : The specific date of query in zulu format. The time part of the date is irrelevant because all metrics of that day are returned. ( GET /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics List)
 
-#### Headers
+#### Request headers
+
 ```
 x-api-key: shared_key_value
-Accept: application/json or application/xml
+Accept: application/json
 ```
 
-#### Response Code
-```
-Status: 200 OK
-```
+### Response
 
-### Response body
+Headers: `Status: 200 OK`
 
-###### Example Request:
-URL:
-```
-/api/v2/metric_result/www.example.com?exec_time=2015-06-20T00:00:00Z
-```
-Headers:
-```
-x-api-key: shared_key_value
-Accept: application/json or application/xml
+#### Response body
 
-```
-###### Example Response:
+Json Response
 
-Code:
-```
-Status: 200 OK
-```
-Reponse body:
-```
+```json
+```json
 {
-   "root": [
-     {
-       "Name": "www.example.com",
-       "Metrics": [
-         {
-           "Name": "httpd_check",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T12:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             },
-              {
-               "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "CRITICAL",
-               "Summary": "httpd is critical",
-               "Message": "some checks failed"
-             },
-              {
-               "Timestamp": "2015-06-20T23:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             }
-           ]
-         },
-         {
-           "Name": "httpd_memory",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T06:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T09:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-           ]
-         }
-       ]
-     }
-   ]
- }
-```
-
-###### Example Request with filter parameter set to `non-ok`:
-URL:
-```
-/api/v2/metric_result/www.example.com?exec_time=2015-06-20T00:00:00Z&filter=non-ok
-```
-Headers:
-```
-x-api-key: shared_key_value
-Accept: application/json or application/xml
-
-```
-###### Example Response using fitler parameter set to `non-ok`:
-
-Code:
-```
-Status: 200 OK
-```
-Reponse body:
-```
-{
-   "root": [
-     {
-       "Name": "www.example.com",
-       "Metrics": [
-         {
-           "Name": "httpd_check",
-           "Service": "httpd",
-           "Details": [
-              {
-               "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "CRITICAL",
-               "Summary": "httpd is critical",
-               "Message": "some checks failed"
-              }
-           ]
-         }
-       ]
-     }
-   ]
- }
-```
-
-###### Example Request with filter parameter set to `ok`:
-URL:
-```
-/api/v2/metric_result/www.example.com?exec_time=2015-06-20T00:00:00Z&filter=ok
-```
-Headers:
-```
-x-api-key: shared_key_value
-Accept: application/json or application/xml
-
-```
-###### Example Response using fitler parameter set to `ok`:
-
-Code:
-```
-Status: 200 OK
-```
-Reponse body:
-```
-{
-   "root": [
-     {
-       "Name": "www.example.com",
-       "Metrics": [
-         {
-           "Name": "httpd_check",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T12:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             },
-             {
-               "Timestamp": "2015-06-20T23:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             }
-           ]
-         },
-         {
-           "Name": "httpd_memory",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T06:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T09:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-           ]
-         }
-       ]
-     }
-   ]
- }
-```
-
-### Extra endpoint information on metric results
-
-Some metric results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. For example:
-
-
-
-```
-{
-   "root": [
-     {
-       "Name": "www.example.com",
-       "info": {
-                  "Url": "https://example.com/path/to/service/check"
-               },
-       "Metrics": [
-         {
-           "Name": "httpd_check",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T12:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             },
-             {
-               "Timestamp": "2015-06-20T23:00:00Z",
-               "Value": "OK",
-               "Summary": "httpd is ok",
-               "Message": "all checks ok"
-             }
-           ]
-         },
-         {
-           "Name": "httpd_memory",
-           "Service": "httpd",
-           "Details": [
-             {
-               "Timestamp": "2015-06-20T06:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T09:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-             {
-               "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "OK",
-               "Summary": "memcheck ok",
-               "Message": "memory under 20%"
-             },
-           ]
-         }
-       ]
-     }
-   ]
- }
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "name": "test_metric_1",
+      "tags": [
+        "network",
+        "internal"
+      ]
+    }
+  ]
+}
 ```
