@@ -79,10 +79,13 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 		// we append the detailed results
 		metric.Details = append(metric.Details,
 			&StatusXML{
-				Timestamp: fmt.Sprintf("%s", result.Timestamp),
-				Value:     fmt.Sprintf("%s", result.Status),
-				Summary:   fmt.Sprintf("%s", result.Summary),
-				Message:   fmt.Sprintf("%s", result.Message),
+				Timestamp:      fmt.Sprintf("%s", result.Timestamp),
+				Value:          fmt.Sprintf("%s", result.Status),
+				Summary:        fmt.Sprintf("%s", result.Summary),
+				Message:        fmt.Sprintf("%s", result.Message),
+				ActualData:     fmt.Sprintf("%s", result.ActualData),
+				RuleApplied:    fmt.Sprintf("%s", result.RuleApplied),
+				OriginalStatus: fmt.Sprintf("%s", result.OriginalStatus),
 			})
 
 		prevMetric = result.Metric
@@ -125,10 +128,13 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 	// we append the detailed results
 	metric.Details = append(metric.Details,
 		&StatusXML{
-			Timestamp: fmt.Sprintf("%s", result.Timestamp),
-			Value:     fmt.Sprintf("%s", result.Status),
-			Summary:   fmt.Sprintf("%s", result.Summary),
-			Message:   fmt.Sprintf("%s", result.Message),
+			Timestamp:      fmt.Sprintf("%s", result.Timestamp),
+			Value:          fmt.Sprintf("%s", result.Status),
+			Summary:        fmt.Sprintf("%s", result.Summary),
+			Message:        fmt.Sprintf("%s", result.Message),
+			ActualData:     fmt.Sprintf("%s", result.ActualData),
+			RuleApplied:    fmt.Sprintf("%s", result.RuleApplied),
+			OriginalStatus: fmt.Sprintf("%s", result.OriginalStatus),
 		})
 
 	if strings.ToLower(format) == "application/json" {

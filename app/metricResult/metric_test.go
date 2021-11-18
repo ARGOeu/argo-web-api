@@ -150,19 +150,22 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
-		"monitoring_box":     "nagios3.hellasgrid.gr",
-		"date_integer":       20150501,
-		"timestamp":          "2015-05-01T00:00:00Z",
-		"service":            "CREAM-CE",
-		"host":               "cream01.afroditi.gr",
-		"metric":             "emi.cream.CREAMCE-JobSubmit",
-		"status":             "OK",
-		"time_integer":       0,
-		"previous_state":     "OK",
-		"previous_timestamp": "2015-04-30T23:59:00Z",
-		"summary":            "Cream status is ok",
-		"info":               bson.M{"URL": "http://creamce.example.com"},
-		"message":            "Cream job submission test return value of ok",
+		"monitoring_box":         "nagios3.hellasgrid.gr",
+		"date_integer":           20150501,
+		"timestamp":              "2015-05-01T00:00:00Z",
+		"service":                "CREAM-CE",
+		"host":                   "cream01.afroditi.gr",
+		"metric":                 "emi.cream.CREAMCE-JobSubmit",
+		"status":                 "OK",
+		"time_integer":           0,
+		"previous_state":         "OK",
+		"previous_timestamp":     "2015-04-30T23:59:00Z",
+		"summary":                "Cream status is ok",
+		"info":                   bson.M{"URL": "http://creamce.example.com"},
+		"message":                "Cream job submission test return value of ok",
+		"actual_data":            "latency=15s",
+		"threshold_rule_applied": "latency=15s;20:30;30:40",
+		"original_status":        "WARNING",
 	})
 	c.Insert(bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
@@ -235,6 +238,34 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
    ]
  }`
 
+	respJSON2 := `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
+           "Details": [
+             {
+               "Timestamp": "2015-05-01T00:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok",
+               "actual_data": "latency=15s",
+               "threshold_rule_applied": "latency=15s;20:30;30:40",
+               "original_status": "WARNING"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
 	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2015-05-01T01:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
@@ -266,6 +297,17 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
 	// Compare the expected and actual xml response
 	suite.Equal("<root></root>", response.Body.String(), "Response body mismatch")
 
+	// Check returned xml when no results are available for a given timestamp
+	request, _ = http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2015-05-01T00:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
 }
 
 func (suite *metricResultTestSuite) TestMultipleMetricResults() {
@@ -286,7 +328,10 @@ func (suite *metricResultTestSuite) TestMultipleMetricResults() {
                "Timestamp": "2015-05-01T00:00:00Z",
                "Value": "OK",
                "Summary": "Cream status is ok",
-               "Message": "Cream job submission test return value of ok"
+               "Message": "Cream job submission test return value of ok",
+               "actual_data": "latency=15s",
+               "threshold_rule_applied": "latency=15s;20:30;30:40",
+               "original_status": "WARNING"
              },
              {
                "Timestamp": "2015-05-01T01:00:00Z",
@@ -433,7 +478,10 @@ func (suite *metricResultTestSuite) TestMultipleMetricResultsOK() {
                "Timestamp": "2015-05-01T00:00:00Z",
                "Value": "OK",
                "Summary": "Cream status is ok",
-               "Message": "Cream job submission test return value of ok"
+               "Message": "Cream job submission test return value of ok",
+               "actual_data": "latency=15s",
+               "threshold_rule_applied": "latency=15s;20:30;30:40",
+               "original_status": "WARNING"
              },
              {
                "Timestamp": "2015-05-01T05:00:00Z",

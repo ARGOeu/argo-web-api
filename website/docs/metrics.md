@@ -318,11 +318,11 @@ Reponse body:
 
 ### Extra endpoint information on metric results
 
-Some metric results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. For example:
+Some metric results have additional information regarding the specific service endpoint such as it's Url, certificat DN etc... If this information is available it will be displayed under each service endpoint along with status results. Also some metrics might have a changed status due to a defined threshold rule being applied (see more about [Threshold profiles](threshold_profiles.md)). Thus they will include additional information such as the original status value (field name: `original_status`), the threshold rule applied (field name: `threshold_rule_applied`) and the actual data (field name: `actual_data`) that the rule has been applied to. For example:
 
 
 
-```
+```json
 {
    "root": [
      {
@@ -367,9 +367,12 @@ Some metric results have additional information regarding the specific service e
              },
              {
                "Timestamp": "2015-06-20T18:00:00Z",
-               "Value": "OK",
+               "Value": "CRITICAL",
                "Summary": "memcheck ok",
-               "Message": "memory under 20%"
+               "Message": "memory under 20%",
+               "original_status": "OK",
+               "threshold_rule_applied": "reserved_memory=0.1;0.1:0.2;0.2:0.5",
+               "actual_data": "reserved_memory=0.15"
              },
            ]
          }

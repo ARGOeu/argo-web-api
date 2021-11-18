@@ -32,14 +32,17 @@ type metricResultQuery struct {
 
 // metricResultOutput structure holds mongo results
 type metricResultOutput struct {
-	Timestamp string            `bson:"timestamp"`
-	Hostname  string            `bson:"host"`
-	Service   string            `bson:"service"`
-	Metric    string            `bson:"metric"`
-	Status    string            `bson:"status"`
-	Summary   string            `bson:"summary"`
-	Message   string            `bson:"message"`
-	Info      map[string]string `bson:"info"`
+	Timestamp      string            `bson:"timestamp"`
+	Hostname       string            `bson:"host"`
+	Service        string            `bson:"service"`
+	Metric         string            `bson:"metric"`
+	Status         string            `bson:"status"`
+	Summary        string            `bson:"summary"`
+	Message        string            `bson:"message"`
+	Info           map[string]string `bson:"info"`
+	ActualData     string            `bson:"actual_data"`
+	RuleApplied    string            `bson:"threshold_rule_applied"`
+	OriginalStatus string            `bson:"original_status"`
 }
 
 // HostXML struct used as xml block
@@ -61,11 +64,14 @@ type MetricXML struct {
 
 // StatusXML struct used as xml block
 type StatusXML struct {
-	XMLName   xml.Name `xml:"status" json:"-"`
-	Timestamp string   `xml:"timestamp,attr"`
-	Value     string   `xml:"value,attr"`
-	Summary   string   `xml:"summary"`
-	Message   string   `xml:"message"`
+	XMLName        xml.Name `xml:"status" json:"-"`
+	Timestamp      string   `xml:"timestamp,attr"`
+	Value          string   `xml:"value,attr"`
+	Summary        string   `xml:"summary"`
+	Message        string   `xml:"message"`
+	ActualData     string   `xml:"-" json:"actual_data,omitempty"`
+	RuleApplied    string   `xml:"-" json:"threshold_rule_applied,omitempty"`
+	OriginalStatus string   `xml:"-" json:"original_status,omitempty"`
 }
 
 type root struct {
