@@ -227,20 +227,23 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"monitoring_box":     "nagios3.hellasgrid.gr",
-		"date_integer":       20150501,
-		"timestamp":          "2015-05-01T01:00:00Z",
-		"service":            "CREAM-CE",
-		"host":               "cream01.afroditi.gr",
-		"endpoint_group":     "HG-03-AUTH",
-		"metric":             "emi.cream.CREAMCE-JobSubmit",
-		"status":             "CRITICAL",
-		"time_integer":       10000,
-		"previous_state":     "OK",
-		"previous_timestamp": "2015-05-01T00:00:00Z",
-		"summary":            "Cream status is CRITICAL",
-		"message":            "Cream job submission test failed",
+		"report":                 "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"monitoring_box":         "nagios3.hellasgrid.gr",
+		"date_integer":           20150501,
+		"timestamp":              "2015-05-01T01:00:00Z",
+		"service":                "CREAM-CE",
+		"host":                   "cream01.afroditi.gr",
+		"endpoint_group":         "HG-03-AUTH",
+		"metric":                 "emi.cream.CREAMCE-JobSubmit",
+		"status":                 "CRITICAL",
+		"time_integer":           10000,
+		"previous_state":         "OK",
+		"previous_timestamp":     "2015-05-01T00:00:00Z",
+		"summary":                "Cream status is CRITICAL",
+		"message":                "Cream job submission test failed",
+		"actual_data":            "latency=15s",
+		"threshold_rule_applied": "latency=1s;0:5;10:60",
+		"original_status":        "OK",
 	})
 	c.Insert(bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -614,7 +617,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 		expReq{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobSubmit" +
-				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2",
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2&view=details",
 			code: 200,
 			key:  "KEY1",
 			result: `{
@@ -635,7 +638,10 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
     },
     {
      "timestamp": "2015-05-01T01:00:00Z",
-     "value": "CRITICAL"
+     "value": "CRITICAL",
+     "actual_data": "latency=15s",
+     "threshold_rule_applied": "latency=15s",
+     "original_status": "OK"
     }
    ]
   }

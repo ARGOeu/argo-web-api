@@ -42,17 +42,20 @@ type InputParams struct {
 
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
-	Report        string            `bson:"report"`
-	Timestamp     string            `bson:"timestamp"`
-	EndpointGroup string            `bson:"endpoint_group"`
-	Service       string            `bson:"service"`
-	Hostname      string            `bson:"host"`
-	Status        string            `bson:"status"`
-	Metric        string            `bson:"metric"`
-	DateInt       string            `bson:"date_integer"`
-	Info          map[string]string `bson:"info"`
-	PrevTimestamp string            `bson:"previous_timestamp"`
-	PrevStatus    string            `bson:"previous_state"`
+	Report         string            `bson:"report"`
+	Timestamp      string            `bson:"timestamp"`
+	EndpointGroup  string            `bson:"endpoint_group"`
+	Service        string            `bson:"service"`
+	Hostname       string            `bson:"host"`
+	Status         string            `bson:"status"`
+	Metric         string            `bson:"metric"`
+	DateInt        string            `bson:"date_integer"`
+	Info           map[string]string `bson:"info"`
+	ActualData     string            `bson:"actual_data"`
+	RuleApplied    string            `bson:"threshold_rule_applied"`
+	OriginalStatus string            `bson:"original_status"`
+	PrevTimestamp  string            `bson:"previous_timestamp"`
+	PrevStatus     string            `bson:"previous_state"`
 }
 
 // json/xml response related structs
@@ -75,9 +78,12 @@ type endpointOUT struct {
 }
 
 type statusOUT struct {
-	XMLName   xml.Name `xml:"status" json:"-"`
-	Timestamp string   `xml:"timestamp,attr" json:"timestamp"`
-	Value     string   `xml:"value,attr" json:"value"`
+	XMLName        xml.Name `xml:"status" json:"-"`
+	Timestamp      string   `xml:"timestamp,attr" json:"timestamp"`
+	Value          string   `xml:"value,attr" json:"value"`
+	ActualData     string   `xml:"-" json:"actual_data,omitempty"`
+	RuleApplied    string   `xml:"-" json:"threshold_rule_applied,omitempty"`
+	OriginalStatus string   `xml:"-" json:"original_status,omitempty"`
 }
 
 // Message struct to hold the json/xml response
