@@ -31,6 +31,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/latest"
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
 	"github.com/ARGOeu/argo-web-api/app/metricResult"
+	"github.com/ARGOeu/argo-web-api/app/metrics"
 	"github.com/ARGOeu/argo-web-api/app/operationsProfiles"
 	"github.com/ARGOeu/argo-web-api/app/recomputations2"
 	"github.com/ARGOeu/argo-web-api/app/reports"
@@ -70,7 +71,9 @@ var routesV2 = []RouteV2{
 	{"Aggregation Profiles", "", aggregationProfiles.HandleSubrouter},
 	{"Operations Profiles", "", operationsProfiles.HandleSubrouter},
 	{"Thresholds Profiles", "", thresholdsProfiles.HandleSubrouter},
+	{"Metrics", "", metrics.HandleSubrouter},
 	{"Tenants", "/admin", tenants.HandleSubrouter},
+	{"Metrics_Admin", "/admin", metrics.HandleAdminSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 	{"Version", "", version.HandleSubrouter},
 	{"Downtimes", "", downtimes.HandleSubrouter},
