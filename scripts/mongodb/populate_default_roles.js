@@ -246,7 +246,23 @@ function populate_default_roles() {
         {
             resource: "trends.status_endpoint_groups",
             roles: ["admin", "editor", "viewer", "admin_ui"]
-        }
+        },
+        {
+            resource: "metrics.get",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "metrics_report.get",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "metrics_admin.get",
+            roles: ["super_admin"]
+        },
+        {
+            resource: "metrics_admin.update",
+            roles: ["super_admin"]
+        },
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
 }

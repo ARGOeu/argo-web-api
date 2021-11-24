@@ -2310,6 +2310,143 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /metrics:
+    get:
+      summary: List of metrics
+      operationId: metrics.list
+      description: List of metrics
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+    
+      responses:
+        '200':
+          description: list of metrics
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /metrics/by_report/{report_name}:
+    get:
+      summary: List metrics per date and filter by report
+      operationId: metrics_report.list
+      description: List metrics per date and filter by report
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: report_name
+          type: string
+          description: filter results based on selected report
+          required: true
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: filtered metric list based on the metric profile attached to the report
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /admin/metrics:
+    get:
+      summary: List of metrics (administrative)
+      operationId: metrics_admin.list
+      description: List of metrics from an admin point of view
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+    
+      responses:
+        '200':
+          description: list of metrics
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update list of metrics (administrative)
+      operationId: metrics_admin.update
+      description: Update the list of metrics
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "endpoint_resource"
+          in: "body"
+          description: "Json description of endpoint topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/MetricList'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /latest/{report_name}/{lgroup_type}:
     get:
@@ -4480,6 +4617,23 @@ definitions:
       tags:
         type: object
         description: "key value tags"
+        
+  MetricList:
+    type: array
+    items:
+      $ref: '#/definitions/Metric'
+        
+  Metric:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "the name of the metric"
+      tags:
+        type: array
+        description: "a list of tags attached to the metric"
+        items:
+           type: string
       
 
   FactorsResponse:
