@@ -5044,6 +5044,15 @@ definitions:
                         Message:
                           type: string
                           description: "The detailed output message of the probe (metric)"
+                        actual_data:
+                          type: string
+                          description: "Actual numerical data gathered by the probe (optional)"
+                        threshold_rule:
+                          type: string
+                          description: "Threshold rule applied to the specific metric (optional)"
+                        original_status:
+                          type: string
+                          description: "Original status of probe before applying threhsold rule (optional)"
 
   MetricResult:
     type: object
