@@ -313,6 +313,61 @@ Some service metric status results have additional information regarding the spe
 }
 ```
 
+### Threshold rule information in status metric timelines
+
+By using the url parameter `view=details` the argo-web-api will enrich the status timeline results with additional information in case a threshold rule has been applied to the results. For example:
+
+```json
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "info": {
+                  "Url": "https://cream01.afroditi.gr/path/to/service"
+               },
+              "metrics": [
+                {
+                  "name": "emi.cream.CREAMCE-JobSubmit",
+                  "statuses": [
+                    {
+                      "timestamp": "2015-04-30T23:59:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T01:00:00Z",
+                      "value": "CRITICAL",
+                      "actual_data": "latency=15s",
+                      "threshold_rule_applied": "latency=15s",
+                      "original_status": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-02T01:00:00Z",
+                      "value": "OK"
+                    },
+                    {
+                      "timestamp": "2015-05-01T23:59:59Z",
+                      "value": "OK"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 
 <a id="2"></a>
 

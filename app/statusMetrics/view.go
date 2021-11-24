@@ -56,7 +56,7 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 	return dResult
 }
 
-func createView(results []DataOutput, input InputParams, endDate string) ([]byte, error) {
+func createView(results []DataOutput, input InputParams, endDate string, details bool) ([]byte, error) {
 
 	output := []byte("reponse output")
 	err := error(nil)
@@ -132,6 +132,11 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
+		if details {
+			status.ActualData = row.ActualData
+			status.OriginalStatus = row.OriginalStatus
+			status.RuleApplied = row.ActualData
+		}
 		ppMetric.Statuses = append(ppMetric.Statuses, status)
 
 	}
