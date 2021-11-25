@@ -23,7 +23,6 @@
 package topology
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -517,6 +516,39 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49999",
+		"info": bson.M{
+			"name":        "CriticalExcludeGroup",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITE",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"name":  "name1",
+				"value": "value1"},
+			{
+				"name":  "name2",
+				"value": "value2"},
+			{
+				"name":    "subgroup",
+				"value":   "~SITEB",
+				"context": "argo.group.filter.fields",
+			},
+		}})
+
+	c.Insert(bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943x",
 		"info": bson.M{
 			"name":        "Critical3",
@@ -798,6 +830,48 @@ func (suite *topologyTestSuite) SetupTest() {
 				"context": "whatever",
 				"name":    "scope",
 				"value":   "tier2, tier1"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4956z",
+		"info": bson.M{
+			"name":        "CriticalExclude",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			{
+				"context": "argo.group.filter.fields",
+				"name":    "group",
+				"value":   "NGI0"},
+			{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host1.site_a.foo"},
+			{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "service",
+				"value":   "~service_2"},
+			{
+				"context": "argo.endpoint.filter.fields",
+				"name":    "hostname",
+				"value":   "host2.site_a.foo"},
 		}})
 
 	// Seed database with endpoint topology
@@ -1545,6 +1619,70 @@ func (suite *topologyTestSuite) TestListFilterGroupTags() {
   }
  ]
 }`},
+
+		{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&tags=infrastructure:~production",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_02",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/groups?&date=2015-06-12&subgroup=~SITE_02",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-10",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITE_01",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-06-10",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITE_101",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -1924,6 +2062,28 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
   }
  ]
 }`},
+
+		{
+			Path: "/api/v2/topology/groups/by_report/CriticalExcludeGroup?date=2015-06-22",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -1940,10 +2100,7 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 		// Check that we must have a 200 ok code
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
-		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
-			fmt.Println(exp.Path)
-			fmt.Println(output)
-		}
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
 
 	}
 }
@@ -2158,6 +2315,29 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
   }
  ]
 }`},
+
+		{
+			Path: "/api/v2/topology/endpoints/by_report/CriticalExclude?date=2015-01-11",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  }
+ ]
+}`},
 	}
 
 	for _, exp := range expected {
@@ -2260,6 +2440,29 @@ func (suite *topologyTestSuite) TestListFilterGroups() {
   }
  ]
 }`},
+
+		{
+			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=~*A",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-22",
+   "group": "NGIA",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "Production"
+   }
+  }
+ ]
+}`},
+
 		{
 			Path: "/api/v2/topology/groups?date=2015-06-30&subgroup=A*",
 			Code: 200,
