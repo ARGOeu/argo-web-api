@@ -135,7 +135,7 @@ func createView(results []DataOutput, input InputParams, endDate string, details
 		if details {
 			status.ActualData = row.ActualData
 			status.OriginalStatus = row.OriginalStatus
-			status.RuleApplied = row.ActualData
+			status.RuleApplied = row.RuleApplied
 		}
 		ppMetric.Statuses = append(ppMetric.Statuses, status)
 

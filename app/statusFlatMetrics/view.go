@@ -98,7 +98,7 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		if details {
 			status.ActualData = row.ActualData
 			status.OriginalStatus = row.OriginalStatus
-			status.RuleApplied = row.ActualData
+			status.RuleApplied = row.RuleApplied
 		}
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
