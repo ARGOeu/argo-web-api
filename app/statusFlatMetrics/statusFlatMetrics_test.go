@@ -640,7 +640,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
      "timestamp": "2015-05-01T01:00:00Z",
      "value": "CRITICAL",
      "actual_data": "latency=15s",
-     "threshold_rule_applied": "latency=15s",
+     "threshold_rule_applied": "latency=1s;0:5;10:60",
      "original_status": "OK"
     }
    ]
