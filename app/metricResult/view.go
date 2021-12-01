@@ -144,3 +144,19 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 	return xml.MarshalIndent(docRoot, " ", "  ")
 
 }
+
+func createErrorMessage(message string, code int, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &errorMessage{}
+
+	docRoot.Message = message
+	docRoot.Code = code
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
+	return output, err
+}
