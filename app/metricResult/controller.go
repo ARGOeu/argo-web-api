@@ -29,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -109,12 +110,6 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	input := metricResultQuery{
-		EndpointName: vars["endpoint_name"],
-		MetricName:   vars["metric_name"],
-		ExecTime:     urlValues.Get("exec_time"),
-	}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
@@ -123,12 +118,36 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
+	reportName := urlValues.Get("report")
+	reportID := ""
+
+	if reportName != "" {
+		requestedReport := reports.MongoInterface{}
+		err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &requestedReport)
+
+		if err != nil {
+			code = http.StatusNotFound
+			message := "The report with the name " + vars["report_name"] + " does not exist"
+			output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		reportID = requestedReport.ID
+	}
+
+	input := metricResultQuery{
+		EndpointName: vars["endpoint_name"],
+		MetricName:   vars["metric_name"],
+		ExecTime:     urlValues.Get("exec_time"),
+	}
+
 	result := metricResultOutput{}
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
 
 	// Query the detailed metric results
-	err = metricCol.Find(prepQuery(input)).One(&result)
+	err = metricCol.Find(prepQuery(input, reportID)).One(&result)
 
 	output, err = createMetricResultView(result, contentType)
 
@@ -140,7 +159,7 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	return code, h, output, err
 }
 
-func prepQuery(input metricResultQuery) bson.M {
+func prepQuery(input metricResultQuery, reportID string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -157,6 +176,10 @@ func prepQuery(input metricResultQuery) bson.M {
 		"host":         input.EndpointName,
 		"metric":       input.MetricName,
 		"time_integer": tsInt,
+	}
+
+	if reportID != "" {
+		query["report"] = reportID
 	}
 
 	return query
