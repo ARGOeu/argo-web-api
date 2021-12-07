@@ -12,7 +12,7 @@ module.exports = {
       title: 'ARGO WEB API',
       logo: {
         alt: 'argo-web-api logo',
-        src: 'img/argo-web-api.png',
+        src: 'img/logo.svg',
       },
       items: [
         {
