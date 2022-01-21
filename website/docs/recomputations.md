@@ -394,3 +394,39 @@ Json Response
  }
 }
 ```
+
+# Recomputeations that exclude metrics
+
+There is also the ability to run a recomputation and exclude specific metrics. During the recomputation period the metrics that are considered excluded don't take place into any operation or aggregation thus they don't affect their endpoints at all. 
+
+To declare a recomputation that excludes metric you must use the special field "exclude_metrics" in the recomputation and add an array of metrics to be excluded (You can limit the scope also by "group", "service" and "hostname")
+
+For example:
+
+```json
+{
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e777",
+   "requester_name": "John Doe",
+   "requester_email": "johndoe@example.com",
+   "reason": "issue with metric checks",
+   "start_time": "2022-01-10T12:00:00Z",
+   "end_time": "2022-01-10T23:00:00Z",
+   "report": "Default",
+   "exclude_metrics": [
+    {
+     "metric": "check-1"
+    },
+    {
+     "metric": "check-2",
+     "timestamp": "host1.example.com"
+    },
+    {
+     "metric": "check-3",
+     "group": "Affected-Site"
+    }
+   ]
+  }
+  ```
+
+  If you specify a rule that includes only a `metric` then this type of metric will be excluded globally from all endpoints and groups
+  If you specify a rule that includes a `metric` and another field such as `hostname`, `service` or `group` then the rule is scoped accordingly to a specific group or service type or hostname and the metric that belongs there. The field `metric` is mandatory.
