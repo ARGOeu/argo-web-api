@@ -5207,6 +5207,22 @@ definitions:
         description: "Comma separated list of endpoint groups to exclude"
         items:
           type: string
+      exclude_metrics:
+        type: array
+        description: "Optional definition to recompute by excluding specific metrics"
+        items:
+          type: object
+          properties:
+            metric:
+              description: "Metric name to be excluded"
+              type: string
+            hostname:
+              description: "Hostname of a specific host to narrow down metric exclusion (optional)"
+            service:
+              description: "name of a specific service type to narrow down metric exclusion (optional)"
+            group:
+              description: "name of a specific group of endpoints to narrow down metric exclusion (optional)"
+              
       report:
         type: string
         description: "Name of job report"

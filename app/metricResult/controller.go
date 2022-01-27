@@ -123,11 +123,11 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 
 	if reportName != "" {
 		requestedReport := reports.MongoInterface{}
-		err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &requestedReport)
+		err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": reportName}, &requestedReport)
 
 		if err != nil {
 			code = http.StatusNotFound
-			message := "The report with the name " + vars["report_name"] + " does not exist"
+			message := "The report with the name " + reportName + " does not exist"
 			output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
 			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 			return code, h, output, err
