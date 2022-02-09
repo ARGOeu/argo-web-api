@@ -301,6 +301,114 @@ Reponse body:
 }
 ```
 
+## API calls to find status trends among metrics by tag
+
+This API call displays the top metrics by tag and state (e.g. CRITICAL, WARNING etc) over a period of dates - optionally by monthly aggregation - for a specific report
+
+### [GET]: Daily Status trends in service endpoint metrics by tag
+This method may be used to retrieve a list of top status service endpoint metrics by tag. 
+
+### Input
+
+```
+/trends/{report_name}/status/metrics/tags?date=2020-05-01
+```
+
+#### Path Parameters
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`report_name`| name of the report| YES |  |
+
+#### Url Parameters
+
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
+
+
+#### Headers
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+```
+
+#### Response Code
+```
+Status: 200 OK
+```
+
+
+###### Example Request:
+URL:
+```
+/trends/{report_name}/status/metrics/tags?date=2020-05-01
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "status": "CRITICAL",
+      "tag": "NETWORK"
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "tcp-check",
+          "status": "CRITICAL",
+          "events": 40
+        }
+      ]
+    },
+    {
+      "status": "WARNING",
+      "tag": "STORAGE"
+      "top": [
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-A",
+          "endpoint": "hosta.example.foo",
+          "metric": "storage-check-1",
+          "status": "WARNING",
+          "events": 55
+        },
+        {
+          "endpoint_group": "SITE-A",
+          "service": "service-B",
+          "endpoint": "hostb.example.foo",
+          "metric": "storage-check-1",
+          "status": "WARNING",
+          "events": 12
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+
 ## API calls to find status trends among endpoints
 
 This API call displays the top endpoints by state (e.g. CRITICAL, WARNING etc) over a period of dates - optionally by monthly aggregation - for a specific report

@@ -243,6 +243,170 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 	return code, h, output, err
 }
 
+// ListStatusMetricsTags returns a list of top status metrics for the day sorted by tags
+func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("List Flapping Metrics")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	metricCollection := session.DB(tenantDbConfig.Db).C(statusMetrics)
+
+	// Query the detailed metric results
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	startDate, endDate, err := getDateRange(urlValues)
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+
+	limit := -1
+	limStr := urlValues.Get("top")
+	if limStr != "" {
+		limit, err = strconv.Atoi(limStr)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	granularity := urlValues.Get("granularity")
+
+	// query for metrics
+	filter := bson.M{"report": reportID, "tags": bson.M{"$exists": true}, "date": bson.M{"$gte": startDate, "$lte": endDate}}
+
+	// apply query for bucketed monthly results if granularity is set to monthly
+	if granularity == "monthly" {
+
+		results := []StatusMonthMetricData{}
+
+		query := []bson.M{
+			{"$match": filter},
+			{"$unwind": "$tags"},
+			{"$group": bson.M{
+				"_id": bson.M{
+					"month":    bson.M{"$substr": list{"$date", 0, 6}},
+					"tag":      "$tags",
+					"group":    "$group",
+					"service":  "$service",
+					"endpoint": "$endpoint",
+					"metric":   "$metric",
+					"status":   "$status"},
+				"events": bson.M{"$sum": "$trends"},
+			}},
+			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"_id.tag", 1}, {"events", -1}}},
+			{
+				"$group": bson.M{
+					"_id": bson.M{"month": "$_id.month", "status": "$_id.status", "tag": "$_id.tag"},
+					"top": bson.M{"$push": bson.M{"group": "$_id.group", "service": "$_id.service", "endpoint": "$_id.endpoint", "metric": "$_id.metric", "status": "$_id.status", "events": "$events"}}}},
+		}
+
+		// trim down the list in each month-bucket according to the limit parameter
+		if limit > 0 {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"status": "$_id.status",
+				"tag":    "$_id.tag",
+				"top":    bson.M{"$slice": list{"$top", limit}}}})
+		} else {
+			query = append(query, bson.M{"$project": bson.M{"date": bson.M{"$concat": list{bson.M{"$substr": list{"$_id.month", 0, 4}},
+				"-", bson.M{"$substr": list{"$_id.month", 4, 6}}}},
+				"status": "$_id.status",
+				"tag":    "$_id.tag",
+				"top":    "$top"}})
+		}
+
+		// sort end results by month bucket ascending
+		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}, {"tag", 1}}})
+
+		err = metricCollection.Pipe(query).All(&results)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+		output, err = createStatusMonthMetricListView(results, "Success", 200)
+
+		return code, h, output, err
+
+	}
+
+	// continue by calculating non monthly bucketed results
+	results := []StatusGroupMetricData{}
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$unwind": "$tags"},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"tag":      "$tags",
+				"group":    "$group",
+				"service":  "$service",
+				"endpoint": "$endpoint",
+				"metric":   "$metric",
+				"status":   "$status"},
+			"events": bson.M{"$sum": "$trends"},
+		}},
+		{"$sort": bson.D{{"_id.status", 1}, {"_id.tag", 1}, {"events", -1}}},
+		{
+			"$group": bson.M{
+				"_id": bson.M{"status": "$_id.status", "tag": "$_id.tag"},
+				"top": bson.M{"$push": bson.M{"group": "$_id.group", "service": "$_id.service", "endpoint": "$_id.endpoint", "metric": "$_id.metric", "status": "$_id.status", "events": "$events"}}}},
+	}
+
+	// trim down the list in each month-bucket according to the limit parameter
+	if limit > 0 {
+		query = append(query, bson.M{"$project": bson.M{"status": "$_id.status", "tag": "$_id.tag",
+			"top": bson.M{"$slice": list{"$top", limit}}}})
+	} else {
+		query = append(query, bson.M{"$project": bson.M{"status": "$_id.status", "tag": "$_id.tag",
+			"top": "$top"}})
+	}
+
+	// sort end results by month bucket ascending
+	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+
+	err = metricCollection.Pipe(query).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createStatusMetricListView(results, "Success", 200)
+
+	return code, h, output, err
+}
+
 // ListStatusEndpoints returns a list of top status endpoints (in duration) for the day
 func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
