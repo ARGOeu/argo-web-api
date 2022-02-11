@@ -35,6 +35,7 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var appRoutesV2 = []respond.AppRoutes{
 
+	{"trends.flapping_metrics_tags", "GET", "/{report_name}/flapping/metrics/tags", ListFlappingMetricsTags},
 	{"trends.flapping_metrics", "GET", "/{report_name}/flapping/metrics", ListFlappingMetrics},
 	{"trends.flapping_endpoints", "GET", "/{report_name}/flapping/endpoints", ListFlappingEndpoints},
 	{"trends.flapping_services", "GET", "/{report_name}/flapping/services", ListFlappingServices},

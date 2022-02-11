@@ -1454,6 +1454,122 @@ Reponse body:
 }
 ```
 
+### [GET]: Daily Flapping trends in service endpoint metrics by tag
+This method may be used to retrieve a list of top flapping service endpoint metrics grouped by semantic tags. 
+
+### Input
+
+```
+/trends/{report_name}/flapping/metrics/tags?date=2020-05-01
+```
+
+#### Path Parameters
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`report_name`| name of the report| YES |  |
+
+#### Url Parameters
+
+| Type | Description | Required | Default value |
+|------|-------------|----------|---------------|
+|`date`| Date to view problematic endpoints of | NO |  |
+|`start_date`| define start date to view problematic endpoints over range | NO |  |
+|`end_date`| define end date to view problematic endpoints over range | NO |  |
+|`top`| integer to define a top number of results displayed | NO |  |
+|`granularity`| string value to define if you want monthly granularity in the results - e.g `?granularity=monthly` | NO |  |
+
+
+#### Headers
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+```
+
+#### Response Code
+```
+Status: 200 OK
+```
+
+
+###### Example Request:
+URL:
+```
+/trends/{report_name}/flapping/metrics/tags?date=2020-05-01
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+###### Example Response:
+
+Code:
+```
+Status: 200 OK
+```
+Reponse body:
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "tag": "HTTP",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
+  },
+  {
+   "tag": "MEMORY",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 32
+    }
+   ]
+  },
+  {
+   "tag": "NETWORK",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
+  }
+ ]
+}
+```
+
 
 ### [GET]: Daily Flapping trends in service endpoints 
 This method may be used to retrieve a list of top flapping service endpoints

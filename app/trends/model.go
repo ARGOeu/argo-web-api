@@ -84,7 +84,14 @@ type StatusGroupServiceData struct {
 //MonthMetricData holds monthly information about flapping metric trends
 type MonthMetricData struct {
 	Date string       `bson:"date" json:"date"`
+	Tag  string       `bson:"tag" json:"tag,omitempty"`
 	Top  []MetricData `bson:"top" json:"top"`
+}
+
+//TagMetricData holds information about flapping metric trends by Tag
+type TagMetricData struct {
+	Tag string       `bson:"tag" json:"tag,omitempty"`
+	Top []MetricData `bson:"top" json:"top"`
 }
 
 // MonthEndpointData holds monthly information about flapping endpoint trends

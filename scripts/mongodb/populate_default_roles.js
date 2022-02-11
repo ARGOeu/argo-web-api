@@ -220,6 +220,10 @@ function populate_default_roles() {
             roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
+            resource: "trends.flapping_metrics_tags",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
             resource: "trends.flapping_endpoints",
             roles: ["admin", "editor", "viewer", "admin_ui"]
         },

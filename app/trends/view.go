@@ -45,6 +45,22 @@ func createStatusEgroupListView(results []StatusGroupEgroupData, msg string, cod
 
 }
 
+// createTagMetricDataListView constructs the list response template and exports it as json
+func createTagMetricDataListView(results []TagMetricData, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 // createStatusServiceListView constructs the list response template and exports it as json
 func createStatusServiceListView(results []StatusGroupServiceData, msg string, code int) ([]byte, error) {
 
