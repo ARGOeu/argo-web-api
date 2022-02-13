@@ -54,7 +54,7 @@ func main() {
 
 	//TLS support only
 	tlsConfig := &tls.Config{
-		MinVersion:               tls.VersionTLS10,
+		MinVersion:               tls.VersionTLS12,
 		PreferServerCipherSuites: true,
 	}
 
