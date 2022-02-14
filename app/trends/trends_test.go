@@ -129,6 +129,10 @@ func (suite *TrendsTestSuite) SetupTest() {
 			"roles":    []string{"editor", "viewer"},
 		},
 		bson.M{
+			"resource": "trends.flapping_metrics_tags",
+			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
 			"resource": "trends.flapping_endpoints",
 			"roles":    []string{"editor", "viewer"},
 		},
@@ -150,6 +154,10 @@ func (suite *TrendsTestSuite) SetupTest() {
 		},
 		bson.M{
 			"resource": "trends.status_services",
+			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
+			"resource": "trends.status_metrics_tags",
 			"roles":    []string{"editor", "viewer"},
 		},
 		bson.M{
@@ -546,6 +554,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-2",
 		"status":   "UNKNOWN",
 		"trends":   32,
+		"tags":     []string{"STORAGE"},
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -556,6 +565,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"status":   "WARNING",
 		"trends":   8,
+		"tags":     []string{"NETWORK", "HTTP"},
 	})
 	c.Insert(bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -658,6 +668,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"service":  "service-A",
 		"endpoint": "hosta.example.foo",
 		"metric":   "check-2",
+		"tags":     []string{"MEMORY"},
 		"flipflop": 32,
 	})
 	c.Insert(bson.M{
@@ -667,6 +678,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"service":  "service-B",
 		"endpoint": "hostb.example.foo",
 		"metric":   "web-check",
+		"tags":     []string{"NETWORK", "HTTP"},
 		"flipflop": 8,
 	})
 	c.Insert(bson.M{
@@ -676,6 +688,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"service":  "service-A",
 		"endpoint": "hosta.example2.foo",
 		"metric":   "web-check",
+		"tags":     []string{"NETWORK", "HTTP"},
 		"flipflop": 7,
 	})
 
@@ -1088,6 +1101,74 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 		expReq{
 			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics/tags?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-05",
+   "tag": "HTTP",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "tag": "MEMORY",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 32
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "tag": "NETWORK",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-04-01&end_date=2015-05-02&top=3&granularity=monthly",
 			code:   200,
 			key:    "KEY1",
@@ -1184,6 +1265,71 @@ func (suite *TrendsTestSuite) TestTrends() {
    "endpoint": "hostb.example.foo",
    "metric": "web-check",
    "flapping": 20
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/trends/Report_A/flapping/metrics/tags?start_date=2015-05-01&end_date=2015-05-02&top=3",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "tag": "HTTP",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
+  },
+  {
+   "tag": "MEMORY",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "flapping": 32
+    }
+   ]
+  },
+  {
+   "tag": "NETWORK",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "flapping": 8
+    },
+    {
+     "endpoint_group": "SITE-B",
+     "service": "service-A",
+     "endpoint": "hosta.example2.foo",
+     "metric": "web-check",
+     "flapping": 7
+    }
+   ]
   }
  ]
 }`,
@@ -1994,6 +2140,66 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 		expReq{
 			method: "GET",
+			url:    "/api/v2/trends/Report_A/status/metrics/tags?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=5",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-05",
+   "status": "UNKNOWN",
+   "tag": "STORAGE",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-A",
+     "endpoint": "hosta.example.foo",
+     "metric": "check-2",
+     "status": "UNKNOWN",
+     "events": 32
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "WARNING",
+   "tag": "HTTP",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "WARNING",
+     "events": 8
+    }
+   ]
+  },
+  {
+   "date": "2015-05",
+   "status": "WARNING",
+   "tag": "NETWORK",
+   "top": [
+    {
+     "endpoint_group": "SITE-A",
+     "service": "service-B",
+     "endpoint": "hostb.example.foo",
+     "metric": "web-check",
+     "status": "WARNING",
+     "events": 8
+    }
+   ]
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
 			code:   200,
 			key:    "KEY1",
@@ -2537,7 +2743,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 		suite.router.ServeHTTP(response, request)
 
 		suite.Equal(expReq.code, response.Code, "Incorrect HTTP response code")
-		// Compare the expected and actual xml response
+		// Compare the expected and actual json response
 		suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")
 
 	}

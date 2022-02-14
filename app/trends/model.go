@@ -31,6 +31,7 @@ const ymdForm = "2006-01-02"
 type StatusMonthMetricData struct {
 	Date   string             `bson:"date" json:"date"`
 	Status string             `bson:"status" json:"status"`
+	Tag    string             `bson:"tag" json:"tag,omitempty"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
@@ -58,6 +59,7 @@ type StatusMonthEgroupData struct {
 //StatusGroupMetricData holds grouped monthly status trends information about metrics
 type StatusGroupMetricData struct {
 	Status string             `bson:"status" json:"status"`
+	Tag    string             `bson:"tag" json:"tag,omitempty"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
@@ -82,7 +84,14 @@ type StatusGroupServiceData struct {
 //MonthMetricData holds monthly information about flapping metric trends
 type MonthMetricData struct {
 	Date string       `bson:"date" json:"date"`
+	Tag  string       `bson:"tag" json:"tag,omitempty"`
 	Top  []MetricData `bson:"top" json:"top"`
+}
+
+//TagMetricData holds information about flapping metric trends by Tag
+type TagMetricData struct {
+	Tag string       `bson:"tag" json:"tag,omitempty"`
+	Top []MetricData `bson:"top" json:"top"`
 }
 
 // MonthEndpointData holds monthly information about flapping endpoint trends
