@@ -5369,7 +5369,7 @@ definitions:
         type: string
       status:
         type: string
-      duration_in_minutes:
+      events:
         type: integer
         
   
@@ -5385,7 +5385,7 @@ definitions:
         type: string
       status:
         type: string
-      events:
+      duration_in_minutes:
         type: integer
         
   Trends_status_services:
@@ -5397,7 +5397,7 @@ definitions:
         type: string
       status:
         type: string
-      events:
+      duration_in_minutes:
         type: integer
         
   Trends_status_egroups:
@@ -5407,7 +5407,7 @@ definitions:
         type: string
       status:
         type: string
-      events:
+      duration_in_minutes:
         type: integer
 
               
