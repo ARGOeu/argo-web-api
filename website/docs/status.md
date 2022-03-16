@@ -646,7 +646,55 @@ Some service endpoint status results have additional information regarding the s
     }
   ]
 }
+```
 
+### Threshold rule information in status endpoint timelines
+
+By using the url parameter `view=details` the argo-web-api will enrich the status timeline results with additional information in case a threshold rule has been applied to the results. For example:
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "endpoints": [
+            {
+              "name": "cream01.afroditi.gr",
+              "info": {
+                  "Url": "https://cream01.afroditi.gr/path/to/service"
+               },
+              "statuses": [
+                {
+                  "timestamp": "2015-04-30T23:59:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T01:00:00Z",
+                  "value": "CRITICAL",
+                  "affected_by_threshold_rule": true
+                },
+                {
+                  "timestamp": "2015-05-01T02:00:00Z",
+                  "value": "OK"
+                },
+                {
+                  "timestamp": "2015-05-01T23:59:59Z",
+                  "value": "OK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
 <a id="3"></a>
 
@@ -864,6 +912,48 @@ Response body (JSON):
 }
 ```
 
+### Threshold rule information in status service timelines
+
+By using the url parameter `view=details` the argo-web-api will enrich the status timeline results with additional information in case a threshold rule has been applied to the results. For example:
+
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "services": [
+        {
+          "name": "CREAM-CE",
+          "type": "service",
+          "statuses": [
+            {
+              "timestamp": "2015-04-30T23:59:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T01:00:00Z",
+              "value": "CRITICAL",
+              "affected_by_threshold_rule": true
+            },
+            {
+              "timestamp": "2015-05-01T02:00:00Z",
+              "value": "OK"
+            },
+            {
+              "timestamp": "2015-05-01T23:59:59Z",
+              "value": "OK"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+
 <a id="4"></a>
 
 
@@ -1048,6 +1138,41 @@ Response body (JSON):
         {
           "timestamp": "2015-05-01T02:00:00Z",
           "value": "WARNING"
+        },
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        },
+        {
+          "timestamp": "2015-05-01T23:59:59Z",
+          "value": "OK"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Threshold rule information in status endpoint group timelines
+
+By using the url parameter `view=details` the argo-web-api will enrich the status timeline results with additional information in case a threshold rule has been applied to the results. For example:
+
+
+```
+{
+  "groups": [
+    {
+      "name": "HG-03-AUTH",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "CRITICAL"
+        },
+        {
+          "timestamp": "2015-05-01T02:00:00Z",
+          "value": "WARNING",
+          "affected_by_threshold_rule": true
         },
         {
           "timestamp": "2015-05-01T05:00:00Z",
@@ -1422,3 +1547,51 @@ Status: 200 OK
   "pageSize": 2
 }
 ```
+
+### Threshold rule information in flat status endpoint group timelines
+
+By using the url parameter `view=details` the argo-web-api will enrich the status timeline results with additional information in case a threshold rule has been applied to the results. For example:
+
+
+
+```
+{
+  "results": [
+    {
+      "type":"endpoint_metric",
+      "name": "someservice.example.gr",
+      "service": "someService",
+      "supergroup": "GROUPA",
+      "metric": "someService-FileTransfer",
+      "statuses": [
+        {
+          "timestamp": "2015-05-01T05:00:00Z",
+          "value": "OK"
+        }
+      ]
+    },
+    {
+      "type":"endpoint_metric",
+      "name": "someservice2.example.gr",
+      "service": "someService",
+      "supergroup": "GROUPA",
+      "metric": "someService-FileTransfer",
+      "statuses": [
+        {
+          "timestamp": "2015-04-30T23:59:00Z",
+          "value": "OK",
+          "affected_by_threshold_rule": true
+        },
+        {
+          "timestamp": "2015-05-01T00:00:00Z",
+          "value": "OK"
+        }
+      ]
+    }
+  ],
+  "nextPageToken": "NA==",
+  "pageSize": 2
+}
+```
+
+

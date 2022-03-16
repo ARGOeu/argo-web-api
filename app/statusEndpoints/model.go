@@ -41,14 +41,15 @@ type InputParams struct {
 
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
-	Report        string            `bson:"report"`
-	Timestamp     string            `bson:"timestamp"`
-	EndpointGroup string            `bson:"endpoint_group"`
-	Service       string            `bson:"service"`
-	Hostname      string            `bson:"host"`
-	Status        string            `bson:"status"`
-	DateInt       string            `bson:"date_integer"`
-	Info          map[string]string `bson:"info"`
+	Report           string            `bson:"report"`
+	Timestamp        string            `bson:"timestamp"`
+	EndpointGroup    string            `bson:"endpoint_group"`
+	Service          string            `bson:"service"`
+	Hostname         string            `bson:"host"`
+	Status           string            `bson:"status"`
+	DateInt          string            `bson:"date_integer"`
+	HasThresholdRule bool              `bson:"has_threshold_rule"`
+	Info             map[string]string `bson:"info"`
 }
 
 // json/xml response related structs
@@ -89,9 +90,10 @@ type endpointOUT struct {
 }
 
 type statusOUT struct {
-	XMLName   xml.Name `xml:"status" json:"-"`
-	Timestamp string   `xml:"timestamp,attr" json:"timestamp"`
-	Value     string   `xml:"value,attr" json:"value"`
+	XMLName                 xml.Name `xml:"status" json:"-"`
+	Timestamp               string   `xml:"timestamp,attr" json:"timestamp"`
+	Value                   string   `xml:"value,attr" json:"value"`
+	AffectedByThresholdRule bool     `xml:"-" json:"affected_by_threshold_rule,omitempty"`
 }
 
 // Message struct to hold the json/xml response

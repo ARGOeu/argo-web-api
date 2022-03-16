@@ -83,6 +83,13 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		contentType,
 	}
 
+	// This is going to be used to determine a detailed view or not of the results
+	view := urlValues.Get("view")
+	details := false
+	if view == "details" {
+		details = true
+	}
+
 	dataSrc := urlValues.Get("datasource")
 	// If hbase bypass mongo session
 	if dataSrc == "hbase" {
@@ -102,7 +109,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		doResults := hbaseToDataOutput(hbResults)
 
 		// Render the reults into xml
-		output, errHb = createView(doResults, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
+		output, errHb = createView(doResults, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -148,7 +155,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		}
 	}
 
-	output, err = createView(results, input, urlValues.Get("end_time")) //Render the results into JSON/XML format
+	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }
