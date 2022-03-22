@@ -293,14 +293,15 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":         "UNKNOWN",
 	})
 	c.Insert(bson.M{
-		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date_integer":   20150501,
-		"timestamp":      "2015-05-01T06:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "CREAM-CE",
-		"host":           "cream03.afroditi.gr",
-		"metric":         "emi.cream.CREAMCE-JobSubmit",
-		"status":         "CRITICAL",
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T06:00:00Z",
+		"endpoint_group":     "HG-03-AUTH",
+		"service":            "CREAM-CE",
+		"host":               "cream03.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "CRITICAL",
+		"has_threshold_rule": true,
 	})
 
 	// get dbconfiguration based on the tenant
@@ -744,6 +745,35 @@ func (suite *StatusEndpointsTestSuite) TestFlatListStatusEndpoints() {
     {
      "timestamp": "2015-05-01T06:00:00Z",
      "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ],
+ "pageSize": 4
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url: "/api/v2/status/Report_A/endpoints" +
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=OA==&view=details",
+			code: 200,
+			key:  "KEY1",
+			result: `{
+ "endpoints": [
+  {
+   "name": "cream03.afroditi.gr",
+   "service": "CREAM-CE",
+   "supergroup": "HG-03-AUTH",
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL",
+     "affected_by_threshold_rule": true
     },
     {
      "timestamp": "2015-05-01T23:59:59Z",

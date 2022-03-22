@@ -110,6 +110,13 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		contentType,
 	}
 
+	// This is going to be used to determine a detailed view or not of the results
+	view := urlValues.Get("view")
+	details := false
+	if view == "details" {
+		details = true
+	}
+
 	dataSrc := urlValues.Get("datasource")
 	// If hbase bypass mongo session
 	if dataSrc == "hbase" {
@@ -127,7 +134,7 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)
 		// Render the reults into xml
-		output, err = createFlatView(doResults, input, urlValues.Get("end_time"), limit, skip) //Render the results into JSON/XML format
+		output, err = createFlatView(doResults, input, urlValues.Get("end_time"), limit, skip, details) //Render the results into JSON/XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -171,7 +178,7 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		}
 	}
 
-	output, err = createFlatView(results, input, urlValues.Get("end_time"), limit, skip) //Render the results into JSON/XML format
+	output, err = createFlatView(results, input, urlValues.Get("end_time"), limit, skip, details) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }
