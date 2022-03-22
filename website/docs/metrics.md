@@ -1,6 +1,6 @@
 ---
 id: metrics
-title: Metrics
+title: Available Metrics and Tags
 ---
 ## API Calls
 
