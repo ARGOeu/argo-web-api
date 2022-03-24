@@ -10,7 +10,7 @@ info:
 host: localhost
 schemes:
   - https
-basePath: /api/v2
+basePath: /api
 produces:
   - application/json
 tags:
@@ -39,7 +39,7 @@ tags:
 paths:
 
 
-  /admin/tenants/{TENANT_ID}:
+  /v2/admin/tenants/{TENANT_ID}:
     get:
       summary: List a specific tenant
       operationId: tenants.ListOne
@@ -165,7 +165,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /admin/tenants:
+  /v2/admin/tenants:
     get:
       summary: List all available tenants
       operationId: tenants.List
@@ -237,7 +237,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /admin/tenants/{TENANT_ID}/status:
+  /v2/admin/tenants/{TENANT_ID}/status:
     get:
       summary: List a specific tenant's argo-engine status
       operationId: tenants.ListStatus
@@ -327,7 +327,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /admin/tenants/{TENANT_ID}/users:
+  /v2/admin/tenants/{TENANT_ID}/users:
     post:
       summary: Create a new user on existing tenant
       operationId: tenants.CreateUser
@@ -543,7 +543,7 @@ paths:
             $ref: '#/definitions/Status_error'
             
             
-  /admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
+  /v2/admin/tenants/{TENANT_ID}/users/{USER_ID}/renew_api_key:
     post:
       summary: Renew a user's api key
       operationId: tenants.UserRenewKey
@@ -592,7 +592,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /admin/users:byID/{USER_ID}:
+  /v2/admin/users:byID/{USER_ID}:
     get:
       summary: List a specific user
       operationId: tenants.user_by_id
@@ -631,7 +631,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /reports/{REPORT_ID}:
+  /v2/reports/{REPORT_ID}:
     get:
       summary: List a specific report
       operationId: reports.ListOne
@@ -756,7 +756,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /reports:
+  /v2/reports:
     get:
       summary: List all available reports
       operationId: reports.List
@@ -828,7 +828,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /operations_profiles/{PROFILE_ID}:
+  /v2/operations_profiles/{PROFILE_ID}:
     get:
       summary: List a specific operations profile
       operationId: operationsProfiles.ListOne
@@ -955,7 +955,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /operations_profiles:
+  /v2/operations_profiles:
     get:
       summary: List all operations profiles
       operationId: operationsProfiles.List
@@ -1034,7 +1034,7 @@ paths:
             $ref: '#/definitions/Status_error'
 
 
-  /aggregation_profiles/{PROFILE_ID}:
+  /v2/aggregation_profiles/{PROFILE_ID}:
     get:
       summary: List a specific aggregation profile
       operationId: aggregationProfiles.ListOne
@@ -1165,7 +1165,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /aggregation_profiles:
+  /v2/aggregation_profiles:
     get:
       summary: List all aggregation profiles
       operationId: aggregationProfiles.List
@@ -1240,7 +1240,7 @@ paths:
             $ref: '#/definitions/Status_error'
 
 
-  /metric_profiles/{PROFILE_ID}:
+  /v2/metric_profiles/{PROFILE_ID}:
     get:
       summary: List a specific metric profile
       operationId: metricProfiles.ListOne
@@ -1363,7 +1363,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /metric_profiles:
+  /v2/metric_profiles:
     get:
       summary: List all metric profiles
       operationId: metricProfiles.List
@@ -1433,7 +1433,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /thresholds_profiles/{PROFILE_ID}:
+  /v2/thresholds_profiles/{PROFILE_ID}:
     get:
       summary: List a specific threhsolds profile
       operationId: thresholdsProfiles.ListOne
@@ -1557,7 +1557,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /thresholds_profiles:
+  /v2/thresholds_profiles:
     get:
       summary: List all threhsolds profiles
       operationId: thresholdsProfiles.List
@@ -1630,7 +1630,7 @@ paths:
 
     
 
-  /downtimes:
+  /v2/downtimes:
     get:
       summary: List all downtimes resources for specific name
       operationId: downtimes.List
@@ -1734,7 +1734,7 @@ paths:
             $ref: '#/definitions/Status_error'
             
   
-  /weights/{PROFILE_ID}:
+  /v2/weights/{PROFILE_ID}:
     get:
       summary: List a specific weights resource
       operationId: weights.ListOne
@@ -1858,7 +1858,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /weights:
+  /v2/weights:
     get:
       summary: List all weight resource
       operationId: weights.List
@@ -1928,7 +1928,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /topology/stats/{report_name}:
+  /v2/topology/stats/{report_name}:
     get:
       summary: "List topology statistics for a specific report"
       description: "This request lists number of groups and services contained in the report"
@@ -1958,7 +1958,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /topology/tags:
+  /v2/topology/tags:
     get:
       summary: "List topology tags and values"
       description: "This request lists the available tags and their distinct values present in the daily topology items"
@@ -1987,7 +1987,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /topology/groups:
+  /v2/topology/groups:
     post:
       summary: Create a new group topology per date
       operationId: topology_groups.create
@@ -2112,7 +2112,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /topology/groups/by_report/{report_name}:
+  /v2/topology/groups/by_report/{report_name}:
     get:
       summary: List group topology per date and filter by report
       operationId: topology_groups_report.list
@@ -2152,7 +2152,7 @@ paths:
   
       
           
-  /topology/endpoints:
+  /v2/topology/endpoints:
     post:
       summary: Create a new endpoints topology resource
       operationId: topology_endpoints.create
@@ -2311,7 +2311,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /metrics:
+  /v2/metrics:
     get:
       summary: List of metrics
       operationId: metrics.list
@@ -2343,7 +2343,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /metrics/by_report/{report_name}:
+  /v2/metrics/by_report/{report_name}:
     get:
       summary: List metrics per date and filter by report
       operationId: metrics_report.list
@@ -2380,7 +2380,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /admin/metrics:
+  /v2/admin/metrics:
     get:
       summary: List of metrics (administrative)
       operationId: metrics_admin.list
@@ -2484,7 +2484,7 @@ paths:
           $ref: "#/responses/ServerError"
 
 
-  /latest/{report_name}/{lgroup_type}/{lgroup_name}:
+  /v2/latest/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List latest metric data for a target endpoint group and filter by status"
       description: "This request lists the latest metric data available for a specific endpoint group and supports filtering by status value. If user uses filter=non-ok will get all non ok statuses"
@@ -2522,7 +2522,7 @@ paths:
           
   
 
-  /status/{report_name}/{lgroup_type}/{lgroup_name}:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List status results for a given endpoint group (i.e. Group_A)"
       description: "This request is used to retrieve all the statuses of endpoint groups that match the given criteria of report name, group type and optionally group name."
@@ -2587,7 +2587,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services:
     get:
       summary: "List status results for all services of a given endpoint group"
       description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
@@ -2619,7 +2619,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
       summary: "List status results for a given service (under a given endpoint group)"
       description: "This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group)"
@@ -2652,7 +2652,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
       summary: "List status results for all endpoints (under a given service and endpoint group)"
       description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
@@ -2685,7 +2685,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
     get:
       summary: "List status results for a given endpoint (under a given service and endpoint group)"
       description: "This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type)"
@@ -2719,7 +2719,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics:
     get:
       summary: "List status results for all metrics (under a given endpoint, service and endpoint group)"
       description: "This method may be used to retrieve a specific and detailed metric result."
@@ -2754,7 +2754,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics/{metric_name}:
     get:
       summary: "List status results for a given metric (under a given endpoint, service and endpoint group)"
       description: "This method may be used to retrieve a specific and detailed metric result."
@@ -2790,7 +2790,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /status/{report_name}/endpoints:
+  /v2/status/{report_name}/endpoints:
     get:
       summary: "Flat List status results of all endpoints"
       description: "This method returns a flat list of all endpoint status results based on a given report."
@@ -2823,7 +2823,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
   
-  /status/{report_name}/metrics/{metric_name}:
+  /v2/status/{report_name}/metrics/{metric_name}:
     get:
       summary: "Flat List endpoint metric results by metric name"
       description: "This method returns a flat list of all endpoint status results based on a given metric."
@@ -2861,7 +2861,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /metric_result/{endpoint}:
+  /v2/metric_result/{endpoint}:
     get:
       summary: Retrieve a list of all metric results for a specific day and a specific host
       description: Retrieve a list with  the full output of all metric results for a specific date
@@ -2896,7 +2896,7 @@ paths:
           $ref: "#/responses/ServerError"
 
 
-  /metric_result/{endpoint}/{metric_name}:
+  /v2/metric_result/{endpoint}/{metric_name}:
     get:
       summary: Retrieve the full output of a metric result
       description: Retrieve the full output of a metric result
@@ -2934,7 +2934,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services:
     get:
       summary: "List A/R results of all services (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -2970,7 +2970,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
       summary: "List A/R results of a given service (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3007,7 +3007,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/services:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/services:
     get:
       summary: "List A/R results of all services (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3040,7 +3040,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}:
     get:
       summary: "List A/R results of a given service (under a given endpoint group)"
       description: "This method retrieves the results of a specified service flavor that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3075,7 +3075,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given service)"
       description: "This method retrieves the results of specified service's endpoints that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3112,7 +3112,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
     get:
       summary: "List A/R results of a given endpoint (under a given service)"
       description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3150,7 +3150,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given service)"
       description: "This method retrieves the results of endpoints under a specific service that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3184,7 +3184,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}:
     get:
       summary: "List A/R results of a given endpoint (under a given service)"
       description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3220,7 +3220,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given group)"
       description: "This method retrieves the results of specified group's endpoints that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3257,7 +3257,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
     get:
       summary: "List A/R results of a given endpoint (under a given group)"
       description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3295,7 +3295,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints:
     get:
       summary: "List A/R results of all endpoints (under a given group)"
       description: "This method retrieves the results of endpoints under a specific group that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3328,7 +3328,7 @@ paths:
           $ref: "#/responses/422"
         500:
           $ref: "#/responses/ServerError"
-  /results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}:
     get:
       summary: "List A/R results of a given endpoint (under a given group)"
       description: "This method retrieves the results of a specified endpoint that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3363,7 +3363,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /results/{report_name}/endpoints:
+  /v2/results/{report_name}/endpoints:
     get:
       summary: "Flat List A/R results of all endpoints"
       description: "This method returns a flat list of all endpoint a/r results based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3396,7 +3396,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
+  /v2/results/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List A/R results for a given endpoint group"
       description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3432,7 +3432,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{group_type}:
+  /v2/results/{report_name}/{group_type}:
     get:
       summary: "List A/R results for a given type of supergroup"
       description: "his method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3465,7 +3465,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /results/{report_name}/{lgroup_type}/{lgroup_name}:
+  /v2/results/{report_name}/{lgroup_type}/{lgroup_name}:
     get:
       summary: "List A/R results for a given endpoint group"
       description: "This method retrieves the results of a specified endpoint group or multiple endpoint groups of a specific type that where computed based on a given report. Results can be retrieved on daily or monthly granularity."
@@ -3499,7 +3499,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /issues/{REPORT_NAME}/endpoints:
+  /v2/issues/{REPORT_NAME}/endpoints:
     get:
       summary: List problematic endpoints
       operationId: issues.ListEndpoints
@@ -3543,7 +3543,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
   
-  /trends/{REPORT_NAME}/status/metrics:
+  /v2/trends/{REPORT_NAME}/status/metrics:
     get:
       summary: List trends for top status service endpoint metrics
       operationId: trends.StatusMetrics
@@ -3586,7 +3586,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'  
   
-  /trends/{REPORT_NAME}/status/metrics/tags:
+  /v2/trends/{REPORT_NAME}/status/metrics/tags:
     get:
       summary: List trends by tags for top status service endpoint metrics
       operationId: trends.StatusMetricsTags
@@ -3630,7 +3630,7 @@ paths:
             $ref: '#/definitions/Status_error'    
   
             
-  /trends/{REPORT_NAME}/status/endpoints:
+  /v2/trends/{REPORT_NAME}/status/endpoints:
     get:
       summary: List trends for top status service endpoints
       operationId: trends.StatusEndpoints
@@ -3673,7 +3673,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
   
-  /trends/{REPORT_NAME}/status/services:
+  /v2/trends/{REPORT_NAME}/status/services:
     get:
       summary: List trends for top status service trends
       operationId: trends.StatusServices
@@ -3716,7 +3716,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
   
-  /trends/{REPORT_NAME}/status/groups:
+  /v2/trends/{REPORT_NAME}/status/groups:
     get:
       summary: List trends for top status endpoint group trends
       operationId: trends.StatusEgroups
@@ -3761,7 +3761,7 @@ paths:
   
   
             
-  /trends/{REPORT_NAME}/flapping/metrics:
+  /v2/trends/{REPORT_NAME}/flapping/metrics:
     get:
       summary: List trends for top flapping service endpoint metrics
       operationId: trends.FlappingMetrics
@@ -3804,7 +3804,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /trends/{REPORT_NAME}/flapping/metrics/tags:
+  /v2/trends/{REPORT_NAME}/flapping/metrics/tags:
     get:
       summary: List trends for top flapping service endpoint metrics by tag
       operationId: trends.FlappingMetricsTags
@@ -3847,7 +3847,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /trends/{REPORT_NAME}/flapping/endpoints:
+  /v2/trends/{REPORT_NAME}/flapping/endpoints:
     get:
       summary: List trends for top flapping service endpoints
       operationId: trends.FlappingEdpoints
@@ -3890,7 +3890,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  /trends/{REPORT_NAME}/flapping/services:
+  /v2/trends/{REPORT_NAME}/flapping/services:
     get:
       summary: List trends for top flapping services
       operationId: trends.FlappingServices
@@ -3933,7 +3933,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /trends/{REPORT_NAME}/flapping/groups:
+  /v2/trends/{REPORT_NAME}/flapping/groups:
     get:
       summary: List trends for top flapping endpoint groups
       operationId: trends.FlappingGroups
@@ -3976,7 +3976,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
 
-  /factors:
+  /v2/factors:
     get:
       summary: "List Factors Requests"
       description: "This method can be used to retrieve a list of factors."
@@ -4004,7 +4004,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
           
-  /feeds/topology:
+  /v2/feeds/topology:
     get:
       summary: List of topology feed parameters
       operationId: feeds.topology.list
@@ -4156,7 +4156,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'  
   
-  /feeds/data:
+  /v2/feeds/data:
     get:
       summary: List of data feed parameters
       operationId: feeds.data.list
@@ -4232,7 +4232,7 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'  
           
-  /recomputations/{ID}/status:
+  /v2/recomputations/{ID}/status:
     post:
       summary: "change recomputation status"
       description: "change status of a recomputation with a given ID"
@@ -4297,7 +4297,7 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
-  /recomputations/{ID}:
+  /v2/recomputations/{ID}:
     get:
       summary: "Get Recomputation details"
       description: "Get details of a recomputation with id ID."
@@ -4356,7 +4356,7 @@ paths:
           $ref: "#/responses/404"
         500:
           $ref: "#/responses/ServerError"
-  /recomputations:
+  /v2/recomputations:
     get:
       summary: "List Recomputation Requests"
       description: "This method can be used to retrieve a list of recomputation requests."
@@ -4429,7 +4429,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
-  /version:
+  /v2/version:
     get:
       summary: "List API Version information"
       description: "List api version information such as release version, commit hash etc"
@@ -4443,6 +4443,37 @@ paths:
           description: "Successful retrieval of version info"
           schema:
             $ref: "#/definitions/Version"
+            
+  /v3/results/{report_name}:
+    get:
+      summary: "List A/R results for top level supergroups and included groups"
+      description: "his method retrieves the a/r results of top level supergroups and their included groups"
+      operationId: resultsSupergroupsAndGroups
+      tags:
+        - Availability & Reliability Results (v3)
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      responses:
+        200:
+          description: "Successful retrieval of results"
+          schema:
+            $ref: "#/definitions/SupergroupResultsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
 
 
 parameters:
@@ -4756,6 +4787,8 @@ definitions:
         type: string
       value:
         type: string
+      affected_by_threshold_rule:
+        type: boolean
 
   results:
     type: array
@@ -4778,7 +4811,7 @@ definitions:
   GroupResultsResponse:
     type: object
     properties:
-      root:
+      results:
         type: array
         items:
           type: object
@@ -4798,6 +4831,48 @@ definitions:
                     type: string
                   reliability:
                     type: string
+                    
+  SupergroupResultsResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                  availability:
+                    type: number
+                  reliability:
+                    type: number
+            groups:
+              type: array
+              items: 
+                type: object
+                properties:
+                  date: 
+                    type: string
+                  availability:
+                    type: number
+                  reliability:
+                    type: number 
+                  unknown:
+                    type: number
+                  uptime:
+                    type: number
+                  downtime:
+                    type: number
+                  
 
   EndpointGroupResultsResponse:
     type: object
@@ -5369,7 +5444,7 @@ definitions:
         type: string
       status:
         type: string
-      events:
+      duration_in_minutes:
         type: integer
         
   
@@ -5385,7 +5460,7 @@ definitions:
         type: string
       status:
         type: string
-      duration_in_minutes:
+      events:
         type: integer
         
   Trends_status_services:
@@ -5397,7 +5472,7 @@ definitions:
         type: string
       status:
         type: string
-      duration_in_minutes:
+      events:
         type: integer
         
   Trends_status_egroups:
@@ -5407,7 +5482,7 @@ definitions:
         type: string
       status:
         type: string
-      duration_in_minutes:
+      events:
         type: integer
 
               
