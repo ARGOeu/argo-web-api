@@ -32,19 +32,24 @@ type metricResultQuery struct {
 
 // metricResultOutput structure holds mongo results
 type metricResultOutput struct {
-	Timestamp string `bson:"timestamp"`
-	Hostname  string `bson:"host"`
-	Service   string `bson:"service"`
-	Metric    string `bson:"metric"`
-	Status    string `bson:"status"`
-	Summary   string `bson:"summary"`
-	Message   string `bson:"message"`
+	Timestamp      string            `bson:"timestamp"`
+	Hostname       string            `bson:"host"`
+	Service        string            `bson:"service"`
+	Metric         string            `bson:"metric"`
+	Status         string            `bson:"status"`
+	Summary        string            `bson:"summary"`
+	Message        string            `bson:"message"`
+	Info           map[string]string `bson:"info"`
+	ActualData     string            `bson:"actual_data"`
+	RuleApplied    string            `bson:"threshold_rule_applied"`
+	OriginalStatus string            `bson:"original_status"`
 }
 
 // HostXML struct used as xml block
 type HostXML struct {
-	XMLName xml.Name `xml:"host" json:"-"`
-	Name    string   `xml:"name,attr"`
+	XMLName xml.Name          `xml:"host" json:"-"`
+	Name    string            `xml:"name,attr"`
+	Info    map[string]string `xml:"-" json:"info,omitempty"`
 	Metrics []*MetricXML
 }
 
@@ -53,19 +58,30 @@ type MetricXML struct {
 	XMLName xml.Name `xml:"metric" json:"-"`
 	Name    string   `xml:"name,attr"`
 	Service string   `xml:"service,attr,omitempty" json:"Service,omitempty"`
+
 	Details []*StatusXML
 }
 
 // StatusXML struct used as xml block
 type StatusXML struct {
-	XMLName   xml.Name `xml:"status" json:"-"`
-	Timestamp string   `xml:"timestamp,attr"`
-	Value     string   `xml:"value,attr"`
-	Summary   string   `xml:"summary"`
-	Message   string   `xml:"message"`
+	XMLName        xml.Name `xml:"status" json:"-"`
+	Timestamp      string   `xml:"timestamp,attr"`
+	Value          string   `xml:"value,attr"`
+	Summary        string   `xml:"summary"`
+	Message        string   `xml:"message"`
+	ActualData     string   `xml:"-" json:"actual_data,omitempty"`
+	RuleApplied    string   `xml:"-" json:"threshold_rule_applied,omitempty"`
+	OriginalStatus string   `xml:"-" json:"original_status,omitempty"`
 }
 
 type root struct {
 	XMLName xml.Name   `xml:"root" json:"-"`
 	Result  []*HostXML `json:"root"`
+}
+
+// errorMessage struct to hold the json/xml error response
+type errorMessage struct {
+	XMLName xml.Name `xml:"root" json:"-"`
+	Message string   `xml:"message" json:"message"`
+	Code    int      `xml:"code" json:"code"`
 }

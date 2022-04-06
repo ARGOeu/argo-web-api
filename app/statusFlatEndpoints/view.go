@@ -56,7 +56,7 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 	return dResult
 }
 
-func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int) ([]byte, error) {
+func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int, details bool) ([]byte, error) {
 
 	// calculate part of the timestamp that closes the timeline of each item
 	var extraTS string
@@ -128,6 +128,10 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
+		if details {
+			status.AffectedByThresholdRule = row.HasThresholdRule
+		}
+
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
 	}

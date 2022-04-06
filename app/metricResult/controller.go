@@ -29,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -109,12 +110,6 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	input := metricResultQuery{
-		EndpointName: vars["endpoint_name"],
-		MetricName:   vars["metric_name"],
-		ExecTime:     urlValues.Get("exec_time"),
-	}
-
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
@@ -123,12 +118,36 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
+	reportName := urlValues.Get("report")
+	reportID := ""
+
+	if reportName != "" {
+		requestedReport := reports.MongoInterface{}
+		err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": reportName}, &requestedReport)
+
+		if err != nil {
+			code = http.StatusNotFound
+			message := "The report with the name " + reportName + " does not exist"
+			output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		reportID = requestedReport.ID
+	}
+
+	input := metricResultQuery{
+		EndpointName: vars["endpoint_name"],
+		MetricName:   vars["metric_name"],
+		ExecTime:     urlValues.Get("exec_time"),
+	}
+
 	result := metricResultOutput{}
 
 	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
 
 	// Query the detailed metric results
-	err = metricCol.Find(prepQuery(input)).One(&result)
+	err = metricCol.Find(prepQuery(input, reportID)).One(&result)
 
 	output, err = createMetricResultView(result, contentType)
 
@@ -140,7 +159,7 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	return code, h, output, err
 }
 
-func prepQuery(input metricResultQuery) bson.M {
+func prepQuery(input metricResultQuery, reportID string) bson.M {
 
 	//Time Related
 	const zuluForm = "2006-01-02T15:04:05Z"
@@ -157,6 +176,10 @@ func prepQuery(input metricResultQuery) bson.M {
 		"host":         input.EndpointName,
 		"metric":       input.MetricName,
 		"time_integer": tsInt,
+	}
+
+	if reportID != "" {
+		query["report"] = reportID
 	}
 
 	return query
@@ -198,24 +221,32 @@ func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 		{"$match": matchQuery},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"host":      "$host",
-				"service":   "$service",
-				"metric":    "$metric",
-				"timestamp": "$timestamp",
-				"message":   "$message",
-				"summary":   "$summary",
-				"status":    "$status"},
+				"host":                   "$host",
+				"service":                "$service",
+				"metric":                 "$metric",
+				"timestamp":              "$timestamp",
+				"message":                "$message",
+				"summary":                "$summary",
+				"status":                 "$status",
+				"info":                   "$info",
+				"actual_data":            "$actual_data",
+				"threshold_rule_applied": "$threshold_rule_applied",
+				"original_status":        "$original_status"},
 		},
 		},
 		{"$project": bson.M{
-			"_id":       0,
-			"host":      "$_id.host",
-			"metric":    "$_id.metric",
-			"service":   "$_id.service",
-			"timestamp": "$_id.timestamp",
-			"status":    "$_id.status",
-			"summary":   "$_id.summary",
-			"message":   "$_id.message"},
+			"_id":                    0,
+			"host":                   "$_id.host",
+			"info":                   "$_id.info",
+			"metric":                 "$_id.metric",
+			"service":                "$_id.service",
+			"timestamp":              "$_id.timestamp",
+			"status":                 "$_id.status",
+			"summary":                "$_id.summary",
+			"message":                "$_id.message",
+			"actual_data":            "$_id.actual_data",
+			"threshold_rule_applied": "$_id.threshold_rule_applied",
+			"original_status":        "$_id.original_status"},
 		},
 		{"$sort": bson.D{
 			{"service", 1},

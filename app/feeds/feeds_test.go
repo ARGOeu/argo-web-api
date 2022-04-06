@@ -82,9 +82,9 @@ func (suite *FeedsTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
-				"name":    "GUARDIANS",
+				"name":    "TENANT_A",
 				"email":   "email@something2",
-				"website": "www.gotg.com",
+				"website": "tenant-b.example.com",
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
@@ -118,9 +118,9 @@ func (suite *FeedsTestSuite) SetupTest() {
 	c.Insert(
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
-				"name":    "AVENGERS",
+				"name":    "TENANT_B",
 				"email":   "email@something2",
-				"website": "www.gotg.com",
+				"website": "tenanta.example.com",
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
@@ -177,6 +177,16 @@ func (suite *FeedsTestSuite) SetupTest() {
 			"resource": "feeds.weights.update",
 			"roles":    []string{"editor"},
 		})
+	c.Insert(
+		bson.M{
+			"resource": "feeds.data.get",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "feeds.data.update",
+			"roles":    []string{"editor"},
+		})
 
 	// Seed database with topology feeds
 	c = session.DB(suite.tenantDbConf.Db).C("feeds_topology")
@@ -198,6 +208,84 @@ func (suite *FeedsTestSuite) SetupTest() {
 			"weight_type": "hepspec2006 cpu",
 			"group_type":  "SITES",
 		})
+
+	// Seed database with weights feeds
+	c = session.DB(suite.tenantDbConf.Db).C("feeds_data")
+	c.Insert(
+		bson.M{
+			"tenants": []string{"6ac7d684-1f8e-4a02-a502-720e8f11e50c", "6ac7d684-1f8e-4a02-a502-720e8f11e50d"},
+		})
+
+}
+
+func (suite *FeedsTestSuite) TestUpdateFeedData() {
+
+	jsonInput := `
+  {
+  "tenants": ["TENANT_B"]
+  }
+`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Feeds resource succesfully updated",
+  "code": "200"
+ },
+ "data": [
+  {
+   "tenants": [
+    "TENANT_B"
+   ]
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/feeds/data", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *FeedsTestSuite) TestUpdateFeedDataNotFound() {
+
+	jsonInput := `
+  {
+  "tenants": ["TENANT_C"]
+  }
+`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant TENANT_C not found",
+  "code": "404"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/feeds/data", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
 
 }
 
@@ -241,6 +329,39 @@ func (suite *FeedsTestSuite) TestUpdateFeedWeights() {
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
+func (suite *FeedsTestSuite) TestListData() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/feeds/data", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	feedsTopoJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "tenants": [
+    "TENANT_A",
+    "TENANT_B"
+   ]
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(feedsTopoJSON, output, "Response body mismatch")
 
 }
 
@@ -363,6 +484,17 @@ func (suite *FeedsTestSuite) TestListTopo() {
 	// Compare the expected and actual json response
 	suite.Equal(feedsTopoJSON, output, "Response body mismatch")
 
+}
+
+//TearDownTest to tear down every test
+func (suite *FeedsTestSuite) TearDownTest() {
+
+	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	if err != nil {
+		panic(err)
+	}
+	session.DB(suite.tenantDbConf.Db).DropDatabase()
+	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
 }
 
 //TearDownTest to tear down every test

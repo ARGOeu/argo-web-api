@@ -42,15 +42,19 @@ type InputParams struct {
 
 // DataOutput struct holds the queried data from datastore
 type DataOutput struct {
-	Timestamp     string `bson:"timestamp"`
-	EndpointGroup string `bson:"endpoint_group"`
-	Service       string `bson:"service"`
-	Hostname      string `bson:"host"`
-	Metric        string `bson:"metric"`
-	Status        string `bson:"status"`
-	DateInt       string `bson:"date_int"`
-	PrevTimestamp string `bson:"previous_timestamp"`
-	PrevStatus    string `bson:"previous_state"`
+	Timestamp      string            `bson:"timestamp"`
+	EndpointGroup  string            `bson:"endpoint_group"`
+	Service        string            `bson:"service"`
+	Hostname       string            `bson:"host"`
+	Metric         string            `bson:"metric"`
+	Status         string            `bson:"status"`
+	DateInt        string            `bson:"date_int"`
+	PrevTimestamp  string            `bson:"previous_timestamp"`
+	PrevStatus     string            `bson:"previous_state"`
+	ActualData     string            `bson:"actual_data"`
+	RuleApplied    string            `bson:"threshold_rule_applied"`
+	OriginalStatus string            `bson:"original_status"`
+	Info           map[string]string `bson:"info"`
 }
 
 // json/xml response related structs
@@ -74,9 +78,10 @@ type serviceOUT struct {
 }
 
 type endpointOUT struct {
-	XMLName xml.Name     `xml:"endpoint" json:"-"`
-	Name    string       `xml:"name,attr" json:"name"`
-	Metrics []*metricOUT `json:"metrics"`
+	XMLName xml.Name          `xml:"endpoint" json:"-"`
+	Name    string            `xml:"name,attr" json:"name"`
+	Info    map[string]string `xml:"-" json:"info,omitempty"`
+	Metrics []*metricOUT      `json:"metrics"`
 }
 
 type metricOUT struct {
@@ -86,9 +91,12 @@ type metricOUT struct {
 }
 
 type statusOUT struct {
-	XMLName   xml.Name `xml:"status" json:"-"`
-	Timestamp string   `xml:"timestamp,attr" json:"timestamp"`
-	Value     string   `xml:"value,attr" json:"value"`
+	XMLName        xml.Name `xml:"status" json:"-"`
+	Timestamp      string   `xml:"timestamp,attr" json:"timestamp"`
+	Value          string   `xml:"value,attr" json:"value"`
+	ActualData     string   `xml:"-" json:"actual_data,omitempty"`
+	RuleApplied    string   `xml:"-" json:"threshold_rule_applied,omitempty"`
+	OriginalStatus string   `xml:"-" json:"original_status,omitempty"`
 }
 
 // Message struct to hold the json/xml response

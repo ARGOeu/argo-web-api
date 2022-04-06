@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int) ([]byte, error) {
+func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int, details bool) ([]byte, error) {
 
 	output := []byte("reponse output")
 	err := error(nil)
@@ -95,6 +95,11 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
+		if details {
+			status.ActualData = row.ActualData
+			status.OriginalStatus = row.OriginalStatus
+			status.RuleApplied = row.RuleApplied
+		}
 		ppHost.Statuses = append(ppHost.Statuses, status)
 
 	}

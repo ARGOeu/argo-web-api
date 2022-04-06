@@ -217,20 +217,60 @@ function populate_default_roles() {
         },
         {
             resource: "trends.flapping_metrics",
-            roles: ["admin", "editor", "viewer"]
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.flapping_metrics_tags",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
             resource: "trends.flapping_endpoints",
-            roles: ["admin", "editor", "viewer"]
+            roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
             resource: "trends.flapping_services",
-            roles: ["admin", "editor", "viewer"]
+            roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
             resource: "trends.flapping_endpoint_groups",
-            roles: ["admin", "editor", "viewer"]
-        }
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.status_metrics",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.status_metrics_tags",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.status_endpoints",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.status_services",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "trends.status_endpoint_groups",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "metrics.get",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "metrics_report.get",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "metrics_admin.get",
+            roles: ["super_admin"]
+        },
+        {
+            resource: "metrics_admin.update",
+            roles: ["super_admin"]
+        },
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
 }

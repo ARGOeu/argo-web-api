@@ -53,18 +53,26 @@ type IncomingStatus struct {
 }
 
 type MongoInterface struct {
-	XMLName        xml.Name      `bson:"-" xml:"recomputation" json:"-"`
-	ID             string        `bson:"id" xml:"id" json:"id"`
-	RequesterName  string        `bson:"requester_name" xml:"requester_name" json:"requester_name"`
-	RequesterEmail string        `bson:"requester_email" xml:"requester_email" json:"requester_email"`
-	Reason         string        `bson:"reason" xml:"reason" json:"reason"`
-	StartTime      string        `bson:"start_time" xml:"start_time" json:"start_time"`
-	EndTime        string        `bson:"end_time" xml:"end_time" json:"end_time"`
-	Report         string        `bson:"report" xml:"report" json:"report"`
-	Exclude        []string      `bson:"exclude" xml:"exclude>group" json:"exclude"`
-	Status         string        `bson:"status" xml:"status" json:"status"`
-	Timestamp      string        `bson:"timestamp" xml:"timestamp" json:"timestamp"`
-	History        []HistoryItem `bson:"history" xml:"history" json:"history"`
+	XMLName        xml.Name         `bson:"-" xml:"recomputation" json:"-"`
+	ID             string           `bson:"id" xml:"id" json:"id"`
+	RequesterName  string           `bson:"requester_name" xml:"requester_name" json:"requester_name"`
+	RequesterEmail string           `bson:"requester_email" xml:"requester_email" json:"requester_email"`
+	Reason         string           `bson:"reason" xml:"reason" json:"reason"`
+	StartTime      string           `bson:"start_time" xml:"start_time" json:"start_time"`
+	EndTime        string           `bson:"end_time" xml:"end_time" json:"end_time"`
+	Report         string           `bson:"report" xml:"report" json:"report"`
+	Exclude        []string         `bson:"exclude" xml:"exclude>group" json:"exclude"`
+	Status         string           `bson:"status" xml:"status" json:"status"`
+	Timestamp      string           `bson:"timestamp" xml:"timestamp" json:"timestamp"`
+	History        []HistoryItem    `bson:"history" xml:"history" json:"history"`
+	ExcludeMetrics []ExcludedMetric `bson:"exclude_metrics" json:"exclude_metrics,omitempty"`
+}
+
+type ExcludedMetric struct {
+	Metric   string `bson:"metric" json:"metric"`
+	Hostname string `bson:"hostname" json:"timestamp,omitempty"`
+	Service  string `bson:"service"  json:"service,omitempty"`
+	Group    string `bson:"group" json:"group,omitempty"`
 }
 
 type HistoryItem struct {

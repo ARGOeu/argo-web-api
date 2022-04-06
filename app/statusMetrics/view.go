@@ -56,7 +56,7 @@ func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
 	return dResult
 }
 
-func createView(results []DataOutput, input InputParams, endDate string) ([]byte, error) {
+func createView(results []DataOutput, input InputParams, endDate string, details bool) ([]byte, error) {
 
 	output := []byte("reponse output")
 	err := error(nil)
@@ -106,6 +106,7 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 		if row.Hostname != prevHostname && row.Hostname != "" {
 			host := &endpointOUT{} //create new host
 			host.Name = row.Hostname
+			host.Info = row.Info
 			ppService.Endpoints = append(ppService.Endpoints, host)
 			prevHostname = row.Hostname
 			ppHost = host
@@ -131,6 +132,11 @@ func createView(results []DataOutput, input InputParams, endDate string) ([]byte
 		status := &statusOUT{}
 		status.Timestamp = row.Timestamp
 		status.Value = row.Status
+		if details {
+			status.ActualData = row.ActualData
+			status.OriginalStatus = row.OriginalStatus
+			status.RuleApplied = row.RuleApplied
+		}
 		ppMetric.Statuses = append(ppMetric.Statuses, status)
 
 	}

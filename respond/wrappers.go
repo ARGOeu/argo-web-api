@@ -21,7 +21,9 @@ import (
 // }
 
 func needsAPIAdmin(routeName string) bool {
-	if strings.Split(routeName, ".")[0] == "tenants" {
+
+	routePart := strings.Split(routeName, ".")[0]
+	if routePart == "tenants" || routePart == "metrics_admin" {
 		return true
 	}
 

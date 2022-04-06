@@ -355,6 +355,15 @@ There are special argo contextes that are automatically picked up to filter grou
 -   _context:_ `argo.endpoint.filter.tags` - Used to apply filter on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
 -   _context:_ `argo.endpoint.filter.tags.array` - Used to apply filter, containing a list of comma separated values, on tags of endpoint topology. Under this context the `name` targets the endpoint tag name and the `value` holds the actual field pattern
 
+_note_ : You can use `~` as a negative operator in the beginning of a filter value to exclude something: For example you can exclude endpoints with service of value `SERVICE_A` by issuing the following filter tag in the report:
+```json
+{
+    "context": "argo.endpoint.filter.fields",
+    "name": "service",
+    "value": "~SERVICE_A"
+}
+```
+
 <a id='6'></a>
 
 ## Notes on Optional profile references

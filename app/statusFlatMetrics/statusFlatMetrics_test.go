@@ -227,20 +227,23 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"message":            "Cream job submission test return value of ok",
 	})
 	c.Insert(bson.M{
-		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"monitoring_box":     "nagios3.hellasgrid.gr",
-		"date_integer":       20150501,
-		"timestamp":          "2015-05-01T01:00:00Z",
-		"service":            "CREAM-CE",
-		"host":               "cream01.afroditi.gr",
-		"endpoint_group":     "HG-03-AUTH",
-		"metric":             "emi.cream.CREAMCE-JobSubmit",
-		"status":             "CRITICAL",
-		"time_integer":       10000,
-		"previous_state":     "OK",
-		"previous_timestamp": "2015-05-01T00:00:00Z",
-		"summary":            "Cream status is CRITICAL",
-		"message":            "Cream job submission test failed",
+		"report":                 "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"monitoring_box":         "nagios3.hellasgrid.gr",
+		"date_integer":           20150501,
+		"timestamp":              "2015-05-01T01:00:00Z",
+		"service":                "CREAM-CE",
+		"host":                   "cream01.afroditi.gr",
+		"endpoint_group":         "HG-03-AUTH",
+		"metric":                 "emi.cream.CREAMCE-JobSubmit",
+		"status":                 "CRITICAL",
+		"time_integer":           10000,
+		"previous_state":         "OK",
+		"previous_timestamp":     "2015-05-01T00:00:00Z",
+		"summary":                "Cream status is CRITICAL",
+		"message":                "Cream job submission test failed",
+		"actual_data":            "latency=15s",
+		"threshold_rule_applied": "latency=1s;0:5;10:60",
+		"original_status":        "OK",
 	})
 	c.Insert(bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -369,6 +372,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
@@ -385,6 +389,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
@@ -401,6 +406,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -417,6 +423,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "OK",
 		"time_integer":       0,
 		"previous_state":     "OK",
@@ -433,6 +440,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "CRITICAL",
 		"time_integer":       10000,
 		"previous_state":     "OK",
@@ -449,6 +457,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"host":               "someservice2.example.gr",
 		"endpoint_group":     "EL-01-AUTH",
 		"metric":             "someService-FileTransfer",
+		"info":               bson.M{"URL": "http://host2.example.com"},
 		"status":             "OK",
 		"time_integer":       50000,
 		"previous_state":     "CRITICAL",
@@ -552,6 +561,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -576,6 +588,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host2.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -602,7 +617,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 		expReq{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobSubmit" +
-				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2",
+				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2&view=details",
 			code: 200,
 			key:  "KEY1",
 			result: `{
@@ -623,7 +638,10 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
     },
     {
      "timestamp": "2015-05-01T01:00:00Z",
-     "value": "CRITICAL"
+     "value": "CRITICAL",
+     "actual_data": "latency=15s",
+     "threshold_rule_applied": "latency=1s;0:5;10:60",
+     "original_status": "OK"
     }
    ]
   }
@@ -671,6 +689,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",
@@ -705,6 +726,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-05-01T05:00:00Z",
@@ -717,6 +741,9 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
    "service": "someService",
    "supergroup": "EL-01-AUTH",
    "metric": "someService-FileTransfer",
+   "info": {
+    "URL": "http://host2.example.com"
+   },
    "statuses": [
     {
      "timestamp": "2015-04-30T23:59:00Z",

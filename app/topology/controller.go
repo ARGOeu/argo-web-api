@@ -585,16 +585,39 @@ func appendTags(query bson.M, tags string) bson.M {
 			query["tags."+tag] = bson.RegEx{Pattern: tagRegStr}
 
 		} else {
-			if value, reg := handleWildcard(tagmap[tag][0]); reg == true {
-				query["tags."+tag] = bson.RegEx{Pattern: value}
+
+			// check if tag filter value has exclude operator and trim it
+			trimValue, exclude := handleExclude(tagmap[tag][0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["tags."+tag] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["tags."+tag] = bson.RegEx{Pattern: value}
+				}
+
 			} else {
-				query["tags."+tag] = value
+				if exclude {
+					query["tags."+tag] = bson.M{"$ne": value}
+				} else {
+					query["tags."+tag] = value
+				}
 			}
 		}
 	}
 
 	return query
 
+}
+
+// check if a filter value has a negative operator for exclusion
+func handleExclude(value string) (string, bool) {
+
+	if strings.HasPrefix(value, "~") {
+		return value[1:], true
+	} else {
+		return value, false
+	}
 }
 
 func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
@@ -617,10 +640,24 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["group"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.Group[0]); reg == true {
-				query["group"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.Group[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["group"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["group"] = bson.RegEx{Pattern: value}
+				}
+
 			} else {
-				query["group"] = value
+				if exclude {
+					query["group"] = bson.M{"$ne": value}
+				} else {
+					query["group"] = value
+				}
+
 			}
 		}
 	}
@@ -642,10 +679,22 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["type"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.GroupType[0]); reg == true {
-				query["type"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.GroupType[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["type"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["type"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["type"] = value
+				if exclude {
+					query["type"] = bson.M{"$ne": value}
+				} else {
+					query["type"] = value
+				}
 			}
 		}
 	}
@@ -667,10 +716,22 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["service"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.Service[0]); reg == true {
-				query["service"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.Service[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["service"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["service"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["service"] = value
+				if exclude {
+					query["service"] = bson.M{"$ne": value}
+				} else {
+					query["service"] = value
+				}
 			}
 		}
 	}
@@ -692,10 +753,22 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["hostname"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.Hostname[0]); reg == true {
-				query["hostname"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.Hostname[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["hostname"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["hostname"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["hostname"] = value
+				if exclude {
+					query["hostname"] = bson.M{"$ne": value}
+				} else {
+					query["hostname"] = value
+				}
 			}
 		}
 	}
@@ -791,10 +864,22 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["group"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.Group[0]); reg == true {
-				query["group"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.Group[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["group"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["group"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["group"] = value
+				if exclude {
+					query["group"] = bson.M{"$ne": value}
+				} else {
+					query["group"] = value
+				}
 			}
 		}
 	}
@@ -816,10 +901,22 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["type"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.GroupType[0]); reg == true {
-				query["type"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.GroupType[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["type"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["type"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["type"] = value
+				if exclude {
+					query["type"] = bson.M{"$ne": value}
+				} else {
+					query["type"] = value
+				}
 			}
 		}
 	}
@@ -841,10 +938,22 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 			groupRegStr = groupRegStr + ")$"
 			query["subgroup"] = bson.RegEx{Pattern: groupRegStr}
 		} else {
-			if value, reg := handleWildcard(filter.Subgroup[0]); reg == true {
-				query["subgroup"] = bson.RegEx{Pattern: value}
+
+			// check if value has exclude prefix and trim it
+			trimValue, exclude := handleExclude(filter.Subgroup[0])
+
+			if value, reg := handleWildcard(trimValue); reg == true {
+				if exclude {
+					query["subgroup"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+				} else {
+					query["subgroup"] = bson.RegEx{Pattern: value}
+				}
 			} else {
-				query["subgroup"] = value
+				if exclude {
+					query["subgroup"] = bson.M{"$ne": value}
+				} else {
+					query["subgroup"] = value
+				}
 			}
 		}
 	}
@@ -1048,11 +1157,11 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 
 	fGroup, fEndpoint = getReportFilters(report)
 
-	if groupType != "" {
+	if groupType != "" && (len(fGroup.GroupType) == 0) {
 		fGroup.GroupType = append(fGroup.GroupType, groupType)
 	}
 
-	if egroupType != "" {
+	if egroupType != "" && (len(fEndpoint.GroupType) == 0) {
 		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
@@ -1144,7 +1253,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	fGroup := fltrGroup{}
 	fGroup, _ = getReportFilters(report)
 
-	if groupType != "" {
+	if groupType != "" && (len(fGroup.GroupType) == 0) {
 		fGroup.GroupType = append(fGroup.GroupType, groupType)
 	}
 

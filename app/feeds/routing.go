@@ -20,4 +20,7 @@ var appRoutesV2 = []respond.AppRoutes{
 	{Name: "feeds.weights.update", Verb: "PUT", Path: "/weights", SubrouterHandler: UpdateWeights},
 	{Name: "feeds.weights.get", Verb: "GET", Path: "/weights", SubrouterHandler: ListWeights},
 	{Name: "feeds.weights.options", Verb: "OPTIONS", Path: "/weights", SubrouterHandler: Options},
+	{Name: "feeds.data.update", Verb: "PUT", Path: "/data", SubrouterHandler: UpdateData},
+	{Name: "feeds.data.get", Verb: "GET", Path: "/data", SubrouterHandler: ListData},
+	{Name: "feeds.data.options", Verb: "OPTIONS", Path: "/data", SubrouterHandler: Options},
 }

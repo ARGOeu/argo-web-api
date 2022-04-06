@@ -20,3 +20,14 @@ type Weights struct {
 	// group type that the weight affects
 	GroupType string `bson:"group_type" json:"group_type"`
 }
+
+// Data feeds for combined reports
+type Data struct {
+	Tenants []string `bson:"tenants" json:"tenants"`
+}
+
+// Tenant Info containts quick info of tenant name and id
+type TenantInfo struct {
+	Name string `bson:"name"`
+	ID   string `bson:"id"`
+}

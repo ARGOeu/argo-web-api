@@ -73,6 +73,13 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
 	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
 
+	view := urlValues.Get("view")
+	details := false
+
+	if view == "details" {
+		details = true
+	}
+
 	input := InputParams{
 		parsedStart,
 		parsedEnd,
@@ -104,7 +111,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 		// Convert hbase results to data output format
 		doResults := hbaseToDataOutput(hbResults)
 		// Render the reults into xml
-		output, err = createView(doResults, input, urlValues.Get("end_time")) //Render the results into XML format
+		output, err = createView(doResults, input, urlValues.Get("end_time"), details) //Render the results into XML format
 
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, errHb
@@ -148,7 +155,7 @@ func ListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Header, 
 		}
 	}
 
-	output, err = createView(results, input, urlValues.Get("end_time")) //Render the results into XML format
+	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into XML format
 
 	return code, h, output, err
 }

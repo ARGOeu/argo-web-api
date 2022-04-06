@@ -70,6 +70,13 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
+	view := urlValues.Get("view")
+	details := false
+
+	if view == "details" {
+		details = true
+	}
+
 	skip := 0
 	tkStr := urlValues.Get("nextPageToken")
 	if tkStr != "" {
@@ -148,7 +155,7 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 		}
 	}
 
-	output, err = createFlatView(results, input, urlValues.Get("end_time"), limit, skip) //Render the results into JSON/XML format
+	output, err = createFlatView(results, input, urlValues.Get("end_time"), limit, skip, details) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }

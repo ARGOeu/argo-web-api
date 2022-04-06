@@ -256,6 +256,22 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 		},
 	)
 
+	c.Insert(
+		MongoInterface{
+			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e777",
+			RequesterName:  "John Doe",
+			RequesterEmail: "johndoe@example.com",
+			StartTime:      "2022-01-10T12:00:00Z",
+			EndTime:        "2022-01-10T23:00:00Z",
+			Reason:         "issue with metric checks",
+			Report:         "EGI_Critical",
+			Exclude:        []string{},
+			Status:         "pending",
+			Timestamp:      "2022-01-11T23:58:40Z",
+			ExcludeMetrics: []ExcludedMetric{{Metric: "check-1"}, {Hostname: "host1.example.com", Metric: "check-2"}, {Group: "Affected-Site", Metric: "check-3"}},
+			History:        []HistoryItem{{Status: "pending", Timestamp: "2015-02-01T14:58:40Z"}},
+		})
+
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
@@ -420,6 +436,37 @@ func (suite *RecomputationsProfileTestSuite) TestListRecomputations() {
     {
      "status": "pending",
      "timestamp": "2015-04-01T14:58:40Z"
+    }
+   ]
+  },
+  {
+   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e777",
+   "requester_name": "John Doe",
+   "requester_email": "johndoe@example.com",
+   "reason": "issue with metric checks",
+   "start_time": "2022-01-10T12:00:00Z",
+   "end_time": "2022-01-10T23:00:00Z",
+   "report": "EGI_Critical",
+   "exclude": [],
+   "status": "pending",
+   "timestamp": "2022-01-11T23:58:40Z",
+   "history": [
+    {
+     "status": "pending",
+     "timestamp": "2015-02-01T14:58:40Z"
+    }
+   ],
+   "exclude_metrics": [
+    {
+     "metric": "check-1"
+    },
+    {
+     "metric": "check-2",
+     "timestamp": "host1.example.com"
+    },
+    {
+     "metric": "check-3",
+     "group": "Affected-Site"
     }
    ]
   }
@@ -675,10 +722,10 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	var results []MongoInterface
 	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
 
-	suite.Equal(len(results), 3)
-	suite.Equal("2015-01-10T12:00:00Z", results[2].StartTime)
-	suite.Equal("2015-01-30T23:00:00Z", results[2].EndTime)
-	suite.Equal("Joe Complexz", results[2].RequesterName)
+	suite.Equal(len(results), 4)
+	suite.Equal("2015-01-10T12:00:00Z", results[3].StartTime)
+	suite.Equal("2015-01-30T23:00:00Z", results[3].EndTime)
+	suite.Equal("Joe Complexz", results[3].RequesterName)
 
 }
 

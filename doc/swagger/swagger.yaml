@@ -2310,6 +2310,143 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'
+            
+  /metrics:
+    get:
+      summary: List of metrics
+      operationId: metrics.list
+      description: List of metrics
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+    
+      responses:
+        '200':
+          description: list of metrics
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /metrics/by_report/{report_name}:
+    get:
+      summary: List metrics per date and filter by report
+      operationId: metrics_report.list
+      description: List metrics per date and filter by report
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: report_name
+          type: string
+          description: filter results based on selected report
+          required: true
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: filtered metric list based on the metric profile attached to the report
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /admin/metrics:
+    get:
+      summary: List of metrics (administrative)
+      operationId: metrics_admin.list
+      description: List of metrics from an admin point of view
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+    
+      responses:
+        '200':
+          description: list of metrics
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: Update list of metrics (administrative)
+      operationId: metrics_admin.update
+      description: Update the list of metrics
+      tags:
+        - Metrics
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "endpoint_resource"
+          in: "body"
+          description: "Json description of endpoint topology items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/MetricList'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
 
   /latest/{report_name}/{lgroup_type}:
     get:
@@ -3429,7 +3566,7 @@ paths:
           type: string
       responses:
         '200':
-          description: A list with status metrics per status
+          description: A list with status trends for metrics
           schema:
             $ref: '#/definitions/Trends_status_metrics_list'
         '401':
@@ -3448,6 +3585,179 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Status_error'  
+  
+  /trends/{REPORT_NAME}/status/metrics/tags:
+    get:
+      summary: List trends by tags for top status service endpoint metrics
+      operationId: trends.StatusMetricsTags
+      description: List top status service endpoint metrics by tags and status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status trends for metrics by tags
+          schema:
+            $ref: '#/definitions/Trends_status_metrics_tags_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'    
+  
+            
+  /trends/{REPORT_NAME}/status/endpoints:
+    get:
+      summary: List trends for top status service endpoints
+      operationId: trends.StatusEndpoints
+      description: List top status service endpoints by status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status trends for endpoints
+          schema:
+            $ref: '#/definitions/Trends_status_endpoints_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  
+  /trends/{REPORT_NAME}/status/services:
+    get:
+      summary: List trends for top status service trends
+      operationId: trends.StatusServices
+      description: List top status services by status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status trends for services
+          schema:
+            $ref: '#/definitions/Trends_status_services_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+  
+  /trends/{REPORT_NAME}/status/groups:
+    get:
+      summary: List trends for top status endpoint group trends
+      operationId: trends.StatusEgroups
+      description: List top endpoint groups by status events
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with status trends for endpoint groups
+          schema:
+            $ref: '#/definitions/Trends_status_egroups_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
   
   
             
@@ -3477,6 +3787,49 @@ paths:
           description: A list with flapping metrics
           schema:
             $ref: '#/definitions/Trends_metrics_list'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+            
+  /trends/{REPORT_NAME}/flapping/metrics/tags:
+    get:
+      summary: List trends for top flapping service endpoint metrics by tag
+      operationId: trends.FlappingMetricsTags
+      description: List top flapping service endpoint metrics (that change status frequently) 
+      tags:
+        - Trends
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/trendsStartDate"
+        - $ref: "#/parameters/trendsEndDate"
+        - $ref: "#/parameters/trendsTop"
+        - $ref: "#/parameters/trendsGran"
+        - $ref: "#/parameters/apiKey"
+        - name: "REPORT_NAME"
+          in: "path"
+          description: "name of the report"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: A list with flapping metrics
+          schema:
+            $ref: '#/definitions/Trends_metrics_tags_list'
         '401':
           description: Unauthorized user
           schema:
@@ -3778,8 +4131,84 @@ paths:
           schema:
             $ref: '#/definitions/FeedsTopo'
       responses:
-        '201':
+        '200':
           description: Feeds weights resource Updated
+          schema:
+            $ref: '#/definitions/Status'
+        '400':
+          description: Bad request due to malformed JSON in put body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
+  
+  /feeds/data:
+    get:
+      summary: List of data feed parameters
+      operationId: feeds.data.list
+      description: list of data feed parameters
+      tags:
+        - Feeds
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+      responses:
+        '200':
+          description: A list with data feed parameters
+          schema:
+            $ref: '#/definitions/FeedsData'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    put:
+      summary: update data feeds parameters
+      operationId: feeds.data.update
+      description: update data feeds parameters
+      tags:
+        - Feeds
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - name: "feeds_data_resource"
+          in: "body"
+          description: "Json description of the feeds data resource to be updated"
+          required: true
+          schema:
+            $ref: '#/definitions/FeedsData'
+      responses:
+        '200':
+          description: Feeds data resource Updated
           schema:
             $ref: '#/definitions/Status'
         '400':
@@ -4275,6 +4704,23 @@ definitions:
       tags:
         type: object
         description: "key value tags"
+        
+  MetricList:
+    type: array
+    items:
+      $ref: '#/definitions/Metric'
+        
+  Metric:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "the name of the metric"
+      tags:
+        type: array
+        description: "a list of tags attached to the metric"
+        items:
+           type: string
       
 
   FactorsResponse:
@@ -4310,6 +4756,8 @@ definitions:
         type: string
       value:
         type: string
+      affected_by_threshold_rule:
+        type: boolean
 
   results:
     type: array
@@ -4685,6 +5133,15 @@ definitions:
                         Message:
                           type: string
                           description: "The detailed output message of the probe (metric)"
+                        actual_data:
+                          type: string
+                          description: "Actual numerical data gathered by the probe (optional)"
+                        threshold_rule:
+                          type: string
+                          description: "Threshold rule applied to the specific metric (optional)"
+                        original_status:
+                          type: string
+                          description: "Original status of probe before applying threhsold rule (optional)"
 
   MetricResult:
     type: object
@@ -4839,6 +5296,22 @@ definitions:
         description: "Comma separated list of endpoint groups to exclude"
         items:
           type: string
+      exclude_metrics:
+        type: array
+        description: "Optional definition to recompute by excluding specific metrics"
+        items:
+          type: object
+          properties:
+            metric:
+              description: "Metric name to be excluded"
+              type: string
+            hostname:
+              description: "Hostname of a specific host to narrow down metric exclusion (optional)"
+            service:
+              description: "name of a specific service type to narrow down metric exclusion (optional)"
+            group:
+              description: "name of a specific group of endpoints to narrow down metric exclusion (optional)"
+              
       report:
         type: string
         description: "Name of job report"
@@ -4900,6 +5373,44 @@ definitions:
         type: string
       events:
         type: integer
+        
+  
+        
+  Trends_status_endpoints:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      endpoint:
+        type: string
+      status:
+        type: string
+      duration_in_minutes:
+        type: integer
+        
+  Trends_status_services:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      service:
+        type: string
+      status:
+        type: string
+      duration_in_minutes:
+        type: integer
+        
+  Trends_status_egroups:
+    type: object
+    properties:
+      endpoint_group:
+        type: string
+      status:
+        type: string
+      duration_in_minutes:
+        type: integer
 
               
   Trends_metrics:
@@ -4946,7 +5457,51 @@ definitions:
       flapping:
         type: integer 
         
+        
+  Trends_status_egroups_group:
+    type: object
+    properties:
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_egroups'
+        
+        
+  Trends_status_services_group:
+    type: object
+    properties:
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_services'
+        
+
+  Trends_status_endpoints_group:
+    type: object
+    properties:
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_endpoints'
   
+  Trends_status_metrics_tags_group:
+    type: object
+    properties:
+      tag:
+        type: string
+      status:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_metrics'
+
   
   Trends_status_metrics_group:
     type: object
@@ -4958,6 +5513,38 @@ definitions:
         items:
           $ref: '#/definitions/Trends_status_metrics'
           
+          
+  Trends_status_egroups_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_egroups_group'
+          
+  Trends_status_services_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_services_group'
+          
+          
+  Trends_status_endpoints_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_endpoints_group'
+          
   Trends_status_metrics_list:
     type: object
     properties:
@@ -4967,7 +5554,16 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Trends_status_metrics_group'
-  
+
+  Trends_status_metrics_tags_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_status_metrics_tags_group'
   
   Trends_metrics_list:
     type: object
@@ -4978,6 +5574,29 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Trends_metrics'
+          
+  Trends_metrics_tags_list:
+    type: object
+    properties:
+      status:
+       $ref: '#/definitions/Status'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_metrics_tags_group'
+          
+          
+  Trends_metrics_tags_group:
+    type: object
+    properties:
+      tag:
+        type: string
+      top:
+        type: array
+        items:
+          $ref: '#/definitions/Trends_metrics'
+          
+  
           
   Trends_endpoints_list:
     type: object
@@ -5402,6 +6021,16 @@ definitions:
               type: string
             context:
               type: string
+  
+  FeedsData:
+    type: object
+    properties:
+      tenants:
+        type: array
+        items:
+          type: string
+  
+  
   
   FeedsTopo:
     type: object

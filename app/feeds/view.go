@@ -7,6 +7,22 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
+// createDataListView constructs the list response template and exports it as json
+func createDataListView(results []Data, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 // createTopoListView constructs the list response template and exports it as json
 func createTopoListView(results []Topo, msg string, code int) ([]byte, error) {
 

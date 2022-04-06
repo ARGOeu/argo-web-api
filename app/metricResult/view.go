@@ -45,6 +45,7 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 	hostname := &HostXML{
 		Name: results[0].Hostname,
+		Info: results[0].Info,
 	}
 	docRoot.Result = append(docRoot.Result, hostname)
 
@@ -63,6 +64,7 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 			metric.Name = result.Metric
 			metric.Service = result.Service
+
 		}
 
 		if result.Metric != prevMetric || result.Service != prevService {
@@ -77,10 +79,13 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 		// we append the detailed results
 		metric.Details = append(metric.Details,
 			&StatusXML{
-				Timestamp: fmt.Sprintf("%s", result.Timestamp),
-				Value:     fmt.Sprintf("%s", result.Status),
-				Summary:   fmt.Sprintf("%s", result.Summary),
-				Message:   fmt.Sprintf("%s", result.Message),
+				Timestamp:      fmt.Sprintf("%s", result.Timestamp),
+				Value:          fmt.Sprintf("%s", result.Status),
+				Summary:        fmt.Sprintf("%s", result.Summary),
+				Message:        fmt.Sprintf("%s", result.Message),
+				ActualData:     fmt.Sprintf("%s", result.ActualData),
+				RuleApplied:    fmt.Sprintf("%s", result.RuleApplied),
+				OriginalStatus: fmt.Sprintf("%s", result.OriginalStatus),
 			})
 
 		prevMetric = result.Metric
@@ -110,21 +115,26 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 
 	hostname := &HostXML{
 		Name: result.Hostname,
+		Info: result.Info,
 	}
 	docRoot.Result = append(docRoot.Result, hostname)
 
 	metric := &MetricXML{
-		Name: result.Metric,
+		Name:    result.Metric,
+		Service: result.Service,
 	}
 	hostname.Metrics = append(hostname.Metrics, metric)
 
 	// we append the detailed results
 	metric.Details = append(metric.Details,
 		&StatusXML{
-			Timestamp: fmt.Sprintf("%s", result.Timestamp),
-			Value:     fmt.Sprintf("%s", result.Status),
-			Summary:   fmt.Sprintf("%s", result.Summary),
-			Message:   fmt.Sprintf("%s", result.Message),
+			Timestamp:      fmt.Sprintf("%s", result.Timestamp),
+			Value:          fmt.Sprintf("%s", result.Status),
+			Summary:        fmt.Sprintf("%s", result.Summary),
+			Message:        fmt.Sprintf("%s", result.Message),
+			ActualData:     fmt.Sprintf("%s", result.ActualData),
+			RuleApplied:    fmt.Sprintf("%s", result.RuleApplied),
+			OriginalStatus: fmt.Sprintf("%s", result.OriginalStatus),
 		})
 
 	if strings.ToLower(format) == "application/json" {
@@ -133,4 +143,20 @@ func createMetricResultView(result metricResultOutput, format string) ([]byte, e
 
 	return xml.MarshalIndent(docRoot, " ", "  ")
 
+}
+
+func createErrorMessage(message string, code int, format string) ([]byte, error) {
+
+	output := []byte("message placeholder")
+	err := error(nil)
+	docRoot := &errorMessage{}
+
+	docRoot.Message = message
+	docRoot.Code = code
+	if strings.EqualFold(format, "application/json") {
+		output, err = json.MarshalIndent(docRoot, " ", "  ")
+	} else {
+		output, err = xml.MarshalIndent(docRoot, " ", "  ")
+	}
+	return output, err
 }

@@ -27,35 +27,86 @@ import "encoding/xml"
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "2006-01-02"
 
-//StatusMonthMetricData holds status information about monthly metrics
+//StatusMonthMetricData holds monthly status trends information about metrics
 type StatusMonthMetricData struct {
 	Date   string             `bson:"date" json:"date"`
 	Status string             `bson:"status" json:"status"`
+	Tag    string             `bson:"tag" json:"tag,omitempty"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
-//StatusGroupMetricData holds status information about monthly metrics
+//StatusMonthEndpointData holds monthly status trends information about endpoints
+type StatusMonthEndpointData struct {
+	Date   string               `bson:"date" json:"date"`
+	Status string               `bson:"status" json:"status"`
+	Top    []StatusEndpointData `bson:"top" json:"top"`
+}
+
+//StatusMonthServiceData holds monthly status trends information about services
+type StatusMonthServiceData struct {
+	Date   string              `bson:"date" json:"date"`
+	Status string              `bson:"status" json:"status"`
+	Top    []StatusServiceData `bson:"top" json:"top"`
+}
+
+//StatusMonthEgroupData holds monthly status trends information about endpoint groups
+type StatusMonthEgroupData struct {
+	Date   string             `bson:"date" json:"date"`
+	Status string             `bson:"status" json:"status"`
+	Top    []StatusEgroupData `bson:"top" json:"top"`
+}
+
+//StatusGroupMetricData holds grouped monthly status trends information about metrics
 type StatusGroupMetricData struct {
 	Status string             `bson:"status" json:"status"`
+	Tag    string             `bson:"tag" json:"tag,omitempty"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
-//MonthMetricData holds flapping information about monthly metrics
+//StatusGroupEndpointData holds grouped monthly status trends information about endpoints
+type StatusGroupEndpointData struct {
+	Status string               `bson:"status" json:"status"`
+	Top    []StatusEndpointData `bson:"top" json:"top"`
+}
+
+//StatusGroupEgroupData holds grouped monthly status trends information about endpoint groups
+type StatusGroupEgroupData struct {
+	Status string             `bson:"status" json:"status"`
+	Top    []StatusEgroupData `bson:"top" json:"top"`
+}
+
+//StatusGroupServiceData holds grouped monthly status trends information about services
+type StatusGroupServiceData struct {
+	Status string              `bson:"status" json:"status"`
+	Top    []StatusServiceData `bson:"top" json:"top"`
+}
+
+//MonthMetricData holds monthly information about flapping metric trends
 type MonthMetricData struct {
 	Date string       `bson:"date" json:"date"`
+	Tag  string       `bson:"tag" json:"tag,omitempty"`
 	Top  []MetricData `bson:"top" json:"top"`
 }
 
+//TagMetricData holds information about flapping metric trends by Tag
+type TagMetricData struct {
+	Tag string       `bson:"tag" json:"tag,omitempty"`
+	Top []MetricData `bson:"top" json:"top"`
+}
+
+// MonthEndpointData holds monthly information about flapping endpoint trends
 type MonthEndpointData struct {
 	Date string         `bson:"date" json:"date"`
 	Top  []EndpointData `bson:"top" json:"top"`
 }
 
+// MonthServiceData holds monthly information about flapping service trends
 type MonthServiceData struct {
 	Date string        `bson:"date" json:"date"`
 	Top  []ServiceData `bson:"top" json:"top"`
 }
 
+// MonthEndpointGroupData holds monthly information about flapping endpoint group trends
 type MonthEndpointGroupData struct {
 	Date string              `bson:"date" json:"date"`
 	Top  []EndpointGroupData `bson:"top" json:"top"`
@@ -70,7 +121,7 @@ type MetricData struct {
 	Flapping      int    `bson:"flipflop" json:"flapping"`
 }
 
-// StatusMetricData holds status information about metrics
+// StatusMetricData holds status trend information about metrics
 type StatusMetricData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Service       string `bson:"service" json:"service"`
@@ -78,6 +129,30 @@ type StatusMetricData struct {
 	Metric        string `bson:"metric" json:"metric"`
 	Status        string `bson:"status" json:"status"`
 	Events        int    `bson:"events" json:"events"`
+}
+
+// StatusEndpointData holds status trend information about endpoints
+type StatusEndpointData struct {
+	EndpointGroup string `bson:"group" json:"endpoint_group"`
+	Service       string `bson:"service" json:"service"`
+	Endpoint      string `bson:"endpoint" json:"endpoint"`
+	Status        string `bson:"status" json:"status"`
+	Duration      int    `bson:"duration" json:"duration_in_minutes"`
+}
+
+// StatusServiceData holds status trend information about services
+type StatusServiceData struct {
+	EndpointGroup string `bson:"group" json:"endpoint_group"`
+	Service       string `bson:"service" json:"service"`
+	Status        string `bson:"status" json:"status"`
+	Duration      int    `bson:"duration" json:"duration_in_minutes"`
+}
+
+// StatusEgroupData holds status trend information about endpoint groups
+type StatusEgroupData struct {
+	EndpointGroup string `bson:"group" json:"endpoint_group"`
+	Status        string `bson:"status" json:"status"`
+	Duration      int    `bson:"duration" json:"duration_in_minutes"`
 }
 
 // EndpointData holds flapping information about endpoints
