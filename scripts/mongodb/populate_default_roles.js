@@ -271,6 +271,10 @@ function populate_default_roles() {
             resource: "metrics_admin.update",
             roles: ["super_admin"]
         },
+        {
+            resource: "v3.ar.list",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
 }
