@@ -266,6 +266,11 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
    ]
  }`
 
+	respNotFound := `{
+   "message": "Metric not found!",
+   "code": 404
+ }`
+
 	request, _ := http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2015-05-01T01:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/xml")
@@ -289,13 +294,13 @@ func (suite *metricResultTestSuite) TestReadStatusDetail() {
 	// Check returned xml when no results are available for a given timestamp
 	request, _ = http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2015-05-01T01:01:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/xml")
+	request.Header.Set("Accept", "application/json")
 	response = httptest.NewRecorder()
 	suite.router.ServeHTTP(response, request)
 	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal("<root></root>", response.Body.String(), "Response body mismatch")
+	suite.Equal(respNotFound, response.Body.String(), "Response body mismatch")
 
 	// Check returned xml when no results are available for a given timestamp
 	request, _ = http.NewRequest("GET", "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2015-05-01T00:00:00Z", strings.NewReader(""))
