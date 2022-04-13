@@ -192,6 +192,18 @@ function populate_default_roles() {
             roles: ["admin", "editor"]
         },
         {
+            resource: "topology_service_types.insert",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_service_types.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_service_types.delete",
+            roles: ["admin", "editor"]
+        },
+        {
             resource: "feeds.topo.list",
             roles: ["admin", "editor"]
         },
