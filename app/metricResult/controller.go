@@ -149,6 +149,23 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Query the detailed metric results
 	err = metricCol.Find(prepQuery(input, reportID)).One(&result)
 
+	// if not found or other issue
+	if err != nil {
+		if err.Error() == "not found" {
+			code = http.StatusNotFound
+			message := "Metric not found!"
+			output, err := createErrorMessage(message, code, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		} else {
+			code = http.StatusInternalServerError
+			message := "Internal Server Error!"
+			output, err := createErrorMessage(message, code, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+	}
+
 	output, err = createMetricResultView(result, contentType)
 
 	if err != nil {
