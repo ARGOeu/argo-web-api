@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: ARGO web api
   description: "ARGO is a lightweight service for Service Level Monitoring designed for medium and large sized e-Infrastructures. This swagger UI interface provides access to the ARGO web api, which in turn can be used for either retrieving Availability/Reliability and status results or for defining profiles and reports that should be used within the SLM computations. The ARGO web api is multitenant and can hence be used by multiple e-Infrastructure providers. To list, add, update or remove tenants use the Tenants resource below. Under all other resources use per given tenant the corresponding api key."
-  version: 1.9.1
+  version: 1.11.0
   contact:
     name: ARGO Developers
     url: http://argoeu.github.io/
@@ -2149,7 +2149,114 @@ paths:
           schema:
             $ref: '#/definitions/Status_error'
             
-  
+  /v2/topology/service-types:
+    post:
+      summary: Create a new list of service types per date
+      operationId: topology_services.create
+      description: Creates a new list of available service types per tenant for a specific date
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "group_resource"
+          in: "body"
+          description: "Json description of service type items to be created"
+          required: true
+          schema:
+            $ref: '#/definitions/TopologyServiceTypes'
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resource Created
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '400':
+          description: Bad request due to malformed JSON in post body
+          schema:
+            $ref: '#/definitions/Status_error'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        '409':
+          description: Content already created for specific date
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    get:
+      summary: List types of available service types per date
+      operationId: topology_services.list
+      description: List types of available service types per date
+      tags:
+        - Topology
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: Topology resources listed
+          schema:
+            $ref: '#/definitions/Self_reference'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'
+    
+    delete:
+      summary: Delete list of available service types
+      operationId: topology_services.delete
+      description: Delete list of available service types for a specific date
+      tags:
+        - Topology
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/profDate"
+      responses:
+        '200':
+          description: list of service types deleted
+          schema:
+            $ref: '#/definitions/Status'
+        '401':
+          description: Unauthorized user
+          schema:
+            $ref: '#/definitions/Status_error'
+        '404':
+          description: Item not found
+          schema:
+            $ref: '#/definitions/Status_error'
+        '406':
+          description: Content Not acceptable
+          schema:
+            $ref: '#/definitions/Status_error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Status_error'  
       
           
   /v2/topology/endpoints:
@@ -4735,7 +4842,23 @@ definitions:
       tags:
         type: object
         description: "key value tags"
-        
+
+  TopologyServiceTypes:
+    type: array
+    items:
+      $ref: '#/definitions/TopologyServiceType'
+      
+  TopologyServiceType:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "name of the service type"
+      description:
+        type: string
+        description: "short description of the service type"
+
+ 
   MetricList:
     type: array
     items:
