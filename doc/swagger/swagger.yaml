@@ -4582,6 +4582,37 @@ paths:
         500:
           $ref: "#/responses/ServerError"
 
+  /v3/status/{report_name}:
+    get:
+      summary: "List Status results for top level groups and included endpoints"
+      description: "his method retrieves the status result timeline for top level groups and their included endpoints"
+      operationId: statusGroupsEndpoints
+      tags:
+        - Status Results (v3)
+      produces:
+        - "application/json"
+      parameters:
+        - $ref: "#/parameters/apiKey"
+        - $ref: "#/parameters/reportName"
+        - $ref: "#/parameters/startDate"
+        - $ref: "#/parameters/endDate"
+        - $ref: "#/parameters/Granularity"
+      responses:
+        200:
+          description: "Successful retrieval of status timelines"
+          schema:
+            $ref: "#/definitions/StatusGroupsEndpointsResponse"
+        400:
+          $ref: "#/responses/404"
+        401:
+          $ref: "#/responses/Unauthorized"
+        406:
+          $ref: "#/responses/406"
+        422:
+          $ref: "#/responses/422"
+        500:
+          $ref: "#/responses/ServerError"
+
 
 parameters:
   trendsGran:
@@ -4876,6 +4907,47 @@ definitions:
         items:
            type: string
       
+  StatusGroupsEndpointsResponse:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            statuses:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  status:
+                    type: string
+            endpoints:
+              type: array
+              items: 
+                type: object
+                properties:
+                  hostname: 
+                    type: string
+                  service:
+                    type: string
+                  statuses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                        status:
+                          type: string
+
+
 
   FactorsResponse:
     type: object
@@ -4995,7 +5067,8 @@ definitions:
                     type: number
                   downtime:
                     type: number
-                  
+  
+  
 
   EndpointGroupResultsResponse:
     type: object

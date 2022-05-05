@@ -5,6 +5,6 @@ module.exports = {
     'Results' : ['ar_results', 'status_results', 'issues', 'trends', 'metric_results', 'recomputations'],
     'Topology': ['topology_groups', 'topology_endpoints', 'topology_service_types', 'topology_stats'],
     'Validations & Errors': ['validations', 'errors'],
-    'Api Version 3': ['v3_ar_results']
+    'Api Version 3': ['v3_ar_results', 'v3_status_results']
   },
 };

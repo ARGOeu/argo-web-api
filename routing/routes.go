@@ -48,12 +48,14 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/trends"
 	"github.com/ARGOeu/argo-web-api/app/weights"
 	"github.com/ARGOeu/argo-web-api/v3/ar"
+	"github.com/ARGOeu/argo-web-api/v3/status"
 	"github.com/ARGOeu/argo-web-api/version"
 )
 
 // Here we declare the v3 routes
 var routesV3 = []RouteV3{
 	{"AR", "/results", ar.HandleSubrouter},
+	{"Status", "/status", status.HandleSubrouter},
 }
 
 var routesV2 = []RouteV2{
