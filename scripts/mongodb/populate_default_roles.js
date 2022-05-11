@@ -286,6 +286,10 @@ function populate_default_roles() {
         {
             resource: "v3.ar.list",
             roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "v3.status.list",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
