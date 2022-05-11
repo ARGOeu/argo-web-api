@@ -2,7 +2,7 @@ package status
 
 import (
 	"encoding/json"
-	"encoding/xml"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -10,7 +10,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, input InputParams, endDate string, details bool) ([]byte, error) {
+func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, input InputParams, endDate string, details bool, latest bool) ([]byte, error) {
 
 	// calculate part of the timestamp that closes the timeline of each item
 	var extraTS string
@@ -18,7 +18,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 	tsNow := time.Now().UTC()
 	today := tsNow.Format("2006-01-02")
 
-	if strings.Split(endDate, "T")[0] == today {
+	if endDate == today {
 		extraTS = "T" + strings.Split(tsNow.Format(zuluForm), "T")[1]
 	} else {
 		extraTS = "T23:59:59Z"
@@ -36,6 +36,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 
 	// make index map to keep track of different groups
 	indexGroup := make(map[string]*groupOUT)
+	keysGroup := make([]string, 0)
 
 	for _, row := range resGroups {
 		// prepare status information to be added
@@ -57,12 +58,15 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			newGroup.Endpoints = make([]*endpointOUT, 0)
 			newGroup.Statuses = append(newGroup.Statuses, status)
 			indexGroup[row.Group] = newGroup
+			// add key to keysGroup array to be used in sorted traversal
+			keysGroup = append(keysGroup, row.Group)
 		}
 
 	}
 
 	// make index map to keep track of different endpoint
 	indexEndp := make(map[string]*endpointOUT)
+	keysEndp := make([]string, 0)
 
 	for _, row := range resEndpoints {
 		// prepare status information to be added
@@ -74,7 +78,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 		}
 
 		// check if item has an already created group
-		if ptrEndp, ok := indexEndp[row.Hostname+row.Service]; ok {
+		if ptrEndp, ok := indexEndp[row.Service+row.Hostname]; ok {
 			ptrEndp.Statuses = append(ptrEndp.Statuses, status)
 		} else {
 			newEndp := &endpointOUT{}
@@ -84,14 +88,21 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			newEndp.SuperGroup = row.EndpointGroup
 			newEndp.Statuses = make([]*statusOUT, 0)
 			newEndp.Statuses = append(newEndp.Statuses, status)
-			indexEndp[row.Hostname+row.Service] = newEndp
+			indexEndp[row.Service+row.Hostname] = newEndp
+			// add key to keysEndp to be used in sorted traversal
+			keysEndp = append(keysEndp, row.Service+row.Hostname)
 		}
 
 	}
 
+	// sort keys
+	sort.Strings(keysGroup)
+	sort.Strings(keysEndp)
+
 	// repeat over group items and add them to the response root
 
-	for _, value := range indexEndp {
+	for _, key := range keysEndp {
+		value := indexEndp[key]
 		// check if endpoint supergroup is indexed in groups
 		if ptrGroup, ok := indexGroup[value.SuperGroup]; ok {
 
@@ -101,7 +112,11 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			extraStatus := &statusOUT{}
 			extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
 			extraStatus.Value = lastStatus.Value
+			if latest == true {
+				value.Statuses = nil
+			}
 			value.Statuses = append(value.Statuses, extraStatus)
+
 			ptrGroup.Endpoints = append(ptrGroup.Endpoints, value)
 
 		}
@@ -109,13 +124,17 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 	}
 
 	// repeat over group items and add them to the response root
-	for _, value := range indexGroup {
+	for _, key := range keysGroup {
+		value := indexGroup[key]
 		// add extra status that closes the timeline
 		// get last status of the existing timeline
 		lastStatus := value.Statuses[len(value.Statuses)-1]
 		extraStatus := &statusOUT{}
 		extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
 		extraStatus.Value = lastStatus.Value
+		if latest == true {
+			value.Statuses = nil
+		}
 		value.Statuses = append(value.Statuses, extraStatus)
 		docRoot.Groups = append(docRoot.Groups, value)
 	}
@@ -145,10 +164,8 @@ func createErrorMessage(message string, code int, format string) ([]byte, error)
 
 	docRoot.Message = message
 	docRoot.Code = code
-	if strings.EqualFold(format, "application/json") {
-		output, err = json.MarshalIndent(docRoot, " ", "  ")
-	} else {
-		output, err = xml.MarshalIndent(docRoot, " ", "  ")
-	}
+
+	output, err = json.MarshalIndent(docRoot, " ", "  ")
+
 	return output, err
 }

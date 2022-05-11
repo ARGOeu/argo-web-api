@@ -20,15 +20,16 @@ The following methods can be used to obtain a tenant's Status timeline results f
 ### Input
 
 ```
-/status/{report_name}?[start_time]&[end_time]
+/status/{report_name}?start_time={value}&end_time={value}&view={value}
 ```
 
 #### Query Parameters
 
 | Type            | Description                                                                                     | Required | Default value |
 | --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
-| `[start_time]`  | UTC time in W3C format                                                                          | YES      |
-| `[end_time]`    | UTC time in W3C format                                                                          | YES      |
+| `start_time`  | UTC time in W3C format                                                                          | NO       | beginning of the current day (UTC, W3C format)
+| `end_time`    |  UTC time in W3C format                                                                          | NO       | time right now (UTC, W3C format)
+| `view`        | `view=details` to display verbose details in results (such as threshold rules etc.) and `view=latest` to display only display the latest status value for each item                                                                        | NO       | 
 
 #### Path Parameters
 
@@ -37,7 +38,10 @@ The following methods can be used to obtain a tenant's Status timeline results f
 | `{report_name}` | Name of the report that contains all the information about the profile, filter tags, group types etc. | YES      |
 
 
-### Example Request 1: default daily granularity
+#### Notes
+If user omits start_time and end_time parameters during the request the argo-web-api will respond with the latest status results of the current day
+
+### Example Request 1: Status results (for today or for a specific period)
 
 #### Request
 
@@ -45,6 +49,14 @@ The following methods can be used to obtain a tenant's Status timeline results f
 `HTTP GET`
 
 ##### Path
+
+For today's results just issue:
+
+```
+/api/v2/status/Report_A
+```
+
+For results in a specific period:
 
 ```
 /api/v2/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
@@ -181,6 +193,101 @@ Status: 200 OK
             },
             {
               "timestamp": "2015-05-01T23:59:59Z",
+              "value": "CRITICAL"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Example Request 2: Display only latest status results
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+
+```
+/api/v2/status/Report_A?latest=true
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+  "groups": [
+    {
+      "name": "SITEA",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2022-05-11T15:00:00Z",
+          "value": "OK"
+        }
+      ],
+      "endpoints": [
+        {
+          "hostname": "cream01.example.foo",
+          "service": "CREAM-CE",
+          "info": {
+            "Url": "http://example.foo/path/to/service"
+          },
+          "statuses": [
+            {
+              "timestamp": "2022-05-11T15:00:00Z",
+              "value": "OK"
+            }
+          ]
+        },
+        {
+          "hostname": "cream02.example.foo",
+          "service": "CREAM-CE",
+          "statuses": [
+            {
+              "timestamp": "2022-05-11T15:00:00Z",
+              "value": "OK"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SITEB",
+      "type": "SITES",
+      "statuses": [
+        {
+          "timestamp": "2022-05-11T15:00:00Z",
+          "value": "CRITICAL"
+        }
+      ],
+      "endpoints": [
+        {
+          "hostname": "cream03.example.foo",
+          "service": "CREAM-CE",
+          "statuses": [
+            {
+              "timestamp": "2022-05-11T15:00:00Z",
               "value": "CRITICAL"
             }
           ]

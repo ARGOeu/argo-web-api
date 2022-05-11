@@ -4596,7 +4596,7 @@ paths:
         - $ref: "#/parameters/reportName"
         - $ref: "#/parameters/startDate"
         - $ref: "#/parameters/endDate"
-        - $ref: "#/parameters/Granularity"
+        - $ref: "#/parameters/statusView"
       responses:
         200:
           description: "Successful retrieval of status timelines"
@@ -4768,6 +4768,12 @@ parameters:
     in: query
     type: string
     description: "the servce will return only the latest entry grouped by endpoint_group/host/service/metric"
+    default: "false"
+  statusView:
+    name: "view"
+    in: query
+    type: string
+    description: "Use view=details to enrich status results with additional information such as threshold rules that may have been applied. Use view=latest to display only the latest status for each item."
     default: "false"
 
 responses:
