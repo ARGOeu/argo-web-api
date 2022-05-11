@@ -23,6 +23,7 @@
 package status
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -55,18 +56,18 @@ type StatusTestSuite struct {
 func (suite *StatusTestSuite) SetupSuite() {
 
 	const testConfig = `
-		  [server]
-		  bindip = ""
-		  port = 8080
-		  maxprocs = 4
-		  cache = false
-		  lrucache = 700000000
-		  gzip = true
-		  [mongodb]
-		  host = "127.0.0.1"
-		  port = 27017
-		  db = "ARGO_test_statusV3"
-		  `
+		   [server]
+		   bindip = ""
+		   port = 8080
+		   maxprocs = 4
+		   cache = false
+		   lrucache = 700000000
+		   gzip = true
+		   [mongodb]
+		   host = "127.0.0.1"
+		   port = 27017
+		   db = "ARGO_test_statusV3"
+		   `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
@@ -480,6 +481,7 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual json response
 	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
 
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
@@ -501,6 +503,91 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
+
+	// Case of bad start_time input
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Error parsing start_time=2015-06-20AT12:00:00Z - please use zulu format like 2006-01-02T15:04:05Z"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
+
+	// Case of bad end_time input
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse = `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Error parsing end_time=2015-06T23:00:00Z - please use zulu format like 2006-01-02T15:04:05Z"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
+
+	// Case of using view=latest along with specifing start and end period
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-20T23:00:00Z&view=latest", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse = `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Parameter view=latest should not be used when specifing start_time and end_time period"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
 
 }
 

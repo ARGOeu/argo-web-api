@@ -25,8 +25,11 @@ package status
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/context"
@@ -55,9 +58,61 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	parsedStart, _ := parseZuluDate(urlValues.Get("start_time"))
+	// This is going to be used to determine a detailed/latest view of the results
+	view := urlValues.Get("view")
+	latest := false
+	details := false
+	if view == "details" {
+		details = true
+	} else if view == "latest" {
+		latest = true
+	}
 
-	parsedEnd, _ := parseZuluDate(urlValues.Get("end_time"))
+	var parsedStart, parsedEnd, parsedPrev int
+
+	// check if user provided start and end time correctly
+	urlStartTime := urlValues.Get("start_time")
+	urlEndTime := urlValues.Get("end_time")
+
+	endDate := ""
+
+	if urlStartTime == "" && urlEndTime == "" {
+		isoTimeNow := time.Now().UTC().Format(time.RFC3339)
+		startDate := strings.Split(isoTimeNow, "T")[0]
+		startTime := startDate + "T00:00:00Z"
+		endDate = startDate
+		parsedStart, _ = parseZuluDate(startTime)
+		parsedEnd, _ = parseZuluDate(isoTimeNow)
+		parsedPrev, _ = getPrevDay(startTime)
+	} else {
+		if parsedStart, err = parseZuluDate(urlStartTime); err != nil {
+			code = http.StatusBadRequest
+			message := fmt.Sprintf("Error parsing start_time=%s - please use zulu format like %s", urlStartTime, zuluForm)
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		if parsedEnd, err = parseZuluDate(urlEndTime); err != nil {
+			code = http.StatusBadRequest
+			message := fmt.Sprintf("Error parsing end_time=%s - please use zulu format like %s", urlEndTime, zuluForm)
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		endDate = strings.Split(urlEndTime, "T")[0]
+
+		if latest != false {
+			code = http.StatusBadRequest
+			message := fmt.Sprintf("Parameter view=latest should not be used when specifing start_time and end_time period")
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			return code, h, output, err
+		}
+
+		parsedPrev, _ = getPrevDay(urlStartTime)
+
+	}
 
 	input := InputParams{
 		parsedStart,
@@ -66,13 +121,6 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		vars["group_type"],
 		vars["group_name"],
 		contentType,
-	}
-
-	// This is going to be used to determine a detailed view or not of the results
-	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
 	}
 
 	// Grab Tenant DB configuration from context
@@ -108,8 +156,6 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
-
 	//if no status results yet show previous days results
 	if len(groupResults) == 0 {
 		// Zero query results
@@ -130,7 +176,7 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	output, err = createCombinedView(groupResults, endpointResults, input, urlValues.Get("end_time"), details) //Render the results into JSON
+	output, err = createCombinedView(groupResults, endpointResults, input, endDate, details, latest) //Render the results into JSON
 
 	return code, h, output, err
 }
