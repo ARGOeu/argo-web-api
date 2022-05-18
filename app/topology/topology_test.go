@@ -1204,7 +1204,7 @@ func (suite *topologyTestSuite) SetupTest() {
 
 	// Seed database with group topology
 	c = session.DB(suite.tenantDbConf.Db).C(serviceTypeColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c.EnsureIndexKey("-date_integer", "name")
 	// Insert seed data
 	c.Insert(
 		bson.M{
@@ -2701,13 +2701,13 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
  "data": [
   {
    "date": "2015-01-11",
-   "name": "DB",
-   "description": "A Database type of Service"
+   "name": "API",
+   "description": "An API type of Service"
   },
   {
    "date": "2015-01-11",
-   "name": "API",
-   "description": "An API type of Service"
+   "name": "DB",
+   "description": "A Database type of Service"
   }
  ]
 }`},
@@ -2723,13 +2723,13 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
  "data": [
   {
    "date": "2015-04-12",
-   "name": "DB",
-   "description": "A Database type of Service"
+   "name": "API",
+   "description": "An API type of Service"
   },
   {
    "date": "2015-04-12",
-   "name": "API",
-   "description": "An API type of Service"
+   "name": "DB",
+   "description": "A Database type of Service"
   },
   {
    "date": "2015-04-12",
@@ -2772,7 +2772,6 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
 		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
-
 	}
 }
 
