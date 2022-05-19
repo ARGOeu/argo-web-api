@@ -23,7 +23,6 @@
 package status
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -341,6 +340,37 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
 	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "SITEA",
+		"service":        "CREAM-CE",
+		"host":           "cream03.example.foo",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T04:40:00Z",
+		"endpoint_group": "SITEA",
+		"service":        "CREAM-CE",
+		"host":           "cream03.example.foo",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "UNKNOWN",
+	})
+	c.Insert(bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T06:00:00Z",
+		"endpoint_group":     "SITEA",
+		"service":            "CREAM-CE",
+		"host":               "cream03.example.foo",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "CRITICAL",
+		"has_threshold_rule": true,
+	})
 
 }
 
@@ -425,6 +455,28 @@ func (suite *StatusTestSuite) TestListStatus() {
        "value": "OK"
       }
      ]
+    },
+    {
+     "hostname": "cream03.example.foo",
+     "service": "CREAM-CE",
+     "statuses": [
+      {
+       "timestamp": "2015-05-01T00:00:00Z",
+       "value": "OK"
+      },
+      {
+       "timestamp": "2015-05-01T04:40:00Z",
+       "value": "UNKNOWN"
+      },
+      {
+       "timestamp": "2015-05-01T06:00:00Z",
+       "value": "CRITICAL"
+      },
+      {
+       "timestamp": "2015-05-01T23:59:59Z",
+       "value": "CRITICAL"
+      }
+     ]
     }
    ]
   },
@@ -481,7 +533,6 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual json response
 	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
@@ -503,7 +554,6 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 	// Case of bad start_time input
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
@@ -531,7 +581,6 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 	// Case of bad end_time input
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
@@ -559,7 +608,6 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 	// Case of using view=latest along with specifing start and end period
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-20T23:00:00Z&view=latest", strings.NewReader(""))
@@ -587,7 +635,6 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(400, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 }
 

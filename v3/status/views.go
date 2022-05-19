@@ -78,7 +78,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 		}
 
 		// check if item has an already created group
-		if ptrEndp, ok := indexEndp[row.Service+row.Hostname]; ok {
+		if ptrEndp, ok := indexEndp[row.EndpointGroup+row.Service+row.Hostname]; ok {
 			ptrEndp.Statuses = append(ptrEndp.Statuses, status)
 		} else {
 			newEndp := &endpointOUT{}
@@ -88,9 +88,9 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			newEndp.SuperGroup = row.EndpointGroup
 			newEndp.Statuses = make([]*statusOUT, 0)
 			newEndp.Statuses = append(newEndp.Statuses, status)
-			indexEndp[row.Service+row.Hostname] = newEndp
+			indexEndp[row.EndpointGroup+row.Service+row.Hostname] = newEndp
 			// add key to keysEndp to be used in sorted traversal
-			keysEndp = append(keysEndp, row.Service+row.Hostname)
+			keysEndp = append(keysEndp, row.EndpointGroup+row.Service+row.Hostname)
 		}
 
 	}
