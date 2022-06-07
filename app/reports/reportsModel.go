@@ -39,15 +39,16 @@ import (
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
 type MongoInterface struct {
-	ID         string      `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-	Tenant     string      `json:"tenant" xml:"tenant"`
-	Weight     string      `bson:"weight,omitempty"  json:"weight,omitempty"  xml:"weight,omitempty"`
-	Disabled   bool        `bson:"disabled" json:"disabled" xml:"disabled"`
-	Info       Info        `bson:"info" json:"info" xml:"info"`
-	Thresholds *Thresholds `bson:"thresholds,omitempty" json:"thresholds,omitempty" xml:"thresholds"`
-	Topology   Topology    `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
-	Profiles   []Profile   `bson:"profiles" json:"profiles" xml:"profiles"`
-	Tags       []Tag       `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
+	ID           string        `bson:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+	Tenant       string        `json:"tenant" xml:"tenant"`
+	Weight       string        `bson:"weight,omitempty"  json:"weight,omitempty"  xml:"weight,omitempty"`
+	Disabled     bool          `bson:"disabled" json:"disabled" xml:"disabled"`
+	Info         Info          `bson:"info" json:"info" xml:"info"`
+	Computations *Computations `bson:"computations" json:"computations" xml:"-"`
+	Thresholds   *Thresholds   `bson:"thresholds,omitempty" json:"thresholds,omitempty" xml:"thresholds"`
+	Topology     Topology      `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
+	Profiles     []Profile     `bson:"profiles" json:"profiles" xml:"profiles"`
+	Tags         []Tag         `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
 }
 
 // Info contains info about a report and is used inside the main MongoInterface struct
@@ -56,6 +57,14 @@ type Info struct {
 	Description string `bson:"description,omitempty" json:"description" xml:"description"`
 	Created     string `bson:"created,omitempty" json:"created,omitempty" xml:"created,omitempty"`
 	Updated     string `bson:"updated,omitempty" json:"updated,omitempty" xml:"updated,omitempty"`
+}
+
+// Computations struct holds information about what needs to be computed in this report
+// e.g. a/r, status and specific trends
+type Computations struct {
+	AR     bool     `bson:"ar" json:"ar"`
+	Status bool     `bson:"status" json:"status"`
+	Trends []string `bson:"trends" json:"trends"`
 }
 
 // Thresholds contains information about the percentage thresholds used to color report scores
@@ -192,6 +201,22 @@ func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.Error
 	return errs
 }
 
+func (report *MongoInterface) ValidateTrends() []respond.ErrorResponse {
+	errs := []respond.ErrorResponse{}
+	for _, trendName := range report.Computations.Trends {
+		if trendName != "flapping" && trendName != "status" && trendName != "tags" {
+			errs = append(errs,
+				respond.ErrorResponse{
+					Message: "Invalid Trend Name",
+					Code:    "422",
+					Details: fmt.Sprintf("Trends with the name:%s doesn't exist", trendName),
+				})
+		}
+
+	}
+	return errs
+}
+
 // GetMetricProfile is a function that takes a report struc element
 // and returns the name of the metric profile (if exists)
 func GetMetricProfile(input MongoInterface) (string, error) {
@@ -210,4 +235,9 @@ func searchName(name string) bson.M {
 	}
 
 	return query
+}
+
+// genDefaultComp is used to generate a default computations json object for the report
+func genDefaultComp() *Computations {
+	return &Computations{AR: true, Status: true, Trends: []string{"flapping", "status", "tags"}}
 }

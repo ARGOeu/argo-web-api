@@ -6247,6 +6247,17 @@ definitions:
             type: string
           updated:
             type: string
+      computations: 
+        type: object
+        properties:
+          ar:
+            type: boolean
+          status:
+            type: boolean
+          trends:
+            type: array
+            items:
+              type: string
       thresholds:
         type: object
         properties:

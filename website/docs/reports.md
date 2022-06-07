@@ -60,6 +60,15 @@ Json Response
                 "created": "2015-9-10 13:43:00",
                 "updated": "2015-10-11 13:43:00"
             },
+            "computations": {
+                "ar": true,
+                "status": true,
+                "trends": [
+                              "flapping",
+                              "status",
+                              "tags"
+                          ]
+            },
             "topology_schema": {
                 "group": {
                     "type": "NGI",
@@ -145,6 +154,15 @@ Accept: application/json
                 "type": "site"
             }
         }
+    },
+    "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+                        "flapping",
+                        "status",
+                        "tags"
+                    ]
     },
     "thresholds": {
         "availability": 80.0,
@@ -232,6 +250,7 @@ Accept: application/json
         "name": "newname",
         "description": "newdescription"
     },
+    
     "topology_schema": {
         "group": {
             "type": "ngi",
@@ -470,3 +489,24 @@ During report creation, in case of wrong profile type reference defined or wrong
     ]
 }
 ```
+
+<a id='7'></a>
+
+## Notes on Computations field
+Computations field is used per report to define what kind of computations should run per report execution. Each report can produce availability/reliability (ar) results, status timelines and specific trends such as top flapping items, top items in status Critical,Warning etc.. and also top issues reported by tags. User can specify exactly what needs to be computed when a report runs by using the special `computations` field and define the following:
+
+```json
+{
+    "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+                        "flapping",
+                        "status",
+                        "tags"
+                    ]
+    }
+}
+```
+
+This information is automatically picked up by the analytics engine and the specified computation are executed. When creating or updating a report the `computations` field is optional. If the User omits it then the default value will include that everything should be computed.
