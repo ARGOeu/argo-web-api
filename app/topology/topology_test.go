@@ -204,6 +204,21 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 	c.Insert(
 		bson.M{
+			"resource": "topology_service_types.list",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_service_types.insert",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
+			"resource": "topology_service_types.delete",
+			"roles":    []string{"editor", "viewer"},
+		})
+	c.Insert(
+		bson.M{
 			"resource": "topology_stats.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -1187,6 +1202,48 @@ func (suite *topologyTestSuite) SetupTest() {
 			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
 		})
 
+	// Seed database with group topology
+	c = session.DB(suite.tenantDbConf.Db).C(serviceTypeColName)
+	c.EnsureIndexKey("-date_integer", "name")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "DB",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "API",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "DB",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "API",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "STORAGE",
+			"description":  "A Storage type of Service",
+		},
+		bson.M{
+			"date":         "2015-06-13",
+			"date_integer": 20150613,
+			"name":         "STORAGE",
+			"description":  "A Storage type of Service",
+		})
+
 }
 
 func (suite *topologyTestSuite) TestBadDate() {
@@ -1338,6 +1395,104 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 	suite.Equal(409, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(expJSON2, output2, "Creation failed")
+
+}
+
+func (suite *topologyTestSuite) TestCreateServiceTypeTopology() {
+
+	expJSON := `{
+ "message": "Topology of 3 service types created for date: 2019-03-03",
+ "code": "201"
+}`
+
+	expJSON2 := `{
+ "message": "Topology list of service types already exists for date: 2019-03-03, please either update it or delete it first!",
+ "code": "409"
+}`
+
+	expJSON3 := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2019-03-03",
+   "name": "Service_A",
+   "description": "a short descritpion of service type a"
+  },
+  {
+   "date": "2019-03-03",
+   "name": "Service_B",
+   "description": "a short descritpion of service type b"
+  },
+  {
+   "date": "2019-03-03",
+   "name": "Service_C",
+   "description": "a short descritpion of service type c"
+  }
+ ]
+}`
+
+	jsonInput := `[
+  {
+    "name": "Service_A",
+    "description": "a short descritpion of service type a"
+  },
+  {
+    "name": "Service_B",
+    "description": "a short descritpion of service type b"
+  },
+  {
+    "name": "Service_C",
+    "description": "a short descritpion of service type c"
+  }
+]`
+	request, _ := http.NewRequest("POST", "/api/v2/topology/service-types?date=2019-03-03", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	// Check that we must have a 200 ok code
+	suite.Equal(201, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output, "Creation failed")
+
+	// Now test inserting again it should create a conflict
+
+	request2, _ := http.NewRequest("POST", "/api/v2/topology/service-types?date=2019-03-03", strings.NewReader(jsonInput))
+	request2.Header.Set("x-api-key", suite.clientkey)
+	request2.Header.Set("Accept", "application/json")
+	response2 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response2, request2)
+	code2 := response2.Code
+	output2 := response2.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(409, code2, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON2, output2, "Creation failed")
+
+	// Now test retrieving the documents
+
+	request3, _ := http.NewRequest("GET", "/api/v2/topology/service-types?date=2019-03-03", strings.NewReader(jsonInput))
+	request3.Header.Set("x-api-key", suite.clientkey)
+	request3.Header.Set("Accept", "application/json")
+	response3 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response3, request3)
+	code3 := response3.Code
+	output3 := response3.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(200, code3, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON3, output3, "Creation failed")
 
 }
 
@@ -2526,6 +2681,100 @@ func (suite *topologyTestSuite) TestListFilterGroups() {
 	}
 }
 
+func (suite *topologyTestSuite) TestListServiceTypes() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+
+	expected := []TestReq{
+		{
+			Path: "/api/v2/topology/service-types?date=2015-01-30",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "name": "API",
+   "description": "An API type of Service"
+  },
+  {
+   "date": "2015-01-11",
+   "name": "DB",
+   "description": "A Database type of Service"
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/service-types?date=2015-04-28",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04-12",
+   "name": "API",
+   "description": "An API type of Service"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "DB",
+   "description": "A Database type of Service"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "STORAGE",
+   "description": "A Storage type of Service"
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/service-types?date=2015-06-30",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-13",
+   "name": "STORAGE",
+   "description": "A Storage type of Service"
+  }
+ ]
+}`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+	}
+}
+
 func (suite *topologyTestSuite) TestListFilterEndpoints() {
 
 	type TestReq struct {
@@ -2905,6 +3154,58 @@ func (suite *topologyTestSuite) TestDeleteEndpoints() {
 	suite.Equal(output1JSON, output, "Response body mismatch")
 
 	request, _ = http.NewRequest("DELETE", "/api/v2/topology/endpoints?date=2015-08-10", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 404 not found
+	suite.Equal(404, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output2JSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestDeleteServiceTypes() {
+
+	request, _ := http.NewRequest("DELETE", "/api/v2/topology/service-types?date=2015-04-12", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	output1JSON := `{
+ "message": "Topology of 3 service types deleted for date: 2015-04-12",
+ "code": "200"
+}`
+
+	output2JSON := `{
+ "status": {
+  "message": "Not Found",
+  "code": "404"
+ },
+ "errors": [
+  {
+   "message": "Not Found",
+   "code": "404",
+   "details": "Specific query returned no items"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(output1JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("DELETE", "/api/v2/topology/service-types?date=2015-04-12", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response = httptest.NewRecorder()

@@ -31,7 +31,6 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-
 	"github.com/gorilla/mux"
 )
 
@@ -42,13 +41,17 @@ type RouteV2 struct {
 	SubrouterHandler func(*mux.Router, *respond.ConfHandler)
 }
 
-// NewRouter creates the main router that will be used by the api
+// Same Route model as V2
+type RouteV3 RouteV2
+
+// NewRouter creates the main router that will be used by the api (contains both v2 and v3 routes)
 func NewRouter(cfg config.Config) *mux.Router {
 
 	confhandler := respond.ConfHandler{Config: cfg}
 
 	router := mux.NewRouter().StrictSlash(false)
 
+	// Add v2 subroutes
 	for _, subroute := range routesV2 {
 		subrouter := router.
 			PathPrefix("/api/v2" + subroute.Pattern).
@@ -56,7 +59,15 @@ func NewRouter(cfg config.Config) *mux.Router {
 			Subrouter()
 		subroute.SubrouterHandler(subrouter, &confhandler)
 	}
-	// router.Walk(PrintRoutes)
+
+	// Add v3 subroutes
+	for _, subroute := range routesV3 {
+		subrouter := router.
+			PathPrefix("/api/v3" + subroute.Pattern).
+			Name(subroute.Name).
+			Subrouter()
+		subroute.SubrouterHandler(subrouter, &confhandler)
+	}
 	return router
 }
 

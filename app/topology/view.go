@@ -74,6 +74,21 @@ func createListTags(results []TagInfo, msg string, code int) ([]byte, error) {
 
 }
 
+func createListService(results []ServiceType, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 func createListGroup(results []Group, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{

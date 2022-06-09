@@ -82,6 +82,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		input.Thresholds = &t
 	}
 
+	// check if user declared what needs to be computed or else provide defaults
+	if input.Computations == nil {
+		c := genDefaultComp()
+		input.Computations = c
+	}
+
 	// Check if json body is malformed
 	if err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
@@ -101,6 +107,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Validate profiles given in report
 	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+	validationErrors = append(validationErrors, input.ValidateTrends()...)
 
 	if len(validationErrors) > 0 {
 		code = 422
@@ -204,8 +211,13 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	for indx, _ := range results {
+	for indx := range results {
 		results[indx].Tenant = tenantName
+
+		// check if computations field is not set and return the default value
+		if results[indx].Computations == nil {
+			results[indx].Computations = genDefaultComp()
+		}
 	}
 
 	// After successfully retrieving the db results
@@ -272,6 +284,10 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// Enrich report with tenant name -- used in argo engine
 	result.Tenant = tenantName
 
+	if result.Computations == nil {
+		result.Computations = genDefaultComp()
+	}
+
 	// After successfully retrieving the db results
 	// call the createView function to render them into idented xml
 	output, err = createView([]MongoInterface{result}, contentType)
@@ -327,6 +343,10 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	if input.Computations == nil {
+		input.Computations = genDefaultComp()
+	}
+
 	sanitizedInput := bson.M{
 		"$set": bson.M{
 			// "info": bson.M{
@@ -336,6 +356,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			"weight":           input.Weight,
 			"disabled":         input.Disabled,
 			"thresholds":       input.Thresholds,
+			"computations":     input.Computations,
 			// },
 			"profiles":        input.Profiles,
 			"filter_tags":     input.Tags,
@@ -353,6 +374,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Validate profiles given in report
 	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+	validationErrors = append(validationErrors, input.ValidateTrends()...)
 
 	if len(validationErrors) > 0 {
 		code = 422

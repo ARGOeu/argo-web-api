@@ -192,6 +192,18 @@ function populate_default_roles() {
             roles: ["admin", "editor"]
         },
         {
+            resource: "topology_service_types.insert",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_service_types.list",
+            roles: ["admin", "editor"]
+        },
+        {
+            resource: "topology_service_types.delete",
+            roles: ["admin", "editor"]
+        },
+        {
             resource: "feeds.topo.list",
             roles: ["admin", "editor"]
         },
@@ -271,6 +283,14 @@ function populate_default_roles() {
             resource: "metrics_admin.update",
             roles: ["super_admin"]
         },
+        {
+            resource: "v3.ar.list",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "v3.status.list",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
 }
