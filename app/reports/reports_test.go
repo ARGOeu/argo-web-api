@@ -655,6 +655,14 @@ func (suite *ReportTestSuite) TestCreateReport() {
             }
         }
     },
+	"computations": {
+		"ar": true,
+		"status": false,
+		"trends": [
+		 "flapping",
+		 "tags"
+		]
+	   },
 	"profiles": [
         {
 			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
@@ -686,6 +694,75 @@ func (suite *ReportTestSuite) TestCreateReport() {
             "value": "Y"
         }
     ]
+}`
+
+	// create json input data for the request with wrong computation tags
+	postWrong := `{
+    "info": {
+        "name": "Foo_Report",
+        "description": "olalala"
+    },
+    "topology_schema": {
+        "group": {
+            "type": "ngi",
+            "group": {
+                "type": "site"
+            }
+        }
+    },
+	"computations": {
+		"ar": true,
+		"status": false,
+		"trends": [
+		 "flipflopping",
+		 "tags"
+		]
+	   },
+	"profiles": [
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+            "type": "metric"
+            
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+            "type": "operations"
+         
+        },
+        {
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
+            "type": "aggregation"
+            
+        },
+		{
+			"id": "6ac7d684-1f8e-4a02-a502-720e8f11e533",
+			"type": "weights"
+		}
+    ],
+    "filter_tags": [
+        {
+            "name": "production",
+            "value": "Y"
+        },
+        {
+            "name": "monitored",
+            "value": "Y"
+        }
+    ]
+}`
+
+	errOutput := `{
+ "status": {
+  "message": "Unprocessable Entity",
+  "code": "422"
+ },
+ "errors": [
+  {
+   "message": "Invalid Trend Name",
+   "code": "422",
+   "details": "Trends with the name:flipflopping doesn't exist"
+  }
+ ]
 }`
 
 	// Prepare the request object
@@ -741,6 +818,14 @@ func (suite *ReportTestSuite) TestCreateReport() {
     "description": "olalala",
     "created": ".*",
     "updated": ".*"
+   },
+   "computations": {
+    "ar": true,
+    "status": false,
+    "trends": \[
+     "flapping",
+     "tags"
+    \]
    },
    "thresholds": {
     "availability": 80,
@@ -799,6 +884,26 @@ func (suite *ReportTestSuite) TestCreateReport() {
 	suite.Equal(200, code, "Incorrect Error Code")
 	// Compare the expected and actual xml response
 	suite.Regexp(responseJSON, output, "Response body mismatch")
+
+	// Prepare the request with wrong POST data
+	// Prepare the request object
+	request, _ = http.NewRequest("POST", "https://myapi.test.com/api/v2/reports", strings.NewReader(postWrong))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response = httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(422, code, "Incorrect Error Code")
+	suite.Equal(errOutput, output, "Response body mismatch")
+
 }
 
 // TestUpdateReport function implements testing the http PUT update report request.
@@ -889,6 +994,15 @@ func (suite *ReportTestSuite) TestUpdateReport() {
     "description": "newdescription",
     "created": "2015-9-10 13:43:00",
     "updated": ".*"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": \[
+     "flapping",
+     "status",
+     "tags"
+    \]
    },
    "thresholds": {
     "availability": 60.33,
@@ -1113,6 +1227,15 @@ func (suite *ReportTestSuite) TestReadOneReport() {
     "created": "2015-9-10 13:43:00",
     "updated": "2015-10-11 13:43:00"
    },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
    "topology_schema": {
     "group": {
      "type": "NGI",
@@ -1198,6 +1321,15 @@ func (suite *ReportTestSuite) TestReadReports() {
     "created": "2015-10-08 13:43:00",
     "updated": "2015-10-09 13:43:00"
    },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
    "topology_schema": {
     "group": {
      "type": "ARCHIPELAGO",
@@ -1245,6 +1377,15 @@ func (suite *ReportTestSuite) TestReadReports() {
     "description": "report aaaaa",
     "created": "2015-9-10 13:43:00",
     "updated": "2015-10-11 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
    },
    "topology_schema": {
     "group": {
