@@ -68,6 +68,8 @@ go clean
 %attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
+* Thu Jun 9 2022 Konstantinos Kagkelidis <kaggis@gmail.com> 1.12.0-1%{dist}
+- Release of argo-web-api version 1.12.0
 * Wed Apr 6 2022 Konstantinos Kagkelidis <kaggis@gmail.com> 1.11.0-1%{dist}
 - Release of argo-web-api version 1.11.0
 * Wed Sep 1 2021 Konstantinos Kagkelidis <kaggis@gmail.com> 1.10.0-1%{dist}
