@@ -19,35 +19,66 @@ import (
 //Create a new downtimes resource
 const downtimeColName = "downtimes"
 
-func prepMultiQuery(dt int, name string) interface{} {
+// prepFilterQuery produces an aggregation query in downtimes collection that allows to filter endpoints by severity and/or classification
+// the modeled query will resemble the following mongo aggregation
+// db.downtimes.aggregate([
+//  {  "$match": {"date_integer": 20220510 } },
+//  {  "$project": {
+//        "date" : "$date",
+//        "date_integer": "$date_integer",
+//        "endpoints": {
+//          "$filter": {
+//            "input": "$endpoints",
+//            "as": "endpoint",
+//            "cond": { "$and": [ { "$eq": ["$$endpoint.severity","warning"] },
+//                                { "$eq": ["$$endpoint.classification", "outage" ] } ] }
+//        }
+//      }
+//    }
+//  }
+//])
+func prepFilterQuery(dt int, sev string, cl string) interface{} {
 
-	matchQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	// prepare the match part of the aggergation
+	matchQuery := bson.M{"date_integer": dt}
 
-	if name != "" {
-		matchQuery["name"] = name
+	// if both severity and classification filter strings are empty proceed with the simple query
+	if sev == "" && cl == "" {
+		return []bson.M{{
+			"$match": matchQuery,
+		}}
 	}
 
-	return []bson.M{
-		{
-			"$match": matchQuery,
-		},
-		{
-			"$group": bson.M{
-				"_id": bson.M{
-					"id": "$id",
-				},
-				// downtimes collection is meant to have an index with date_integer:-1 and id:1 so
-				// when searching by date the documents are sorted with the recent timestamp first
-				// so we need the recent item available to our query timepoint which is specific date
-				"id":        bson.M{"$first": "$id"},
-				"date":      bson.M{"$first": "$date"},
-				"name":      bson.M{"$first": "$name"},
-				"endpoints": bson.M{"$first": "$endpoints"},
+	// prepare the filter condition
+	andParts := []bson.M{}
+	// if severity filter has value add it to the condition
+	if sev != "" {
+		andParts = append(andParts, bson.M{"$eq": []string{"$$endpoint.severity", sev}})
+	}
+	// if classification filter has value add it to the condition
+	if cl != "" {
+		andParts = append(andParts, bson.M{"$eq": []string{"$$endpoint.classification", cl}})
+	}
+	// prepare the condition
+	cond := bson.M{"$and": andParts}
+
+	// prepare the projection query
+	projectQuery := bson.M{
+		"date":         "$date",
+		"date_integer": "$date_integer",
+		"endpoints": bson.M{
+			"$filter": bson.M{
+				"input": "$endpoints",
+				"as":    "endpoint",
+				"cond":  cond,
 			},
 		},
-		{
-			"$sort": bson.M{"id": 1},
-		},
+	}
+
+	// return the whole aggregation with match and project parts
+	return []bson.M{
+		{"$match": matchQuery},
+		{"$project": projectQuery},
 	}
 
 }
@@ -60,12 +91,6 @@ func getCloseDate(c *mgo.Collection, dt int) int {
 		return -1
 	}
 	return result.DateInt
-}
-
-func prepQuery(dt int, id string) interface{} {
-
-	return bson.M{"date_integer": bson.M{"$lte": dt}, "id": id}
-
 }
 
 // Create request handler creates a new weight resource
@@ -170,6 +195,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	sev := urlValues.Get("severity")
+	cl := urlValues.Get("classification")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -193,7 +220,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	dCol := session.DB(tenantDbConfig.Db).C(downtimeColName)
 
 	results := []Downtimes{}
-	err = dCol.Find(bson.M{"date_integer": dt}).All(&results)
+	query := prepFilterQuery(dt, sev, cl)
+
+	err = dCol.Pipe(query).All(&results)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err

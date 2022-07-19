@@ -28,7 +28,8 @@ GET /downtimes?date=YYYY-MM-DD
 | Type   | Description                                                                                                                               | Required |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | --------                                                                                           | NO       |
 | `date` | Date to retrieve a historic version of the downtime resource. If no date parameter is provided the most current resource will be returned | NO       |
-
+| `classification` | optionally filter downtimes by classification value | NO       |
+| `severity` | optionally filter downtiumes by severity value | NO       |
 ### Request headers
 
 ```
@@ -58,7 +59,10 @@ Json Response
                     "hostname": "host-A",
                     "service": "service-A",
                     "start_time": "2019-10-11T04:00:33Z",
-                    "end_time": "2019-10-11T15:33:00Z"
+                    "end_time": "2019-10-11T15:33:00Z",
+                    "description": "a simple optional description",
+                    "severity": "optional severity value like critical, warning",
+                    "classification": "optional classification value like outage, scheduled"
                 },
                 {
                     "hostname": "host-B",
@@ -78,6 +82,50 @@ Json Response
 }
 ```
 
+### Request downtimes and filter by severity and classification example
+
+In the following example we request the downtimes for the date 2022-05-11 that are of outage severity and classified as unscheduled
+
+```
+HTTP GET /api/v2/downtimes?date=2022-05-11&severity=outage&classification=outage
+```
+
+Response: `200 OK`
+Body:
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "date": "2022-05-11",
+            "endpoints": [
+                {
+                    "hostname": "host-A",
+                    "service": "service-A",
+                    "start_time": "2022-05-11T04:00:33Z",
+                    "end_time": "2022-05-11T15:33:00Z",
+                    "severity": "outage",
+                    "classification": "unscheduled"
+                },
+                {
+                    "hostname": "host-B",
+                    "service": "service-B",
+                    "start_time": "2022-05-11T12:00:33Z",
+                    "end_time": "2022-05-11T12:33:00Z",
+                    "severity": "outage",
+                    "classification": "unscheduled",
+                    "description": "a simple description",
+                }
+            ]
+        }
+    ]
+}
+```
+
+__note__: `description`, `severity` and `classification` but quite useful to organise the kind of downtimes declared per day.
 
 
 <a id='2'></a>
@@ -114,13 +162,17 @@ Accept: application/json
             "hostname": "host-foo",
             "service": "service-new-foo",
             "start_time": "2019-10-11T23:10:00Z",
-            "end_time": "2019-10-11T23:25:00Z"
+            "end_time": "2019-10-11T23:25:00Z",
+            "classification": "unscheduled",
+            "severity": "outage",
         },
         {
             "hostname": "host-bar",
             "service": "service-new-bar",
             "start_time": "2019-10-11T23:40:00Z",
-            "end_time": "2019-10-11T23:55:00Z"
+            "end_time": "2019-10-11T23:55:00Z",
+            "classification": "unscheduled",
+            "severity": "outage",
         }
     ]
 }
