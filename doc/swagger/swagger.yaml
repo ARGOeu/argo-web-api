@@ -1642,6 +1642,8 @@ paths:
       parameters:
         - $ref: "#/parameters/apiKey"
         - $ref: "#/parameters/profDate"
+        - $ref: "#/parameters/classification"
+        - $ref: "#/parameters/severity"
       responses:
         '200':
           description: A list of downtimes resources
@@ -4775,6 +4777,18 @@ parameters:
     type: string
     description: "Use view=details to enrich status results with additional information such as threshold rules that may have been applied. Use view=latest to display only the latest status for each item."
     default: "false"
+  classification:
+    name: "classification"
+    in: query
+    type: string
+    description: "use classification=scheduled or classification=unscheduled to filter downtimes"
+    default: ""
+  severity:
+    name: "severity"
+    in: query
+    type: string
+    description: "Use severity=outage or severity=warning to filter downtimes"
+    default: ""
 
 responses:
   Unauthorized:
@@ -6139,6 +6153,12 @@ definitions:
       start_time:
         type: string
       end_time:
+        type: string
+      classfication: 
+        type: string
+      severity:
+        type: string
+      description:
         type: string
           
   Weights:
