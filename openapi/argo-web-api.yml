@@ -10,8 +10,8 @@ info:
     the Tenants resource below. Under all other resources use per given tenant the
     corresponding api key.
   contact:
-    name: ARGO Developers
-    url: http://argoeu.github.io/
+    name: ARGO web api
+    url: http://argoeu.github.io/argo-web-api
     email: argo-dev@lists.grnet.gr
   version: 1.11.0
 servers:
