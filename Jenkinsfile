@@ -59,9 +59,9 @@ pipeline {
             }
         }
         stage ('Deploy Docs') {
-            when {
-                changeset 'website/**'
-            }
+            // when {
+            //     changeset 'website/**'
+            // }
             agent {
                 docker {
                     image 'node:16-buster'
