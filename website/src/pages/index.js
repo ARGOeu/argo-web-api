@@ -18,10 +18,10 @@ function HomepageHeader() {
           <Link
             className="button button--primary button--lg"
             to="/docs">
-            Get Started
+            Read the Docs
           </Link>
           <Link
-            className="button button--secondary button--lg"
+            className="button button--secondary margin-left--lg button--lg"
             to="pathname:///openapi/explore">
             Explore the API 🧭
           </Link>

@@ -88,6 +88,11 @@ const config = {
             label: 'Explore Documentation',
             position: 'left',
           },
+          {
+            to: 'pathname:///openapi/explore',
+            label: 'Explore the API (openapi v3)',
+            position: 'left',
+          },
           ],
         },
         {
