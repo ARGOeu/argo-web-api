@@ -20,6 +20,14 @@ function HomepageHeader() {
             to="/docs">
             Get Started
           </Link>
+          <Link
+            className="button button--secondary button--lg"
+            to="pathname:///openapi/explore">
+            Explore the API 🧭
+          </Link>
+
+
+          
         </div>
       </div>
     </header>

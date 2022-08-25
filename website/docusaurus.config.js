@@ -66,6 +66,11 @@ const config = {
             position: 'left',
           },
           {
+            href: 'pathname:///openapi/explore',
+            label: 'Explore the API',
+            position: 'left',
+          },
+          {
             href: 'https://github.com/ARGOeu/argo-web-api',
             label: 'GitHub',
             position: 'right',
