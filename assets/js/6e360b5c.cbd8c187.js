@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[232],{1717:e=>{e.exports=JSON.parse('{"title":"Tenants & Feeds","slug":"/category/tenants--feeds","permalink":"/argo-web-api/docs/category/tenants--feeds","navigation":{"next":{"title":"Tenants","permalink":"/argo-web-api/docs/"}}}')}}]);
