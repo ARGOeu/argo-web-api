@@ -59,8 +59,9 @@ pipeline {
             }
         }
         stage ('Deploy Docs') {
+            // run deployment of docs only when merging to devel
             when {
-                changeset 'website/**'
+                branch 'devel'
             }
             agent {
                 docker {
