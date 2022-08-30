@@ -26,8 +26,8 @@ GET /downtimes?date=YYYY-MM-DD
 
 #### Optional Query Parameters
 
-| Type   | Description                                                                                                                               | Required |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | --------                                                                                           | NO       |
+| Type   | Description | Required |
+| ------ | ----------- | -------- | 
 | `date` | Date to retrieve a historic version of the downtime resource. If no date parameter is provided the most current resource will be returned | NO       |
 
 ### Request headers
