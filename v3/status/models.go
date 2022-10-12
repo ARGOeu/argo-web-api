@@ -33,6 +33,7 @@ type InputParams struct {
 	groupType string
 	group     string
 	format    string
+	ID        string
 }
 
 // GroupData struct holds the grouped queried data from datastore
@@ -55,6 +56,11 @@ type groupOUT struct {
 	Name      string         `json:"name"`
 	GroupType string         `json:"type"`
 	Statuses  []*statusOUT   `json:"statuses"`
+	Endpoints []*endpointOUT `json:"endpoints"`
+}
+
+type idOUT struct {
+	ID        string         `json:"id"`
 	Endpoints []*endpointOUT `json:"endpoints"`
 }
 
@@ -86,7 +92,7 @@ type EndpointData struct {
 type endpointOUT struct {
 	Name       string            `json:"hostname"`
 	Service    string            `json:"service,omitempty"`
-	SuperGroup string            `json:"-"`
+	SuperGroup string            `json:"group,omitempty"`
 	Info       map[string]string `json:"info,omitempty"`
 	Statuses   []*statusOUT      `json:"statuses"`
 }
