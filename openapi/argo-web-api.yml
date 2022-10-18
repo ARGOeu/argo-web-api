@@ -9469,6 +9469,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusGroupsEndpointsResponse'
+            
         400:
           description: Item not found
           content:
@@ -9506,6 +9507,134 @@ paths:
             application/json:
               schema:
                 type: string
+                
+                
+  /v3/status/{report_name}/id/{resource_id}:
+    get:
+      tags:
+      - Status Results (v3)
+      summary: List Status result for a specific endpoint by providing it's resource id
+      description: this method retrieves the latest status result or the status timeline for a specific endpoint by providing its resource-id
+      operationId: statusEndpointsByID
+      externalDocs:
+        description: Argo-web-api documentation on Status results (v3)
+        url: https://docs.github.com/enterprise-server@3.6/rest/overview/resources-in-the-rest-api#root-endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report_name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: CRITICAL
+      - name: resource_id
+        in: path
+        description: the resource id of the endpoint
+        required: true
+        schema:
+          type: string
+          default: CRITICAL
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        required: true
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        required: true
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: view
+        in: query
+        description: Use view=latest to display the latest (current) status of the endpoint. Use view=details to display the full timeline of events (status changes) for the item
+        schema:
+          type: string
+          default: "false"
+      responses:
+        200:
+          description: Successful retrieval of latest status result or timeline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusEndpointsIdResponse'
+              examples:
+                latest status result:
+                  value:
+                    id: simple.queue.101
+                    endpoints:
+                      - hostname: q01.example.com
+                        service: compute.queue
+                        group: Infra-01
+                        statuses:
+                         - timestamp: '2022-10-12T00:00:00Z'
+                           status: OK
+                status timeline:
+                  value:
+                    id: simple.queue.101
+                    endpoints:
+                      - hostname: q01.example.com
+                        service: compute.queue
+                        group: Infra-01
+                        statuses:
+                         - timestamp: '2022-10-12T00:00:00Z'
+                           status: OK
+                         - timestamp: '2022-10-12T05:00:00Z'
+                           status: WARNING
+                         - timestamp: '2022-10-12T12:35:00Z'
+                           status: OK
+                         - timestamp: '2022-10-12T23:59:59'
+                           status: OK
+             
+
+        400:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        500:
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+                
 components:
   schemas:
     Endpoint_list:
@@ -9646,6 +9775,31 @@ components:
                             type: string
                           status:
                             type: string
+    StatusEndpointsIdResponse:
+      type: object
+      properties:
+        id: 
+          type: string
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              hostname:
+                type: string
+              service:
+                type: string
+              info:
+                type: object
+              statuses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                    status:
+                      type: string
     FactorsResponse:
       type: object
       properties:
