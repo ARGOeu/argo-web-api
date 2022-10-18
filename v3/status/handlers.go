@@ -105,7 +105,7 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 		if latest != false {
 			code = http.StatusBadRequest
-			message := fmt.Sprintf("Parameter view=latest should not be used when specifing start_time and end_time period")
+			message := "Parameter view=latest should not be used when specifing start_time and end_time period"
 			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
 			return code, h, output, err
 		}
@@ -121,6 +121,7 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		vars["group_type"],
 		vars["group_name"],
 		contentType,
+		"",
 	}
 
 	// Grab Tenant DB configuration from context
@@ -181,6 +182,164 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
+// ListStatusByID lists endpoint status timeline for a specific resource id
+func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("List Metric Timelines")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	urlStartTime := urlValues.Get("start_time")
+	urlEndTime := urlValues.Get("end_time")
+
+	// This is going to be used to determine a detailed/latest view of the results
+	view := urlValues.Get("view")
+	latest := false
+	if urlStartTime == "" && urlEndTime == "" {
+		latest = true
+	}
+	details := false
+	if view == "details" {
+		details = true
+		latest = false
+	} else if view == "latest" {
+		latest = true
+	}
+
+	var parsedStart, parsedEnd, parsedPrev int
+
+	// check if user provided start and end time correctly
+
+	endDate := ""
+
+	if urlStartTime == "" && urlEndTime == "" {
+		isoTimeNow := time.Now().UTC().Format(time.RFC3339)
+		startDate := strings.Split(isoTimeNow, "T")[0]
+		startTime := startDate + "T00:00:00Z"
+		endDate = startDate
+		parsedStart, _ = parseZuluDate(startTime)
+		parsedEnd, _ = parseZuluDate(isoTimeNow)
+		parsedPrev, _ = getPrevDay(startTime)
+	} else {
+		if parsedStart, err = parseZuluDate(urlStartTime); err != nil {
+			code = http.StatusBadRequest
+			message := fmt.Sprintf("Error parsing start_time=%s - please use zulu format like %s", urlStartTime, zuluForm)
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		if parsedEnd, err = parseZuluDate(urlEndTime); err != nil {
+			code = http.StatusBadRequest
+			message := fmt.Sprintf("Error parsing end_time=%s - please use zulu format like %s", urlEndTime, zuluForm)
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+
+		endDate = strings.Split(urlEndTime, "T")[0]
+
+		if latest != false {
+			code = http.StatusBadRequest
+			message := "Parameter view=latest should not be used when specifing start_time and end_time period"
+			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
+			return code, h, output, err
+		}
+
+		parsedPrev, _ = getPrevDay(urlStartTime)
+
+	}
+
+	input := InputParams{
+		parsedStart,
+		parsedEnd,
+		vars["report_name"],
+		vars["group_type"],
+		vars["group_name"],
+		contentType,
+		vars["id"],
+	}
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Mongo Session
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	// Query the detailed results
+
+	// prepare the match filter
+	report := reports.MongoInterface{}
+	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+
+	if err != nil {
+		code = http.StatusNotFound
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	input.groupType = report.Topology.Group.Group.Type
+
+	groupCol := session.DB(tenantDbConfig.Db).C(statusGroupColName)
+	groupResults := []GroupData{}
+
+	err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	//if no status results yet show previous days results
+	if len(groupResults) == 0 {
+		// Zero query results
+		input.startTime = parsedPrev
+		err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	endpointCol := session.DB(tenantDbConfig.Db).C(statusEndpointColName)
+	endpointResults := []EndpointData{}
+
+	err = endpointCol.Find(queryEndpoints(input, report.ID)).All(&endpointResults)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if len(endpointResults) == 0 {
+		code = http.StatusNotFound
+		message := "No endpoints found with resource-id: " + vars["id"]
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	output, err = createViewByID(endpointResults, input, endDate, details, latest) //Render the results into JSON
+
+	return code, h, output, err
+}
+
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -195,7 +354,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }
