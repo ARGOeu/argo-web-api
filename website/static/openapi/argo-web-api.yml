@@ -15,7 +15,7 @@ info:
     email: argo-dev@lists.grnet.gr
   version: 1.11.0
 servers:
-- url: https://localhost/api
+- url: https://api.devel.argo.grnet.gr/api
 tags:
 - name: Tenants
   description: ARGO tenants
