@@ -120,6 +120,47 @@ func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoI
 
 }
 
+func createEndpointResult(results []EndpointInterface, report reports.MongoInterface, id string) ([]byte, error) {
+
+	docID := &idOUT{}
+	docID.ID = id
+	docID.Endpoints = make([]*Endpoint, 0)
+
+	prevEndpoint := ""
+	endpoint := &Endpoint{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], row.Date)
+
+		//if new superGroup does not match the previous superGroup value
+		//we create a new superGroup entry in the xml
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			endpoint = &Endpoint{
+				Name:       row.Name,
+				Service:    row.Service,
+				Supergroup: row.SuperGroup,
+				Info:       row.Info,
+			}
+			docID.Endpoints = append(docID.Endpoints, endpoint)
+		}
+
+		//we append the new availability values
+		endpoint.Results = append(endpoint.Results,
+			Availability{
+				Date:         timestamp.Format(customForm[1]),
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability)})
+
+	}
+
+	return json.MarshalIndent(docID, " ", "  ")
+
+}
+
 func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []GroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
 	docRoot := &root{}
 
