@@ -23,6 +23,7 @@
 package ar
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -163,6 +164,10 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
 	c.Insert(
 		bson.M{
+			"resource": "v3.ar.list-by-id",
+			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
 			"resource": "v3.ar.list",
 			"roles":    []string{"editor", "viewer"},
 		})
@@ -243,6 +248,52 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
+		})
+
+	// Seed endpoint data
+	c = session.DB(suite.tenantDbConf.Db).C("endpoint_ar")
+
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
+			"date":         20150622,
+			"name":         "host01",
+			"service":      "service01",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 66.7,
+			"reliability":  54.6,
+			"weight":       5634,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+			"info": bson.M{"ID": "special-queue"},
+		},
+		bson.M{
+			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
+			"date":         20150623,
+			"name":         "host01",
+			"service":      "service01",
+			"supergroup":   "GROUP_A",
+			"up":           1,
+			"down":         0,
+			"unknown":      0,
+			"availability": 100,
+			"reliability":  100,
+			"weight":       5634,
+			"tags": []bson.M{
+				bson.M{
+					"name":  "",
+					"value": "",
+				},
+			},
+			"info": bson.M{"ID": "special-queue"},
 		})
 
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
@@ -439,6 +490,29 @@ func (suite *AvailabilityTestSuite) TestListEndpointGroupAvailability() {
 	suite.Equal(401, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
+
+}
+
+// TestListEndpointAvailability test if daily results are returned correctly for a specific id
+func (suite *AvailabilityTestSuite) TestListEndpointAvailability() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expected := `{
+   "id": "special-queue"
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(expected, response.Body.String(), "Response body mismatch")
+	fmt.Println(response.Body.String())
 
 }
 
