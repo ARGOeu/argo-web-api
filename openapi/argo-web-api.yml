@@ -9721,6 +9721,10 @@ components:
         description:
           type: string
           description: short description of the service type
+        tags:
+          type: array
+          items:
+            type: string
     MetricList:
       type: array
       items:
