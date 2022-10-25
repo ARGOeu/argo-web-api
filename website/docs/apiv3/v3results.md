@@ -15,7 +15,7 @@ _Note_: These are v3 api calls implementations found under the path `/api/v3`
 
 <a id="1"></a>
 
-# [GET]: List Availability and Reliability results for top level supergroups and included groups
+## [GET]: List Availability and Reliability results for top level supergroups and included groups
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics for all top level supergroups and included groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. 
 
@@ -50,11 +50,11 @@ The following methods can be used to obtain a tenant's Availability and Reliabil
 ##### Path
 
 ```
-/api/v2/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v3/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v2/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v3/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -84,12 +84,12 @@ Status: 200 OK
         {
           "date": "2015-06-22",
           "availability": "68.13896116893515",
-          "reliability": "50.413931144915935"
+          "reliability": "68.13896116893515"
         },
         {
           "date": "2015-06-23",
           "availability": "75.36324059247399",
-          "reliability": "80.8138510808647"
+          "reliability": "75.36324059247399"
         }
       ],
       "groups": [
@@ -100,9 +100,9 @@ Status: 200 OK
             {
               "date": "2015-06-22",
               "availability": "66.7",
-              "reliability": "54.6",
+              "reliability": "66.7",
               "unknown": "0",
-              "uptime": "1",
+              "uptime": "66.7",
               "downtime": "0"
             },
             {
@@ -122,17 +122,17 @@ Status: 200 OK
             {
               "date": "2015-06-22",
               "availability": "70",
-              "reliability": "45",
+              "reliability": "70",
               "unknown": "0",
-              "uptime": "1",
+              "uptime": "0.70",
               "downtime": "0"
             },
             {
               "date": "2015-06-23",
               "availability": "43.5",
-              "reliability": "56",
+              "reliability": "43.5",
               "unknown": "0",
-              "uptime": "1",
+              "uptime": "0.435",
               "downtime": "0"
             }
           ]
@@ -153,7 +153,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v2/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v3/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -181,8 +181,8 @@ Status: 200 OK
       "results": [
         {
           "date": "2015-06",
-          "availability": "71.75110088070457",
-          "reliability": "65.61389111289031"
+          "availability": "99.99999900000002",
+          "reliability": "99.99999900000002"
         }
       ],
       "groups": [
@@ -222,7 +222,7 @@ Status: 200 OK
 
 <a id="2"></a>
 
-# [GET]: List Availability and Reliability results for endpoints with specific resource-id
+## [GET]: List Availability and Reliability results for endpoints with specific resource-id
 
 The following methods can be used to obtain a tenant's Availability and Reliability result for the endpoints that have a specific resource-id. User can specify a period with `start_time` and `end_time` and granularity(`monthly` or `daily`) for retrieved results. `Accept` header is required. 
 
@@ -257,11 +257,11 @@ The following methods can be used to obtain a tenant's Availability and Reliabil
 ##### Path
 
 ```
-/api/v2/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v3/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v2/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v3/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -288,10 +288,10 @@ Status: 200 OK
     {
       "name": "host01.example",
       "service": "service.queue",
-       "group": "Infra-01",
-            "info": {
-                "URL": "http://submit.queue01.example.com"
-            },
+      "group": "Infra-01",
+      "info": {
+        "URL": "http://submit.queue01.example.com"
+      },
       "results": [
         {
           "date": "2015-06-22",
@@ -309,7 +309,8 @@ Status: 200 OK
           "uptime": "1",
           "downtime": "0"
         }
-    ]
+      ]
+    }
   ]
 }
 ```
@@ -324,7 +325,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v2/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v3/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -350,10 +351,10 @@ Status: 200 OK
     {
       "name": "host01.example",
       "service": "service.queue",
-       "group": "Infra-01",
-            "info": {
-                "URL": "http://submit.queue01.example.com"
-            },
+      "group": "Infra-01",
+      "info": {
+        "URL": "http://submit.queue01.example.com"
+      },
       "results": [
         {
           "date": "2015-06",
@@ -363,7 +364,8 @@ Status: 200 OK
           "uptime": "1",
           "downtime": "0"
         }
-    ]
+      ]
+    }
   ]
 }
 ```

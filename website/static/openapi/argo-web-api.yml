@@ -9417,6 +9417,143 @@ paths:
             application/json:
               schema:
                 type: string
+                
+  /v3/results/{report_name}/id/{resource_id}:
+    get:
+      tags:
+      - Availability & Reliability Results (v3)
+      summary: List Status result for a specific endpoint by providing it's resource id
+      description: this method retrieves the latest status result or the status timeline for a specific endpoint by providing its resource-id
+      operationId: arEndpointsByID
+      externalDocs:
+        description: Argo-web-api documentation on ar results (v3)
+        url: https://argoeu.github.io/argo-web-api/docs/apiv3/v3_ar_results#get-list-availability-and-reliability-results-for-endpoints-with-specific-resource-id
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report_name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: resource_id
+        in: path
+        description: the resource id of the endpoint
+        required: true
+        schema:
+          type: string
+          default: resource-id
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        200:
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArEndpointsIdResponse'
+              examples:
+                daily a/r results:
+                  value:
+                    id: simple.queue.101
+                    endpoints:
+                      - name: q01.example.com
+                        service: compute.queue
+                        group: infra01
+                        info:
+                          id: simple.queue.101
+                          url: https://q01.example.com/broker
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                           uptime: 1
+                           unknown: 0
+                           downtime: 0
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                           uptime: 0.8
+                           unknown: 0
+                           downtime: 0   
+                monthly a/r results:
+                  value:
+                    id: simple.queue.101
+                    endpoints:
+                      - name: q01.example.com
+                        service: compute.queue
+                        group: infra01
+                        info:
+                          id: simple.queue.101
+                          url: https://q01.example.com/broker
+                        results:
+                         - date: '2022-10'
+                           availability: 98.53
+                           reliability: 98.53
+                           uptime: 0.9853
+                           unknown: 0
+                           downtime: 0
+                      
+             
+
+        400:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        500:
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+                
+
   /v3/status/{report_name}:
     get:
       tags:
@@ -9518,7 +9655,7 @@ paths:
       operationId: statusEndpointsByID
       externalDocs:
         description: Argo-web-api documentation on Status results (v3)
-        url: https://docs.github.com/enterprise-server@3.6/rest/overview/resources-in-the-rest-api#root-endpoint
+        url: https://argoeu.github.io/argo-web-api/docs/apiv3/v3_status_results#get-list-latest-status-result-for-a-specific-endpoint-using-its-resource-id
       parameters:
       - name: x-api-key
         in: header
@@ -9533,25 +9670,23 @@ paths:
         required: true
         schema:
           type: string
-          default: CRITICAL
+          default: Default
       - name: resource_id
         in: path
         description: the resource id of the endpoint
         required: true
         schema:
           type: string
-          default: CRITICAL
+          default: resource-id
       - name: start_time
         in: query
         description: start date of query in zulu format
-        required: true
         schema:
           type: string
           default: 2006-01-01T00:04:05Z
       - name: end_time
         in: query
         description: end date of query in zulu format
-        required: true
         schema:
           type: string
           default: 2006-01-03T15:04:05Z
@@ -9721,6 +9856,10 @@ components:
         description:
           type: string
           description: short description of the service type
+        tags:
+          type: array
+          items:
+            type: string
     MetricList:
       type: array
       items:
@@ -9800,6 +9939,41 @@ components:
                       type: string
                     status:
                       type: string
+    ArEndpointsIdResponse:
+      type: object
+      properties:
+        id: 
+          type: string
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              service:
+                type: string
+              group:
+                type: string
+              info:
+                type: object
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    availability:
+                      type: number
+                    reliability:
+                      type: number
+                    unknown:
+                      type: number
+                    uptime:
+                      type: number
+                    downtime:
+                      type: number
     FactorsResponse:
       type: object
       properties:

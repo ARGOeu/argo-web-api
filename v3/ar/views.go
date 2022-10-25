@@ -153,7 +153,11 @@ func createEndpointResult(results []EndpointInterface, report reports.MongoInter
 			Availability{
 				Date:         timestamp.Format(customForm[1]),
 				Availability: fmt.Sprintf("%g", row.Availability),
-				Reliability:  fmt.Sprintf("%g", row.Reliability)})
+				Reliability:  fmt.Sprintf("%g", row.Reliability),
+				Unknown:      fmt.Sprintf("%g", row.Unknown),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+				Downtime:     fmt.Sprintf("%g", row.Down),
+			})
 
 	}
 

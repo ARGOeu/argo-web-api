@@ -23,7 +23,6 @@
 package ar
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -494,7 +493,7 @@ func (suite *AvailabilityTestSuite) TestListEndpointGroupAvailability() {
 }
 
 // TestListEndpointAvailability test if daily results are returned correctly for a specific id
-func (suite *AvailabilityTestSuite) TestListEndpointAvailability() {
+func (suite *AvailabilityTestSuite) TestListEndpointAvailabilityDaily() {
 
 	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -505,14 +504,106 @@ func (suite *AvailabilityTestSuite) TestListEndpointAvailability() {
 	suite.router.ServeHTTP(response, request)
 
 	expected := `{
-   "id": "special-queue"
+   "id": "special-queue",
+   "endpoints": [
+     {
+       "name": "host01",
+       "service": "service01",
+       "supergroup": "GROUP_A",
+       "info": {
+         "ID": "special-queue"
+       },
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "66.7",
+           "reliability": "54.6",
+           "unknown": "0",
+           "uptime": "1",
+           "downtime": "0"
+         },
+         {
+           "date": "2015-06-23",
+           "availability": "100",
+           "reliability": "100",
+           "unknown": "0",
+           "uptime": "1",
+           "downtime": "0"
+         }
+       ]
+     }
+   ]
  }`
 
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(expected, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
+
+}
+
+// TestListEndpointAvailabilityMonthly test if monthly results are returned correctly for a specific id
+func (suite *AvailabilityTestSuite) TestListEndpointAvailabilityMonthly() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expected := `{
+   "id": "special-queue",
+   "endpoints": [
+     {
+       "name": "host01",
+       "service": "service01",
+       "supergroup": "GROUP_A",
+       "info": {
+         "ID": "special-queue"
+       },
+       "results": [
+         {
+           "date": "2015-06",
+           "availability": "99.99999900000002",
+           "reliability": "99.99999900000002",
+           "unknown": "0",
+           "uptime": "1",
+           "downtime": "0"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(expected, response.Body.String(), "Response body mismatch")
+
+}
+
+// TestListEndpointIdNotFound tests the response if there are no endpoints with the resource-id requested
+func (suite *AvailabilityTestSuite) TestListEndpointIdNotFound() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A/id/another-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expected := `{
+   "message": "No endpoints found with resource-id: another-queue",
+   "code": 404
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(expected, response.Body.String(), "Response body mismatch")
 
 }
 

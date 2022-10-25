@@ -4,6 +4,7 @@ import "gopkg.in/mgo.v2/bson"
 
 // datastore collection name that contains aggregations profile records
 const groupColName = "endpoint_group_ar"
+const endpointColName = "endpoint_ar"
 
 // MonthlyGroup query to aggregate monthly results from mongodb
 func MonthlyGroup(filter bson.M) []bson.M {
@@ -251,6 +252,90 @@ func DailyGroup(filter bson.M) []bson.M {
 			{"report", 1},
 			{"supergroup", 1},
 			{"name", 1},
+			{"date", 1}}}}
+
+	return query
+}
+
+// DailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
+// Mongo aggregation pipeline
+// Select all the records that match q
+// Project to select just the first 8 digits of the date YYYYMMDD
+// Sort by name->service->supergroup->date
+func DailyEndpoint(filter bson.M) []bson.M {
+
+	query := []bson.M{
+		{"$match": filter},
+		{"$project": bson.M{
+			"_id":          1,
+			"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+			"name":         1,
+			"availability": 1,
+			"reliability":  1,
+			"unknown":      1,
+			"up":           1,
+			"down":         1,
+			"supergroup":   1,
+			"service":      1,
+			"info":         1,
+			"report":       1}},
+		{"$sort": bson.D{
+			{"name", 1},
+			{"service", 1},
+			{"supergroup", 1},
+			{"date", 1},
+		}}}
+
+	return query
+}
+
+// MonthlyEndpoint query to aggregate monthly a/r results from mongoDB
+// Mongo aggregation pipeline
+// Select all the records that match q
+// Group them by the first six digits of their date (YYYYMM), their name, their supergroup, their service, etc...
+// from that group find the average of the uptime, u, downtime
+// Project the result to a better format and do this computation
+// availability = (avgup/(1.00000001 - avgu))*100
+// reliability = (avgup/((1.00000001 - avgu)-avgd))*100
+// Sort the results by name->service->supergroup->date
+func MonthlyEndpoint(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"service":    "$service",
+				"report":     "$report"},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"},
+			"info":       bson.M{"$first": "$info"}}},
+		{"$project": bson.M{
+			"date":       "$_id.date",
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"service":    "$_id.service",
+			"report":     "$_id.report",
+			"info":       "$info",
+			"unknown":    "$avgunknown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+		{"$sort": bson.D{
+			{"name", 1},
+			{"service", 1},
+			{"supergroup", 1},
 			{"date", 1}}}}
 
 	return query
