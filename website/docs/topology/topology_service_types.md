@@ -52,7 +52,8 @@ Accept: application/json
   },
   {
     "name": "Service_Type_C",
-    "description": "a short descritpion of service type c"
+    "description": "a short descritpion of service type c",
+    "tags": ["special-service", "beta"]
   }
 ]
 ```
@@ -153,7 +154,8 @@ Status: 200 OK
     {
       "date": "2019-03-03",
       "name": "Service_Type_C",
-      "description": "a short descritpion of service type c"
+      "description": "a short descritpion of service type c",
+      "tags": ["special-service", "beta"]
     }
   ]
 }

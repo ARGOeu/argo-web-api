@@ -90,10 +90,11 @@ type Group struct {
 
 // ServiceType includes information about an available service type
 type ServiceType struct {
-	Date        string `bson:"date" json:"date"`
-	DateInt     int    `bson:"date_integer" json:"-"`
-	Name        string `bson:"name" json:"name"`
-	Description string `bson:"description" json:"description"`
+	Date        string   `bson:"date" json:"date"`
+	DateInt     int      `bson:"date_integer" json:"-"`
+	Name        string   `bson:"name" json:"name"`
+	Description string   `bson:"description" json:"description"`
+	Tags        []string `bson:"tags" json:"tags,omitempty"`
 }
 
 // Notifications holds notification information about topology items

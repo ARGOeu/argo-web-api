@@ -1242,6 +1242,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			"date_integer": 20150613,
 			"name":         "STORAGE",
 			"description":  "A Storage type of Service",
+			"tags":         []string{"poem"},
 		})
 
 }
@@ -2751,7 +2752,10 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
   {
    "date": "2015-06-13",
    "name": "STORAGE",
-   "description": "A Storage type of Service"
+   "description": "A Storage type of Service",
+   "tags": [
+    "poem"
+   ]
   }
  ]
 }`},
