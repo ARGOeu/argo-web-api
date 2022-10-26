@@ -25,6 +25,7 @@ package ar
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
@@ -118,14 +119,14 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query := DailySuperGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &resultsSuperGroups)
+		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query := MonthlySuperGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, "endpoint_group_ar", query, &resultsSuperGroups)
+		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
 	}
-	// mongo.Find(session, tenantDbConfig.Db, "endpoint_group_ar", bson.M{}, "_id", &results)
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -201,16 +202,20 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	input := GroupResultQuery{
-		basicQuery{
-			Name:        "",
-			Granularity: urlValues.Get("granularity"),
-			Format:      contentType,
-			StartTime:   urlValues.Get("start_time"),
-			EndTime:     urlValues.Get("end_time"),
-			Report:      report,
-			Vars:        vars,
-		}, "",
+	input := basicQuery{
+		Name:        "",
+		Granularity: urlValues.Get("granularity"),
+		Format:      contentType,
+		StartTime:   urlValues.Get("start_time"),
+		EndTime:     urlValues.Get("end_time"),
+		Report:      report,
+		Vars:        vars,
+	}
+
+	// if user has not defined a start/end period construct by default the a/r period including the days of this month
+	if input.StartTime == "" && input.EndTime == "" {
+		input.StartTime = time.Now().UTC().Format("2006-01") + "01T00:00:00Z"
+		input.EndTime = time.Now().UTC().Format("2006-01-02") + "T23:59:59Z"
 	}
 
 	tenantDB := session.DB(tenantDbConfig.Db)
@@ -242,17 +247,26 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := DailyGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &results)
+		query := DailyEndpoint(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := MonthlyGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &results)
+		query := MonthlyEndpoint(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
 	}
 
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// if number of returned results is 0 respond with not found
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No endpoints found with resource-id: " + vars["id"]
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 

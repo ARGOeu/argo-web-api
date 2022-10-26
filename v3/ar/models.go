@@ -139,7 +139,7 @@ type Endpoint struct {
 	Name       string            `json:"name"`
 	Service    string            `json:"service"`
 	Supergroup string            `json:"supergroup"`
-	Info       map[string]string `bson:"info"`
+	Info       map[string]string `json:"info"`
 	Results    []Availability    `json:"results,omitempty"`
 }
 
