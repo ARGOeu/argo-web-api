@@ -48,11 +48,11 @@ func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
 		})
 	}
 
-	if query.StartTime == "" && query.EndTime == "" {
+	if query.StartTime == "" || query.EndTime == "" {
 		errs = append(errs, ErrorResponse{
 			Message: "No time span set",
 			Code:    "400",
-			Details: "Please use start_time and/or end_time url parameters to set the prefered time span",
+			Details: "Please use start_time and end_time url parameters to set the prefered time span",
 		})
 	} else {
 		if query.StartTime != "" {
