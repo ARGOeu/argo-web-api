@@ -214,7 +214,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	// if user has not defined a start/end period construct by default the a/r period including the days of this month
 	if input.StartTime == "" && input.EndTime == "" {
-		input.StartTime = time.Now().UTC().Format("2006-01") + "01T00:00:00Z"
+		input.StartTime = time.Now().UTC().Format("2006-01") + "-01T00:00:00Z"
 		input.EndTime = time.Now().UTC().Format("2006-01-02") + "T23:59:59Z"
 	}
 

@@ -607,6 +607,49 @@ func (suite *AvailabilityTestSuite) TestListEndpointIdNotFound() {
 
 }
 
+// TestOmitingStartEnd tests if the validator catches omissions of start or end date
+func (suite *AvailabilityTestSuite) TestOmittingStartEnd() {
+
+	urls := []string{
+		"/api/v3/results/Report_A/id/another-queue?end_time=2015-06-23T23:00:00Z",
+		"/api/v3/results/Report_A/id/another-queue?start_time=2015-06-23T23:00:00Z",
+		"/api/v3/results/Report_A",
+		"/api/v3/results/Report_A?start_time=2015-06-23T23:00:00Z",
+		"/api/v3/results/Report_A?end_time=2015-06-23T23:00:00Z",
+	}
+
+	expected := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "No time span set",
+   "code": "400",
+   "details": "Please use start_time and end_time url parameters to set the prefered time span"
+  }
+ ]
+}`
+
+	for _, url := range urls {
+		request, _ := http.NewRequest("GET", url, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		// Check that we must have a 200 ok code
+		suite.Equal(400, response.Code, "Incorrect HTTP response code")
+		// Compare the expected and actual xml response
+		suite.Equal(expected, response.Body.String(), "Response body mismatch")
+
+	}
+
+}
+
 // TestOptions tests responses in case the OPTIONS http verb is used
 func (suite *AvailabilityTestSuite) TestOptions() {
 
