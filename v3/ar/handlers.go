@@ -115,6 +115,7 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 
 	// Prepare the supergroup results
 	// Select the granularity of the search daily/monthly
+	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
@@ -125,6 +126,12 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		customForm[1] = "2006-01"
 		query := MonthlySuperGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
+	} else if input.Granularity == "custom" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := CustomSuperGroup(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
+		custom = true
 	}
 
 	if err != nil {
@@ -144,6 +151,12 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		customForm[1] = "2006-01"
 		query := MonthlyGroup(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsGroups)
+	} else if input.Granularity == "custom" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := CustomGroup(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsGroups)
+		custom = true
 	}
 
 	if err != nil {
@@ -151,7 +164,7 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		return code, h, output, err
 	}
 
-	output, err = createResultView(resultsSuperGroups, resultsGroups, report, input.Format)
+	output, err = createResultView(resultsSuperGroups, resultsGroups, report, input.Format, custom)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -244,6 +257,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
+	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
@@ -254,6 +268,12 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		customForm[1] = "2006-01"
 		query := MonthlyEndpoint(filter)
 		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
+	} else if input.Granularity == "custom" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query := CustomEndpoint(filter)
+		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
+		custom = true
 	}
 
 	if err != nil {
@@ -270,7 +290,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	output, err = createEndpointResult(results, report, input.Vars["id"])
+	output, err = createEndpointResult(results, report, input.Vars["id"], custom)
 
 	if err != nil {
 		code = http.StatusInternalServerError

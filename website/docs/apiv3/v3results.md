@@ -17,7 +17,7 @@ _Note_: These are v3 api calls implementations found under the path `/api/v3`
 
 ## [GET]: List Availability and Reliability results for top level supergroups and included groups
 
-The following methods can be used to obtain a tenant's Availability and Reliability result metrics for all top level supergroups and included groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. 
+The following methods can be used to obtain a tenant's Availability and Reliability result metrics for all top level supergroups and included groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. 
 
 ### Input
 
@@ -31,7 +31,7 @@ The following methods can be used to obtain a tenant's Availability and Reliabil
 | --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
 | `[start_time]`  | UTC time in W3C format                                                                          | YES      |
 | `[end_time]`    | UTC time in W3C format                                                                          | YES      |
-| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly` or `daily` | NO       | `daily`       |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily` or `custom` | NO       | `daily`       |
 
 #### Path Parameters
 
@@ -220,11 +220,87 @@ Status: 200 OK
 }
 ```
 
+### Example Request 3: Custom granularity
+This request returns availability/reliability score numbers for the whole custom period defined between `start_time` and `end_time`. 
+This means that for each item the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v3/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+  "results": [
+    {
+      "name": "GROUP_A",
+      "type": "GROUP",
+      "results": [
+        {
+          "availability": "99.99999900000002",
+          "reliability": "99.99999900000002"
+        }
+      ],
+      "groups": [
+        {
+          "name": "ST01",
+          "type": "SITES",
+          "results": [
+            {
+              "availability": "99.99999900000002",
+              "reliability": "99.99999900000002",
+              "unknown": "0",
+              "uptime": "1",
+              "downtime": "0"
+            }
+          ]
+        },
+        {
+          "name": "ST02",
+          "type": "SITES",
+          "results": [
+            {
+              "availability": "99.99999900000002",
+              "reliability": "99.99999900000002",
+              "unknown": "0",
+              "uptime": "1",
+              "downtime": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 <a id="2"></a>
 
 ## [GET]: List Availability and Reliability results for endpoints with specific resource-id
 
-The following methods can be used to obtain a tenant's Availability and Reliability result for the endpoints that have a specific resource-id. User can specify a period with `start_time` and `end_time` and granularity(`monthly` or `daily`) for retrieved results. `Accept` header is required. 
+The following methods can be used to obtain a tenant's Availability and Reliability result for the endpoints that have a specific resource-id. User can specify a period with `start_time` and `end_time` and granularity(`monthly`, `daily` or `custom`) for retrieved results. `Accept` header is required. 
 
 ### Input
 
@@ -238,7 +314,7 @@ The following methods can be used to obtain a tenant's Availability and Reliabil
 | --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
 | `[start_time]`  | UTC time in W3C format                                                                          | YES      |
 | `[end_time]`    | UTC time in W3C format                                                                          | YES      |
-| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly` or `daily` | NO       | `daily`       |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`, `daily` or `custom` | NO       | `daily`       |
 
 #### Path Parameters
 
@@ -358,6 +434,62 @@ Status: 200 OK
       "results": [
         {
           "date": "2015-06",
+          "availability": "99.99999900000002",
+          "reliability": "99.99999900000002",
+          "unknown": "0",
+          "uptime": "1",
+          "downtime": "0"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Example Request 3: custom period granularity with specific resource-id
+This request returns availability/reliability score numbers for the whole custom period defined between `start_time` and `end_time`. 
+This means that for each item with the specific resource-id the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v3/results/Report_A/id/simple-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+  "id": "simple-queue",
+  "endpoints": [
+    {
+      "name": "host01.example",
+      "service": "service.queue",
+      "group": "Infra-01",
+      "info": {
+        "URL": "http://submit.queue01.example.com"
+      },
+      "results": [
+        {
           "availability": "99.99999900000002",
           "reliability": "99.99999900000002",
           "unknown": "0",

@@ -167,7 +167,7 @@ In case the parameter value is malformed (not in zulu expected format) the follo
 
 The `granularity` query parameter is used *optionally* under the `/results` resource to indicate the granularity level. It's value may be either monthly or daily. If not set by the user `monthly` is used.
 
-In case the parameter value is malformed (neither `daily` nor `monthly`) the following response is returned:
+In case the parameter value is malformed (neither `daily`, `monthly` or `custom`) the following response is returned:
 
 ```json
 {
@@ -179,7 +179,7 @@ In case the parameter value is malformed (neither `daily` nor `monthly`) the fol
   {
    "message": "Wrong Granularity",
    "code": "400",
-   "details": "%s is not accepted as granularity parameter, please provide either daily or monthly"
+   "details": "%s is not accepted as granularity parameter, please provide either daily, monthly or custom"
   }
  ]
 }

@@ -447,6 +447,69 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly(
 	suite.Equal(endpointAvailabilityJSON, responseBody, "Response body mismatch")
 
 }
+
+func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services/service_a/endpoints?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=custom", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	responseBody := response.Body.String()
+	endpointAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "service_a",
+           "type": "service",
+           "endpoints": [
+             {
+               "name": "e01",
+               "type": "endpoint",
+               "info": {
+                 "Url": "https://foo.example.url"
+               },
+               "results": [
+                 {
+                   "availability": "76.26534166743393",
+                   "reliability": "91.61418757296076",
+                   "unknown": "0.00521",
+                   "uptime": "0.75868",
+                   "downtime": "0.166665"
+                 }
+               ]
+             },
+             {
+               "name": "e02",
+               "type": "endpoint",
+               "results": [
+                 {
+                   "availability": "98.43749901562502",
+                   "reliability": "98.43749901562502",
+                   "unknown": "0",
+                   "uptime": "0.984375",
+                   "downtime": "0"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointAvailabilityJSON, responseBody, "Response body mismatch")
+
+}
 func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpoints() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily", strings.NewReader(""))
@@ -1180,6 +1243,122 @@ func (suite *endpointAvailabilityTestSuite) TestMonthlyFlatAllEndpointsPaginated
      }
    ],
    "pageSize": 2
+ }`,
+			code: 200,
+		},
+	}
+
+	for _, expReq := range expReqs {
+		request, _ := http.NewRequest(expReq.method, expReq.url, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		suite.Equal(expReq.code, response.Code, "Incorrect HTTP response code")
+		// Compare the expected and actual xml response
+		suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")
+
+	}
+
+}
+
+func (suite *endpointAvailabilityTestSuite) TestCustomFlatAllEndpointsPaginated() {
+
+	type expReq struct {
+		method string
+		url    string
+		code   int
+		result string
+	}
+
+	expReqs := []expReq{
+		expReq{
+			method: "GET",
+			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=custom&pageSize=-1",
+			result: `{
+   "results": [
+     {
+       "name": "e01",
+       "service": "service_a",
+       "supergroup": "ST01",
+       "type": "endpoint",
+       "info": {
+         "Url": "https://foo.example.url"
+       },
+       "results": [
+         {
+           "availability": "76.26534166743393",
+           "reliability": "91.61418757296076",
+           "unknown": "0.00521",
+           "uptime": "0.75868",
+           "downtime": "0.166665"
+         }
+       ]
+     },
+     {
+       "name": "e02",
+       "service": "service_a",
+       "supergroup": "ST01",
+       "type": "endpoint",
+       "results": [
+         {
+           "availability": "98.43749901562502",
+           "reliability": "98.43749901562502",
+           "unknown": "0",
+           "uptime": "0.984375",
+           "downtime": "0"
+         }
+       ]
+     },
+     {
+       "name": "e03",
+       "service": "service_b",
+       "supergroup": "ST02",
+       "type": "endpoint",
+       "results": [
+         {
+           "availability": "96.87499903125001",
+           "reliability": "96.87499903125001",
+           "unknown": "0",
+           "uptime": "0.96875",
+           "downtime": "0"
+         }
+       ]
+     },
+     {
+       "name": "e03",
+       "service": "service_b",
+       "supergroup": "STX",
+       "type": "endpoint",
+       "results": [
+         {
+           "availability": "96.87499903125001",
+           "reliability": "96.87499903125001",
+           "unknown": "0",
+           "uptime": "0.96875",
+           "downtime": "0"
+         }
+       ]
+     },
+     {
+       "name": "e03",
+       "service": "service_x",
+       "supergroup": "ST02",
+       "type": "endpoint",
+       "results": [
+         {
+           "availability": "96.87499903125001",
+           "reliability": "96.87499903125001",
+           "unknown": "0",
+           "uptime": "0.96875",
+           "downtime": "0"
+         }
+       ]
+     }
+   ]
  }`,
 			code: 200,
 		},

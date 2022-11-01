@@ -492,6 +492,70 @@ func (suite *AvailabilityTestSuite) TestListEndpointGroupAvailability() {
 
 }
 
+// TestListEndpointAvailabilityCustom test if daily results are returned correctly for a specific id
+func (suite *AvailabilityTestSuite) TestListGroupAvailCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expected := `{
+   "results": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "results": [
+         {
+           "date": "2015-06",
+           "availability": "71.75110088070457",
+           "reliability": "65.61389111289031"
+         }
+       ],
+       "groups": [
+         {
+           "name": "ST01",
+           "type": "SITES",
+           "results": [
+             {
+               "date": "2015-06",
+               "availability": "99.99999900000002",
+               "reliability": "99.99999900000002",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             }
+           ]
+         },
+         {
+           "name": "ST02",
+           "type": "SITES",
+           "results": [
+             {
+               "date": "2015-06",
+               "availability": "99.99999900000002",
+               "reliability": "99.99999900000002",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(expected, response.Body.String(), "Response body mismatch")
+
+}
+
 // TestListEndpointAvailability test if daily results are returned correctly for a specific id
 func (suite *AvailabilityTestSuite) TestListEndpointAvailabilityDaily() {
 
@@ -566,6 +630,46 @@ func (suite *AvailabilityTestSuite) TestListEndpointAvailabilityMonthly() {
        "results": [
          {
            "date": "2015-06",
+           "availability": "99.99999900000002",
+           "reliability": "99.99999900000002",
+           "unknown": "0",
+           "uptime": "1",
+           "downtime": "0"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(expected, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *AvailabilityTestSuite) TestListEndpointAvailabilityCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/results/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=custom", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expected := `{
+   "id": "special-queue",
+   "endpoints": [
+     {
+       "name": "host01",
+       "service": "service01",
+       "supergroup": "GROUP_A",
+       "info": {
+         "ID": "special-queue"
+       },
+       "results": [
+         {
            "availability": "99.99999900000002",
            "reliability": "99.99999900000002",
            "unknown": "0",

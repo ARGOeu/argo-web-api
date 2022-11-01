@@ -375,6 +375,60 @@ func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabili
 
 }
 
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabilityCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITE/ST01/services?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=custom", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	responseBody := response.Body.String()
+	serviceFlavorAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "serviceflavors": [
+         {
+           "name": "SF01",
+           "type": "service",
+           "results": [
+             {
+               "availability": "76.26534166743393",
+               "reliability": "91.61418757296076",
+               "unknown": "0.00521",
+               "uptime": "0.75868",
+               "downtime": "0.166665"
+             }
+           ]
+         },
+         {
+           "name": "SF02",
+           "type": "service",
+           "results": [
+             {
+               "availability": "98.43749901562502",
+               "reliability": "98.43749901562502",
+               "unknown": "0",
+               "uptime": "0.984375",
+               "downtime": "0"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(serviceFlavorAvailabilityJSON, responseBody, "Response body mismatch")
+
+}
+
 // TestListServiceFlavorAvailabilityDaily tests if daily results are returned correctly
 func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceFlavorAvailabilityDaily() {
 

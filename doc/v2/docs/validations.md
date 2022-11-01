@@ -177,7 +177,7 @@ In case the parameter value is malformed (neither `daily` nor `monthly`) the fol
   {
    "message": "Wrong Granularity",
    "code": "400",
-   "details": "%s is not accepted as granularity parameter, please provide either daily or monthly"
+   "details": "%s is not accepted as granularity parameter, please provide either daily, monthly or custom"
   }
  ]
 }
