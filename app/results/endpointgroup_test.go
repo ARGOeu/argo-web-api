@@ -623,6 +623,61 @@ func (suite *endpointGroupAvailabilityTestSuite) TestStrictSlashEndpointGroupRes
 
 }
 
+// TestListAllEndpointGroupAvailabilityCustom tests if a/r results are returned correctly over a custom period
+func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailabilityCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/SITES?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=custom", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	endpointGroupAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "endpoints": [
+         {
+           "name": "ST01",
+           "type": "SITES",
+           "results": [
+             {
+               "availability": "99.99999900000002",
+               "reliability": "99.99999900000002",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             }
+           ]
+         },
+         {
+           "name": "ST02",
+           "type": "SITES",
+           "results": [
+             {
+               "availability": "99.99999900000002",
+               "reliability": "99.99999900000002",
+               "unknown": "0",
+               "uptime": "1",
+               "downtime": "0"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
+
+}
+
 //TearDownTest to tear down every test
 func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 

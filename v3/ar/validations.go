@@ -40,11 +40,11 @@ func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
 	query.Granularity = strings.ToLower(query.Granularity)
 	if query.Granularity == "" {
 		query.Granularity = "daily"
-	} else if query.Granularity != "daily" && query.Granularity != "monthly" {
+	} else if query.Granularity != "daily" && query.Granularity != "monthly" && query.Granularity != "custom" {
 		errs = append(errs, ErrorResponse{
 			Message: "Wrong Granularity",
 			Code:    "400",
-			Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily or monthly", query.Granularity),
+			Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily, monthly or custom", query.Granularity),
 		})
 	}
 

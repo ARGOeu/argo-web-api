@@ -11,7 +11,7 @@ Bad request              | 400 | One or more checks may have failed. More detail
 Wrong start_time         | 400 | Use start_time url parameter in zulu format (like `2006-01-02T15:04:05Z`) to indicate the query start time
 Wrong end_time           | 400 | Use end_time url parameter in zulu format (like `2006-01-02T15:04:05Z`) to indicate the query end time
 Wrong exec_time          | 400 | Use exec_time url parameter in zulu format (like `2006-01-02T15:04:05Z`) to indicate the exact probe execution time
-Wrong granularity        | 400 | The parameter value can be either `daily` or `monthly`
+Wrong granularity        | 400 | The parameter value can be either `daily`,  `monthly` or `custom`
 Unauthorized             | 401 | The client needs to provide a correct authentication token using the header `x-api-key` 
 Forbidden                | 403 | Access to the resource is forbidden due to authorization policy enforced
 Item not found           | 404 | Either the path is not found or no results are available for the given query

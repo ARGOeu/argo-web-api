@@ -105,7 +105,7 @@ type EndpointInterface struct {
 
 //Availability struct for formating json
 type Availability struct {
-	Date         string `json:"date"`
+	Date         string `json:"date,omitempty"`
 	Availability string `json:"availability"`
 	Reliability  string `json:"reliability"`
 	Unknown      string `json:"unknown,omitempty"`
