@@ -90,6 +90,60 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 	return code, h, output, err
 }
 
+// ListGroupMetricIssues returns a lists of metrics that have issues in a specific group
+func ListGroupMetricIssues(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("List Endpoint Timelines")
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Mongo Session
+	results := []GroupMetrics{}
+
+	session, err := mongo.OpenSession(tenantDbConfig)
+	defer mongo.CloseSession(session)
+
+	metricCollection := session.DB(tenantDbConfig.Db).C("status_metrics")
+
+	// Query the detailed metric results
+	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+
+	dt, _, err := utils.ParseZuluDate(urlValues.Get("date"))
+
+	if err != nil {
+		code = http.StatusBadRequest
+		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
+		return code, h, output, err
+	}
+
+	err = metricCollection.Pipe(prepareGroupIssueQuery(reportID, vars["group_name"], dt, urlValues.Get("filter"))).All(&results)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = createGroupMetricsView(results, "Success", 200)
+
+	return code, h, output, err
+}
+
 func prepareIssueQuery(reportID string, dt int, filter string) []bson.M {
 	// prepare the match filter
 	match1 := bson.M{"report": reportID, "date_integer": dt}
@@ -121,6 +175,46 @@ func prepareIssueQuery(reportID string, dt int, filter string) []bson.M {
 		{"$group": group},
 		{"$match": match2},
 		{"$sort": sorted},
+	}
+
+	return agg
+
+}
+
+func prepareGroupIssueQuery(reportID string, egroup string, dt int, filter string) []bson.M {
+	// prepare the match filter
+	match := bson.M{"report": reportID, "date_integer": dt, "endpoint_group": egroup}
+
+	if filter != "" {
+		match["status"] = filter
+	} else {
+		match["status"] = bson.M{"$ne": "OK"}
+	}
+
+	agg := []bson.M{
+		{"$match": match},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"service": "$service",
+				"host":    "$host",
+				"metric":  "$metric",
+				"status":  "$status",
+			},
+			"info": bson.M{"$last": "$info"},
+		}},
+		{
+			"$project": bson.M{
+				"service": "$_id.service",
+				"host":    "$_id.host",
+				"metric":  "$_id.metric",
+				"status":  "$_id.status",
+				"info":    1}},
+		{"$sort": bson.D{
+			{"service", 1},
+			{"host", 1},
+			{"metric", 1},
+			{"status", 1},
+		}},
 	}
 
 	return agg

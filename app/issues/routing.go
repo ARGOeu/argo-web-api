@@ -35,6 +35,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var appRoutesV2 = []respond.AppRoutes{
 
+	{"issues.list_group_metrics", "GET", "/{report_name}/groups/{group_name}/metrics", ListGroupMetricIssues},
+	{"issues.options", "OPTIONS", "/{report_name}/groups/{group_name}/metrics", Options},
 	{"issues.list_endpoints", "GET", "/{report_name}/endpoints", FlatListEndpointTimelines},
 	{"issues.options", "OPTIONS", "/{report_name}/endpoints", Options},
 }
