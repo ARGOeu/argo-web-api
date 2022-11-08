@@ -38,6 +38,15 @@ type EndpointData struct {
 	Info          map[string]string `bson:"info" json:"info,omitempty"`
 }
 
+// GroupMetrics hold issues with metrics in a specific group
+type GroupMetrics struct {
+	Service  string            `bson:"service" json:"service,omitempty"`
+	Hostname string            `bson:"host" json:"hostname"`
+	Metric   string            `bson:"metric" json:"metric,omitempty"`
+	Status   string            `bson:"status" json:"status,omitempty"`
+	Info     map[string]string `bson:"info" json:"info,omitempty"`
+}
+
 // Message struct to hold the json/xml response
 type messageOUT struct {
 	XMLName xml.Name `xml:"root" json:"-"`
