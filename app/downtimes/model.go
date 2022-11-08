@@ -9,10 +9,13 @@ type Downtimes struct {
 
 //Downtime holds downtime information for a specific host
 type Downtime struct {
-	HostName  string `bson:"hostname" json:"hostname"`
-	Service   string `bson:"service" json:"service"`
-	StartTime string `bson:"start_time" json:"start_time"`
-	EndTime   string `bson:"end_time" json:"end_time"`
+	HostName       string `bson:"hostname" json:"hostname"`
+	Service        string `bson:"service" json:"service"`
+	StartTime      string `bson:"start_time" json:"start_time"`
+	EndTime        string `bson:"end_time" json:"end_time"`
+	Description    string `bson:"description" json:"description,omitempty"`
+	Classification string `bson:"classification" json:"classification,omitempty"`
+	Severity       string `bson:"severity" json:"severity,omitempty"`
 }
 
 // Links struct to hold links
