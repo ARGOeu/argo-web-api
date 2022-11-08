@@ -7617,6 +7617,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
+                
+  /v2/issues/{REPORT_NAME}/groups/{GROUP_NAME}/metrics:
+    get:
+      tags:
+      - Issues
+      summary: List problematic metrics for a specific group
+      description: For a specific group, list metrics that are in problematic status (critical, warning,
+        missing etc)
+      operationId: issues.ListGroupMetrics
+      parameters:
+      - name: date
+        in: query
+        description: target date to retrieve results
+        schema:
+          type: string
+          default: todays_date in YYYY-MM-DD format
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: filter
+        in: query
+        description: name of the problematic status to filter by
+        schema:
+          type: string
+      - name: REPORT_NAME
+        in: path
+        description: name of the report
+        required: true
+        schema:
+          type: string
+      - name: GROUP_NAME
+        in: path
+        description: name of the group
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: A list with problematic metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMetrics'
+        401:
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        404:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+
   /v2/trends/{REPORT_NAME}/status/metrics:
     get:
       tags:
@@ -10484,6 +10556,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Metric_profile'
+    GroupMetrics:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              service:
+                type: string
+              hostname:
+                type: string
+              metric: 
+                type: string
+              status:
+                type: string
     recomputation:
       type: object
       properties:
