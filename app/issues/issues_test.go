@@ -23,6 +23,7 @@
 package issues
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -151,6 +152,10 @@ func (suite *IssuesTestSuite) SetupTest() {
 		bson.M{
 			"resource": "issues.list_endpoints",
 			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
+			"resource": "issues.list_group_metrics",
+			"roles":    []string{"editor", "viewer"},
 		})
 
 	// get dbconfiguration based on the tenant
@@ -205,6 +210,102 @@ func (suite *IssuesTestSuite) SetupTest() {
 		}})
 	// seed the status detailed metric data
 	c = session.DB(suite.tenantDbConf.Db).C("status_endpoints")
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+
+		"status": "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T01:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
+
+		"status": "CRITICAL",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T05:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
+
+		"status": "WARNING",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+
+		"status": "WARNING",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T08:47:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+
+		"status": "WARNING",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T12:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+
+		"status": "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream03.afroditi.gr",
+
+		"status": "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T04:40:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream03.afroditi.gr",
+
+		"status": "UNKNOWN",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T06:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream03.afroditi.gr",
+
+		"status": "CRITICAL",
+	})
+
+	// seed the status detailed metric data
+	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
 	c.Insert(bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
@@ -508,6 +609,87 @@ func (suite *IssuesTestSuite) TestIssuesEndpoints() {
 
 		expReq{
 			method: "GET",
+			url:    "/api/v2/issues/Report_A/groups/HG-03-AUTH/metrics?date=2015-05-01",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream01.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "CRITICAL",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   }
+  },
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream01.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "WARNING",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   }
+  },
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream02.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "WARNING"
+  },
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream03.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "CRITICAL"
+  },
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream03.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "UNKNOWN"
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
+			url:    "/api/v2/issues/Report_A/groups/HG-03-AUTH/metrics?date=2015-05-01&filter=CRITICAL",
+			code:   200,
+			key:    "KEY1",
+			result: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream01.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "CRITICAL",
+   "info": {
+    "Url": "http://example.foo/path/to/service"
+   }
+  },
+  {
+   "service": "CREAM-CE",
+   "hostname": "cream03.afroditi.gr",
+   "metric": "emi.cream.CREAMCE-JobSubmit",
+   "status": "CRITICAL"
+  }
+ ]
+}`,
+		},
+
+		expReq{
+			method: "GET",
 			url:    "/api/v2/issues/Report_A/endpoints?date=2015-05-01&filter=MISSING",
 			code:   200,
 			key:    "KEY1",
@@ -532,7 +714,9 @@ func (suite *IssuesTestSuite) TestIssuesEndpoints() {
 
 		suite.Equal(expReq.code, response.Code, "Incorrect HTTP response code")
 		// Compare the expected and actual xml response
-		suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")
+		if !(suite.Equal(expReq.result, response.Body.String(), "Response body mismatch")) {
+			fmt.Println(response.Body.String())
+		}
 
 	}
 
@@ -540,6 +724,24 @@ func (suite *IssuesTestSuite) TestIssuesEndpoints() {
 
 func (suite *IssuesTestSuite) TestOptionsIssuesEndpoints() {
 	request, _ := http.NewRequest("OPTIONS", "/api/v2/issues/Report_A/endpoints", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *IssuesTestSuite) TestOptionsIssuesGroups() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/issues/Report_A/groups/test_group/metrics", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 

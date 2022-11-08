@@ -45,6 +45,22 @@ func createEndpointListView(results []EndpointData, msg string, code int) ([]byt
 
 }
 
+// createGroupMetricsView constructs the json response for listing metric issues of a group
+func createGroupMetricsView(results []GroupMetrics, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = results
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
 	output := []byte("message placeholder")

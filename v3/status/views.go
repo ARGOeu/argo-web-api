@@ -118,6 +118,8 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			value.Statuses = append(value.Statuses, extraStatus)
 
 			ptrGroup.Endpoints = append(ptrGroup.Endpoints, value)
+			// clear supergroup value from endpoint it self so as not to be printed in json output
+			value.SuperGroup = ""
 
 		}
 
@@ -140,6 +142,84 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 	}
 
 	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
+	return output, err
+
+}
+
+func createViewByID(resEndpoints []EndpointData, input InputParams, endDate string, details bool, latest bool) ([]byte, error) {
+
+	// calculate part of the timestamp that closes the timeline of each item
+	var extraTS string
+
+	tsNow := time.Now().UTC()
+	today := tsNow.Format("2006-01-02")
+
+	if endDate == today {
+		extraTS = "T" + strings.Split(tsNow.Format(zuluForm), "T")[1]
+	} else {
+		extraTS = "T23:59:59Z"
+	}
+
+	output := []byte("reponse output")
+	err := error(nil)
+
+	docID := &idOUT{}
+	docID.ID = input.ID
+	docID.Endpoints = make([]*endpointOUT, 0)
+
+	// make index map to keep track of different endpoint
+	indexEndp := make(map[string]*endpointOUT)
+	keysEndp := make([]string, 0)
+
+	for _, row := range resEndpoints {
+		// prepare status information to be added
+		status := &statusOUT{}
+		status.Timestamp = row.Timestamp
+		status.Value = row.Status
+		if details {
+			status.AffectedByThresholdRule = row.HasThresholdRule
+		}
+
+		if ptrEndp, ok := indexEndp[row.EndpointGroup+row.Service+row.Hostname]; ok {
+			ptrEndp.Statuses = append(ptrEndp.Statuses, status)
+		} else {
+			newEndp := &endpointOUT{}
+			newEndp.Info = row.Info
+			newEndp.Name = row.Hostname
+			newEndp.Service = row.Service
+			newEndp.SuperGroup = row.EndpointGroup
+			newEndp.Statuses = make([]*statusOUT, 0)
+			newEndp.Statuses = append(newEndp.Statuses, status)
+			indexEndp[row.EndpointGroup+row.Service+row.Hostname] = newEndp
+			// add key to keysEndp to be used in sorted traversal
+			keysEndp = append(keysEndp, row.EndpointGroup+row.Service+row.Hostname)
+		}
+
+	}
+
+	sort.Strings(keysEndp)
+
+	// repeat over group items and add them to the response root
+
+	for _, key := range keysEndp {
+		value := indexEndp[key]
+		// check if endpoint supergroup is indexed in groups
+
+		// add extra status that closes the timeline
+		// get last status of the existing timeline
+		lastStatus := value.Statuses[len(value.Statuses)-1]
+		extraStatus := &statusOUT{}
+		extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
+		extraStatus.Value = lastStatus.Value
+		if latest == true {
+			value.Statuses = nil
+		}
+		value.Statuses = append(value.Statuses, extraStatus)
+		docID.Endpoints = append(docID.Endpoints, value)
+
+	}
+
+	output, err = respond.MarshalContent(docID, input.format, "", " ")
 	return output, err
 
 }

@@ -34,7 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
-func createEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string) ([]byte, error) {
+func createEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
 	docRoot := &root{}
 
 	prevServiceFlavorGroup := ""
@@ -82,9 +82,13 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
 		}
 		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		endpoint.Availability = append(endpoint.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability),
 				Unknown:      fmt.Sprintf("%g", row.Unknown),
@@ -100,7 +104,7 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 
 }
 
-func createFlatEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, limit int, skip int) ([]byte, error) {
+func createFlatEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, limit int, skip int, custom bool) ([]byte, error) {
 
 	docRoot := &pageRoot{}
 
@@ -136,9 +140,13 @@ func createFlatEndpointResultView(results []EndpointInterface, report reports.Mo
 
 		}
 		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		endpoint.Availability = append(endpoint.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability),
 				Unknown:      fmt.Sprintf("%g", row.Unknown),
@@ -164,7 +172,7 @@ func createFlatEndpointResultView(results []EndpointInterface, report reports.Mo
 
 }
 
-func createServiceFlavorResultView(results []ServiceFlavorInterface, report reports.MongoInterface, format string) ([]byte, error) {
+func createServiceFlavorResultView(results []ServiceFlavorInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -199,9 +207,13 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report repo
 			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceFlavor)
 		}
 		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		serviceFlavor.Availability = append(serviceFlavor.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability),
 				Unknown:      fmt.Sprintf("%g", row.Unknown),
@@ -217,7 +229,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report repo
 
 }
 
-func createEndpointGroupResultView(results []EndpointGroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
+func createEndpointGroupResultView(results []EndpointGroupInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -253,9 +265,13 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report repo
 			superGroup.Endpoints = append(superGroup.Endpoints, endpointGroup)
 		}
 		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		endpointGroup.Availability = append(endpointGroup.Availability,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability),
 				Unknown:      fmt.Sprintf("%g", row.Unknown),
@@ -270,7 +286,7 @@ func createEndpointGroupResultView(results []EndpointGroupInterface, report repo
 
 }
 
-func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
+func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
 
 	docRoot := &root{}
 
@@ -293,9 +309,13 @@ func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInt
 			docRoot.Result = append(docRoot.Result, superGroup)
 		}
 		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		superGroup.Results = append(superGroup.Results,
 			&Availability{
-				Timestamp:    timestamp.Format(customForm[1]),
+				Timestamp:    prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 	}

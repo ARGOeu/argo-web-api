@@ -216,6 +216,10 @@ function populate_default_roles() {
             roles: ["admin", "editor", "viewer"]
         },
         {
+            resource: "issues.list_group_metrics",
+            roles: ["admin", "editor", "viewer"]
+        },
+        {
             resource: "downtimes.list",
             roles: ["admin", "editor", "viewer"]
         },
@@ -289,6 +293,10 @@ function populate_default_roles() {
         },
         {
             resource: "v3.status.list",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "v3.status.list-by-id",
             roles: ["admin", "editor", "viewer", "admin_ui"]
         }
     ]);

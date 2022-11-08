@@ -1,6 +1,8 @@
 package status
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"gopkg.in/mgo.v2/bson"
+)
 
 const statusGroupColName = "status_endpoint_groups"
 const statusEndpointColName = "status_endpoints"
@@ -24,6 +26,10 @@ func queryEndpoints(input InputParams, reportID string) bson.M {
 	filter := bson.M{
 		"date_integer": bson.M{"$gte": input.startTime, "$lte": input.endTime},
 		"report":       reportID,
+	}
+
+	if input.ID != "" {
+		filter["info.ID"] = input.ID
 	}
 
 	return filter

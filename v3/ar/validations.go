@@ -40,19 +40,19 @@ func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
 	query.Granularity = strings.ToLower(query.Granularity)
 	if query.Granularity == "" {
 		query.Granularity = "daily"
-	} else if query.Granularity != "daily" && query.Granularity != "monthly" {
+	} else if query.Granularity != "daily" && query.Granularity != "monthly" && query.Granularity != "custom" {
 		errs = append(errs, ErrorResponse{
 			Message: "Wrong Granularity",
 			Code:    "400",
-			Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily or monthly", query.Granularity),
+			Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily, monthly or custom", query.Granularity),
 		})
 	}
 
-	if query.StartTime == "" && query.EndTime == "" {
+	if query.StartTime == "" || query.EndTime == "" {
 		errs = append(errs, ErrorResponse{
 			Message: "No time span set",
 			Code:    "400",
-			Details: "Please use start_time and/or end_time url parameters to set the prefered time span",
+			Details: "Please use start_time and end_time url parameters to set the prefered time span",
 		})
 	} else {
 		if query.StartTime != "" {

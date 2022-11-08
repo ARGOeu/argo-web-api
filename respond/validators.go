@@ -127,11 +127,11 @@ func ValidateResultsParams(queries url.Values) []ErrorResponse {
 
 	if queries["granularity"] != nil {
 		granularity := queries["granularity"][0]
-		if granularity != "daily" && granularity != "monthly" {
+		if granularity != "daily" && granularity != "monthly" && granularity != "custom" {
 			errs = append(errs, ErrorResponse{
 				Message: "Wrong Granularity",
 				Code:    fmt.Sprintf("%d", http.StatusBadRequest),
-				Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily or monthly", granularity),
+				Details: fmt.Sprintf("%s is not accepted as granularity parameter, please provide either daily, monthly or custom", granularity),
 			})
 		}
 	}

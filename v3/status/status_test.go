@@ -165,6 +165,10 @@ func (suite *StatusTestSuite) SetupTest() {
 		bson.M{
 			"resource": "v3.status.list",
 			"roles":    []string{"editor", "viewer"},
+		},
+		bson.M{
+			"resource": "v3.status.list-by-id",
+			"roles":    []string{"editor", "viewer"},
 		})
 
 	c = session.DB(suite.tenantDbConf.Db).C("reports")
@@ -318,6 +322,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"host":           "cream03.example.foo",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
+		"info":           bson.M{"ID": "special-queue"},
 	})
 	c.Insert(bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -328,6 +333,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"host":           "cream03.example.foo",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "UNKNOWN",
+		"info":           bson.M{"ID": "special-queue"},
 	})
 	c.Insert(bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -339,6 +345,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"metric":             "emi.cream.CREAMCE-JobSubmit",
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
+		"info":               bson.M{"ID": "special-queue"},
 	})
 	c.Insert(bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -349,6 +356,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"host":           "cream03.example.foo",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
+		"info":           bson.M{"ID": "special-queue"},
 	})
 	c.Insert(bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -359,6 +367,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"host":           "cream03.example.foo",
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "UNKNOWN",
+		"info":           bson.M{"ID": "special-queue"},
 	})
 	c.Insert(bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
@@ -370,6 +379,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"metric":             "emi.cream.CREAMCE-JobSubmit",
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
+		"info":               bson.M{"ID": "special-queue"},
 	})
 
 }
@@ -459,6 +469,9 @@ func (suite *StatusTestSuite) TestListStatus() {
     {
      "hostname": "cream03.example.foo",
      "service": "CREAM-CE",
+     "info": {
+      "ID": "special-queue"
+     },
      "statuses": [
       {
        "timestamp": "2015-05-01T00:00:00Z",
@@ -505,6 +518,9 @@ func (suite *StatusTestSuite) TestListStatus() {
     {
      "hostname": "cream03.example.foo",
      "service": "CREAM-CE",
+     "info": {
+      "ID": "special-queue"
+     },
      "statuses": [
       {
        "timestamp": "2015-05-01T00:00:00Z",
@@ -611,6 +627,202 @@ func (suite *StatusTestSuite) TestListStatus() {
 
 	// Case of using view=latest along with specifing start and end period
 	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-20T23:00:00Z&view=latest", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse = `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Parameter view=latest should not be used when specifing start_time and end_time period"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+
+}
+
+// TestListStatus test the status results
+func (suite *StatusTestSuite) TestListStatusByID() {
+
+	request, _ := http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expResponse := `{
+   "message": "No endpoints found with resource-id: special-queue",
+   "code": 404
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual json response
+	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expResponse = `{
+ "id": "special-queue",
+ "endpoints": [
+  {
+   "hostname": "cream03.example.foo",
+   "service": "CREAM-CE",
+   "group": "SITEA",
+   "info": {
+    "ID": "special-queue"
+   },
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T04:40:00Z",
+     "value": "UNKNOWN"
+    },
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  },
+  {
+   "hostname": "cream03.example.foo",
+   "service": "CREAM-CE",
+   "group": "SITEB",
+   "info": {
+    "ID": "special-queue"
+   },
+   "statuses": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T04:40:00Z",
+     "value": "UNKNOWN"
+    },
+    {
+     "timestamp": "2015-05-01T06:00:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ]
+}`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual json response
+	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	unauthorizedresponse := `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
+
+	// Case of bad start_time input
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse := `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Error parsing start_time=2015-06-20AT12:00:00Z - please use zulu format like 2006-01-02T15:04:05Z"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+
+	// Case of bad end_time input
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	badRequestResponse = `{
+ "status": {
+  "message": "Bad Request",
+  "code": "400"
+ },
+ "errors": [
+  {
+   "message": "Bad Request",
+   "code": "400",
+   "details": "Error parsing end_time=2015-06T23:00:00Z - please use zulu format like 2006-01-02T15:04:05Z"
+  }
+ ]
+}`
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(400, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
+
+	// Case of using view=latest along with specifing start and end period
+	request, _ = http.NewRequest("GET", "/api/v3/status/Report_A/id/special-queue?start_time=2015-06-20T12:00:00Z&end_time=2015-06-20T23:00:00Z&view=latest", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 

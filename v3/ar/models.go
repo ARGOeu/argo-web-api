@@ -87,9 +87,25 @@ type SuperGroupInterface struct {
 	SuperGroup   string  `bson:"supergroup"`
 }
 
+// EndpointInterface used to hold mongodb group information about endpoints
+type EndpointInterface struct {
+	Name         string            `bson:"name"`
+	Report       string            `bson:"report"`
+	Date         string            `bson:"date"`
+	Type         string            `bson:"type"`
+	Up           float64           `bson:"up"`
+	Down         float64           `bson:"down"`
+	Unknown      float64           `bson:"unknown"`
+	Availability float64           `bson:"availability"`
+	Reliability  float64           `bson:"reliability"`
+	Service      string            `bson:"service"`
+	SuperGroup   string            `bson:"supergroup"`
+	Info         map[string]string `bson:"info"`
+}
+
 //Availability struct for formating json
 type Availability struct {
-	Date         string `json:"date"`
+	Date         string `json:"date,omitempty"`
 	Availability string `json:"availability"`
 	Reliability  string `json:"reliability"`
 	Unknown      string `json:"unknown,omitempty"`
@@ -110,6 +126,21 @@ type SuperGroup struct {
 	Type    string         `json:"type"`
 	Results []Availability `json:"results,omitempty"`
 	Groups  []*Group       `json:"groups,omitempty"`
+}
+
+// idOUT holds a/r information about endpoints with specific id
+type idOUT struct {
+	ID        string      `json:"id"`
+	Endpoints []*Endpoint `json:"endpoints,omitempty"`
+}
+
+// endpoint holds a/r information about a specific endpoint
+type Endpoint struct {
+	Name       string            `json:"name"`
+	Service    string            `json:"service"`
+	Supergroup string            `json:"supergroup"`
+	Info       map[string]string `json:"info"`
+	Results    []Availability    `json:"results,omitempty"`
 }
 
 // errorMessage struct to hold the json/xml error response

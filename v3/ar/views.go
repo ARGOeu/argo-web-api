@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
-func createGroupResult(results []GroupInterface, report reports.MongoInterface, format string) []*SuperGroup {
+func createGroupResult(results []GroupInterface, report reports.MongoInterface, format string, custom bool) []*SuperGroup {
 
 	result := []*SuperGroup{}
 
@@ -68,9 +68,14 @@ func createGroupResult(results []GroupInterface, report reports.MongoInterface, 
 			superGroup.Groups = append(superGroup.Groups, group)
 		}
 		//we append the new availability values
+		// if custom period is selected delete timestamps so no dates appear on a/r results
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		group.Availability = append(group.Availability,
 			Availability{
-				Date:         timestamp.Format(customForm[1]),
+				Date:         prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability),
 				Unknown:      fmt.Sprintf("%g", row.Unknown),
@@ -83,7 +88,7 @@ func createGroupResult(results []GroupInterface, report reports.MongoInterface, 
 
 }
 
-func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoInterface, format string) []*SuperGroup {
+func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoInterface, format string, custom bool) []*SuperGroup {
 
 	result := []*SuperGroup{}
 
@@ -108,9 +113,14 @@ func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoI
 		}
 
 		//we append the new availability values
+		// if custom period is selected delete timestamps so no dates appear on a/r results
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
 		superGroup.Results = append(superGroup.Results,
 			Availability{
-				Date:         timestamp.Format(customForm[1]),
+				Date:         prepDate,
 				Availability: fmt.Sprintf("%g", row.Availability),
 				Reliability:  fmt.Sprintf("%g", row.Reliability)})
 
@@ -120,11 +130,61 @@ func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoI
 
 }
 
-func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []GroupInterface, report reports.MongoInterface, format string) ([]byte, error) {
+func createEndpointResult(results []EndpointInterface, report reports.MongoInterface, id string, custom bool) ([]byte, error) {
+
+	docID := &idOUT{}
+	docID.ID = id
+	docID.Endpoints = make([]*Endpoint, 0)
+
+	prevEndpoint := ""
+	endpoint := &Endpoint{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], row.Date)
+
+		//if new superGroup does not match the previous superGroup value
+		//we create a new superGroup entry in the xml
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			endpoint = &Endpoint{
+				Name:       row.Name,
+				Service:    row.Service,
+				Supergroup: row.SuperGroup,
+				Info:       row.Info,
+			}
+			docID.Endpoints = append(docID.Endpoints, endpoint)
+		}
+
+		// if custom period is selected delete timestamps so no dates appear on a/r results
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
+		endpoint.Results = append(endpoint.Results,
+
+			Availability{
+				Date:         prepDate,
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Reliability:  fmt.Sprintf("%g", row.Reliability),
+				Unknown:      fmt.Sprintf("%g", row.Unknown),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+				Downtime:     fmt.Sprintf("%g", row.Down),
+			})
+
+	}
+
+	return json.MarshalIndent(docID, " ", "  ")
+
+}
+
+func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []GroupInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
 	docRoot := &root{}
 
-	groupResult := createGroupResult(resultsGroups, report, format)
-	superGroupResult := createSuperGroupResult(resultsSuperGroups, report, format)
+	groupResult := createGroupResult(resultsGroups, report, format, custom)
+	superGroupResult := createSuperGroupResult(resultsSuperGroups, report, format, custom)
 
 	docRoot.Result = groupResult
 	for i := range docRoot.Result {

@@ -40,9 +40,21 @@ var arRoutes = []respond.AppRoutes{
 		SubrouterHandler: ListStatus,
 	},
 	{
+		Name:             "v3.status.list-by-id",
+		Verb:             "GET",
+		Path:             "/{report_name}/id/{id}",
+		SubrouterHandler: ListStatusByID,
+	},
+	{
 		Name:             "v3.status.options",
 		Verb:             "OPTIONS",
 		Path:             "/{report_name}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v3.status.options",
+		Verb:             "OPTIONS",
+		Path:             "/{report_name}/id/{id}",
 		SubrouterHandler: Options,
 	},
 }
