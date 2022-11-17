@@ -1,0 +1,14 @@
+# Configure dependabot against devel branch for both go deps and docusaurus ./website npm deps
+
+version: 2
+updates:
+  - package-ecosystem: "gomod" 
+    directory: "/" 
+    target-branch: "devel"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm" 
+    directory: "/website" 
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
