@@ -23,7 +23,6 @@
 package results
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -518,6 +517,51 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailability(
 
 }
 
+// TestListAllSuperGroupAvailabilityMonthly test if results are returned correctly for a monthly period
+func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailabilityMonthly() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/GROUP?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	SuperGroupAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "GROUP_A",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06",
+           "availability": "71.75110088070457",
+           "reliability": "65.61389111289031"
+         }
+       ]
+     },
+     {
+       "name": "GROUP_B",
+       "type": "GROUP",
+       "results": [
+         {
+           "timestamp": "2015-06",
+           "availability": "46.930783242258656",
+           "reliability": "80"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(SuperGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
+
+}
+
 // TestListAllSuperGroupAvailabilityCustom test if results are returned correctly for a custom period
 func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailabilityCustom() {
 
@@ -558,7 +602,6 @@ func (suite *SuperGroupAvailabilityTestSuite) TestListAllSuperGroupAvailabilityC
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(SuperGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
-	fmt.Println(response.Body.String())
 
 }
 

@@ -625,12 +625,12 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 	//              - divide the previous sum of weighted availabilities by the total weightAv
 	//								SPECIAL CASE: If total weightRem remains : 0 that means that total daily supergroup rel = undef
 	//                              so instead of a numeric value, add a "nan" string (will not be counted in monthly average)
-	// 6. Group   : by supergroup and report to calculate ar for custom period
-	//							- custom period availability avg = avg(daily_availabilities) ~ but items with "nan" values will be neglected
-	//						  - custom period reliability avg = avg(daily_reliabilities) ~ but items with "nan" values will be neglected
+	// 6. Group   : by first date part (month, eg: 201608) to calculate monthly average avail and rel.
+	//							- monthly availability avg = avg(daily_availabilities) ~ but items with "nan" values will be neglected
+	//						  - monthly reliability avg = avg(daily_reliabilities) ~ but items with "nan" values will be neglected
 	//
-	// 7. Project : the relevant fields to form the appropriate final response (supergroup,report,avail,rel)
-	// 8. Sort    : the final results by report, supergroup
+	// 7. Project : the relevant fields to form the appropriate final response (date,supergroup,report,avail,rel)
+	// 8. Sort    : the final results by report, supergroup and then date
 
 	query := []bson.M{
 		{"$match": filter},
@@ -638,6 +638,7 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 			"date":         1,
 			"availability": 1,
 			"reliability":  1,
+			"report":       1,
 			"supergroup":   1,
 			"weightAv":     bson.M{"$cond": list{bson.M{"$gte": list{"$availability", 0}}, bson.M{"$add": list{"$weight", 1}}, 0}},
 			"weightRel":    bson.M{"$cond": list{bson.M{"$gte": list{"$reliability", 0}}, bson.M{"$add": list{"$weight", 1}}, 0}},
@@ -667,11 +668,13 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
+				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
 				"supergroup": "$supergroup", "report": "$report"},
 			"availability": bson.M{"$avg": "$availability"},
 			"reliability":  bson.M{"$avg": "$reliability"}},
 		},
 		{"$project": bson.M{
+			"date":         "$_id.date",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report",
 			"availability": 1,
@@ -679,7 +682,8 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 		},
 		{"$sort": bson.D{
 			{"report", 1},
-			{"supergroup", 1}},
+			{"supergroup", 1},
+			{"date", 1}},
 		}}
 
 	return query
