@@ -23,6 +23,7 @@
 package topology
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -1211,36 +1212,42 @@ func (suite *topologyTestSuite) SetupTest() {
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "DB",
+			"title":        "Database Service",
 			"description":  "A Database type of Service",
 		},
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "API",
+			"title":        "Web API Service",
 			"description":  "An API type of Service",
 		},
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "DB",
+			"title":        "Database Service",
 			"description":  "A Database type of Service",
 		},
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "API",
+			"title":        "Web API Service",
 			"description":  "An API type of Service",
 		},
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "STORAGE",
+			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
 		},
 		bson.M{
 			"date":         "2015-06-13",
 			"date_integer": 20150613,
 			"name":         "STORAGE",
+			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
 			"tags":         []string{"poem"},
 		})
@@ -1420,16 +1427,19 @@ func (suite *topologyTestSuite) TestCreateServiceTypeTopology() {
   {
    "date": "2019-03-03",
    "name": "Service_A",
+   "title": "Service A",
    "description": "a short descritpion of service type a"
   },
   {
    "date": "2019-03-03",
    "name": "Service_B",
+   "title": "Service B",
    "description": "a short descritpion of service type b"
   },
   {
    "date": "2019-03-03",
    "name": "Service_C",
+   "title": "Service C",
    "description": "a short descritpion of service type c"
   }
  ]
@@ -1438,14 +1448,17 @@ func (suite *topologyTestSuite) TestCreateServiceTypeTopology() {
 	jsonInput := `[
   {
     "name": "Service_A",
+	"title": "Service A",
     "description": "a short descritpion of service type a"
   },
   {
     "name": "Service_B",
+	"title": "Service B",
     "description": "a short descritpion of service type b"
   },
   {
     "name": "Service_C",
+	"title": "Service C",
     "description": "a short descritpion of service type c"
   }
 ]`
@@ -2703,11 +2716,13 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
   {
    "date": "2015-01-11",
    "name": "API",
+   "title": "Web API Service",
    "description": "An API type of Service"
   },
   {
    "date": "2015-01-11",
    "name": "DB",
+   "title": "Database Service",
    "description": "A Database type of Service"
   }
  ]
@@ -2725,16 +2740,19 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
   {
    "date": "2015-04-12",
    "name": "API",
+   "title": "Web API Service",
    "description": "An API type of Service"
   },
   {
    "date": "2015-04-12",
    "name": "DB",
+   "title": "Database Service",
    "description": "A Database type of Service"
   },
   {
    "date": "2015-04-12",
    "name": "STORAGE",
+   "title": "Data Storage Service",
    "description": "A Storage type of Service"
   }
  ]
@@ -2752,6 +2770,7 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
   {
    "date": "2015-06-13",
    "name": "STORAGE",
+   "title": "Data Storage Service",
    "description": "A Storage type of Service",
    "tags": [
     "poem"
@@ -2775,7 +2794,9 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
 		// Check that we must have a 200 ok code
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
-		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
+			fmt.Println(output)
+		}
 	}
 }
 
