@@ -3153,7 +3153,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Self_reference'
+                $ref: '#/components/schemas/TopologyServiceTypes'
         401:
           description: Unauthorized user
           content:
@@ -9925,6 +9925,9 @@ components:
         name:
           type: string
           description: name of the service type
+        title:
+          type: string
+          description: A User friendly (human readable) title for the specific service type
         description:
           type: string
           description: short description of the service type
@@ -11399,6 +11402,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+    
+            
     TopologyTags_list:
       type: object
       properties:
