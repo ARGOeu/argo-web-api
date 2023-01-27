@@ -1,0 +1,44 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: EOSC Recommender System Metrics
+message: Measuring and Monitoring the Availability and Reliability of Electronic Infrastructures
+type: software
+authors:
+  - given-names: Kostas
+    family-names: Kagkelidis
+    email: kaggis@admin.grnet.gr
+    affiliation: GRNET S.A.
+  - given-names: Agelos 
+    family-names: Tsalapatis
+    email: agelostsal@admin.grnet.grr
+    affiliation: GRNET S.A.
+  - given-names: Themis
+    family-names: Zamani
+    email: themis@admin.grnet.gr
+    affiliation: GRNET S.A.
+  - given-names: Kostas 
+    family-names: Koumantaros
+    email: kkoum@admin.grnet.grr
+    affiliation: GRNET S.A.
+  - given-names: Chrysa 
+    family-names: Thermolia
+    email: cthermolia@admin.grnet.grr
+    affiliation: GRNET S.A.
+  - given-names: Christos 
+    family-names: Kanellopoulos 
+  - given-names: Anastasis 
+    family-names: Andronidis 
+  - given-names: Avraam 
+    family-names: Tsantekidis
+  - given-names: Kostas 
+    family-names: Evangelou 
+  - given-names: Makis 
+    family-names: Tsantekidis 
+  - given-names: Nikos 
+    family-names: Triantafillidis 
+  - given-names: Paschalis 
+    family-names: Korosoglou 
+  - given-names: Pavlos 
+    family-names: Daoglou
