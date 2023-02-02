@@ -9,7 +9,7 @@ sidebar_position: 2
 | Name  | Description | Shortcut |
 |-------|-------------|----------|
 | GET: List Service Metric Status Timelines | This method may be used to retrieve a specific service metric status timeline (applies on a specific service endpoint).|<a href="#1">Description</a>|
-| GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type). | <a href="#2">Description</a>|
+| GET: List Service Endpoint Status Timelines | This method may be used to retrieve a specific service endpoint status timeline (for a specific group and/or for a specific service type inside that group). | <a href="#2">Description</a>|
 | GET: List Service  Status Timelines |This method may be used to retrieve a specific service type status timeline (applies for a specific service endpoint group). | <a href="#3">Description</a>|
 | GET: List Endpoint Group Status Timelines| This method may be used to retrieve endpoint group status timelines. | <a href="#4">Description</a>|
 | GET: Metric Result | This method may be used to retrieve a specific and detailed metric result. | <a href="#5">Description</a>|
@@ -386,6 +386,10 @@ This method may be used to retrieve a specific service endpoint status timeline 
 ```
 /status/{report}/{endpoint_group_type}/{endpoint_group_name}/services/{service_type}/endpoints/{hostname}?[start_time]&[end_time]
 ```
+##### List All endpoints in a specific group:
+```
+/status/{report}/{group_type}/{group_name}/endpoints?[start_time]&[end_time]
+```
 
 #### Path Parameters
 | Type | Description | Required | Default value |
@@ -597,6 +601,139 @@ Response body (JSON):
       ]
     }
   ]
+}
+```
+
+#### List all endpoints included in a specific group
+For a specific group, return all endpoints included - grouped by service type
+
+##### Example Request:
+URL:
+```
+/status/EGI_CRITICAL/SITES/HG-03-AUTH/endpoints?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:59Z
+```
+Headers:
+```
+x-api-key: shared_key_value
+Accept: application/json or application/xml
+
+```
+##### Example Response:
+Code:
+```
+Status: 200 OK
+```
+
+Response body (JSON):
+```json
+{
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream02.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T08:47:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T12:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream03.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T04:40:00Z",
+         "value": "UNKNOWN"
+        },
+        {
+         "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "STORAGE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "storage.example.foo",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T06:40:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T09:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
 }
 ```
 
