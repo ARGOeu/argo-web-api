@@ -28,6 +28,7 @@ type metricResultQuery struct {
 	EndpointName string `bson:"hostname"`
 	MetricName   string `bson:"metric_name"`
 	ExecTime     string `bson:"exec_time"` // UTC time in W3C format
+	Service      string `bson:"service"`
 }
 
 // metricResultOutput structure holds mongo results
