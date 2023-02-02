@@ -44,14 +44,17 @@ Accept: application/json
 [
   {
     "name": "Service_Type_A",
+    "title": "Service of type A",
     "description": "a short descritpion of service type a"
   },
   {
     "name": "Service_Type_B",
+    "title": "Service of type B",
     "description": "a short descritpion of service type b"
   },
   {
     "name": "Service_Type_C",
+    "title": "Service of type C",
     "description": "a short descritpion of service type c",
     "tags": ["special-service", "beta"]
   }
@@ -144,16 +147,19 @@ Status: 200 OK
     {
       "date": "2019-03-03",
       "name": "Service_Type_A",
+      "title": "Service of type A",
       "description": "a short descritpion of service type a"
     },
     {
       "date": "2019-03-03",
       "name": "Service_Type_B",
+      "title": "Service of type B",
       "description": "a short descritpion of service type b"
     },
     {
       "date": "2019-03-03",
       "name": "Service_Type_C",
+      "title": "Service of type C",
       "description": "a short descritpion of service type c",
       "tags": ["special-service", "beta"]
     }

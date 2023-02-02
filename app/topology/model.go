@@ -93,6 +93,7 @@ type ServiceType struct {
 	Date        string   `bson:"date" json:"date"`
 	DateInt     int      `bson:"date_integer" json:"-"`
 	Name        string   `bson:"name" json:"name"`
+	Title       string   `bson:"title" json:"title"`
 	Description string   `bson:"description" json:"description"`
 	Tags        []string `bson:"tags" json:"tags,omitempty"`
 }
