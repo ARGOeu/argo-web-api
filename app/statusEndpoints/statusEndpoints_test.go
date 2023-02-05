@@ -303,6 +303,37 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
 	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "STORAGE",
+		"host":           "storage.example.foo",
+		"metric":         "check.storage",
+		"status":         "OK",
+	})
+	c.Insert(bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T06:40:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "STORAGE",
+		"host":           "storage.example.foo",
+		"metric":         "check.storage",
+		"status":         "WARNING",
+	})
+	c.Insert(bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T09:00:00Z",
+		"endpoint_group":     "HG-03-AUTH",
+		"service":            "STORAGE",
+		"host":               "storage.example.foo",
+		"metric":             "check.storage",
+		"status":             "CRITICAL",
+		"has_threshold_rule": true,
+	})
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -754,6 +785,139 @@ func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
         },
         {
          "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *StatusEndpointsTestSuite) TestGroupEndpoints() {
+
+	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
+		"/endpoints" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	respJSON1 := `{
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream02.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T08:47:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T12:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream03.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T04:40:00Z",
+         "value": "UNKNOWN"
+        },
+        {
+         "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "STORAGE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "storage.example.foo",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T06:40:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T09:00:00Z",
          "value": "CRITICAL"
         },
         {

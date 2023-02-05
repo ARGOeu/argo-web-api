@@ -48,6 +48,10 @@ var appRoutesV2 = []respond.AppRoutes{
 
 	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
 	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", Options},
+
+	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/endpoints", routeCheckGroup},
+	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/endpoints", routeCheckGroup},
+
 	{"status.get", "GET", "/{report_name}/endpoints", routeCheckGroup},
 	{"status.options", "OPTIONS", "/{report_name}/endpoints", Options},
 }
