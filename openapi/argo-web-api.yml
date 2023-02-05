@@ -4398,9 +4398,8 @@ paths:
       - Status
       summary: List status results for all endpoints (under a given service and endpoint
         group)
-      description: This method may be used to retrieve a specific service endpoint
-        status timeline (applies on a specific service type)
-      operationId: statusEndpointID
+      description: This method may be used to retrieve all endpoint status timelines of a specific group and service type 
+      operationId: statusEndpoints
       parameters:
       - name: x-api-key
         in: header
@@ -4985,6 +4984,125 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/FlatEndpointStatusResponse'
+        400:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        500:
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+  /v2/status/{report_name}/{lgroup_type}/{lgroup_name}/endpoints:
+    get:
+      tags:
+      - Status
+      summary: List status results for all endpoints (under a given group)
+      description: This method may be used to retrieve endpoint status timelines under a given group
+      operationId: statusEndpointsGroup
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report_name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: CRITICAL
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        required: true
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        required: true
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: lgroup_type
+        in: path
+        description: endpoing group type of the probes
+        required: true
+        schema:
+          type: string
+          default: EndpointGroup
+      - name: lgroup_name
+        in: path
+        description: endpoint group names of the probes
+        required: true
+        schema:
+          type: string
+          default: Group_A
+      responses:
+        200:
+          description: Successful retrieval of statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusEndpointResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/StatusEndpointResponse'
         400:
           description: Item not found
           content:
