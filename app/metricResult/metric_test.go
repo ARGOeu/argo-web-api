@@ -197,6 +197,36 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
+	c.Insert(bson.M{
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20200501,
+		"timestamp":          "2020-05-01T05:00:00Z",
+		"service":            "CREAM-CE",
+		"host":               "cream01.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"info":               bson.M{"URL": "http://creamce.example.com"},
+		"status":             "OK",
+		"time_integer":       50000,
+		"previous_state":     "CRITICAL",
+		"previous_timestamp": "2020-05-01T01:00:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
+	})
+	c.Insert(bson.M{
+		"monitoring_box":     "nagios3.hellasgrid.gr",
+		"date_integer":       20200501,
+		"timestamp":          "2020-05-01T05:00:00Z",
+		"service":            "CREAM-CE2",
+		"host":               "cream01.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"info":               bson.M{"URL": "http://creamce.example.com"},
+		"status":             "OK",
+		"time_integer":       50000,
+		"previous_state":     "CRITICAL",
+		"previous_timestamp": "2020-05-01T01:00:00Z",
+		"summary":            "Cream status is ok",
+		"message":            "Cream job submission test return value of ok",
+	})
 
 }
 
@@ -366,6 +396,117 @@ func (suite *metricResultTestSuite) TestMultipleMetricResults() {
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *metricResultTestSuite) TestFilters() {
+
+	type TestReq struct {
+		Path string
+		Code int
+		JSON string
+	}
+	expected := []TestReq{
+		{
+			Path: "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2020-05-01T05:00:00Z&service=CREAM-CE",
+			Code: 200,
+			JSON: `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE",
+           "Details": [
+             {
+               "Timestamp": "2020-05-01T05:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`},
+		{
+			Path: "/api/v2/metric_result/cream01.afroditi.gr?exec_time=2020-05-01T05:00:00Z&service=CREAM-CE2",
+			Code: 200,
+			JSON: `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE2",
+           "Details": [
+             {
+               "Timestamp": "2020-05-01T05:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`},
+
+		{
+			Path: "/api/v2/metric_result/cream01.afroditi.gr/emi.cream.CREAMCE-JobSubmit?exec_time=2020-05-01T05:00:00Z&service=CREAM-CE2",
+			Code: 200,
+			JSON: `{
+   "root": [
+     {
+       "Name": "cream01.afroditi.gr",
+       "info": {
+         "URL": "http://creamce.example.com"
+       },
+       "Metrics": [
+         {
+           "Name": "emi.cream.CREAMCE-JobSubmit",
+           "Service": "CREAM-CE2",
+           "Details": [
+             {
+               "Timestamp": "2020-05-01T05:00:00Z",
+               "Value": "OK",
+               "Summary": "Cream status is ok",
+               "Message": "Cream job submission test return value of ok"
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`},
+	}
+
+	for _, exp := range expected {
+		request, _ := http.NewRequest("GET", exp.Path, strings.NewReader(""))
+		request.Header.Set("x-api-key", suite.clientkey)
+		request.Header.Set("Accept", "application/json")
+		response := httptest.NewRecorder()
+
+		suite.router.ServeHTTP(response, request)
+
+		code := response.Code
+		output := response.Body.String()
+
+		// Check that we must have a 200 ok code
+		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
+		// Compare the expected and actual json response
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
+	}
 
 }
 
