@@ -16,11 +16,11 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20161028232340-1d7be4effb13 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.8.1
 	github.com/tsuna/gohbase v0.0.0-20170228230348-31c6161099f0
 	github.com/twinj/uuid v0.0.0-20150629100731-70cac2bcd273
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/gcfg.v1 v1.2.0
+	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/mgo.v2 v2.0.0-20160818020120-3f83fa500528
 	gopkg.in/warnings.v0 v0.1.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
