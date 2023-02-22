@@ -729,6 +729,57 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 }
 
+func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputation2() {
+	submission := IncomingRecomputation{
+		StartTime:        "2015-01-10T12:00:00Z",
+		EndTime:          "2015-01-30T23:00:00Z",
+		RequesterName:    "Joe Complexz",
+		RequesterEmail:   "C.Joecz@egi.eu",
+		Reason:           "Ups failure",
+		Report:           "EGI_Critical",
+		ExcludeMonSource: []ExcludeMonSource{{Host: "MON1", StartTime: "2021-05-06T00:00:00Z", EndTime: "2021-05-06T05:00:00Z"}},
+	}
+	jsonsubmission, _ := json.Marshal(submission)
+
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer(jsonsubmission))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Recomputations successfully created",
+  "code": "201"
+ },
+ "data": {
+  "id": ".+",
+  "links": {
+   "self": "https://argo-web-api.grnet.gr:443/api/v2/recomputations/.+"
+  }
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(202, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
+
+	session, _ := mongo.OpenSession(suite.tenantDbConf)
+	defer mongo.CloseSession(session)
+	var results []MongoInterface
+	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
+
+	suite.Equal(len(results), 4)
+	suite.Equal("2021-05-06T00:00:00Z", results[3].ExcludeMonSource[0].StartTime)
+	suite.Equal("2021-05-06T05:00:00Z", results[3].ExcludeMonSource[0].EndTime)
+	suite.Equal("MON1", results[3].ExcludeMonSource[0].Host)
+
+}
+
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputationBadJSON() {
 
 	// malformed json
