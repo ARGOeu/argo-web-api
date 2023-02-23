@@ -10720,6 +10720,39 @@ components:
           description: Comma separated list of excluded endpoint groups
           items:
             type: string
+        exclude_metrics:
+          type: array
+          description: list of metric items to be excluded with scope (hostname, group etc)
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+                description: name of the metric to be excluded
+              hostname:
+                type: string
+                description: hostname under which the metric will be excluded
+              group:
+                type: string
+                description: groupname under which the metric will be excluded
+              service:
+                type: string
+                description: name of the service type under which the metric will be excluded
+        exclude_monitoring_source:
+          type: array
+          description: Comma separated list of excluded endpoint groups
+          items:
+            type: object
+            properties:
+              host:
+                type: string
+                description: monitoring host to be excluded
+              start_time:
+                type: string
+                description: ISO timestamp in UTC for the start of the exclusion period
+              end_time:
+                type: string
+                description: ISO timestamp in UTC for the end of the exclusion period
         status:
           type: string
           description: Can be one of approved, rejected, pending, running or done
