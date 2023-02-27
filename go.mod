@@ -11,7 +11,7 @@ require (
 	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/gorilla/context v0.0.0-20150820051245-1c83b3eabd45
-	github.com/gorilla/handlers v0.0.0-20160816184729-a5775781a543
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v0.0.0-20150908165839-49c024275504
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
