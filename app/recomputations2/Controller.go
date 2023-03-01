@@ -120,9 +120,8 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
 
-	filter := IncomingRecomputation{
-		ID: vars["ID"],
-	}
+	filter := bson.M{"id": vars["ID"]}
+
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
@@ -132,6 +131,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 
 	result := MongoInterface{}
+
 	err = mongo.FindOne(session, tenantDbConfig.Db, recomputationsColl, filter, &result)
 
 	if err != nil {
@@ -196,17 +196,19 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	history := []HistoryItem{statusItem}
 
 	recomputation := MongoInterface{
-		ID:             mongo.NewUUID(),
-		RequesterName:  recompSubmission.RequesterName,
-		RequesterEmail: recompSubmission.RequesterEmail,
-		StartTime:      recompSubmission.StartTime,
-		EndTime:        recompSubmission.EndTime,
-		Reason:         recompSubmission.Reason,
-		Report:         recompSubmission.Report,
-		Exclude:        recompSubmission.Exclude,
-		Timestamp:      now.Format("2006-01-02T15:04:05Z"),
-		Status:         "pending",
-		History:        history,
+		ID:               mongo.NewUUID(),
+		RequesterName:    recompSubmission.RequesterName,
+		RequesterEmail:   recompSubmission.RequesterEmail,
+		StartTime:        recompSubmission.StartTime,
+		EndTime:          recompSubmission.EndTime,
+		Reason:           recompSubmission.Reason,
+		Report:           recompSubmission.Report,
+		Exclude:          recompSubmission.Exclude,
+		ExcludeMetrics:   recompSubmission.ExcludeMetrics,
+		ExcludeMonSource: recompSubmission.ExcludeMonSource,
+		Timestamp:        now.Format("2006-01-02T15:04:05Z"),
+		Status:           "pending",
+		History:          history,
 	}
 
 	err = mongo.Insert(session, tenantDbConfig.Db, recomputationsColl, recomputation)

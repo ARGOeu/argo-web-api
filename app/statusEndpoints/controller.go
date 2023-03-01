@@ -298,7 +298,10 @@ func prepareQuery(input InputParams, reportID string) bson.M {
 		"date_integer":   bson.M{"$gte": input.startTime, "$lte": input.endTime},
 		"report":         reportID,
 		"endpoint_group": input.group,
-		"service":        input.service,
+	}
+
+	if len(input.service) > 0 {
+		filter["service"] = input.service
 	}
 
 	if len(input.hostname) > 0 {
