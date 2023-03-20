@@ -90,6 +90,7 @@ type Group struct {
 	Subgroup      string            `bson:"subgroup" json:"subgroup"`
 	Notifications *Notifications    `bson:"notifications" json:"notifications,omitempty"`
 	Tags          map[string]string `bson:"tags" json:"tags"`
+	Tenant        string            `json:"tenant,omitempty"`
 }
 
 // ServiceType includes information about an available service type

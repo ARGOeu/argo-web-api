@@ -1221,6 +1221,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	mode := urlValues.Get("mode")
 	reportName := vars["report"]
 
 	// Grab Tenant DB configuration from context
@@ -1230,7 +1231,6 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
 	colReports := session.DB(tenantDbConfig.Db).C("reports")
 	//get the report
 
@@ -1255,6 +1255,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
+
 	fGroup := fltrGroup{}
 	fGroup, _ = getReportFilters(report)
 
@@ -1262,19 +1263,35 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		fGroup.GroupType = append(fGroup.GroupType, groupType)
 	}
 
-	expDate := getCloseDate(colGroup, dt)
-
-	results := []Group{}
-
-	if expDate < 0 {
-		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
-		code = 404
+	results, expDate, err := getGroupResults(tenantDbConfig, dt, fGroup)
+	if err != nil {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = colGroup.Find(prepGroupQuery(expDate, fGroup)).All(&results)
-	if err != nil {
-		code = http.StatusInternalServerError
+	if mode == "combined" {
+		// check for feeds
+		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		for _, dbConfig := range dbConfigs {
+			// append subresults to list of combined results
+			subResults := []Group{}
+			subResults, expDate, err = getGroupResults(dbConfig.Config, dt, fGroup)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			// tag results with tenant name
+			for i := range subResults {
+				subResults[i].Tenant = dbConfig.Tenant
+			}
+			results = append(results, subResults...)
+		}
+	}
+
+	// check if nothing found
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -1599,15 +1616,10 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -1622,19 +1634,35 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	fltr.Subgroup = urlValues["subgroup"]
 	fltr.Tags = urlValues.Get("tags")
 
-	expDate := getCloseDate(colGroup, dt)
-
-	results := []Group{}
-
-	if expDate < 0 {
-		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
-		code = 404
+	results, expDate, err := getGroupResults(tenantDbConfig, dt, fltr)
+	if err != nil {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = colGroup.Find(prepGroupQuery(expDate, fltr)).All(&results)
-	if err != nil {
-		code = http.StatusInternalServerError
+	if mode == "combined" {
+		// check for feeds
+		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		for _, dbConfig := range dbConfigs {
+			// append subresults to list of combined results
+			subResults := []Group{}
+			subResults, expDate, err = getGroupResults(dbConfig.Config, dt, fltr)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			// tag results with tenant name
+			for i := range subResults {
+				subResults[i].Tenant = dbConfig.Tenant
+			}
+			results = append(results, subResults...)
+		}
+	}
+
+	// check if nothing found
+	if expDate < 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -1648,6 +1676,26 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+// getGroupResults accepts an date in integer format YYYYMMDD, a tenand db configuration
+// and a filter group object and returns relevant topology groups
+func getGroupResults(dbConfig config.MongoConfig, dateInt int, fltr fltrGroup) ([]Group, int, error) {
+	subResults := []Group{}
+	session, err := mongo.OpenSession(dbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		return subResults, -1, err
+	}
+
+	subGroups := session.DB(dbConfig.Db).C(groupColName)
+	expDate := getCloseDate(subGroups, dateInt)
+	if expDate < 0 {
+		return subResults, expDate, err
+	}
+	subGroups.Find(prepGroupQuery(expDate, fltr)).All(&subResults)
+
+	return subResults, expDate, err
 }
 
 // DeleteGroups deletes a list of groups topology for a specific date

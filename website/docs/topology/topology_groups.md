@@ -136,6 +136,7 @@ GET /topology/groups?date=YYYY-MM-DD
 | `type`     | filter by group type          | NO       |               |
 | `subgroup` | filter by subgroup            | NO       |               |
 | `tags`     | filter by tag key:value pairs | NO       |               |
+| `mode`     | if stating `mode=combined` then if the tenant has data feeds from other tenants their group topology items will be combined in the final results | NO       | empty |
 
 _note_ : user can use wildcard \* in filters
 _note_ : when using tag filters the query string must follow the pattern: `?tags=key1:value1,key2:value2`
@@ -197,6 +198,57 @@ Status: 200 OK
 }
 ```
 
+### Combined tenant example
+
+If the tenant is configured to receive data from other tenants in its data feeds the combined mode can be used when retrieving topology group items. In this mode the list of items is enriched with items from tenants specified in the data feeds. Items from those tenants receive an extra `tenant` field to signify their origin. To enable the combine mode use the optional url parameter `mode=combined`
+
+
+#### Example Request
+```
+GET /topology/groups?date=2015-07-22?mode=combined
+```
+
+#### Response Code
+
+```
+Status: 200 OK
+```
+
+#### Response body
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "date": "2015-07-22",
+            "group": "TENANT1-NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEX",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            },
+            "tenant":"TENANT1"
+        },
+        {
+            "date": "2015-07-22",
+            "group": "TENANT2-NGIA",
+            "type": "NGIS",
+            "subgroup": "SITEZ",
+            "tags": {
+                "certification": "Certified",
+                "infrastructure": "Production"
+            },
+            "tenant":"TENANT2"
+        }
+    ]
+}
+```
+
 <a id='3'></a>
 
 ## [DELETE]: Delete group topology for a specific date
@@ -250,6 +302,7 @@ GET /topology/groups/by_report/{report-name}?date=YYYY-MM-DD
 | ------------- | ------------------------ | -------- | ------------- |
 | `report-name` | target a specific report | YES      | none          |
 | `date`        | target a specific date   | NO       | today's date  |
+| `mode`     | if stating `mode=combined` then if the tenant has data feeds from other tenants their group topology items will be combined in the final results | NO       | empty |
 
 #### Headers
 
