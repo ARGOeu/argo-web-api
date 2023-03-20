@@ -3147,6 +3147,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined feeds from other tenants.
+        schema:
+          type: string
+          default: todays_date in YYYY-MM-DD format
       responses:
         200:
           description: Topology resources listed
@@ -10053,6 +10059,9 @@ components:
           type: array
           items:
             type: string
+        tenant:
+          type: string
+          description: appears only in output when querying service types in mode=combined
     MetricList:
       type: array
       items:

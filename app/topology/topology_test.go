@@ -50,6 +50,10 @@ type topologyTestSuite struct {
 	tenantusername  string
 	tenantstorename string
 	clientkey       string
+	tenant1key      string
+	tenant2key      string
+	tenant1db       string
+	tenant2db       string
 }
 
 // Setup the Test Environment
@@ -77,6 +81,10 @@ func (suite *topologyTestSuite) SetupSuite() {
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
 	suite.clientkey = "secretkey"
+	suite.tenant1key = "tenant1key"
+	suite.tenant2key = "tenant2key"
+	suite.tenant1db = "argo_tenant1"
+	suite.tenant2db = "argo_tenant2"
 
 	// Create router and confhandler for test
 	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
@@ -158,6 +166,52 @@ func (suite *topologyTestSuite) SetupTest() {
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
+					"roles":   []string{"viewer"},
+				},
+			}})
+	c.Insert(
+		bson.M{
+			"id":   "t1",
+			"info": bson.M{"name": "TENANT1"},
+			"db_conf": []bson.M{
+
+				{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_tenant1",
+					"username": suite.tenantDbConf.Username,
+					"password": suite.tenantDbConf.Password,
+				},
+			},
+			"users": []bson.M{
+
+				{
+					"name":    "tenant1_admin",
+					"email":   "tenant1@foo",
+					"api_key": suite.tenant1key,
+					"roles":   []string{"viewer"},
+				},
+			}})
+	c.Insert(
+		bson.M{
+			"info": bson.M{"name": "TENANT2"},
+			"id":   "t2",
+			"db_conf": []bson.M{
+
+				{
+					"server":   "localhost",
+					"port":     27017,
+					"database": "argo_tenant2",
+					"username": suite.tenantDbConf.Username,
+					"password": suite.tenantDbConf.Password,
+				},
+			},
+			"users": []bson.M{
+
+				{
+					"name":    "tenant2admin",
+					"email":   "tenant2@foo",
+					"api_key": suite.tenant2key,
 					"roles":   []string{"viewer"},
 				},
 			}})
@@ -1250,6 +1304,111 @@ func (suite *topologyTestSuite) SetupTest() {
 			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
 			"tags":         []string{"poem"},
+		})
+
+	// seed service-types for tenant1
+	c = session.DB(suite.tenant1db).C(serviceTypeColName)
+	c.EnsureIndexKey("-date_integer", "name")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "tenant1-DB",
+			"title":        "Database Service",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "tenant1-API",
+			"title":        "Web API Service",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant1-DB",
+			"title":        "Database Service",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant1-API",
+			"title":        "Web API Service",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant1-STORAGE",
+			"title":        "Data Storage Service",
+			"description":  "A Storage type of Service",
+		},
+		bson.M{
+			"date":         "2015-06-13",
+			"date_integer": 20150613,
+			"name":         "tenant1-STORAGE",
+			"title":        "Data Storage Service",
+			"description":  "A Storage type of Service",
+			"tags":         []string{"poem"},
+		})
+
+	// seed service-types for tenant1
+	c = session.DB(suite.tenant2db).C(serviceTypeColName)
+	c.EnsureIndexKey("-date_integer", "name")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "tenant2-DB",
+			"title":        "Database Service",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"name":         "tenant2-API",
+			"title":        "Web API Service",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant2-DB",
+			"title":        "Database Service",
+			"description":  "A Database type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant2-API",
+			"title":        "Web API Service",
+			"description":  "An API type of Service",
+		},
+		bson.M{
+			"date":         "2015-04-12",
+			"date_integer": 20150412,
+			"name":         "tenant2-STORAGE",
+			"title":        "Data Storage Service",
+			"description":  "A Storage type of Service",
+		},
+		bson.M{
+			"date":         "2015-06-13",
+			"date_integer": 20150613,
+			"name":         "tenant2-STORAGE",
+			"title":        "Data Storage Service",
+			"description":  "A Storage type of Service",
+			"tags":         []string{"poem"},
+		})
+
+	// Seed database with data feeds
+	c = session.DB(suite.tenantDbConf.Db).C("feeds_data")
+	c.Insert(
+		bson.M{
+			"tenants": []string{"t1", "t2"},
 		})
 
 }
@@ -2759,6 +2918,78 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
 }`},
 
 		{
+			Path: "/api/v2/topology/service-types?date=2015-04-28&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-04-12",
+   "name": "API",
+   "title": "Web API Service",
+   "description": "An API type of Service"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "DB",
+   "title": "Database Service",
+   "description": "A Database type of Service"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "STORAGE",
+   "title": "Data Storage Service",
+   "description": "A Storage type of Service"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant1-API",
+   "title": "Web API Service",
+   "description": "An API type of Service",
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant1-DB",
+   "title": "Database Service",
+   "description": "A Database type of Service",
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant1-STORAGE",
+   "title": "Data Storage Service",
+   "description": "A Storage type of Service",
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant2-API",
+   "title": "Web API Service",
+   "description": "An API type of Service",
+   "tenant": "TENANT2"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant2-DB",
+   "title": "Database Service",
+   "description": "A Database type of Service",
+   "tenant": "TENANT2"
+  },
+  {
+   "date": "2015-04-12",
+   "name": "tenant2-STORAGE",
+   "title": "Data Storage Service",
+   "description": "A Storage type of Service",
+   "tenant": "TENANT2"
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/service-types?date=2015-06-30",
 			Code: 200,
 			JSON: `{
@@ -3775,9 +4006,21 @@ func (suite *topologyTestSuite) TearDownTest() {
 	}
 
 	tenantDB := session.DB(suite.tenantDbConf.Db)
+	tenant1 := session.DB(suite.tenant1db)
+	tenant2 := session.DB(suite.tenant2db)
 	mainDB := session.DB(suite.cfg.MongoDB.Db)
 
-	cols, err := tenantDB.CollectionNames()
+	cols, err := tenant1.CollectionNames()
+	for _, col := range cols {
+		tenant1.C(col).RemoveAll(nil)
+	}
+
+	cols, err = tenant2.CollectionNames()
+	for _, col := range cols {
+		tenant2.C(col).RemoveAll(nil)
+	}
+
+	cols, err = tenantDB.CollectionNames()
 	for _, col := range cols {
 		tenantDB.C(col).RemoveAll(nil)
 	}
@@ -3798,6 +4041,8 @@ func (suite *topologyTestSuite) TearDownSuite() {
 	}
 	session.DB(suite.tenantDbConf.Db).DropDatabase()
 	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	session.DB(suite.tenant1db).DropDatabase()
+	session.DB(suite.tenant2db).DropDatabase()
 }
 
 // TestTopologyTestSuite is responsible for calling the tests
