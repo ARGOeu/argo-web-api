@@ -22,7 +22,11 @@
 
 package topology
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+
+	"github.com/ARGOeu/argo-web-api/utils/config"
+)
 
 // MongoInterface to retrieve and insert metricProfiles in mongo
 // type MongoInterface struct {
@@ -96,12 +100,18 @@ type ServiceType struct {
 	Title       string   `bson:"title" json:"title"`
 	Description string   `bson:"description" json:"description"`
 	Tags        []string `bson:"tags" json:"tags,omitempty"`
+	Tenant      string   `json:"tenant,omitempty"`
 }
 
 // Notifications holds notification information about topology items
 type Notifications struct {
 	Contacts []string `bson:"contacts" json:"contacts,omitempty"`
 	Enabled  bool     `bson:"enabled" json:"enabled,omitempty"`
+}
+
+type TenantDB struct {
+	Tenant string
+	Config config.MongoConfig
 }
 
 // TagInfo groups all tags for a topology type

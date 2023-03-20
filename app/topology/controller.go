@@ -31,7 +31,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ARGOeu/argo-web-api/app/feeds"
 	"github.com/ARGOeu/argo-web-api/app/reports"
+	"github.com/ARGOeu/argo-web-api/app/tenants"
 
 	"gopkg.in/mgo.v2"
 
@@ -49,6 +51,8 @@ const topoColName = "topology"
 const endpointColName = "topology_endpoints"
 const groupColName = "topology_groups"
 const serviceTypeColName = "topology_service_types"
+const feedsDataCol = "feeds_data"
+const tenantsColName = "tenants"
 
 func getCloseDate(c *mgo.Collection, dt int) int {
 	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
@@ -1392,6 +1396,7 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -1400,8 +1405,6 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	serviceGroup := session.DB(tenantDbConfig.Db).C(serviceTypeColName)
-
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
@@ -1409,19 +1412,37 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 		return code, h, output, err
 	}
 
-	expDate := getCloseDate(serviceGroup, dt)
-
-	results := []ServiceType{}
-
-	if expDate < 0 {
-		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
-		code = 404
+	results, err := getServiceTypeResults(tenantDbConfig, dt)
+	if err != nil {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = serviceGroup.Find(bson.M{"date_integer": expDate}).All(&results)
-	if err != nil {
-		code = http.StatusInternalServerError
+	if mode == "combined" {
+
+		// check for feeds
+
+		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		for _, dbConfig := range dbConfigs {
+			// append subresults to list of combined results
+			subResults, err := getServiceTypeResults(dbConfig.Config, dt)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			// tag results with tenant name
+			for i := range subResults {
+				subResults[i].Tenant = dbConfig.Tenant
+			}
+
+			results = append(results, subResults...)
+		}
+	}
+
+	// check if nothing found
+	if len(results) == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -1435,6 +1456,77 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+// getServiceTypeResults accepts an date in integer format YYYYMMDD and a tenand db configuration
+// and returns relevant service types
+func getServiceTypeResults(dbConfig config.MongoConfig, dateInt int) ([]ServiceType, error) {
+	subResults := []ServiceType{}
+	session, err := mongo.OpenSession(dbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		return subResults, err
+	}
+
+	subServiceType := session.DB(dbConfig.Db).C(serviceTypeColName)
+	expDate := getCloseDate(subServiceType, dateInt)
+	if expDate < 0 {
+		return subResults, err
+	}
+
+	err = subServiceType.Find(bson.M{"date_integer": expDate}).All(&subResults)
+	return subResults, err
+}
+
+// getComboDBConfigs returns a list of database configuration objects based on a list of tenant names
+func getComboDBConfigs(comboTenantCfg config.MongoConfig, cfg config.Config) []TenantDB {
+	// empty result
+	result := []TenantDB{}
+	session, err := mongo.OpenSession(comboTenantCfg)
+	defer mongo.CloseSession(session)
+	feeds := feeds.Data{}
+	ftCol := session.DB(comboTenantCfg.Db).C(feedsDataCol)
+	err = ftCol.Find(bson.M{}).One(&feeds)
+	// if feeds exist
+
+	if err == nil && feeds.Tenants != nil {
+		// for each tenant grab tenant info and topology data
+		coreSession, err := mongo.OpenSession(cfg.MongoDB)
+		defer mongo.CloseSession(coreSession)
+		if err != nil {
+			// emtpy result
+			return result
+		}
+		tenantsCol := coreSession.DB(cfg.MongoDB.Db).C("tenants")
+		tenantResults := []tenants.Tenant{}
+		// grab tenants involved in feeds
+		err = tenantsCol.Find(bson.M{"id": bson.M{"$in": feeds.Tenants}}).All(&tenantResults)
+		if err != nil {
+			// emtpy result
+			return result
+		}
+
+		for _, item := range tenantResults {
+			if len(item.DbConf) == 0 {
+				continue
+			}
+			itemConf := item.DbConf[0]
+
+			result = append(result, TenantDB{
+				Tenant: item.Info.Name,
+				Config: config.MongoConfig{
+					Db:       itemConf.Database,
+					Store:    itemConf.Store,
+					Host:     itemConf.Server,
+					Port:     itemConf.Port,
+					Username: itemConf.Username,
+					Password: itemConf.Password,
+				}})
+		}
+
+	}
+
+	return result
 }
 
 // DeleteServiceTypes deletes a list of service types in topology for a specific date

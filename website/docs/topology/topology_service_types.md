@@ -114,6 +114,7 @@ GET /topology/service-types?date=YYYY-MM-DD
 | Type       | Description                   | Required | Default value |
 | ---------- | ----------------------------- | -------- | ------------- |
 | `date`     | target a specific date        | NO       | today's date  |
+| `mode`     | if stating `mode=combined` then if the tenant has data feeds from other tenants their service lists will be combined in the final results | NO       | empty |
 
 
 #### Headers
@@ -166,6 +167,40 @@ Status: 200 OK
   ]
 }
 ```
+
+### Combined tenant example:
+
+If the tenant combines data feeds from other tenants (deemed a `combined` tenant) then the optional url property `mode=combined` can
+be used to retrieve service types from all other included tenants combined in the final result. Each item retrieved from an included tenant receives an extra `tenant` field to identify its origin
+
+#### Example Request
+
+```
+GET /topology/service-types?date=2019-03-03?mode=combined
+```
+
+{
+  "status": {
+    "message": "Success",
+    "code": "200"
+  },
+  "data": [
+    {
+      "date": "2019-03-03",
+      "name": "TenantA-service-type1",
+      "title": "Service type1 from tenant A",
+      "description": "a short descritpion",
+      "tenant": "TenantA"
+    },
+    {
+      "date": "2019-03-03",
+      "name": "TenantB-service-type1",
+      "title": "Service type2 from tenant B",
+      "description": "a short descritpion",
+      "tenant": "TenantB"
+    }
+  ]
+}
 
 <a id='3'></a>
 
