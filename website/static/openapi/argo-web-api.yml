@@ -3353,6 +3353,11 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
       responses:
         200:
           description: Topology resource listed
@@ -3510,6 +3515,11 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
       responses:
         200:
           description: filtered topology resources listed based on report
@@ -10026,6 +10036,9 @@ components:
           type: object
           properties: {}
           description: key value tags
+        tenant:
+          type: string
+          description: appears only in output when querying groups in mode=combined
     TopologyEndpoints:
       type: array
       items:

@@ -267,6 +267,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
@@ -274,8 +275,6 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	// Open session to tenant database
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
-
-	colEndpoint := session.DB(tenantDbConfig.Db).C(endpointColName)
 
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
@@ -291,19 +290,34 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	fltr.Service = urlValues["service"]
 	fltr.Tags = urlValues.Get("tags")
 
-	expDate := getCloseDate(colEndpoint, dt)
+	results, expDate, err := getEndpointResults(tenantDbConfig, dt, fltr)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
-	results := []Endpoint{}
+	if mode == "combined" {
+		// check for feeds
+		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		for _, dbConfig := range dbConfigs {
+			// append subresults to list of combined results
+			subResults := []Endpoint{}
+			subResults, expDate, err = getEndpointResults(dbConfig.Config, dt, fltr)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			// tag results with tenant name
+			for i := range subResults {
+				subResults[i].Tenant = dbConfig.Tenant
+			}
+			results = append(results, subResults...)
+		}
+	}
 
 	if expDate < 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
-		return code, h, output, err
-	}
-
-	err = colEndpoint.Find(prepEndpointQuery(expDate, fltr)).All(&results)
-	if err != nil {
-		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -317,6 +331,26 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+// getEndpointResults accepts an date in integer format YYYYMMDD, a tenand db configuration,
+// a filter endpoint object and returns relevant topology endpoints
+func getEndpointResults(dbConfig config.MongoConfig, dateInt int, filterE fltrEndpoint) ([]Endpoint, int, error) {
+	subResults := []Endpoint{}
+	session, err := mongo.OpenSession(dbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		return subResults, -1, err
+	}
+
+	colEndpoint := session.DB(dbConfig.Db).C(endpointColName)
+	expDate := getCloseDate(colEndpoint, dateInt)
+	if expDate < 0 {
+		return subResults, expDate, err
+	}
+	err = colEndpoint.Find(prepEndpointQuery(expDate, filterE)).All(&subResults)
+
+	return subResults, expDate, err
 }
 
 // CreateEndpoints Creates a list of endpoints for a specific date
@@ -1121,6 +1155,7 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
+	mode := urlValues.Get("mode")
 	reportName := vars["report"]
 
 	// Grab Tenant DB configuration from context
@@ -1130,7 +1165,6 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	session, err := mongo.OpenSession(tenantDbConfig)
 	defer mongo.CloseSession(session)
 
-	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
 	colReports := session.DB(tenantDbConfig.Db).C("reports")
 	//get the report
 
@@ -1170,22 +1204,35 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
-	expDate := getCloseDate(colGroup, dt)
+	results, expDate, err := getGroupEndpointResults(tenantDbConfig, dt, fGroup, fEndpoint)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
-	results := []Endpoint{}
+	if mode == "combined" {
+		// check for feeds
+		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		for _, dbConfig := range dbConfigs {
+			// append subresults to list of combined results
+			subResults := []Endpoint{}
+			subResults, expDate, err = getGroupEndpointResults(dbConfig.Config, dt, fGroup, fEndpoint)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+
+			// tag results with tenant name
+			for i := range subResults {
+				subResults[i].Tenant = dbConfig.Tenant
+			}
+			results = append(results, subResults...)
+		}
+	}
 
 	if expDate < 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
-		return code, h, output, err
-	}
-
-	query := prepGroupEndpointAggr(expDate, fGroup, fEndpoint)
-
-	colGroup.Pipe(query).All(&results)
-
-	if err != nil {
-		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -1199,6 +1246,27 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+// getGroupEndpointResults accepts an date in integer format YYYYMMDD, a tenand db configuration,
+// a filter group object and a filter endpoint object and returns relevant topology endpoints
+func getGroupEndpointResults(dbConfig config.MongoConfig, dateInt int, filterG fltrGroup, filterE fltrEndpoint) ([]Endpoint, int, error) {
+	subResults := []Endpoint{}
+	session, err := mongo.OpenSession(dbConfig)
+	defer mongo.CloseSession(session)
+	if err != nil {
+		return subResults, -1, err
+	}
+
+	colGroup := session.DB(dbConfig.Db).C(groupColName)
+	expDate := getCloseDate(colGroup, dateInt)
+	if expDate < 0 {
+		return subResults, expDate, err
+	}
+
+	query := prepGroupEndpointAggr(expDate, filterG, filterE)
+	colGroup.Pipe(query).All(&subResults)
+	return subResults, expDate, err
 }
 
 //ListGroupsByReport lists group topology by report

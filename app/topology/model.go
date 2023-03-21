@@ -79,6 +79,7 @@ type Endpoint struct {
 	Hostname      string            `bson:"hostname" json:"hostname"`
 	Notifications *Notifications    `bson:"notifications" json:"notifications,omitempty"`
 	Tags          map[string]string `bson:"tags" json:"tags"`
+	Tenant        string            `json:"tenant,omitempty"`
 }
 
 // Group includes information on  of group group topology

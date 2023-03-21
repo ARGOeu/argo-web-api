@@ -804,6 +804,32 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49xww",
+		"info": bson.M{
+			"name":        "Critical18",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "argo.endpoint.filter.tags",
+				"name":    "production",
+				"value":   "1"},
+		}})
+
+	c.Insert(bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical9",
@@ -967,6 +993,38 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "hostname",
 				"value":   "host2.site_a.foo"},
 		}})
+
+	// Seed database with endpoint topology
+	c = session.DB(suite.tenant1db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITE-ABC",
+			"type":         "SITES",
+			"hostname":     "hostx1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		})
+
+	// Seed database with endpoint topology
+	c = session.DB(suite.tenant2db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITE-XYZ",
+			"type":         "SITES",
+			"hostname":     "hostx2.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		})
 
 	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
@@ -1796,6 +1854,53 @@ func (suite *topologyTestSuite) TestListFilterEndpointTags() {
     "monitored": "Yes",
     "production": "1"
    }
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=production:1*&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
   }
  ]
 }`},
@@ -2696,6 +2801,53 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
 }`},
 
 		{
+			Path: "/api/v2/topology/endpoints/by_report/Critical18?date=2015-01-11&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/endpoints/by_report/CriticalScope?date=2015-06-22",
 			Code: 200,
 			JSON: `{
@@ -3254,6 +3406,42 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
   "code": "200"
  },
  "data": []
+}`},
+
+		{
+			Path: "/api/v2/topology/endpoints?group=SITE-*&date=2015-01-11&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
 }`},
 		{
 			Path: "/api/v2/topology/endpoints?service=serv*&date=2020-02-11",
@@ -3869,6 +4057,101 @@ func (suite *topologyTestSuite) TestListEndpoints5() {
 	suite.Equal(404, code, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(profileJSON, output, "Response body mismatch")
+}
+
+func (suite *topologyTestSuite) TestListCombinedEndpoints() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-01-11&mode=combined", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEC",
+   "type": "SITES",
+   "service": "service_3",
+   "hostname": "host1.site_c.foo",
+   "tags": {
+    "monitored": "No",
+    "production": "Prod"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
 }
 
 func (suite *topologyTestSuite) TestListGroups() {
