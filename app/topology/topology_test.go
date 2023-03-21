@@ -23,7 +23,6 @@
 package topology
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -752,6 +751,31 @@ func (suite *topologyTestSuite) SetupTest() {
 	c.Insert(bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
+			"name":        "Critical17",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "argo.group.filter.tags",
+				"name":    "infrastructure",
+				"value":   "devtest"},
+		}})
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
+		"info": bson.M{
 			"name":        "Critical8",
 			"description": "lalalallala",
 		},
@@ -777,6 +801,32 @@ func (suite *topologyTestSuite) SetupTest() {
 				"context": "argo.endpoint.filter.fields",
 				"name":    "service",
 				"value":   "service_1"},
+		}})
+
+	c.Insert(bson.M{
+		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49xww",
+		"info": bson.M{
+			"name":        "Critical18",
+			"description": "lalalallala",
+		},
+		"topology_schema": bson.M{
+			"group": bson.M{
+				"type": "NGIS",
+				"group": bson.M{
+					"type": "SITES",
+				},
+			},
+		},
+		"profiles": []bson.M{
+			{
+				"type": "metric",
+				"name": "ch.cern.SAM.ROC_CRITICAL"},
+		},
+		"filter_tags": []bson.M{
+			{
+				"context": "argo.endpoint.filter.tags",
+				"name":    "production",
+				"value":   "1"},
 		}})
 
 	c.Insert(bson.M{
@@ -945,6 +995,38 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	// Seed database with endpoint topology
+	c = session.DB(suite.tenant1db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITE-ABC",
+			"type":         "SITES",
+			"hostname":     "hostx1.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		})
+
+	// Seed database with endpoint topology
+	c = session.DB(suite.tenant2db).C(endpointColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "SITE-XYZ",
+			"type":         "SITES",
+			"hostname":     "hostx2.site_a.foo",
+			"service":      "service_1",
+			"tags":         bson.M{"production": "1", "monitored": "Yes"},
+		})
+
+	// Seed database with endpoint topology
 	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
 	c.EnsureIndexKey("-date_integer", "group")
 	// Insert seed data
@@ -1106,6 +1188,35 @@ func (suite *topologyTestSuite) SetupTest() {
 			"tags":          bson.M{"production": "0", "monitored": "0"},
 			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
 		})
+
+	// Seed database with group topology
+	c = session.DB(suite.tenant1db).C(groupColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGITENANT1",
+			"type":         "NGIS",
+			"subgroup":     "SITE-ABC",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		})
+
+	// Seed database with group topology
+	c = session.DB(suite.tenant2db).C(groupColName)
+	c.EnsureIndexKey("-date_integer", "group")
+	// Insert seed data
+	c.Insert(
+		bson.M{
+			"date":         "2015-01-11",
+			"date_integer": 20150111,
+			"group":        "NGITENANT2",
+			"type":         "NGIS",
+			"subgroup":     "SITE-XYZ",
+			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
+		})
+
 	// Seed database with group topology
 	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
 	c.EnsureIndexKey("-date_integer", "group")
@@ -1748,6 +1859,53 @@ func (suite *topologyTestSuite) TestListFilterEndpointTags() {
 }`},
 
 		{
+			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=production:1*&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-06-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/endpoints?date=2015-06-12&tags=monitored:Yes,monitored:Y",
 			Code: 200,
 			JSON: `{
@@ -1827,6 +1985,60 @@ func (suite *topologyTestSuite) TestListFilterGroupTags() {
     "certification": "Certified",
     "infrastructure": "production"
    }
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/groups?&date=2015-01-11&tags=infrastructure:dev*&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT1",
+   "type": "NGIS",
+   "subgroup": "SITE-ABC",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT2",
+   "type": "NGIS",
+   "subgroup": "SITE-XYZ",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT2"
   }
  ]
 }`},
@@ -2328,6 +2540,50 @@ func (suite *topologyTestSuite) TestListFilterGroupsByReport() {
 }`},
 
 		{
+			Path: "/api/v2/topology/groups/by_report/Critical17?date=2015-01-11&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT1",
+   "type": "NGIS",
+   "subgroup": "SITE-ABC",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT2",
+   "type": "NGIS",
+   "subgroup": "SITE-XYZ",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/groups/by_report/CriticalCombine?date=2015-01-11",
 			Code: 200,
 			JSON: `{
@@ -2545,6 +2801,53 @@ func (suite *topologyTestSuite) TestListFilterEndpointsByReport() {
 }`},
 
 		{
+			Path: "/api/v2/topology/endpoints/by_report/Critical18?date=2015-01-11&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`},
+
+		{
 			Path: "/api/v2/topology/endpoints/by_report/CriticalScope?date=2015-06-22",
 			Code: 200,
 			JSON: `{
@@ -2744,6 +3047,40 @@ func (suite *topologyTestSuite) TestListFilterGroups() {
     "certification": "Certified",
     "infrastructure": "Production"
    }
+  }
+ ]
+}`},
+
+		{
+			Path: "/api/v2/topology/groups?date=2015-01-11&mode=combined&group=NGITENANT*",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT1",
+   "type": "NGIS",
+   "subgroup": "SITE-ABC",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT2",
+   "type": "NGIS",
+   "subgroup": "SITE-XYZ",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT2"
   }
  ]
 }`},
@@ -3025,9 +3362,7 @@ func (suite *topologyTestSuite) TestListServiceTypes() {
 		// Check that we must have a 200 ok code
 		suite.Equal(exp.Code, code, "Response Code Mismatch on call:"+exp.Path)
 		// Compare the expected and actual json response
-		if !(suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)) {
-			fmt.Println(output)
-		}
+		suite.Equal(exp.JSON, output, "Response body mismatch on call:"+exp.Path)
 	}
 }
 
@@ -3071,6 +3406,42 @@ func (suite *topologyTestSuite) TestListFilterEndpoints() {
   "code": "200"
  },
  "data": []
+}`},
+
+		{
+			Path: "/api/v2/topology/endpoints?group=SITE-*&date=2015-01-11&mode=combined",
+			Code: 200,
+			JSON: `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
 }`},
 		{
 			Path: "/api/v2/topology/endpoints?service=serv*&date=2020-02-11",
@@ -3688,6 +4059,101 @@ func (suite *topologyTestSuite) TestListEndpoints5() {
 	suite.Equal(profileJSON, output, "Response body mismatch")
 }
 
+func (suite *topologyTestSuite) TestListCombinedEndpoints() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/endpoints?date=2015-01-11&mode=combined", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEA",
+   "type": "SITES",
+   "service": "service_2",
+   "hostname": "host2.site_a.foo",
+   "tags": {
+    "monitored": "Y",
+    "production": "0"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEB",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "host1.site_b.foo",
+   "tags": {
+    "monitored": "YesNo",
+    "production": "Prod"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITEC",
+   "type": "SITES",
+   "service": "service_3",
+   "hostname": "host1.site_c.foo",
+   "tags": {
+    "monitored": "No",
+    "production": "Prod"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-ABC",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx1.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "SITE-XYZ",
+   "type": "SITES",
+   "service": "service_1",
+   "hostname": "hostx2.site_a.foo",
+   "tags": {
+    "monitored": "Yes",
+    "production": "1"
+   },
+   "tenant": "TENANT2"
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
 func (suite *topologyTestSuite) TestListGroups() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2020-02-01", strings.NewReader(""))
@@ -3856,6 +4322,85 @@ func (suite *topologyTestSuite) TestListGroups3() {
     "certification": "Certified",
     "infrastructure": "Production"
    }
+  }
+ ]
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(profileJSON, output, "Response body mismatch")
+
+}
+
+func (suite *topologyTestSuite) TestListCombinedGroups() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/topology/groups?date=2015-01-11&mode=combined", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	profileJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEA",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI0",
+   "type": "NGIS",
+   "subgroup": "SITEB",
+   "tags": {
+    "certification": "CertNot",
+    "infrastructure": "devel"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGI1",
+   "type": "NGIS",
+   "subgroup": "SITEC",
+   "tags": {
+    "certification": "Certified",
+    "infrastructure": "production"
+   }
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT1",
+   "type": "NGIS",
+   "subgroup": "SITE-ABC",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT1"
+  },
+  {
+   "date": "2015-01-11",
+   "group": "NGITENANT2",
+   "type": "NGIS",
+   "subgroup": "SITE-XYZ",
+   "tags": {
+    "certification": "uncertified",
+    "infrastructure": "devtest"
+   },
+   "tenant": "TENANT2"
   }
  ]
 }`
