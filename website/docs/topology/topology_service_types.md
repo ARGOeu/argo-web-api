@@ -179,6 +179,7 @@ be used to retrieve service types from all other included tenants combined in th
 GET /topology/service-types?date=2019-03-03?mode=combined
 ```
 
+```json
 {
   "status": {
     "message": "Success",
@@ -201,6 +202,7 @@ GET /topology/service-types?date=2019-03-03?mode=combined
     }
   ]
 }
+```
 
 <a id='3'></a>
 
