@@ -2933,6 +2933,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
+        
       responses:
         200:
           description: Topology resources listed
@@ -3101,6 +3107,11 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
       responses:
         200:
           description: filtered topology resources listed based on report
@@ -3144,6 +3155,12 @@ paths:
       - name: date
         in: query
         description: target date to retrieve a historic version of the profile
+        schema:
+          type: string
+          default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined feeds from other tenants.
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
@@ -3336,6 +3353,11 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
       responses:
         200:
           description: Topology resource listed
@@ -3493,6 +3515,11 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: mode
+        in: query
+        description: optional to be used as mode=combined when the tenant supports combined
+        schema:
+          type: string
       responses:
         200:
           description: filtered topology resources listed based on report
@@ -10019,6 +10046,9 @@ components:
           type: object
           properties: {}
           description: key value tags
+        tenant:
+          type: string
+          description: appears only in output when querying groups in mode=combined
     TopologyEndpoints:
       type: array
       items:
@@ -10043,6 +10073,9 @@ components:
           type: object
           properties: {}
           description: key value tags
+        tenant:
+          type: string
+          description: appears only in output when querying groups in mode=combined
     TopologyServiceTypes:
       type: array
       items:
@@ -10063,6 +10096,9 @@ components:
           type: array
           items:
             type: string
+        tenant:
+          type: string
+          description: appears only in output when querying service types in mode=combined
     MetricList:
       type: array
       items:
