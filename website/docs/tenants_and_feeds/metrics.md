@@ -13,9 +13,8 @@ sidebar_position: 4
 | PUT: List Metrics by report | This method can be used to retrieve a list of metrics included in a report (as a tenant user) | [ Description](#4) |
 
 
-<a id='1'></a>
 
-## [GET]: List Metrics (Admin)
+## [GET]: List Metrics (Admin) {#1}
 
 This method can be used to retrieve a list of all metrics. This is an administrative method. The Metric list is common for all tenants
 
@@ -72,9 +71,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [PUT]: Update Metrics information
+## [PUT]: Update Metrics information {#2}
 This method is used to update the list of metrics. This is an administrative method. The list of metrics is common for all tenants
 
 ### Input
@@ -130,9 +128,8 @@ Json Response
 ```
 
 
-<a id='3'></a>
 
-## [GET]: List Metrics (as a tenant user)
+## [GET]: List Metrics (as a tenant user) {#3}
 
 This method can be used to retrieve the list of metrics as a tenant user. The list of metrics is common for all tenants but accessible from each tenant.
 
@@ -190,9 +187,7 @@ Json Response
 ```
 
 
-<a id='4'></a>
-
-## [PUT]: List metrics by report (as a tenant user)
+## [PUT]: List metrics by report (as a tenant user) {#4}
 This method is used to retrieve a list of metrics that are included in the metric profile of a specific report.
 
 ### Input

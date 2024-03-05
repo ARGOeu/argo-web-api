@@ -23,9 +23,8 @@ sidebar_position: 1
 | GET: List Users  | This method can be used to list all users that belong to a specific tenant| [ Description](#12) |
 
 
-<a id='1'></a>
 
-## [GET]: List Tenants
+## [GET]: List Tenants {#1}
 
 This method can be used to retrieve a list of current tenants
 
@@ -259,9 +258,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific tenant
+## [GET]: List A Specific tenant {#2}
 
 This method can be used to retrieve specific tenant based on its id
 
@@ -446,9 +444,8 @@ Specifying the filter, `export=flat`, it will return a flat user json object
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new Tenant
+## [POST]: Create a new Tenant {#3}
 
 This method can be used to insert a new tenant
 
@@ -540,9 +537,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing tenant
+## [PUT]: Update information on an existing tenant {#4}
 
 This method can be used to update information on an existing tenant
 
@@ -628,9 +624,8 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing tenant
+## [DELETE]: Delete an existing tenant {#5}
 
 This method can be used to delete an existing tenant
 
@@ -664,9 +659,8 @@ Json Response
 }
 ```
 
-<a id='6'></a>
 
-## [GET]: List A Specific tenant's argo-engine status
+## [GET]: List A Specific tenant's argo-engine status {#6}
 
 This method can be used to retrieve specific tenant's status based on its id
 
@@ -736,9 +730,8 @@ Json Response
 }
 ```
 
-<a id='7'></a>
 
-## [PUT]: Update argo-engine status information on an existing tenant
+## [PUT]: Update argo-engine status information on an existing tenant {#7}
 
 This method can be used to update status information on an existing tenant
 
@@ -810,9 +803,8 @@ Json Response
 }
 ```
 
-<a id='8'></a>
 
-## [POST]: Create new user 
+## [POST]: Create new user {#8}
 
 This method can be used to create a new user on existing tenant
 
@@ -864,9 +856,8 @@ Json Response
 }
 ```
 
-<a id='9'></a>
 
-## [PUT]: Update user 
+## [PUT]: Update user {#9}
 
 This method can be used to update an existing user in a specific tenant
 
@@ -912,9 +903,8 @@ Json Response
 }
 ```
 
-<a id='10'></a>
 
-## [POST]: Renew User API key
+## [POST]: Renew User API key {#10}
 
 This method can be used to renew a user's api access key
 
@@ -952,9 +942,8 @@ Json Response
 }
 ```
 
-<a id='11'></a>
 
-## [DELETE]: Delete User
+## [DELETE]: Delete User {#11}
 
 This method can be used to remove and delete a user from a tenant
 
@@ -989,9 +978,8 @@ Json Response
 }
 ```
 
-<a id='12'></a>
 
-## [GET]: List all available users that belong to a specific tenant
+## [GET]: List all available users that belong to a specific tenant {#12}
 This method can be used to list all available users that are members of a specific tenant
 
 ### Input
@@ -1047,9 +1035,8 @@ Json Response
 
 ```
 
-<a id='13'></a>
 
-## [GET]: Get user
+## [GET]: Get user {#13}
 This method can be used to get information on specific user of a specific tenant
 
 ### Input

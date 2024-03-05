@@ -74,9 +74,9 @@ Each rule must always refer to a metric. It can optionally refer to a host and a
 | PUT: Update an Threshold profile       | This method can be used to update information on an existing Threshold profile    | [ Description](#4) |
 | DELETE: Delete an Threshold profile    | This method can be used to delete an existing Threshold profile                   | [ Description](#5) |
 
-<a id='1'></a>
 
-## [GET]: List Threshold Profiles
+
+## [GET]: List Threshold Profiles {#1}
 
 This method can be used to retrieve a list of current Threshold profiles
 
@@ -152,9 +152,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific Thresholds profile
+## [GET]: List A Specific Thresholds profile {#2}
 
 This method can be used to retrieve specific Thresholds profile based on its id
 
@@ -207,9 +206,8 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new Thresholds Profile
+## [POST]: Create a new Thresholds Profile {#3}
 
 This method can be used to insert a new thresholds profile
 
@@ -267,9 +265,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing operations profile
+## [PUT]: Update information on an existing operations profile {#4}
 
 This method can be used to update information on an existing operations profile
 
@@ -321,9 +318,8 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing aggregation profile
+## [DELETE]: Delete an existing aggregation profile {#5}
 
 This method can be used to delete an existing aggregation profile
 

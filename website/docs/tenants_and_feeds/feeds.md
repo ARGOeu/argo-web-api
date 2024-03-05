@@ -14,9 +14,9 @@ sidebar_position: 2
 | GET: Feed Data information   | This method can be used to retrieve a list of feed data information parameters         | [ Description](#5) |
 | PUT: Update Data weights info | This method can be used to update feed data  information parameters | [ Description](#6) |
 
-<a id='1'></a>
 
-## [GET]: List Feed topology parameters
+
+## [GET]: List Feed topology parameters {#1}
 
 This method can be used to retrieve a list of feed topology parameters
 
@@ -63,9 +63,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [PUT]: Update topology feed parameters
+## [PUT]: Update topology feed parameters {#2}
 This method is used to update topology feed parameters
 
 ### Input
@@ -125,9 +124,8 @@ Json Response
 ```
 
 
-<a id='3'></a>
 
-## [GET]: List Feed weights parameters
+## [GET]: List Feed weights parameters {#3}
 
 This method can be used to retrieve a list of feed weights parameters
 
@@ -170,9 +168,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update topology feed parameters
+## [PUT]: Update topology feed parameters {#4}
 This method is used to update topology feed parameters
 
 ### Input
@@ -222,9 +219,8 @@ Json Response
   ]
 }
 ```
-<a id='5'></a>
 
-## [GET]: List Feed Data parameters
+## [GET]: List Feed Data parameters {#5}
 
 This method can be used to retrieve a list of feed data information parameters. Data feeds refer to data coming from other tenants and used in combined reports
 
@@ -264,9 +260,8 @@ Json Response
 }
 ```
 
-<a id='6'></a>
 
-## [PUT]: Update data feed parameters
+## [PUT]: Update data feed parameters {#6}
 This method is used to update data feed parameters
 
 ### Input

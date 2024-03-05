@@ -11,7 +11,7 @@ Name                                     | Description                          
 GET: List Factors Requests         | This method can be used to retrieve a list of factors.          | [ Description](#1)
 
 
-# GET: List Factors
+## GET: List Factors {#1}
 This method can be used to retrieve a list of current Factors
 
 ## Input

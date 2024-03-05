@@ -13,9 +13,8 @@ sidebar_position: 1
 | DELETE: Delete list of service types for specific date | Delete List of available service types for a specific date | <a href="#3">Description</a> |
 
 
-<a id="1"></a>
 
-## POST: Create list of service types for specific date 
+## POST: Create list of service types for specific date {#1}
 
 Creates a daily list of available service types for the specific tenant
 
@@ -97,9 +96,8 @@ Status: 409 Conflict
 
 User can proceed with either updating the existing topology OR deleting before trying to create it anew
 
-<a id="2"></a>
 
-## GET: List service types for specific date
+## GET: List service types for specific date {#2}
 
 Lists the available service types per tenant for a specific date
 
@@ -204,9 +202,8 @@ GET /topology/service-types?date=2019-03-03?mode=combined
 }
 ```
 
-<a id='3'></a>
 
-## [DELETE]: Delete list of service types for specific date
+## [DELETE]: Delete list of service types for specific date {#3}
 
 This method can be used to delete all service type items contributing to the list of available service types of a specific date
 
