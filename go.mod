@@ -10,7 +10,7 @@ require (
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
 	github.com/golang/mock v1.4.3 // indirect
-	github.com/gorilla/context v1.1.1
+	github.com/gorilla/context v1.1.2
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/myesui/uuid v1.0.0 // indirect
