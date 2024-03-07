@@ -13,9 +13,8 @@ sidebar_position: 2
 | DELETE: delete endpoint topology for specific date | Deletes all endpoint items (topology) for a specific date              | <a href="#3">Description</a> |
 | GET: List endpoint topology for specific report    | Lists endpoint topology for a specific report                          | <a href="#4">Description</a> |
 
-<a id="1"></a>
 
-## POST: Create endpoint topology for specific date
+## POST: Create endpoint topology for specific date {#1}
 
 Creates a daily endpoint topology mapping endpoints to endpoint groups
 
@@ -103,9 +102,8 @@ Status: 409 Conflict
 
 User can proceed with either updating the existing endpoint topology OR deleting before trying to create it anew
 
-<a id="2"></a>
 
-## GET: List endpoint topology per date
+## GET: List endpoint topology per date {#2}
 
 List endpoint topology for a specific date or the closest available topology to that date. If date is not provided list the latest available endpoint topology.
 
@@ -255,9 +253,8 @@ Status: 200 OK
 ```
 
 
-<a id='3'></a>
 
-## [DELETE]: Delete endpoint topology for a specific date
+## [DELETE]: Delete endpoint topology for a specific date {#3}
 
 This method can be used to delete all endpoint items contributing to the endpoint topology of a specific date
 
@@ -290,9 +287,8 @@ Json Response
 }
 ```
 
-<a id="4"></a>
 
-## GET: List endpoint topology for specific report
+## GET: List endpoint topology for specific report {#4}
 
 Lists endpoint topology items for specific report
 

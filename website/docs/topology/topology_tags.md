@@ -10,9 +10,8 @@ sidebar_position: 5
 | ----------------------------- | ----------------------------------------------------- | ---------------------------- |
 | GET: List topology tags | List available tags and distinct values present in topology items. | <a href="#1">Description</a> |
 
-<a id="1"></a>
 
-## [GET]: List topology tags
+## [GET]: List topology tags {#1}
 
 This method may be used to retrieve available topology tags and their distinct values available 
 

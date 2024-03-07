@@ -13,9 +13,9 @@ GET: List a specific  aggregation profile         | This method can be used to r
 POST: Create a new  aggregation profile  | This method can be used to create a new  aggregation profile | [ Description](#3)
 PUT: Update an aggregation profile |This method can be used to update information on an existing  aggregation profile | [ Description](#4)
 DELETE: Delete an  aggregation profile |This method can be used to delete an existing  aggregation profile | [ Description](#5)
-<a id='1'></a>
 
-## [GET]: List Aggregation Profiles
+
+## [GET]: List Aggregation Profiles {#1}
 This method can be used to retrieve a list of current  aggregation profiles
 
 ### Input
@@ -141,9 +141,9 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific Aggregation profile
+
+## [GET]: List A Specific Aggregation profile {#2}
 This method can be used to retrieve specific aggregation profile based on its id
 
 ### Input
@@ -226,9 +226,9 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new Aggregation Profile
+
+## [POST]: Create a new Aggregation Profile {#3}
 This method can be used to insert a new aggregation profile
 
 ### Input
@@ -319,9 +319,9 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing aggregation profile
+
+## [PUT]: Update information on an existing aggregation profile {#4}
 This method can be used to update information on an existing aggregation profile
 
 ### Input
@@ -411,9 +411,9 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing aggregation profile
+
+## [DELETE]: Delete an existing aggregation profile {#5}
 This method can be used to delete an existing aggregation profile
 
 ### Input

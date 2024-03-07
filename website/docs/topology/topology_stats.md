@@ -10,9 +10,8 @@ sidebar_position: 4
 | ----------------------------- | ----------------------------------------------------- | ---------------------------- |
 | GET: List topology statistics | List number of groups, endpoint groups and services . | <a href="#1">Description</a> |
 
-<a id="1"></a>
 
-## [GET]: List topology statistics
+## [GET]: List topology statistics {#1}
 
 This method may be used to retrieve topology statistics for a specific report. Topology statistics include number of groups, endpoint groups and services included in the report
 

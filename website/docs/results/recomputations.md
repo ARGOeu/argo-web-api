@@ -16,9 +16,7 @@ POST: change status  | This method can be used to change status of a specific re
 DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#6)
 
 
-<a id='1'></a>
-
-## [GET]: List Recomputation Requests
+## [GET]: List Recomputation Requests {#1}
 This method can be used to retrieve a list of current Recomputation requests.
 
 ### Input
@@ -208,9 +206,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: Get specific recomputation request by id
+## [GET]: Get specific recomputation request by id {#2}
 This method can be used to retrieve a specific recomputation request by its id
 
 ### Input
@@ -267,9 +264,8 @@ Json Response
 ```
 
 
-<a id='3'></a>
 
-## [POST]: Create a new recomputation request
+## [POST]: Create a new recomputation request {#3}
 This method can be used to insert a new recomputation request onto the Compute Engine.
 
 ### Input
@@ -300,9 +296,8 @@ Type         | Description                                                      
 ### Response
 Headers: `Status: 201 Created`
 
-<a id='4'></a>
 
-## [DELETE]: Delete a specific recomputation
+## [DELETE]: Delete a specific recomputation {#4}
 
 ```
 DELETE /recomputations/{ID}
@@ -318,9 +313,8 @@ Accept: application/json
 ### Response
 `Status 200 OK`
 
-<a id='5'></a>
 
-## [POST]: Change status of recomputation
+## [POST]: Change status of recomputation {#5}
 
 ```
 POST /recomputations/{ID}/status
@@ -366,9 +360,7 @@ Json Response
 ```
 
 
-<a id='6'></a>
-
-## [DELETE]: Reset status of a specific recomputation
+## [DELETE]: Reset status of a specific recomputation {#6}
 
 ```
 DELETE /recomputations/{ID}/status

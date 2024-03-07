@@ -13,9 +13,8 @@ sidebar_position: 3
 | DELETE: Delete group topology for specific date | Delete group topology items for specific date                       | <a href="#3">Description</a> |
 | GET: List group topology for specific report    | Lists group topology for a specific report                          | <a href="#4">Description</a> |
 
-<a id="1"></a>
 
-## POST: Create group topology for specific date
+## POST: Create group topology for specific date {#1}
 
 Creates a daily group topology mapping top-level groups to subgroups
 
@@ -115,9 +114,8 @@ Status: 409 Conflict
 
 User can proceed with either updating the existing topology OR deleting before trying to create it anew
 
-<a id="2"></a>
 
-## GET: List group topology for specific date
+## GET: List group topology for specific date {#2}
 
 Lists group topology items for specific date
 
@@ -249,9 +247,8 @@ Status: 200 OK
 }
 ```
 
-<a id='3'></a>
 
-## [DELETE]: Delete group topology for a specific date
+## [DELETE]: Delete group topology for a specific date {#3}
 
 This method can be used to delete all group items contributing to the group topology of a specific date
 
@@ -284,9 +281,8 @@ Json Response
 }
 ```
 
-<a id="4"></a>
 
-## GET: List group topology for specific report
+## GET: List group topology for specific report {#4}
 
 Lists group topology items for specific report
 

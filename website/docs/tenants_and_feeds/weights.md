@@ -14,9 +14,8 @@ sidebar_position: 6
 | PUT: Update a weight resource         | This method can be used to update information on an existing weight resource    | [ Description](#4) |
 | DELETE: Delete a weight resource      | This method can be used to delete an existing weight resource                   | [ Description](#5) |
 
-<a id='1'></a>
 
-## [GET]: List weight resources
+## [GET]: List weight resources {#1}
 
 This method can be used to retrieve a list of current weight resources
 
@@ -101,9 +100,8 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific weight resource
+## [GET]: List A Specific weight resource {#2}
 
 This method can be used to retrieve specific weight resource based on its id
 
@@ -162,9 +160,8 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new weight resource
+## [POST]: Create a new weight resource {#3}
 
 This method can be used to insert a new weight resource
 
@@ -228,9 +225,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing weight resource
+## [PUT]: Update information on an existing weight resource {#4}
 
 This method can be used to update information on an existing weight resource
 
@@ -290,9 +286,8 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing weight resource
+## [DELETE]: Delete an existing weight resource {#5}
 
 This method can be used to delete an existing weight resource
 

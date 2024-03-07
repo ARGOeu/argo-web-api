@@ -14,9 +14,8 @@ sidebar_position: 1
 | GET: List Availability and Reliability results for an Endpoint                | This method retrieves the results of a specified service endpoint that where computed based on a given report. Results can be retrieved on daily, monthly or custom granularity.                                                                 | [Description](#4) |
 | GET: Flat List of all endpoints Availability and Reliability results                | This method retrieves the results in a flat list of all service endpoints that where computed based on a given report. Results can be retrieved on daily, monthly or custom granularity. Pagination is supported.                                                                 | [Description](#5) |
 
-<a id="1"></a>
 
-# [GET]: List Availabilities and Reliabilities for groups of Endpoint Groups
+## List Availabilities and Reliabilities for groups of Endpoint Groups {#1}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per Group of Endpoint Groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single group of endpoint groups results or a bulk of group of endpoint groups results filtered by their type.
 
@@ -76,9 +75,8 @@ Status: 200 OK
 </root>
 ```
 
-<a id="2"></a>
 
-# [GET]: List Availabilities and Reliabilities for Endpoint Groups
+## [GET]: List Availabilities and Reliabilities for Endpoint Groups {#2}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per Endpoint Group. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single endpoint group results or a bulk of endpoint group results filtered by their type and if necessary their "top-level" group.
 
@@ -146,9 +144,8 @@ Status: 200 OK
 </root>
 ```
 
-<a id="3"></a>
 
-# [GET]: List Availabilities and Reliabilities for Service Flavors
+## [GET]: List Availabilities and Reliabilities for Service Flavors {#3}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics per given Service Flavor(s). The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single service flavor results or a bulk of service flavor results.
 
@@ -221,9 +218,8 @@ Status: 200 OK
 </root>
 ```
 
-<a id="4"></a>
 
-# [GET]: List Availabilities and Reliabilities for Endpoints
+## [GET]: List Availabilities and Reliabilities for Endpoints {#4}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics for endpoints under a specific service or group. The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. Depending on the form of the request the user can request a single service flavor results or a bulk of endpoint results.
 
@@ -527,9 +523,8 @@ Some service endpoint a/r have additional information regarding the specific ser
 }
 ```
 
-<a id="5"></a>
 
-# [GET]: Flat List Availabilities and Reliabilities for all service Endpoints
+## [GET]: Flat List Availabilities and Reliabilities for all service Endpoints {#5}
 
 The following methods can be used to obtain a tenant's flat list of all service endpoints Availability and Reliability result. The api authenticates the tenant using the api-key within the x-api-key header. The user can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
 ## [GET] Endpoints A/R

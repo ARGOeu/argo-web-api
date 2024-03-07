@@ -12,9 +12,8 @@ sidebar_position: 3
 | POST: Create a new downtime resource    | This method can be used to create a new downtime resource                         | [ Description](#2) |
 | DELETE: Delete a downtime resource      | This method can be used to delete an existing downtime resource                   | [ Description](#3) |
 
-<a id='1'></a>
 
-## [GET]: List downtime resources
+## [GET]: List downtime resources {#1}
 
 This method can be used to retrieve a list of current downtime resources per date
 
@@ -129,9 +128,8 @@ Body:
 __note__: `description`, `severity` and `classification` but quite useful to organise the kind of downtimes declared per day.
 
 
-<a id='2'></a>
 
-## [POST]: Create a new downtime resource
+## [POST]: Create a new downtime resource {#2}
 
 This method can be used to insert a new downtime resource
 
@@ -196,9 +194,8 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [DELETE]: Delete an existing downtime resource
+## [DELETE]: Delete an existing downtime resource {#3}
 
 This method can be used to delete an existing downtime resource
 

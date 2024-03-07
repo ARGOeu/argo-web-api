@@ -14,9 +14,9 @@ POST: Create a new  Operations profile  | This method can be used to create a ne
 PUT: Update an Operations profile |This method can be used to update information on an existing  Operations profile | [ Description](#4)
 DELETE: Delete an  Operations profile |This method can be used to delete an existing  Operations profile | [ Description](#5)
 
-<a id='1'></a>
 
-## [GET]: List Operations Profiles
+
+## [GET]: List Operations Profiles {#1}
 
 This method can be used to retrieve a list of current  Operations profiles. 
 
@@ -167,9 +167,9 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific Operations profile
+
+## [GET]: List A Specific Operations profile {#2}
 This method can be used to retrieve specific Operations profile based on its id
 
 ### Input
@@ -264,9 +264,9 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new Operations Profile
+
+## [POST]: Create a new Operations Profile {#3}
 This method can be used to insert a new operations profile
 
 ### Input
@@ -368,9 +368,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing operations profile
+## [PUT]: Update information on an existing operations profile {#4}
 This method can be used to update information on an existing operations profile
 
 ### Input
@@ -466,9 +465,9 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing aggregation profile
+
+## [DELETE]: Delete an existing aggregation profile {#5}
 This method can be used to delete an existing aggregation profile
 
 ### Input
