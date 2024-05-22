@@ -30,27 +30,7 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/hbase"
-	"github.com/tsuna/gohbase/hrpc"
 )
-
-func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
-	dResult := make([]DataOutput, 0)
-
-	for i := range hResults {
-		res := hResults[i]
-		cellMap := hbase.CellsToMap(res.Cells)
-		dOut := DataOutput{}
-		dOut.DateInteger = cellMap["date"]
-		dOut.EndpointGroup = cellMap["endpoint_group"]
-		dOut.Report = cellMap["report"]
-		dOut.Status = cellMap["status"]
-		dOut.Timestamp = cellMap["ts_monitored"]
-		dResult = append(dResult, dOut)
-	}
-
-	return dResult
-}
 
 func createView(results []DataOutput, input InputParams, endDate string, details bool) ([]byte, error) {
 

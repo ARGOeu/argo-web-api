@@ -71,7 +71,6 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			}
 
 			context.Set(r, "roles", tenantConf.Roles)
-			context.Set(r, "hbase_conf", cfg.Hbase)
 			context.Set(r, "tenant_conf", tenantConf)
 			context.Set(r, "tenant_name", name)
 			context.Set(r, "authen", true)

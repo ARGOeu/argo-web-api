@@ -72,8 +72,6 @@ func (suite *StatusEndpointGroupsTestSuite) SetupTest() {
     host = "127.0.0.1"
     port = 27017
     db = "argotest_egroups"
-		[hbase]
-		zkquorum = localhost
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -764,23 +762,6 @@ func (suite *StatusEndpointGroupsTestSuite) TestOptionsStatusEndpointGroups() {
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
-
-}
-
-func (suite *StatusEndpointGroupsTestSuite) TestHbase() {
-
-	// hbaseCl := hbase.CreateClient(suite.cfg.Hbase)
-	//
-	// res, _ := hbase.QueryStatusGroups(hbaseCl, "EGI", "Critical", "2016-03-10")
-	//
-	// data := hbaseToDataOutput(res)
-	//
-	// inpParams := InputParams{}
-	// inpParams.format = "application/json"
-	//
-	// text, _ := createView(data, inpParams)
-	//
-	// fmt.Println(string(text[:len(text)]))
 
 }
 
