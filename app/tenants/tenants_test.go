@@ -27,7 +27,8 @@
 package tenants
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -36,21 +37,18 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type TenantTestSuite struct {
 	suite.Suite
 	cfg                         config.Config
-	respTenantCreated           string
-	respTenantUpdated           string
-	respTenantDeleted           string
 	respTenantNotFound          string
 	respUnauthorized            string
 	respBadJSON                 string
@@ -81,7 +79,10 @@ func (suite *TenantTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/admin").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
@@ -164,100 +165,97 @@ func (suite *TenantTestSuite) SetupSuite() {
 // and with an authorization token:"S3CR3T"
 func (suite *TenantTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	// seed mongo
+	client := suite.cfg.MongoClient
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	seedResAdminUI := bson.M{"api_key": "ADM1NU1", "super_admin_ui": true}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAuth)
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAdminUI)
 
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	c := client.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
-	c := session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c.InsertOne(context.TODO(), seedAuth)
+	c.InsertOne(context.TODO(), seedResAuth)
+	c.InsertOne(context.TODO(), seedResAdminUI)
+
+	c = client.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.list",
 			"roles":    []string{"super_admin", "super_admin_restricted", "super_admin_ui"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get",
 			"roles":    []string{"super_admin", "super_admin_ui"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.create",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.delete",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_status",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.create_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.list_users",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.delete_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.user_refresh_token",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get_status",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.user_by_id",
 			"roles":    []string{"super_admin", "super_admin_restricted"},
 		})
 	// seed first tenant
-	c = session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c = client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{
 			"name":        "AVENGERS",
@@ -272,14 +270,14 @@ func (suite *TenantTestSuite) SetupTest() {
 			"feed": "gocdb.example.foo",
 		},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "ar",
 				"server":   "a.mongodb.org",
 				"port":     27017,
 				"database": "ar_db",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
-			bson.M{
+			{
 				"store":    "status",
 				"server":   "b.mongodb.org",
 				"port":     27017,
@@ -288,13 +286,13 @@ func (suite *TenantTestSuite) SetupTest() {
 				"password": "3NCRYPT3D"},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"id":      "acb74194-553a-11e9-8647-d663bd873d93",
 				"name":    "cap",
 				"email":   "cap@email.com",
 				"api_key": "C4PK3Y",
 				"roles":   []string{"admin", "admin_ui"}},
-			bson.M{
+			{
 				"id":      "acb74432-553a-11e9-8647-d663bd873d93",
 				"name":    "thor",
 				"email":   "thor@email.com",
@@ -303,7 +301,7 @@ func (suite *TenantTestSuite) SetupTest() {
 		}})
 
 	// seed second tenant
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -316,14 +314,14 @@ func (suite *TenantTestSuite) SetupTest() {
 			"feed": "gocdb.example.foo",
 		},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "ar",
 				"server":   "a.mongodb.org",
 				"port":     27017,
 				"database": "ar_db",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
-			bson.M{
+			{
 				"store":    "status",
 				"server":   "b.mongodb.org",
 				"port":     27017,
@@ -332,13 +330,13 @@ func (suite *TenantTestSuite) SetupTest() {
 				"password": "3NCRYPT3D"},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"id":      "acb7459a-553a-11e9-8647-d663bd873d93",
 				"name":    "groot",
 				"email":   "groot@email.com",
 				"api_key": "GR00TK3Y",
 				"roles":   []string{"admin"}},
-			bson.M{
+			{
 				"id":      "acb74702-553a-11e9-8647-d663bd873d93",
 				"name":    "starlord",
 				"email":   "starlord@email.com",
@@ -485,18 +483,12 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	suite.router.ServeHTTP(response, request)
 
-	// Grab ID from mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-
 	// Retrieve id from database
 	var result = Tenant{}
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
 
-	c.Find(bson.M{"info.name": "mutants"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+
+	c.FindOne(context.TODO(), bson.M{"info.name": "mutants"}).Decode(&result)
 	//id := result["id"].(string)
 	//info := result["info"].(map[string]interface{})
 	//timestamp := info["created"].(string)
@@ -950,17 +942,10 @@ func (suite *TenantTestSuite) TestTenantCreateUser() {
 	code := response.Code
 	output := response.Body.String()
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result Tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	user := result.Users[len(result.Users)-1]
 
@@ -1083,17 +1068,10 @@ func (suite *TenantTestSuite) TestTenantUpdateUser() {
 	code := response.Code
 	output := response.Body.String()
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result Tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	found := false
 	for _, usr := range result.Users {
@@ -1131,17 +1109,10 @@ func (suite *TenantTestSuite) TestTenantDeleteUser() {
 	code := response.Code
 	output := response.Body.String()
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result Tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	found := false
 	for _, usr := range result.Users {
@@ -1180,17 +1151,10 @@ func (suite *TenantTestSuite) TestTenantRefreshUserToken() {
 	code := response.Code
 	output := response.Body.String()
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result Tenant
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	token := ""
 	for _, usr := range result.Users {
@@ -1412,20 +1376,13 @@ func (suite *TenantTestSuite) TestDeleteTenant() {
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result map[string]interface{}
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	suite.NotEqual(err, nil, "No not found error")
-	suite.Equal(err.Error(), "not found", "No not found error")
+	suite.Equal(err.Error(), mongo.ErrNoDocuments.Error(), "No not found error")
 }
 
 // TestReadTeanants function implements the testing
@@ -2070,7 +2027,7 @@ func (suite *TenantTestSuite) TestOptionsTenant() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -2078,35 +2035,28 @@ func (suite *TenantTestSuite) TestOptionsTenant() {
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *TenantTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	testDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := testDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := mainDB.CollectionNames()
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		testDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *TenantTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
 }
 
 // This is the first function called when go test is issued
-func TestTenantsSuite(t *testing.T) {
+func TestSuiteTenants(t *testing.T) {
 	suite.Run(t, new(TenantTestSuite))
 }

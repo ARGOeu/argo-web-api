@@ -30,6 +30,7 @@ import (
 	"flag"
 	"os"
 
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -78,8 +79,9 @@ type Config struct {
 		EnableCors   bool
 	}
 
-	MongoDB MongoConfig
-	Profile string
+	MongoDB     MongoConfig
+	Profile     string
+	MongoClient *mongo.Client
 }
 
 const defaultConfig = `

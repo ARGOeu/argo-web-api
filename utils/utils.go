@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/twinj/uuid"
 )
 
 const zuluDateOnly = "2006-01-02"
@@ -25,4 +27,8 @@ func ParseZuluDate(dateStr string) (int, string, error) {
 	dateInt, err := strconv.Atoi(parsedTime.Format(ymdForm))
 	return dateInt, dateStr, err
 
+}
+
+func NewUUID() string {
+	return uuid.NewV4().String()
 }
