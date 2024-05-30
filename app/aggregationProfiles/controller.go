@@ -27,20 +27,21 @@
 package aggregationProfiles
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
-	"github.com/gorilla/context"
-	"gopkg.in/mgo.v2/bson"
+	gcontext "github.com/gorilla/context"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // datastore collection name that contains aggregations profile records
@@ -112,20 +113,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	dateStr := urlValues.Get("date")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 	result := AggProfile{}
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -133,10 +125,10 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 	aggQuery := prepQuery(dt, vars["ID"])
 
-	aggCol := session.DB(tenantDbConfig.Db).C(aggColName)
-	err = aggCol.Find(aggQuery).One(&result)
+	aggCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(aggColName)
+	err = aggCol.FindOne(context.TODO(), aggQuery).Decode(&result)
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = 404
 			return code, h, output, err
@@ -178,13 +170,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	name := urlValues.Get("name")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -192,20 +180,17 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 	aggQuery := prepMultiQuery(dt, name)
 
-	aggCol := session.DB(tenantDbConfig.Db).C(aggColName)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	aggCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(aggColName)
 
 	results := []AggProfile{}
-	err = aggCol.Pipe(aggQuery).All(&results)
+	cursor, err := aggCol.Aggregate(context.TODO(), aggQuery)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
 
+	cursor.All(context.TODO(), &results)
 	// Create view of the results
 	output, err = createListView(results, "Success", code) //Render the results into JSON
 
@@ -218,8 +203,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-//Create a new metric profile
+// Create a new metric profile
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
@@ -233,7 +219,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -243,19 +229,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := AggProfile{}
 	incoming.DateInt = dt
 	incoming.Date = dateStr
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -270,8 +249,10 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
+	aggCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(aggColName)
+	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("metric_profiles")
 	// Validate
-	err = incoming.MetricProf.validateID(session, tenantDbConfig.Db, "metric_profiles")
+	err = incoming.MetricProf.validateID(metricCol)
 	// Respond 422 unprocessabe entity
 	if err != nil {
 		output, _ = respond.MarshalContent(respond.ErrUnprocessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
@@ -280,31 +261,28 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// check if the aggregation profile's name is unique
-	results := []AggProfile{}
 	query := bson.M{"name": incoming.Name}
 
-	err = mongo.Find(session, tenantDbConfig.Db, aggColName, query, "", &results)
+	queryResult := aggCol.FindOne(context.TODO(), query)
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// If results are returned for the specific name
-	// then we already have an existing report and we must
-	// abort creation notifying the user
-	if len(results) > 0 {
+	if queryResult.Err() == nil {
 		output, _ = respond.MarshalContent(respond.ErrConflict("Aggregation profile with the same name already exists"), contentType, "", " ")
 		code = http.StatusConflict
 		return code, h, output, err
 	}
 
+	if queryResult.Err() != mongo.ErrNoDocuments {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	// Generate new id
-	incoming.ID = mongo.NewUUID()
-	err = mongo.Insert(session, tenantDbConfig.Db, aggColName, incoming)
+	incoming.ID = utils.NewUUID()
+	_, err = aggCol.InsertOne(context.TODO(), incoming)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -313,7 +291,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Update function to update contents of an existing aggregation profile
+// Update function to update contents of an existing aggregation profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -338,14 +316,14 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := AggProfile{}
 	incoming.DateInt = dt
 	incoming.Date = dateStr
 
 	// ingest body data
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -359,58 +337,44 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
+	aggCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(aggColName)
+	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("metric_profiles")
 	// create filter to retrieve specific profile with id
-	filter := bson.M{"id": vars["ID"]}
+	query := bson.M{"id": vars["ID"]}
 
 	incoming.ID = vars["ID"]
 
 	// Retrieve Results from database
-	results := []AggProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, aggColName, filter, "name", &results)
 
-	if err != nil {
-		panic(err)
-	}
+	queryResult := aggCol.FindOne(context.TODO(), query)
 
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
+	if queryResult.Err() != nil {
+		if queryResult.Err() == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// check if the aggregation profile's name is unique
-	if incoming.Name != results[0].Name {
+	queryCheck := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
 
-		results = []AggProfile{}
-		query := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
+	queryResult = aggCol.FindOne(context.TODO(), queryCheck)
 
-		err = mongo.Find(session, tenantDbConfig.Db, aggColName, query, "", &results)
+	if queryResult.Err() == nil {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Aggregation profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
+		return code, h, output, err
+	}
 
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		// If results are returned for the specific name
-		// then we already have an existing report and we must
-		// abort creation notifying the user
-		if len(results) > 0 {
-			output, _ = respond.MarshalContent(respond.ErrConflict("Aggregation profile with the same name already exists"), contentType, "", " ")
-			code = http.StatusConflict
-			return code, h, output, err
-		}
+	if queryResult.Err() != mongo.ErrNoDocuments {
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Validate
-	err = incoming.MetricProf.validateID(session, tenantDbConfig.Db, "metric_profiles")
+	err = incoming.MetricProf.validateID(metricCol)
 	// Respond 422 unprocessabe entity
 	if err != nil {
 		output, _ = respond.MarshalContent(respond.ErrUnprocessableEntity("Referenced metric profile ID is not found"), contentType, "", " ")
@@ -418,17 +382,21 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// run the update query
-	aggCol := session.DB(tenantDbConfig.Db).C(aggColName)
-	info, err := aggCol.Upsert(bson.M{"id": vars["ID"], "date_integer": dt}, incoming)
+	replaceResult, err := aggCol.ReplaceOne(context.TODO(), bson.M{"id": vars["ID"], "date_integer": dt}, incoming, options.Replace().SetUpsert(true))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	if replaceResult.MatchedCount == 0 && replaceResult.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
 	updMsg := "Aggregations Profile successfully updated"
 
-	if info.Updated <= 0 {
+	if replaceResult.UpsertedCount > 0 {
 		updMsg = "Aggregations Profile successfully updated (new history snapshot)"
 	}
 
@@ -438,7 +406,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Delete metric profile based on id
+// Delete metric profile based on id
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -458,39 +426,22 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	aggCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(aggColName)
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	query := bson.M{"id": vars["ID"]}
 
-	filter := bson.M{"id": vars["ID"]}
-
-	// Retrieve Results from database
-	results := []AggProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, aggColName, filter, "name", &results)
+	deleteResult, err := aggCol.DeleteMany(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
-	mongo.Remove(session, tenantDbConfig.Db, aggColName, filter)
-
-	if err != nil {
-		code = http.StatusInternalServerError
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
@@ -506,7 +457,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Options implements the http option request
+// Options implements the http option request
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -521,7 +472,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	h.Set("Allow", "GET, POST, DELETE, PUT, OPTIONS")
 	return code, h, output, err
 
 }

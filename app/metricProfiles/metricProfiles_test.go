@@ -23,7 +23,8 @@
 package metricProfiles
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,23 +33,24 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type MetricProfilesTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
@@ -71,6 +73,9 @@ func (suite *MetricProfilesTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -82,7 +87,7 @@ func (suite *MetricProfilesTestSuite) SetupSuite() {
 	}
 	suite.clientkey = "123456"
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -110,10 +115,10 @@ func (suite *MetricProfilesTestSuite) TestBadDate() {
 	}
 
 	requests := []reqHeader{
-		reqHeader{Method: "GET", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
-		reqHeader{Method: "GET", Path: "/api/v2/metric_profiles/some-uuid?date=2020-02", Data: ""},
-		reqHeader{Method: "POST", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
-		reqHeader{Method: "PUT", Path: "/api/v2/metric_profiles/some-id?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/metric_profiles/some-uuid?date=2020-02", Data: ""},
+		{Method: "POST", Path: "/api/v2/metric_profiles?date=2020-02", Data: ""},
+		{Method: "PUT", Path: "/api/v2/metric_profiles/some-id?date=2020-02", Data: ""},
 	}
 
 	for _, r := range requests {
@@ -139,19 +144,12 @@ func (suite *MetricProfilesTestSuite) TestBadDate() {
 // This function runs before any test and setups the environment
 func (suite *MetricProfilesTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -161,12 +159,12 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
@@ -174,20 +172,20 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -197,7 +195,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -205,7 +203,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
@@ -213,13 +211,13 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -227,37 +225,46 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricProfiles.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricProfiles.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricProfiles.create",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricProfiles.delete",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricProfiles.update",
 			"roles":    []string{"editor"},
 		})
 
 	// Seed database with metric profiles
-	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	c.EnsureIndexKey("-date_integer", "id")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(false), // Set this according to your requirements
+	}
+
+	c.Indexes().CreateOne(context.TODO(), indexModel)
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "ch.cern.SAM.ROC_CRITICAL",
@@ -265,14 +272,14 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			"date":         "2019-10-04",
 			"description":  "critical profile",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
+				{"service": "CREAM-CE",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
 						"emi.wn.WN-Csh",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv2",
+				{"service": "SRMv2",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -284,7 +291,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "ch.cern.SAM.ROC_CRITICAL",
@@ -292,14 +299,14 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 			"date":         "2019-11-04",
 			"description":  "critical profile",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE2",
+				{"service": "CREAM-CE2",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
 						"emi.wn.WN-Csh",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv3",
+				{"service": "SRMv3",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -311,14 +318,14 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "ch.cern.SAM.ROC",
 			"date_integer": 20190504,
 			"date":         "2019-05-04",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
+				{"service": "CREAM-CE",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
@@ -327,7 +334,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 						"hr.srce.CREAMCE-CertLifetime",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv2",
+				{"service": "SRMv2",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -339,14 +346,14 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "ch.cern.SAM.ROC",
 			"date_integer": 20190604,
 			"date":         "2019-06-04",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE2",
+				{"service": "CREAM-CE2",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
@@ -355,7 +362,7 @@ func (suite *MetricProfilesTestSuite) SetupTest() {
 						"hr.srce.CREAMCE-CertLifetime",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv3",
+				{"service": "SRMv3",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -745,17 +752,11 @@ func (suite *MetricProfilesTestSuite) TestCreate() {
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Grab id from mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// Retrieve id from database
-	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	c.Find(bson.M{"name": "test_profile"}).One(&result)
-	id := result["id"].(string)
+	var result MetricProfile
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
+	c.FindOne(context.TODO(), bson.M{"name": "test_profile"}).Decode(&result)
+	id := result.ID
 
 	// Apply id to output template and check
 	suite.Equal(strings.Replace(jsonOutput, "{{id}}", id, 2), output, "Response body mismatch")
@@ -1068,20 +1069,23 @@ func (suite *MetricProfilesTestSuite) TestUpdate() {
 	suite.Equal(200, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 
+	res := []MetricProfile{}
+
+	col := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
+	cursor, _ := col.Find(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"})
+
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &res)
+
 	suite.Equal(jsonUpdated, output2, "Response body mismatch")
 
 }
 
 func (suite *MetricProfilesTestSuite) TestListEmpty() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-
-	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	c.DropCollection()
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
+	c.Drop(context.TODO())
 
 	request, _ := http.NewRequest("GET", "/api/v2/metric_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -1167,18 +1171,13 @@ func (suite *MetricProfilesTestSuite) TestDelete() {
 
 	// check that the element has actually been Deleted
 	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-	// try to retrieve item
-	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("metric_profiles")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
-	suite.NotEqual(err, nil, "No not found error")
-	suite.Equal(err.Error(), "not found", "No not found error")
+	// try to retrieve the item
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
+	queryResult := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"})
+
+	suite.NotEqual(queryResult.Err(), nil, "No not found error")
+	suite.Equal(queryResult.Err(), mongo.ErrNoDocuments, "No not found error")
 }
 
 func (suite *MetricProfilesTestSuite) TestOptionsMetricProfiles() {
@@ -1190,7 +1189,7 @@ func (suite *MetricProfilesTestSuite) TestOptionsMetricProfiles() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1205,7 +1204,7 @@ func (suite *MetricProfilesTestSuite) TestOptionsMetricProfiles() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1296,40 +1295,38 @@ func (suite *MetricProfilesTestSuite) TestDeleteForbidViewer() {
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 }
 
-//TearDownTest to tear down every test
+// TearDownTest things to do after each test
 func (suite *MetricProfilesTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownSuite things to do after suite ends
 func (suite *MetricProfilesTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestMetricProfilesTestSuite(t *testing.T) {
+func TestSuiteMetricProfiles(t *testing.T) {
 	suite.Run(t, new(MetricProfilesTestSuite))
 }

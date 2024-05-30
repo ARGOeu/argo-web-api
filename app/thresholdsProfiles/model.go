@@ -27,9 +27,6 @@ import (
 	"regexp"
 )
 
-// datastore collection name that contains threshold profile records
-const aggColName = "threshold_profiles"
-
 // ThresholdsProfile struct that holds information about threshold rules
 type ThresholdsProfile struct {
 	ID      string `bson:"id" json:"id"`
