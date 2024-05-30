@@ -32,3 +32,15 @@ func ParseZuluDate(dateStr string) (int, string, error) {
 func NewUUID() string {
 	return uuid.NewV4().String()
 }
+
+func DistinctCast(distinctRes []interface{}) ([]string, error) {
+	results := make([]string, 0, len(distinctRes))
+	for _, result := range distinctRes {
+		if value, ok := result.(string); ok {
+			results = append(results, value)
+		} else {
+			return nil, fmt.Errorf("expected value of string type, instead got %T", result)
+		}
+	}
+	return results, nil
+}

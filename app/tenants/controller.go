@@ -1208,11 +1208,6 @@ func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	// Try to get mongo client and target tenant collection
 	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Create a simple query object to query by id
 	query := bson.M{"id": vars["ID"]}
 

@@ -23,7 +23,8 @@
 package topology
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,27 +33,26 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type topologyTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
-	tenant1key      string
-	tenant2key      string
-	tenant1db       string
-	tenant2db       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
+	tenant1key   string
+	tenant2key   string
+	tenant1db    string
+	tenant2db    string
 }
 
 // Setup the Test Environment
@@ -75,6 +75,9 @@ func (suite *topologyTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_topology_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -94,19 +97,12 @@ func (suite *topologyTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *topologyTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
 
@@ -136,7 +132,7 @@ func (suite *topologyTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
 
@@ -168,7 +164,7 @@ func (suite *topologyTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "t1",
 			"info": bson.M{"name": "TENANT1"},
@@ -191,7 +187,7 @@ func (suite *topologyTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"info": bson.M{"name": "TENANT2"},
 			"id":   "t2",
@@ -215,82 +211,82 @@ func (suite *topologyTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_endpoints_report.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_groups_report.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_groups.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_groups.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_groups.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_endpoints.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_endpoints.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_endpoints.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_service_types.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_service_types.insert",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_service_types.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_stats.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "topology_tags.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.get",
 			"roles":    []string{"editor", "viewer"},
 		})
 	// Seed database with recomputations
-	c = session.DB(suite.tenantDbConf.Db).C("service_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("service_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -307,7 +303,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -324,7 +321,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -341,7 +339,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -358,7 +357,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -378,10 +378,10 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with recomputations
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -399,7 +399,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -417,7 +418,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -435,7 +437,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -453,7 +456,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -471,7 +475,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150624,
@@ -489,7 +494,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150625,
@@ -507,7 +513,8 @@ func (suite *topologyTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -526,9 +533,9 @@ func (suite *topologyTestSuite) SetupTest() {
 				},
 			},
 		})
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Critical",
@@ -556,7 +563,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value": "value2"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49435",
 		"info": bson.M{
 			"name":        "Critical2",
@@ -584,7 +591,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value": "value2"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49999",
 		"info": bson.M{
 			"name":        "CriticalExcludeGroup",
@@ -617,7 +624,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943x",
 		"info": bson.M{
 			"name":        "Critical3",
@@ -645,7 +652,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value": "value2"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943p",
 		"info": bson.M{
 			"name":        "Critical4",
@@ -672,7 +679,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943d",
 		"info": bson.M{
 			"name":        "Critical5",
@@ -697,8 +704,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "infrastructure",
 				"value":   "Devel"},
 		}})
-
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical6",
@@ -723,7 +729,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "certification",
 				"value":   "Certified"},
 		}})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical7",
@@ -748,7 +754,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "group",
 				"value":   "NGI0"},
 		}})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical17",
@@ -773,7 +779,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "infrastructure",
 				"value":   "devtest"},
 		}})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical8",
@@ -803,7 +809,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "service_1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49xww",
 		"info": bson.M{
 			"name":        "Critical18",
@@ -829,7 +835,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "Critical9",
@@ -862,7 +868,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"name":    "monitored",
 				"value":   "YesNo"},
 		}})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4943z",
 		"info": bson.M{
 			"name":        "CriticalCombine",
@@ -900,7 +906,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "host2.site_a.foo"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a5553z",
 		"info": bson.M{
 			"name":        "CriticalScope",
@@ -926,7 +932,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "tier2, tier1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a5553z",
 		"info": bson.M{
 			"name":        "CriticalGT",
@@ -952,7 +958,7 @@ func (suite *topologyTestSuite) SetupTest() {
 				"value":   "tier2, tier1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a4956z",
 		"info": bson.M{
 			"name":        "CriticalExclude",
@@ -995,11 +1001,28 @@ func (suite *topologyTestSuite) SetupTest() {
 		}})
 
 	// Seed database with endpoint topology
-	c = session.DB(suite.tenant1db).C(endpointColName)
-	c.EnsureIndexKey("-date_integer", "group")
+
+	groupIndex := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "group", Value: 1},
+		},
+		Options: options.Index().SetUnique(false), // Set this according to your requirements
+	}
+
+	nameIndex := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "name", Value: 1},
+		},
+		Options: options.Index().SetUnique(false), // Set this according to your requirements
+	}
+
+	c = suite.cfg.MongoClient.Database(suite.tenant1db).Collection(endpointColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1011,11 +1034,11 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with endpoint topology
-	c = session.DB(suite.tenant2db).C(endpointColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c = suite.cfg.MongoClient.Database(suite.tenant2db).Collection(endpointColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1027,11 +1050,11 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with endpoint topology
-	c = session.DB(suite.tenantDbConf.Db).C(endpointColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(endpointColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1040,7 +1063,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_a.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "1", "monitored": "Yes"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1049,7 +1073,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host2.site_a.foo",
 			"service":      "service_2",
 			"tags":         bson.M{"production": "0", "monitored": "Y"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1058,7 +1083,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_b.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "Prod", "monitored": "YesNo"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1067,7 +1093,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_c.foo",
 			"service":      "service_3",
 			"tags":         bson.M{"production": "Prod", "monitored": "No"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-11",
 			"date_integer": 20150611,
@@ -1076,7 +1103,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_a.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "1", "monitored": "Yes"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-11",
 			"date_integer": 20150611,
@@ -1085,7 +1113,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host2.site_a.foo",
 			"service":      "service_2",
 			"tags":         bson.M{"production": "0", "monitored": "Y", "scope": "GROUPC, GROUPD, GROUPE"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-11",
 			"date_integer": 20150611,
@@ -1094,7 +1123,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_b.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "Prod", "monitored": "YesNo", "scope": "GROUPA, GROUPB"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
@@ -1103,7 +1133,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_a.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "test,tier"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
@@ -1112,7 +1143,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host2.site_a.foo",
 			"service":      "service_2",
 			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "tier1, lala"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
@@ -1121,7 +1153,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_b.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "1", "monitored": "1", "scope": "tier1, tier2, foo"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1130,7 +1163,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host1.site_a.foo",
 			"service":      "service_1",
 			"tags":         bson.M{"production": "0", "monitored": "0"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1139,7 +1173,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host2.site_a.foo",
 			"service":      "service_2",
 			"tags":         bson.M{"production": "0", "monitored": "0"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1148,7 +1183,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host3.site_a.foo",
 			"service":      "service_3",
 			"tags":         bson.M{"production": "0", "monitored": "0", "scope": "TEST"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-08-10",
 			"date_integer": 20150810,
@@ -1157,7 +1193,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"hostname":     "host0.site_a.foo",
 			"service":      "service_x",
 			"tags":         bson.M{"production": "0", "monitored": "0"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":          "2015-08-10",
 			"date_integer":  20150810,
@@ -1167,7 +1204,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"service":       "service_x",
 			"tags":          bson.M{"production": "0", "monitored": "0"},
 			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":          "2021-01-11",
 			"date_integer":  20210111,
@@ -1177,7 +1215,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"service":       "service_x",
 			"tags":          bson.M{"production": "0", "monitored": "0"},
 			"notifications": bson.M{"contacts": []string{"contact01@email.example.foo", "contact02@email.example.foo"}, "enabled": true},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":          "2021-01-11",
 			"date_integer":  20210111,
@@ -1190,10 +1229,10 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with group topology
-	c = session.DB(suite.tenant1db).C(groupColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c = suite.cfg.MongoClient.Database(suite.tenant1db).Collection(groupColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1204,10 +1243,10 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with group topology
-	c = session.DB(suite.tenant2db).C(groupColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c = suite.cfg.MongoClient.Database(suite.tenant2db).Collection(groupColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1218,10 +1257,10 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with group topology
-	c = session.DB(suite.tenantDbConf.Db).C(groupColName)
-	c.EnsureIndexKey("-date_integer", "group")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(groupColName)
+	c.Indexes().CreateOne(context.TODO(), groupIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1229,7 +1268,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEA",
 			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1237,7 +1277,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEB",
 			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
@@ -1245,7 +1286,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEC",
 			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-10",
 			"date_integer": 20150610,
@@ -1253,7 +1295,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITE_01",
 			"tags":         bson.M{"infrastructure": "devtest", "certification": "uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-10",
 			"date_integer": 20150610,
@@ -1261,7 +1304,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITE_02",
 			"tags":         bson.M{"infrastructure": "devel", "certification": "CertNot"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-10",
 			"date_integer": 20150610,
@@ -1269,7 +1313,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITE_101",
 			"tags":         bson.M{"infrastructure": "production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
@@ -1277,7 +1322,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEA",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-22",
 			"date_integer": 20150622,
@@ -1285,7 +1331,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEB",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1293,7 +1340,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEA",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1301,7 +1349,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEB",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-07-22",
 			"date_integer": 20150722,
@@ -1309,7 +1358,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEX",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-08-11",
 			"date_integer": 20150811,
@@ -1317,7 +1367,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEX",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2020-01-11",
 			"date_integer": 20200111,
@@ -1325,7 +1376,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEXYZ",
 			"tags":         bson.M{"infrastructure": "Devel", "certification": "Uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2020-01-11",
 			"date_integer": 20200111,
@@ -1333,7 +1385,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEXZ",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Certified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2020-01-11",
 			"date_integer": 20200111,
@@ -1341,7 +1394,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "NGIS",
 			"subgroup":     "SITEX",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2021-01-11",
 			"date_integer": 20210111,
@@ -1349,7 +1403,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "ORG",
 			"subgroup":     "SITEORG",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2021-01-11",
 			"date_integer": 20210111,
@@ -1357,7 +1412,8 @@ func (suite *topologyTestSuite) SetupTest() {
 			"type":         "ORG",
 			"subgroup":     "SVORG",
 			"tags":         bson.M{"infrastructure": "Production", "certification": "Uncertified"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":          "2020-01-11",
 			"date_integer":  20200111,
@@ -1369,45 +1425,50 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with group topology
-	c = session.DB(suite.tenantDbConf.Db).C(serviceTypeColName)
-	c.EnsureIndexKey("-date_integer", "name")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(serviceTypeColName)
+	c.Indexes().CreateOne(context.TODO(), nameIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "STORAGE",
 			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-13",
 			"date_integer": 20150613,
@@ -1418,45 +1479,50 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// seed service-types for tenant1
-	c = session.DB(suite.tenant1db).C(serviceTypeColName)
-	c.EnsureIndexKey("-date_integer", "name")
+	c = suite.cfg.MongoClient.Database(suite.tenant1db).Collection(serviceTypeColName)
+	c.Indexes().CreateOne(context.TODO(), nameIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "tenant1-DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "tenant1-API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant1-DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant1-API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant1-STORAGE",
 			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-13",
 			"date_integer": 20150613,
@@ -1467,45 +1533,50 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// seed service-types for tenant1
-	c = session.DB(suite.tenant2db).C(serviceTypeColName)
-	c.EnsureIndexKey("-date_integer", "name")
+	c = suite.cfg.MongoClient.Database(suite.tenant2db).Collection(serviceTypeColName)
+	c.Indexes().CreateOne(context.TODO(), nameIndex)
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "tenant2-DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-01-11",
 			"date_integer": 20150111,
 			"name":         "tenant2-API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant2-DB",
 			"title":        "Database Service",
 			"description":  "A Database type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant2-API",
 			"title":        "Web API Service",
 			"description":  "An API type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-04-12",
 			"date_integer": 20150412,
 			"name":         "tenant2-STORAGE",
 			"title":        "Data Storage Service",
 			"description":  "A Storage type of Service",
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"date":         "2015-06-13",
 			"date_integer": 20150613,
@@ -1516,8 +1587,8 @@ func (suite *topologyTestSuite) SetupTest() {
 		})
 
 	// Seed database with data feeds
-	c = session.DB(suite.tenantDbConf.Db).C("feeds_data")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_data")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"tenants": []string{"t1", "t2"},
 		})
@@ -4542,55 +4613,63 @@ func (suite *topologyTestSuite) TestListTopologyStats() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *topologyTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	tenant1 := suite.cfg.MongoClient.Database(suite.tenant1db)
+	tenant2 := suite.cfg.MongoClient.Database(suite.tenant2db)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+
+	cols, err := tenant1.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	tenant1 := session.DB(suite.tenant1db)
-	tenant2 := session.DB(suite.tenant2db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenant1.CollectionNames()
 	for _, col := range cols {
-		tenant1.C(col).RemoveAll(nil)
+		tenant1.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = tenant2.CollectionNames()
-	for _, col := range cols {
-		tenant2.C(col).RemoveAll(nil)
+	cols, err = tenant2.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
 	}
 
-	cols, err = tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		tenant2.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	cols, err = mainDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
+	}
+
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, col := range cols {
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *topologyTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
-	session.DB(suite.tenant1db).DropDatabase()
-	session.DB(suite.tenant2db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenant1db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenant2db).Drop(context.TODO())
+
 }
 
 // TestTopologyTestSuite is responsible for calling the tests
-func TestTopologyTestSuite(t *testing.T) {
+func TestSuiteTopology(t *testing.T) {
 	suite.Run(t, new(topologyTestSuite))
 }

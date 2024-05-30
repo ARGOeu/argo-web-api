@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -27,4 +28,34 @@ func GetMongoClient(mongoCfg config.MongoConfig) *mongo.Client {
 		log.Fatal(err)
 	}
 	return client
+}
+
+type DatedItem struct {
+	DateInteger int `bson:"date_integer"`
+}
+
+func GetCloseDate(c *mongo.Collection, dt int) int {
+	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	result := DatedItem{}
+	err := c.FindOne(context.TODO(), dateQuery).Decode(&result)
+	if err != nil {
+		return -1
+	}
+	return result.DateInteger
+}
+
+// GetReportID accepts a report name and returns the report's id
+func GetReportID(col *mongo.Collection, report string) (string, error) {
+	var result map[string]interface{}
+	// reports are stored to the reports collection
+	// query based on report name which is included in the info element
+	query := bson.M{"info.name": report}
+	// Execute the query and grab only the first result
+	err := col.FindOne(context.TODO(), query).Decode(&result)
+
+	if result != nil {
+		return result["id"].(string), err
+	}
+	return "", err
+
 }
