@@ -1,7 +1,8 @@
 package feeds
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,23 +11,22 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type FeedsTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
@@ -49,6 +49,9 @@ func (suite *FeedsTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -68,18 +71,11 @@ func (suite *FeedsTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *FeedsTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "TENANT_A",
@@ -88,34 +84,32 @@ func (suite *FeedsTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "TENANT_B",
@@ -124,8 +118,7 @@ func (suite *FeedsTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -133,21 +126,20 @@ func (suite *FeedsTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -155,42 +147,41 @@ func (suite *FeedsTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.topo.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.topo.update",
 			"roles":    []string{"editor"},
 		})
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.weights.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.weights.update",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.data.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.data.update",
 			"roles":    []string{"editor"},
 		})
 
 	// Seed database with topology feeds
-	c = session.DB(suite.tenantDbConf.Db).C("feeds_topology")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_topology")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"type":          "gocdb",
 			"feed_url":      "https://somewhere.foo.bar/topology/feed",
@@ -200,8 +191,8 @@ func (suite *FeedsTestSuite) SetupTest() {
 		})
 
 	// Seed database with weights feeds
-	c = session.DB(suite.tenantDbConf.Db).C("feeds_weights")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_weights")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"type":        "vapor",
 			"feed_url":    "https://somewhere.foo.bar/weight/feed",
@@ -210,8 +201,8 @@ func (suite *FeedsTestSuite) SetupTest() {
 		})
 
 	// Seed database with weights feeds
-	c = session.DB(suite.tenantDbConf.Db).C("feeds_data")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_data")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"tenants": []string{"6ac7d684-1f8e-4a02-a502-720e8f11e50c", "6ac7d684-1f8e-4a02-a502-720e8f11e50d"},
 		})
@@ -486,28 +477,37 @@ func (suite *FeedsTestSuite) TestListTopo() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest do things after each test ends
 func (suite *FeedsTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+
+	for _, col := range cols {
+		mainDB.Collection(col).Drop(context.TODO())
+	}
+
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, col := range cols {
+		tenantDB.Collection(col).Drop(context.TODO())
+	}
 }
 
-//TearDownTest to tear down every test
+// TearDownSuite do things after suite ends
 func (suite *FeedsTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestFeedsTestSuite(t *testing.T) {
+func TestSuiteFeeds(t *testing.T) {
 	suite.Run(t, new(FeedsTestSuite))
 }

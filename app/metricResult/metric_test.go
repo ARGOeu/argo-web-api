@@ -23,7 +23,8 @@
 package metricResult
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -33,11 +34,10 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -59,7 +59,7 @@ type metricResultTestSuite struct {
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *metricResultTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
     [server]
@@ -77,6 +77,9 @@ func (suite *metricResultTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_metric_result"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -84,28 +87,21 @@ func (suite *metricResultTestSuite) SetupTest() {
 	suite.clientkey = "KEY1"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/metric_result").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	coreCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	coreCol.InsertOne(context.TODO(), seedAuth)
 
 	// seed a tenant to use
 
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "EGI",
@@ -114,7 +110,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
@@ -123,15 +119,15 @@ func (suite *metricResultTestSuite) SetupTest() {
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricResult.get",
 			"roles":    []string{"editor", "viewer"},
@@ -145,11 +141,11 @@ func (suite *metricResultTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	tenantDbConf1, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_metrics")
+	c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":         "nagios3.hellasgrid.gr",
 		"date_integer":           20150501,
 		"timestamp":              "2015-05-01T00:00:00Z",
@@ -167,7 +163,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"threshold_rule_applied": "latency=15s;20:30;30:40",
 		"original_status":        "WARNING",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -182,7 +178,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -522,7 +518,7 @@ func (suite *metricResultTestSuite) TestOptionsMetricResult() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -536,13 +532,12 @@ func (suite *metricResultTestSuite) TestOptionsMetricResult() {
 // Mainly it's purpose is to drop the testdb
 func (suite *metricResultTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	suite.cfg.MongoClient.Database("ARGO_test_metric_result").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("ARGO_test_metric_result_egi").Drop(context.TODO())
 
-	session.DB("ARGO_test_metric_result").DropDatabase()
-	session.DB("ARGO_test_metric_result_egi").DropDatabase()
 }
 
 // This is the first function called when go test is issued
-func TestMetricResultSuite(t *testing.T) {
+func TestSuiteMetricResult(t *testing.T) {
 	suite.Run(t, new(metricResultTestSuite))
 }

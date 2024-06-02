@@ -1007,7 +1007,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			{Key: "date_integer", Value: -1},
 			{Key: "group", Value: 1},
 		},
-		Options: options.Index().SetUnique(false), // Set this according to your requirements
+		Options: options.Index().SetUnique(false),
 	}
 
 	nameIndex := mongo.IndexModel{
@@ -1015,7 +1015,7 @@ func (suite *topologyTestSuite) SetupTest() {
 			{Key: "date_integer", Value: -1},
 			{Key: "name", Value: 1},
 		},
-		Options: options.Index().SetUnique(false), // Set this according to your requirements
+		Options: options.Index().SetUnique(false),
 	}
 
 	c = suite.cfg.MongoClient.Database(suite.tenant1db).Collection(endpointColName)

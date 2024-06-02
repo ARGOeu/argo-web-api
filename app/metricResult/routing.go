@@ -31,13 +31,13 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"metricResult.get", "GET", "/{endpoint_name}/{metric_name}", GetMetricResult},
-	{"metricResult.get", "GET", "/{endpoint_name}", GetMultipleMetricResults},
-	{"metricResult.options", "OPTIONS", "/{endpoint_name}/{metric_name}", Options},
-	{"metricResult.options", "OPTIONS", "/{endpoint_name}", Options},
+	{Name: "metricResult.get", Verb: "GET", Path: "/{endpoint_name}/{metric_name}", SubrouterHandler: GetMetricResult},
+	{Name: "metricResult.get", Verb: "GET", Path: "/{endpoint_name}", SubrouterHandler: GetMultipleMetricResults},
+	{Name: "metricResult.options", Verb: "OPTIONS", Path: "/{endpoint_name}/{metric_name}", SubrouterHandler: Options},
+	{Name: "metricResult.options", Verb: "OPTIONS", Path: "/{endpoint_name}", SubrouterHandler: Options},
 }

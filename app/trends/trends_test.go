@@ -23,7 +23,8 @@
 package trends
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -33,11 +34,10 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -58,7 +58,7 @@ type TrendsTestSuite struct {
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *TrendsTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
     [server]
@@ -76,28 +76,24 @@ func (suite *TrendsTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/trends").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	authCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	authCol.InsertOne(context.TODO(), seedAuth)
 
 	// seed a tenant to use
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -106,7 +102,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
@@ -115,51 +111,60 @@ func (suite *TrendsTestSuite) SetupTest() {
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "tenant_user",
 				"email":   "tenant_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_metrics",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_metrics_tags",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_endpoints",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_services",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_endpoint_groups",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_metrics",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_endpoints",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_services",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_metrics_tags",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_endpoint_groups",
 			"roles":    []string{"editor", "viewer"},
@@ -173,11 +178,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t1conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the report DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("reports")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -194,31 +199,31 @@ func (suite *TrendsTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
 	// seed the status detailed trends for endpoint group data
-	c = session.DB(suite.tenantDbConf.Db).C("status_trends_groups")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_groups")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -226,21 +231,21 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-B",
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -248,21 +253,21 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-C",
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -270,14 +275,14 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 45,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-C",
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -286,8 +291,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends service data
-	c = session.DB(suite.tenantDbConf.Db).C("status_trends_services")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_services")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -296,7 +301,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -304,7 +309,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -312,7 +317,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -321,7 +326,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -329,7 +334,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -337,7 +342,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -346,7 +351,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 45,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -354,7 +359,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -364,8 +369,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends endpoint data
-	c = session.DB(suite.tenantDbConf.Db).C("status_trends_endpoints")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_endpoints")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -375,7 +380,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -385,7 +390,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -395,7 +400,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -406,7 +411,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 55,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -415,7 +420,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -424,7 +429,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -434,7 +439,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"duration": 45,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -443,7 +448,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -454,8 +459,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_trends_metrics")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_metrics")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -465,7 +470,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -475,7 +480,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   40,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -485,7 +490,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -495,7 +500,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -505,7 +510,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -515,7 +520,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   40,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -525,7 +530,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -535,7 +540,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -545,7 +550,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   45,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -556,7 +561,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"trends":   32,
 		"tags":     []string{"STORAGE"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -567,7 +572,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"trends":   8,
 		"tags":     []string{"NETWORK", "HTTP"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -579,8 +584,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends metric data
-	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_metrics")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_metrics")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -589,7 +594,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -598,7 +603,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-2",
 		"flipflop": 40,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -607,7 +612,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -616,7 +621,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -625,7 +630,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -634,7 +639,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-2",
 		"flipflop": 40,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -643,7 +648,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -652,7 +657,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -661,7 +666,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 45,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -671,7 +676,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"tags":     []string{"MEMORY"},
 		"flipflop": 32,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -681,7 +686,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"tags":     []string{"NETWORK", "HTTP"},
 		"flipflop": 8,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -693,8 +698,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends endpoint data
-	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoints")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_endpoints")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -702,7 +707,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -710,7 +715,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 2,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -719,7 +724,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"flipflop": 35,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -727,7 +732,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -735,7 +740,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -743,7 +748,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example2.foo",
 		"flipflop": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -751,7 +756,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 48,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -759,7 +764,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 7,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -769,22 +774,22 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends service data
-	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_services")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_services")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 25,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 16,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -792,21 +797,21 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"flipflop": 3,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 12,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -814,21 +819,21 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"flipflop": 5,
 	})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 43,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 11,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -837,38 +842,38 @@ func (suite *TrendsTestSuite) SetupTest() {
 	})
 
 	// seed the status detailed trends group data
-	c = session.DB(suite.tenantDbConf.Db).C("flipflop_trends_endpoint_groups")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_endpoint_groups")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"flipflop": 35,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"flipflop": 3,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"flipflop": 55,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
 		"flipflop": 5,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"flipflop": 11,
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -889,7 +894,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 
 	expReqs := []expReq{
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?date=2015-05-01",
 			code:   200,
@@ -932,7 +937,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?date=2015-05-01",
 			code:   200,
@@ -965,7 +970,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/services?date=2015-05-01",
 			code:   200,
@@ -995,7 +1000,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?date=2015-05-01",
 			code:   200,
@@ -1018,7 +1023,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -1099,7 +1104,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics/tags?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -1167,7 +1172,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-04-01&end_date=2015-05-02&top=3&granularity=monthly",
 			code:   200,
@@ -1234,7 +1239,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-05-01&end_date=2015-05-02&top=3",
 			code:   200,
@@ -1270,7 +1275,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics/tags?start_date=2015-05-01&end_date=2015-05-02&top=3",
 			code:   200,
@@ -1335,7 +1340,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/metrics?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -1378,7 +1383,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -1411,7 +1416,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -1472,7 +1477,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-04-01&end_date=2015-05-02&top=2&granularity=monthly",
 			code:   200,
@@ -1521,7 +1526,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/endpoints?start_date=2015-05-01&end_date=2015-05-02&top=2",
 			code:   200,
@@ -1548,7 +1553,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -1578,7 +1583,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -1633,7 +1638,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-04-01&end_date=2015-05-02&top=2&granularity=monthly",
 			code:   200,
@@ -1678,7 +1683,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/services?start_date=2015-05-01&end_date=2015-05-02&top=2",
 			code:   200,
@@ -1703,7 +1708,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01",
 			code:   400,
@@ -1717,13 +1722,13 @@ func (suite *TrendsTestSuite) TestTrends() {
   {
    "message": "Bad Request",
    "code": "400",
-   "details": "Please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
+   "details": "please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
   }
  ]
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?end_date=2015-05-01",
 			code:   400,
@@ -1737,13 +1742,13 @@ func (suite *TrendsTestSuite) TestTrends() {
   {
    "message": "Bad Request",
    "code": "400",
-   "details": "Please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
+   "details": "please use either a date url parameter or a combination of start_date and end_date parameters to declare range"
   }
  ]
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -1766,7 +1771,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -1807,7 +1812,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-04-01&end_date=2015-05-02&top=1&granularity=monthly",
 			code:   200,
@@ -1840,7 +1845,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/flapping/groups?start_date=2015-05-01&end_date=2015-05-02&top=1",
 			code:   200,
@@ -1859,7 +1864,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -1945,7 +1950,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-05-01&end_date=2015-05-02&top=1",
 			code:   200,
@@ -1999,7 +2004,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -2138,7 +2143,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics/tags?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=5",
 			code:   200,
@@ -2198,7 +2203,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
 			code:   200,
@@ -2297,7 +2302,7 @@ func (suite *TrendsTestSuite) TestTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/metrics?date=2015-05-01",
 			code:   200,
@@ -2389,7 +2394,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 
 	expReqs := []expReq{
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/endpoints?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -2454,7 +2459,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/endpoints?start_date=2015-05-01&end_date=2015-05-02&top=1",
 			code:   200,
@@ -2505,7 +2510,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/endpoints?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -2606,7 +2611,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/endpoints?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
 			code:   200,
@@ -2686,7 +2691,7 @@ func (suite *TrendsTestSuite) TestStatusEndpointTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/endpoints?date=2015-05-01",
 			code:   200,
@@ -2762,7 +2767,7 @@ func (suite *TrendsTestSuite) TestStatusServiceTrends() {
 
 	expReqs := []expReq{
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/services?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -2822,7 +2827,7 @@ func (suite *TrendsTestSuite) TestStatusServiceTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/services?start_date=2015-05-01&end_date=2015-05-02&top=1",
 			code:   200,
@@ -2870,7 +2875,7 @@ func (suite *TrendsTestSuite) TestStatusServiceTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/services?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -2963,7 +2968,7 @@ func (suite *TrendsTestSuite) TestStatusServiceTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/services?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
 			code:   200,
@@ -3038,7 +3043,7 @@ func (suite *TrendsTestSuite) TestStatusServiceTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/services?date=2015-05-01",
 			code:   200,
@@ -3111,7 +3116,7 @@ func (suite *TrendsTestSuite) TestStatusEgroupTrends() {
 
 	expReqs := []expReq{
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/groups?start_date=2015-05-01&end_date=2015-05-02",
 			code:   200,
@@ -3166,7 +3171,7 @@ func (suite *TrendsTestSuite) TestStatusEgroupTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/groups?start_date=2015-05-01&end_date=2015-05-02&top=1",
 			code:   200,
@@ -3211,7 +3216,7 @@ func (suite *TrendsTestSuite) TestStatusEgroupTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/groups?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly",
 			code:   200,
@@ -3296,7 +3301,7 @@ func (suite *TrendsTestSuite) TestStatusEgroupTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/groups?start_date=2015-04-01&end_date=2015-05-02&granularity=monthly&top=1",
 			code:   200,
@@ -3366,7 +3371,7 @@ func (suite *TrendsTestSuite) TestStatusEgroupTrends() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/trends/Report_A/status/groups?date=2015-05-01",
 			code:   200,
@@ -3433,7 +3438,7 @@ func (suite *TrendsTestSuite) TestOptionsStatusTrendsEgroups() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3451,7 +3456,7 @@ func (suite *TrendsTestSuite) TestOptionsStatusTrendsServices() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3469,7 +3474,7 @@ func (suite *TrendsTestSuite) TestOptionsStatusTrendsEndpoints() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3487,7 +3492,7 @@ func (suite *TrendsTestSuite) TestOptionsStatusTrendsMetrics() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3505,7 +3510,7 @@ func (suite *TrendsTestSuite) TestOptionsTrendsMetrics() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3523,7 +3528,7 @@ func (suite *TrendsTestSuite) TestOptionsTrendsEndpoints() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3541,7 +3546,7 @@ func (suite *TrendsTestSuite) TestOptionsTrendsServices() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3559,7 +3564,7 @@ func (suite *TrendsTestSuite) TestOptionsTrendsEndpointGroups() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -3573,13 +3578,11 @@ func (suite *TrendsTestSuite) TestOptionsTrendsEndpointGroups() {
 // Mainly it's purpose is to drop the testdb
 func (suite *TrendsTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
-	session.DB("argotest_trends").DropDatabase()
-	session.DB("argotest_trends_tenant").DropDatabase()
+	suite.cfg.MongoClient.Database("argotest_trends").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("argotest_trends_tenant").Drop(context.TODO())
 }
 
 // This is the first function called when go test is issued
-func TestTrends(t *testing.T) {
+func TestSuiteTrends(t *testing.T) {
 	suite.Run(t, new(TrendsTestSuite))
 }

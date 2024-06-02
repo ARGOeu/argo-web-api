@@ -1,20 +1,21 @@
 package feeds
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
-	"gopkg.in/mgo.v2/bson"
+	gcontext "github.com/gorilla/context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//Create a new feeds resource
+// Create a new feeds resource
 const feedsTopoCol = "feeds_topology"
 const feedsWeightsCol = "feeds_weights"
 const feedsDataCol = "feeds_data"
@@ -35,27 +36,13 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// open a master session to the argo core database
-	coreSession, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(coreSession)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	tenantsCol := coreSession.DB(cfg.MongoDB.Db).C(tenantsColName)
+	tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection(tenantsColName)
 	incoming := Data{}
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -74,25 +61,20 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	// prep query to find info based on all tenant names given in the incoming list
 	aggr := []bson.M{
-		bson.M{"$match": bson.M{"info.name": bson.M{"$in": incoming.Tenants}}},
-		bson.M{"$project": bson.M{"id": "$id", "name": "$info.name"}},
-	}
-
-	// open a normal session to the specific tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
+		{"$match": bson.M{"info.name": bson.M{"$in": incoming.Tenants}}},
+		{"$project": bson.M{"id": "$id", "name": "$info.name"}},
 	}
 
 	tInfo := []TenantInfo{}
-	err = tenantsCol.Pipe(aggr).All(&tInfo)
+	cursor, err := tenantsCol.Aggregate(context.TODO(), aggr)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &tInfo)
 
 	tenantIDs := Data{}
 
@@ -106,7 +88,7 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 				found = true
 			}
 		}
-		if found == false {
+		if !found {
 			output, err = createMsgView(fmt.Sprintf("Tenant %s not found", name), 404)
 			code = http.StatusNotFound
 			return code, h, output, err
@@ -117,9 +99,9 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	// all incoming tenants were found
 
 	// update the new information
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsDataCol)
 
-	ftCol := session.DB(tenantDbConfig.Db).C(feedsDataCol)
-	_, err = ftCol.Upsert(bson.M{}, tenantIDs)
+	_, err = ftCol.ReplaceOne(context.TODO(), bson.M{}, tenantIDs, options.Replace().SetUpsert(true))
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -147,24 +129,12 @@ func UpdateTopo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := Topo{}
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -181,13 +151,9 @@ func UpdateTopo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	_, err = mongo.Remove(session, tenantDbConfig.Db, feedsTopoCol, bson.M{})
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsTopoCol)
 
-	err = mongo.Insert(session, tenantDbConfig.Db, feedsTopoCol, incoming)
+	_, err = ftCol.ReplaceOne(context.TODO(), bson.M{}, incoming, options.Replace().SetUpsert(true))
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -215,24 +181,12 @@ func UpdateWeights(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := Weights{}
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -249,13 +203,9 @@ func UpdateWeights(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	_, err = mongo.Remove(session, tenantDbConfig.Db, feedsWeightsCol, bson.M{})
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsWeightsCol)
 
-	err = mongo.Insert(session, tenantDbConfig.Db, feedsWeightsCol, incoming)
+	_, err = ftCol.ReplaceOne(context.TODO(), bson.M{}, incoming, options.Replace().SetUpsert(true))
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -286,31 +236,16 @@ func ListData(r *http.Request, cfg config.Config) (int, http.Header, []byte, err
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 	result := Data{}
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	ftCol := session.DB(tenantDbConfig.Db).C(feedsDataCol)
-	err = ftCol.Find(bson.M{}).One(&result)
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsDataCol)
+	err = ftCol.FindOne(context.TODO(), bson.M{}).Decode(&result)
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 
 			output, err = createMsgView("No tenant data feeds were defined. Please specify new ones!", 404)
 			code = http.StatusNotFound
@@ -324,30 +259,26 @@ func ListData(r *http.Request, cfg config.Config) (int, http.Header, []byte, err
 
 	if len(result.Tenants) > 0 {
 
-		// open a master session to the argo core database
-		coreSession, err := mongo.OpenSession(cfg.MongoDB)
-		defer mongo.CloseSession(coreSession)
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		tenantsCol := coreSession.DB(cfg.MongoDB.Db).C(tenantsColName)
+		tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection(tenantsColName)
 
 		// prep query to find info based on all tenant ids given
 		aggr := []bson.M{
-			bson.M{"$match": bson.M{"id": bson.M{"$in": result.Tenants}}},
-			bson.M{"$project": bson.M{"id": "$id", "name": "$info.name"}},
+			{"$match": bson.M{"id": bson.M{"$in": result.Tenants}}},
+			{"$project": bson.M{"id": "$id", "name": "$info.name"}},
 		}
 
 		tInfo := []TenantInfo{}
 
-		err = tenantsCol.Pipe(aggr).All(&tInfo)
+		cursor, err := tenantsCol.Aggregate(context.TODO(), aggr)
 
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+
+		cursor.All(context.TODO(), &tInfo)
 
 		// check if incoming tenant IDs were found
 		for _, ID := range result.Tenants {
@@ -358,7 +289,7 @@ func ListData(r *http.Request, cfg config.Config) (int, http.Header, []byte, err
 					found = true
 				}
 			}
-			if found == false {
+			if !found {
 				output, err = createMsgView(fmt.Sprintf("Tenant with ID: %s not found. Please update the feed correctly!", ID), 404)
 				code = http.StatusNotFound
 				return code, h, output, err
@@ -399,30 +330,15 @@ func ListTopo(r *http.Request, cfg config.Config) (int, http.Header, []byte, err
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 	result := Topo{}
 
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsTopoCol)
+	err = ftCol.FindOne(context.TODO(), bson.M{}).Decode(&result)
 	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	ftCol := session.DB(tenantDbConfig.Db).C(feedsTopoCol)
-	err = ftCol.Find(bson.M{}).One(&result)
-	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = 404
 			return code, h, output, err
@@ -461,28 +377,13 @@ func ListWeights(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 	result := Weights{}
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	ftCol := session.DB(tenantDbConfig.Db).C(feedsWeightsCol)
-	err = ftCol.Find(bson.M{}).One(&result)
+	ftCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(feedsWeightsCol)
+	err = ftCol.FindOne(context.TODO(), bson.M{}).Decode(&result)
 	if err != nil {
 		if err.Error() == "not found" {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
@@ -520,7 +421,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	h.Set("Allow", "GET, POST, DELETE, PUT, OPTIONS")
 	return code, h, output, err
 
 }

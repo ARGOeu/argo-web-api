@@ -188,7 +188,7 @@ func (suite *WeightsTestSuite) SetupTest() {
 			{Key: "date_integer", Value: -1},
 			{Key: "id", Value: 1},
 		},
-		Options: options.Index().SetUnique(false), // Set this according to your requirements
+		Options: options.Index().SetUnique(false),
 	}
 	c.Indexes().CreateOne(context.TODO(), indexModel)
 	c.InsertOne(context.TODO(),
