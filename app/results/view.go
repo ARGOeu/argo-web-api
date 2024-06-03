@@ -66,7 +66,7 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 			prevServiceFlavor = row.Service
 			serviceEndpointGroup = &ServiceEndpointGroup{
 				Name: row.Service,
-				Type: fmt.Sprintf("service"),
+				Type: "service",
 			}
 			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceEndpointGroup)
 			prevEndpoint = ""
@@ -76,7 +76,7 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 			prevEndpoint = row.Name
 			endpoint = &Endpoint{
 				Name: row.Name,
-				Type: fmt.Sprintf("endpoint"),
+				Type: "endpoint",
 				Info: row.Info,
 			}
 			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
@@ -104,7 +104,7 @@ func createEndpointResultView(results []EndpointInterface, report reports.MongoI
 
 }
 
-func createFlatEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, limit int, skip int, custom bool) ([]byte, error) {
+func createFlatEndpointResultView(results []EndpointInterface, format string, limit int, skip int, custom bool) ([]byte, error) {
 
 	docRoot := &pageRoot{}
 
@@ -131,7 +131,7 @@ func createFlatEndpointResultView(results []EndpointInterface, report reports.Mo
 			prevSuperGroup = row.SuperGroup
 			endpoint = &Endpoint{
 				Name:       row.Name,
-				Type:       fmt.Sprintf("endpoint"),
+				Type:       "endpoint",
 				Service:    row.Service,
 				SuperGroup: row.SuperGroup,
 				Info:       row.Info,
@@ -202,7 +202,7 @@ func createServiceFlavorResultView(results []ServiceFlavorInterface, report repo
 			prevServiceFlavor = row.Name
 			serviceFlavor = &ServiceFlavor{
 				Name: row.Name,
-				Type: fmt.Sprintf("service"),
+				Type: "service",
 			}
 			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceFlavor)
 		}
@@ -329,7 +329,7 @@ func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInt
 
 func createErrorMessage(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &errorMessage{}
 

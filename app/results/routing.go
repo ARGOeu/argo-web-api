@@ -23,16 +23,16 @@
 package results
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
@@ -41,66 +41,66 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 	// Routes for serving endpoint a/r results under services
 	endpointSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
-	endpointSubrouter = respond.PrepAppRoutes(endpointSubrouter, confhandler, appEndpointRoutes)
+	respond.PrepAppRoutes(endpointSubrouter, confhandler, appEndpointRoutes)
 
 	serviceSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
-	serviceSubrouter = respond.PrepAppRoutes(serviceSubrouter, confhandler, appServiceRoutes)
+	respond.PrepAppRoutes(serviceSubrouter, confhandler, appServiceRoutes)
 
 	groupSubrouter := s.StrictSlash(false).PathPrefix("/{report_name}").Subrouter()
-	groupSubrouter = respond.PrepAppRoutes(groupSubrouter, confhandler, appGroupRoutes)
+	respond.PrepAppRoutes(groupSubrouter, confhandler, appGroupRoutes)
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appEndpointRoutes = []respond.AppRoutes{
 
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", ListEndpointResults},
-	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", ListEndpointResults},
-	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints/{endpoint_name}", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/services/{service_type}/endpoints", SubrouterHandler: ListEndpointResults},
 	//routes to quickly get endpoints included in an endpoint group without specifing service
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", ListEndpointResults},
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
-	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", ListEndpointResults},
-	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/endpoints", ListEndpointResults},
-	{"results.get", "GET", "/endpoints", FlatListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/endpoints", SubrouterHandler: ListEndpointResults},
+	{Name: "results.get", Verb: "GET", Path: "/endpoints", SubrouterHandler: FlatListEndpointResults},
 	// normal routes to get endpoints included in a service
 
 }
 
 var appServiceRoutes = []respond.AppRoutes{
 
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
-	{"results.list", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
-	{"results.get", "GET", "/{lgroup_type}/{lgroup_name}/services/{service_type}", ListServiceFlavorResults},
-	{"results.list", "GET", "/{lgroup_type}/{lgroup_name}/services", ListServiceFlavorResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_type}", SubrouterHandler: ListServiceFlavorResults},
+	{Name: "results.list", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", SubrouterHandler: ListServiceFlavorResults},
+	{Name: "results.get", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/services/{service_type}", SubrouterHandler: ListServiceFlavorResults},
+	{Name: "results.list", Verb: "GET", Path: "/{lgroup_type}/{lgroup_name}/services", SubrouterHandler: ListServiceFlavorResults},
 }
 
 var appGroupRoutes = []respond.AppRoutes{
-	{"results.get", "GET", "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", ListEndpointGroupResults},
-	{"results.list", "GET", "/{group_type}/{group_name}/{lgroup_type}", ListEndpointGroupResults},
-	{"results.get", "GET", "/{group_type}/{group_name}", routeGroup},
-	{"results.list", "GET", "/{group_type}", routeGroup},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", SubrouterHandler: ListEndpointGroupResults},
+	{Name: "results.list", Verb: "GET", Path: "/{group_type}/{group_name}/{lgroup_type}", SubrouterHandler: ListEndpointGroupResults},
+	{Name: "results.get", Verb: "GET", Path: "/{group_type}/{group_name}", SubrouterHandler: routeGroup},
+	{Name: "results.list", Verb: "GET", Path: "/{group_type}", SubrouterHandler: routeGroup},
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"results.options", "OPTIONS", "/{report_name}/endpoints", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", Options},
-	{"results.options", "OPTIONS", "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/endpoints/{endpoint_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/services", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}", SubrouterHandler: Options},
 }
 
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -118,17 +118,11 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	vars := mux.Vars(r)
 	// Grab Tenant DB configuration from context
-	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantcfg)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		return code, h, output, err
-	}
+	tenantcfg := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	requestedReport := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"info.name": vars["report_name"]}, &requestedReport)
+	rCol := cfg.MongoClient.Database(tenantcfg.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&requestedReport)
 
 	if err != nil {
 		code = http.StatusNotFound

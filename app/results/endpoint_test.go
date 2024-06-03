@@ -23,7 +23,8 @@
 package results
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,23 +33,20 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type endpointAvailabilityTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -70,6 +68,9 @@ func (suite *endpointAvailabilityTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_endpoint_availability_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -77,7 +78,7 @@ func (suite *endpointAvailabilityTestSuite) SetupSuite() {
 	suite.clientkey = "secretkey"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -85,60 +86,50 @@ func (suite *endpointAvailabilityTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *endpointAvailabilityTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_wrong_db_serviceflavoravailability",
@@ -146,13 +137,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
@@ -160,22 +151,22 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.get",
 			"roles":    []string{"editor", "viewer"},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -188,7 +179,7 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 98.26389,
 			"reliability":  98.26389,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
@@ -196,7 +187,8 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"info": bson.M{
 				"Url": "https://foo.example.url",
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -209,12 +201,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 96.875,
 			"reliability":  96.875,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -227,12 +220,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 96.875,
 			"reliability":  96.875,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -245,12 +239,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 96.875,
 			"reliability":  96.875,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -263,12 +258,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 96.875,
 			"reliability":  96.875,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -281,7 +277,7 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 54.03509,
 			"reliability":  81.48148,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
@@ -289,7 +285,8 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"info": bson.M{
 				"Url": "https://foo.example.url",
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -302,16 +299,16 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"availability": 100,
 			"reliability":  100,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "production",
 					"value": "Y",
 				},
 			},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -326,15 +323,15 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"type": "metric",
 				"name": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
@@ -641,7 +638,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1",
 			result: `{
@@ -671,7 +668,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
  }`,
 			code: 200,
 		},
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=MQ==",
 			result: `{
@@ -702,7 +699,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=Mg==",
 			result: `{
@@ -730,7 +727,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=Mw==",
 			result: `{
@@ -758,7 +755,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=NA==",
 			result: `{
@@ -786,7 +783,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=NQ==",
 			result: `{
@@ -814,7 +811,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated() {
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=1&nextPageToken=Ng==",
 			result: `{
@@ -869,7 +866,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated3() {
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=3",
 			result: `{
@@ -923,7 +920,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated3() {
  }`,
 			code: 200,
 		},
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=3&nextPageToken=Mw==",
 			result: `{
@@ -982,7 +979,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated3() {
  }`,
 			code: 200,
 		},
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=3&nextPageToken=Ng==",
 			result: `{
@@ -1037,7 +1034,7 @@ func (suite *endpointAvailabilityTestSuite) TestMonthlyFlatAllEndpointsPaginated
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly&pageSize=-1",
 			result: `{
@@ -1129,7 +1126,7 @@ func (suite *endpointAvailabilityTestSuite) TestMonthlyFlatAllEndpointsPaginated
  }`,
 			code: 200,
 		},
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly&pageSize=2",
 			result: `{
@@ -1176,7 +1173,7 @@ func (suite *endpointAvailabilityTestSuite) TestMonthlyFlatAllEndpointsPaginated
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly&pageSize=2&nextPageToken=Mg==",
 			result: `{
@@ -1220,7 +1217,7 @@ func (suite *endpointAvailabilityTestSuite) TestMonthlyFlatAllEndpointsPaginated
 			code: 200,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly&pageSize=2&nextPageToken=NA==",
 			result: `{
@@ -1275,7 +1272,7 @@ func (suite *endpointAvailabilityTestSuite) TestCustomFlatAllEndpointsPaginated(
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=custom&pageSize=-1",
 			result: `{
@@ -1391,7 +1388,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated4() {
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=4",
 			result: `{
@@ -1453,7 +1450,7 @@ func (suite *endpointAvailabilityTestSuite) TestFlatAllEndpointsPaginated4() {
  }`,
 			code: 200,
 		},
-		expReq{
+		{
 			method: "GET",
 			url:    "/api/v2/results/Report_A/endpoints?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=daily&pageSize=4&nextPageToken=NA==",
 			result: `{
@@ -1751,7 +1748,7 @@ func (suite *endpointAvailabilityTestSuite) TestOptionsServiceFlavor() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1766,7 +1763,7 @@ func (suite *endpointAvailabilityTestSuite) TestOptionsServiceFlavor() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1781,7 +1778,7 @@ func (suite *endpointAvailabilityTestSuite) TestOptionsServiceFlavor() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1796,7 +1793,7 @@ func (suite *endpointAvailabilityTestSuite) TestOptionsServiceFlavor() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1824,41 +1821,38 @@ func (suite *endpointAvailabilityTestSuite) TestStrictSlashServiceFlavorResults(
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *endpointAvailabilityTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
-	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
 	}
 
+	for _, col := range cols {
+		tenantDB.Collection(col).Drop(context.TODO())
+	}
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *endpointAvailabilityTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-// TestEndpointAvailabilityTestSuite is responsible for calling the tests
-func TestEndpointAvailabilityTestSuite(t *testing.T) {
+// TestSuiteResultsEndpoint is responsible for calling the tests
+func TestSuiteResultsEndpoint(t *testing.T) {
 	suite.Run(t, new(endpointAvailabilityTestSuite))
 }
