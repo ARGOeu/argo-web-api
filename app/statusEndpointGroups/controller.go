@@ -23,16 +23,18 @@
 package statusEndpointGroups
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	gcontext "github.com/gorilla/context"
+	"go.mongodb.org/mongo-driver/bson"
+
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // parseZuluDate is used to parse a zulu formatted date to integer
@@ -90,31 +92,31 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoint_groups")
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_endpoint_groups")
 
 	// Query the detailed metric results
 
 	// prepare the match filter
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(rCol, input.report)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+	cursor, err := metricCollection.Find(context.TODO(), prepareQuery(input, reportID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -122,11 +124,15 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 	if len(results) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+		cursor, err := metricCollection.Find(context.TODO(), prepareQuery(input, reportID))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
+
 	}
 
 	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
@@ -162,7 +168,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

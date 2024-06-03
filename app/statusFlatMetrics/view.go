@@ -32,9 +32,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int, details bool) ([]byte, error) {
+func createFlatView(results []DataOutput, input InputParams, limit int, skip int, details bool) ([]byte, error) {
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootPagedOUT{}
@@ -115,16 +115,4 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 	output, err = respond.MarshalContent(docRoot, input.format, "", " ")
 	return output, err
 
-}
-
-func createMessageOUT(message string, code int, format string) ([]byte, error) {
-
-	output := []byte("message placeholder")
-	err := error(nil)
-	docRoot := &messageOUT{}
-
-	docRoot.Message = message
-	docRoot.Code = strconv.Itoa(code)
-	output, err = respond.MarshalContent(docRoot, format, "", " ")
-	return output, err
 }

@@ -20,10 +20,11 @@
  *
  */
 
-package statusServices
+package statusEndpoints
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -33,16 +34,15 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
-type StatusServicesTestSuite struct {
+type StatusEndpointsTestSuite struct {
 	suite.Suite
 	cfg          config.Config
 	router       *mux.Router
@@ -56,9 +56,9 @@ type StatusServicesTestSuite struct {
 // to testdb: argo_test_details. Also here is are instantiated some expected
 // xml response validation messages (authorization,crud responses).
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
-func (suite *StatusServicesTestSuite) SetupTest() {
+func (suite *StatusEndpointsTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
     [server]
@@ -71,33 +71,27 @@ func (suite *StatusServicesTestSuite) SetupTest() {
     [mongodb]
     host = "127.0.0.1"
     port = 27017
-    db = "argotest_services"
+    db = "argotest_endpoints"
 `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/status").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
-	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
+	authCol := suite.cfg.MongoClient.Database((suite.cfg.MongoDB.Db)).Collection("authentication")
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	authCol.InsertOne(context.TODO(), seedAuth)
 
 	// seed a tenant to use
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -106,23 +100,23 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_services_egi",
+				"database": "argotest_endpoints_egi",
 				"username": "",
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
@@ -131,28 +125,28 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
-				"database": "argotest_services_eudat",
+				"database": "argotest_endpoints_eudat",
 				"username": "",
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "eudat_user",
 				"email":   "eudat_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.get",
 			"roles":    []string{"editor", "viewer"},
@@ -165,11 +159,11 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t1conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the report DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("reports")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -186,77 +180,153 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_services")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_endpoints")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
 		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
-	c.Insert(bson.M{
-		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date_integer":       20150501,
-		"timestamp":          "2015-05-01T05:00:00Z",
-		"endpoint_group":     "HG-03-AUTH",
-		"service":            "CREAM-CE",
-		"status":             "OK",
-		"has_threshold_rule": true,
-	})
-	c.Insert(bson.M{
-		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date_integer":   20150501,
-		"timestamp":      "2015-05-01T00:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "SRM",
-		"status":         "WARNING",
-	})
-	c.Insert(bson.M{
-		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
-		"date_integer":   20150501,
-		"timestamp":      "2015-05-01T01:00:00Z",
-		"endpoint_group": "HG-03-AUTH",
-		"service":        "SRM",
-		"status":         "OK",
-	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "HG-03-AUTH",
-		"service":        "SRM",
+		"service":        "CREAM-CE",
+		"host":           "cream01.afroditi.gr",
+		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T08:47:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "WARNING",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T12:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream02.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream03.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
+		"status":         "OK",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T04:40:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "CREAM-CE",
+		"host":           "cream03.afroditi.gr",
+		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "UNKNOWN",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T06:00:00Z",
+		"endpoint_group":     "HG-03-AUTH",
+		"service":            "CREAM-CE",
+		"host":               "cream03.afroditi.gr",
+		"metric":             "emi.cream.CREAMCE-JobSubmit",
+		"status":             "CRITICAL",
+		"has_threshold_rule": true,
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T00:00:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "STORAGE",
+		"host":           "storage.example.foo",
+		"metric":         "check.storage",
+		"status":         "OK",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":   20150501,
+		"timestamp":      "2015-05-01T06:40:00Z",
+		"endpoint_group": "HG-03-AUTH",
+		"service":        "STORAGE",
+		"host":           "storage.example.foo",
+		"metric":         "check.storage",
+		"status":         "WARNING",
+	})
+	c.InsertOne(context.TODO(), bson.M{
+		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+		"date_integer":       20150501,
+		"timestamp":          "2015-05-01T09:00:00Z",
+		"endpoint_group":     "HG-03-AUTH",
+		"service":            "STORAGE",
+		"host":               "storage.example.foo",
+		"metric":             "check.storage",
+		"status":             "CRITICAL",
+		"has_threshold_rule": true,
 	})
 
 	// get dbconfiguration based on the tenant
@@ -267,11 +337,11 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t2conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the reports DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("reports")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -288,65 +358,73 @@ func (suite *StatusServicesTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_services")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("status_endpoints")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
+		"host":           "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
+		"host":           "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "EL-01-AUTH",
 		"service":        "srv.typeA",
+		"host":           "host01.eudat.gr",
+		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
 
 }
 
-func (suite *StatusServicesTestSuite) TestListStatusServices() {
+func (suite *StatusEndpointsTestSuite) TestListStatusEndpoints() {
 	respXML1 := `<root>
  <group name="HG-03-AUTH" type="SITES">
   <group name="CREAM-CE" type="service">
-   <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-   <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-   <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-   <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
+   <endpoint name="cream01.afroditi.gr">
+    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
+   </endpoint>
   </group>
  </group>
 </root>`
@@ -354,10 +432,12 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	respXML2 := `<root>
  <group name="EL-01-AUTH" type="EUDAT_SITES">
   <group name="srv.typeA" type="service">
-   <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
-   <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
-   <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
-   <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
+   <endpoint name="host01.eudat.gr">
+    <status timestamp="2015-05-01T00:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T01:00:00Z" value="CRITICAL"></status>
+    <status timestamp="2015-05-01T05:00:00Z" value="OK"></status>
+    <status timestamp="2015-05-01T23:59:59Z" value="OK"></status>
+   </endpoint>
   </group>
  </group>
 </root>`
@@ -371,22 +451,30 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
     {
      "name": "CREAM-CE",
      "type": "service",
-     "statuses": [
+     "endpoints": [
       {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "CRITICAL"
-      },
-      {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "OK"
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
       }
      ]
     }
@@ -394,7 +482,6 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
   }
  ]
 }`
-
 	respJSON2 := `{
  "groups": [
   {
@@ -404,22 +491,27 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
     {
      "name": "srv.typeA",
      "type": "service",
-     "statuses": [
+     "endpoints": [
       {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "CRITICAL"
-      },
-      {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "OK"
+       "name": "host01.eudat.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
       }
      ]
     }
@@ -437,21 +529,17 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 }`
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE" +
+		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA" +
-		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
-
-	fullurl3 := "/api/v2/status/Report_B/EUDAT_SITES/EL-01-AUTH" +
-		"/services/srv.typeA" +
+		"/services/srv.typeA/endpoints" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	// 1. EGI XML REQUEST
 	// init the response placeholder
 	response := httptest.NewRecorder()
-	// Prepare the request object for first tenant
+	// Prepare the request object for fist tenant
 	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
 	// add accept xml header
 	request.Header.Set("Accept", "application/xml")
@@ -512,27 +600,11 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
 
-	// 5. EUDAT ALL JSON REQUEST
+	// 5. WRONG KEY REQUEST
 	// init the response placeholder
 	response = httptest.NewRecorder()
 	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl3, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY2")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
-
-	// 6. WRONG KEY REQUEST
-	// init the response placeholder
-	response = httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ = http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
 	// add json accept header
 	request.Header.Set("Accept", "application/json")
 	// add the authentication token which is seeded in testdb
@@ -546,14 +618,14 @@ func (suite *StatusServicesTestSuite) TestListStatusServices() {
 
 }
 
-func (suite *StatusServicesTestSuite) TestLatestResults() {
+func (suite *StatusEndpointsTestSuite) TestLatestResults() {
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE" +
+		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
 		"?start_time=2015-05-03T00:00:00Z&end_time=2015-05-03T23:00:00Z"
 
 	fullurl2 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE" +
+		"/services/CREAM-CE/endpoints/cream01.afroditi.gr" +
 		"?start_time=2015-05-02T00:00:00Z&end_time=2015-05-02T23:00:00Z"
 
 	respJSON1 := `{
@@ -565,22 +637,30 @@ func (suite *StatusServicesTestSuite) TestLatestResults() {
     {
      "name": "CREAM-CE",
      "type": "service",
-     "statuses": [
+     "endpoints": [
       {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "CRITICAL"
-      },
-      {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "OK"
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
       }
      ]
     }
@@ -622,69 +702,13 @@ func (suite *StatusServicesTestSuite) TestLatestResults() {
 	suite.Equal(200, response2.Code, "Internal Server Error")
 	// Compare the expected and actual xml response
 	suite.Equal(respJSON1, response2.Body.String(), "Response body mismatch")
-}
-
-func (suite *StatusServicesTestSuite) TestThresholds() {
-
-	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services/CREAM-CE" +
-		"?start_time=2015-05-02T00:00:00Z&end_time=2015-05-02T23:00:00Z&view=details"
-
-	respJSON1 := `{
- "groups": [
-  {
-   "name": "HG-03-AUTH",
-   "type": "SITES",
-   "services": [
-    {
-     "name": "CREAM-CE",
-     "type": "service",
-     "statuses": [
-      {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "CRITICAL"
-      },
-      {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "OK",
-       "affected_by_threshold_rule": true
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "OK"
-      }
-     ]
-    }
-   ]
-  }
- ]
-}`
-
-	// init the response placeholder
-	response := httptest.NewRecorder()
-	// Prepare the request object for second tenant
-	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
-	// add json accept header
-	request.Header.Set("Accept", "application/json")
-	// add the authentication token which is seeded in testdb
-	request.Header.Set("x-api-key", "KEY1")
-	// Serve the http request
-	suite.router.ServeHTTP(response, request)
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Internal Server Error")
-	// Compare the expected and actual xml response
-	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
 
 }
 
-func (suite *StatusServicesTestSuite) TestMultipleItems() {
+func (suite *StatusEndpointsTestSuite) TestMultipleItems() {
 
 	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
-		"/services" +
+		"/services/CREAM-CE/endpoints" +
 		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
 
 	respJSON1 := `{
@@ -696,44 +720,72 @@ func (suite *StatusServicesTestSuite) TestMultipleItems() {
     {
      "name": "CREAM-CE",
      "type": "service",
-     "statuses": [
+     "endpoints": [
       {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "OK"
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
       },
       {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "CRITICAL"
+       "name": "cream02.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T08:47:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T12:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
       },
       {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "OK"
-      }
-     ]
-    },
-    {
-     "name": "SRM",
-     "type": "service",
-     "statuses": [
-      {
-       "timestamp": "2015-05-01T00:00:00Z",
-       "value": "WARNING"
-      },
-      {
-       "timestamp": "2015-05-01T01:00:00Z",
-       "value": "OK"
-      },
-      {
-       "timestamp": "2015-05-01T05:00:00Z",
-       "value": "UNKNOWN"
-      },
-      {
-       "timestamp": "2015-05-01T23:59:59Z",
-       "value": "UNKNOWN"
+       "name": "cream03.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T04:40:00Z",
+         "value": "UNKNOWN"
+        },
+        {
+         "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
       }
      ]
     }
@@ -759,8 +811,248 @@ func (suite *StatusServicesTestSuite) TestMultipleItems() {
 
 }
 
-func (suite *StatusServicesTestSuite) TestOptionsStatusServices() {
-	request, _ := http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services", strings.NewReader(""))
+func (suite *StatusEndpointsTestSuite) TestGroupEndpoints() {
+
+	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
+		"/endpoints" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z"
+
+	respJSON1 := `{
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream02.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T08:47:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T12:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream03.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T04:40:00Z",
+         "value": "UNKNOWN"
+        },
+        {
+         "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "STORAGE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "storage.example.foo",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T06:40:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T09:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *StatusEndpointsTestSuite) TestThresholds() {
+
+	fullurl1 := "/api/v2/status/Report_A/SITES/HG-03-AUTH" +
+		"/services/CREAM-CE/endpoints" +
+		"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&view=details"
+
+	respJSON1 := `{
+ "groups": [
+  {
+   "name": "HG-03-AUTH",
+   "type": "SITES",
+   "services": [
+    {
+     "name": "CREAM-CE",
+     "type": "service",
+     "endpoints": [
+      {
+       "name": "cream01.afroditi.gr",
+       "info": {
+        "Url": "http://example.foo/path/to/service"
+       },
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T01:00:00Z",
+         "value": "CRITICAL"
+        },
+        {
+         "timestamp": "2015-05-01T05:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream02.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T08:47:00Z",
+         "value": "WARNING"
+        },
+        {
+         "timestamp": "2015-05-01T12:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "OK"
+        }
+       ]
+      },
+      {
+       "name": "cream03.afroditi.gr",
+       "statuses": [
+        {
+         "timestamp": "2015-05-01T00:00:00Z",
+         "value": "OK"
+        },
+        {
+         "timestamp": "2015-05-01T04:40:00Z",
+         "value": "UNKNOWN"
+        },
+        {
+         "timestamp": "2015-05-01T06:00:00Z",
+         "value": "CRITICAL",
+         "affected_by_threshold_rule": true
+        },
+        {
+         "timestamp": "2015-05-01T23:59:59Z",
+         "value": "CRITICAL"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}`
+
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *StatusEndpointsTestSuite) TestOptionsStatusEndpoints() {
+	request, _ := http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -768,14 +1060,14 @@ func (suite *StatusServicesTestSuite) TestOptionsStatusServices() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
-	request, _ = http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a", strings.NewReader(""))
+	request, _ = http.NewRequest("OPTIONS", "/api/v2/status/Report_A/GROUP/GROUP_A/services/service_a/endpoints/endpoint_a", strings.NewReader(""))
 
 	response = httptest.NewRecorder()
 
@@ -783,7 +1075,7 @@ func (suite *StatusServicesTestSuite) TestOptionsStatusServices() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -795,16 +1087,15 @@ func (suite *StatusServicesTestSuite) TestOptionsStatusServices() {
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
-func (suite *StatusServicesTestSuite) TearDownTest() {
+func (suite *StatusEndpointsTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
+	suite.cfg.MongoClient.Database("argotest_endpoints").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("argotest_endpoints_eudat").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("argotest_endpoints_egi").Drop(context.TODO())
 
-	session.DB("argotest_services").DropDatabase()
-	session.DB("argotest_services_eudat").DropDatabase()
-	session.DB("argotest_services_egi").DropDatabase()
 }
 
 // This is the first function called when go test is issued
-func TestStatusServicesSuite(t *testing.T) {
-	suite.Run(t, new(StatusServicesTestSuite))
+func TestStatusEndpointsSuite(t *testing.T) {
+	suite.Run(t, new(StatusEndpointsTestSuite))
 }

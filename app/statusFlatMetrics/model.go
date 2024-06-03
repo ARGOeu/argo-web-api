@@ -49,7 +49,7 @@ type DataOutput struct {
 	Hostname       string            `bson:"host"`
 	Status         string            `bson:"status"`
 	Metric         string            `bson:"metric"`
-	DateInt        string            `bson:"date_integer"`
+	DateInt        int               `bson:"date_integer"`
 	Info           map[string]string `bson:"info"`
 	ActualData     string            `bson:"actual_data"`
 	RuleApplied    string            `bson:"threshold_rule_applied"`
@@ -84,11 +84,4 @@ type statusOUT struct {
 	ActualData     string   `xml:"-" json:"actual_data,omitempty"`
 	RuleApplied    string   `xml:"-" json:"threshold_rule_applied,omitempty"`
 	OriginalStatus string   `xml:"-" json:"original_status,omitempty"`
-}
-
-// Message struct to hold the json/xml response
-type messageOUT struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Message string   `xml:"message" json:"message"`
-	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }

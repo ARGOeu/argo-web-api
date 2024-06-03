@@ -47,7 +47,7 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootPagedOUT{}
@@ -146,7 +146,7 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &messageOUT{}
 

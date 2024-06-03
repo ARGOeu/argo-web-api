@@ -46,7 +46,7 @@ func createView(results []DataOutput, input InputParams, endDate string, details
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootOUT{}
@@ -111,7 +111,7 @@ func createView(results []DataOutput, input InputParams, endDate string, details
 
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &messageOUT{}
 
