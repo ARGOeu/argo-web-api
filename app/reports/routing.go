@@ -35,16 +35,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"reports.list", "GET", "/reports", List},
-	{"reports.get", "GET", "/reports/{id}", ListOne},
-	{"reports.create", "POST", "/reports", Create},
-	{"reports.update", "PUT", "/reports/{id}", Update},
-	{"reports.delete", "DELETE", "/reports/{id}", Delete},
-	{"reports.options", "OPTIONS", "/reports", Options},
-	{"reports.options", "OPTIONS", "/reports/{id}", Options},
+	{Name: "reports.list", Verb: "GET", Path: "/reports", SubrouterHandler: List},
+	{Name: "reports.get", Verb: "GET", Path: "/reports/{id}", SubrouterHandler: ListOne},
+	{Name: "reports.create", Verb: "POST", Path: "/reports", SubrouterHandler: Create},
+	{Name: "reports.update", Verb: "PUT", Path: "/reports/{id}", SubrouterHandler: Update},
+	{Name: "reports.delete", Verb: "DELETE", Path: "/reports/{id}", SubrouterHandler: Delete},
+	{Name: "reports.options", Verb: "OPTIONS", Path: "/reports", SubrouterHandler: Options},
+	{Name: "reports.options", Verb: "OPTIONS", Path: "/reports/{id}", SubrouterHandler: Options},
 }
