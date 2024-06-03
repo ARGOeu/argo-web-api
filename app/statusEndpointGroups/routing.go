@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting

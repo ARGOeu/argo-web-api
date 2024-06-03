@@ -18,6 +18,16 @@ pipeline {
         GIT_COMMIT_DATE=sh(script: "date -d \"\$(cd ${WORKSPACE}/$PROJECT_DIR && git show -s --format=%ci ${GIT_COMMIT_HASH})\" \"+%Y%m%d%H%M%S\"",returnStdout: true).trim()
    }
     stages {
+        stage('Build') {
+            steps {
+                echo 'Build...'
+                sh """
+                cd ${WORKSPACE}/${PROJECT_DIR}
+                export CGO_CFLAGS"=-O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
+                go build -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z relro -z now'"
+                """
+            }
+        }
         stage('Test') {
             steps {
                 echo 'Test & Coverage...'

@@ -36,8 +36,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type serviceFlavorAvailabilityTestSuite struct {
