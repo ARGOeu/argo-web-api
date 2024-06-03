@@ -23,7 +23,8 @@
 package status
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,23 +33,21 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type StatusTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+
+	clientkey string
 }
 
 // Setup the Test Environment
@@ -70,6 +69,9 @@ func (suite *StatusTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_statusV3_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -77,7 +79,7 @@ func (suite *StatusTestSuite) SetupSuite() {
 	suite.clientkey = "secretkey"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v3/status").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -85,74 +87,63 @@ func (suite *StatusTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *StatusTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_wrong_db_endpointgrouavailability",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
@@ -160,20 +151,21 @@ func (suite *StatusTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v3.status.list",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v3.status.list-by-id",
 			"roles":    []string{"editor", "viewer"},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -188,58 +180,58 @@ func (suite *StatusTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"type": "metric",
 				"name": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
 	// Seed tenant database with data
-	c = session.DB(suite.tenantDbConf.Db).C(statusGroupColName)
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(statusGroupColName)
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "CRITICAL",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "SITEB",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T03:00:00Z",
 		"endpoint_group": "SITEB",
 		"status":         "WARNING",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T17:53:00Z",
@@ -249,8 +241,8 @@ func (suite *StatusTestSuite) SetupTest() {
 	})
 
 	// seed the endpoints
-	c = session.DB(suite.tenantDbConf.Db).C(statusEndpointColName)
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(statusEndpointColName)
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
@@ -261,7 +253,7 @@ func (suite *StatusTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -272,7 +264,7 @@ func (suite *StatusTestSuite) SetupTest() {
 
 		"status": "CRITICAL",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -283,7 +275,7 @@ func (suite *StatusTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -293,7 +285,7 @@ func (suite *StatusTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T08:47:00Z",
@@ -303,7 +295,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "WARNING",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T12:00:00Z",
@@ -313,7 +305,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -324,7 +316,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":         "OK",
 		"info":           bson.M{"ID": "special-queue"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T04:40:00Z",
@@ -335,7 +327,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":         "UNKNOWN",
 		"info":           bson.M{"ID": "special-queue"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T06:00:00Z",
@@ -347,7 +339,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"has_threshold_rule": true,
 		"info":               bson.M{"ID": "special-queue"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -358,7 +350,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":         "OK",
 		"info":           bson.M{"ID": "special-queue"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T04:40:00Z",
@@ -369,7 +361,7 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":         "UNKNOWN",
 		"info":           bson.M{"ID": "special-queue"},
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T06:00:00Z",
@@ -870,41 +862,39 @@ func (suite *StatusTestSuite) TestOptions() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *StatusTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *StatusTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestStatusTestSuite(t *testing.T) {
+func TestSuiteStatus(t *testing.T) {
 	suite.Run(t, new(StatusTestSuite))
 }

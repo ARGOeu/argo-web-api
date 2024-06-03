@@ -29,13 +29,12 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"gopkg.in/mgo.v2"
 )
 
 // ErrorResponse shortcut to respond.ErrorResponse
 type ErrorResponse respond.ErrorResponse
 
-func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
+func (query *basicQuery) Validate() []ErrorResponse {
 	errs := []ErrorResponse{}
 	query.Granularity = strings.ToLower(query.Granularity)
 	if query.Granularity == "" {

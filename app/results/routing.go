@@ -108,7 +108,7 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("")
+	var output []byte
 	err := error(nil)
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END

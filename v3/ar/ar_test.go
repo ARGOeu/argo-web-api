@@ -23,7 +23,8 @@
 package ar
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,10 +33,10 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -70,6 +71,9 @@ func (suite *AvailabilityTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_arV3_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -77,7 +81,7 @@ func (suite *AvailabilityTestSuite) SetupSuite() {
 	suite.clientkey = "secretkey"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v3/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -85,74 +89,63 @@ func (suite *AvailabilityTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *AvailabilityTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_wrong_db_endpointgrouavailability",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
@@ -160,22 +153,23 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v3.ar.list-by-id",
 			"roles":    []string{"editor", "viewer"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v3.ar.list",
 			"roles":    []string{"editor", "viewer"},
 		})
 
 	// Seed tenant database with data
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -188,12 +182,13 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"reliability":  54.6,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -211,7 +206,8 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -224,12 +220,13 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -242,7 +239,7 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"reliability":  56,
 			"weight":       4356,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
@@ -250,10 +247,10 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 		})
 
 	// Seed endpoint data
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -267,13 +264,14 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"reliability":  54.6,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
 			"info": bson.M{"ID": "special-queue"},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -287,7 +285,7 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
@@ -295,9 +293,9 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			"info": bson.M{"ID": "special-queue"},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -312,15 +310,15 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"type": "metric",
 				"name": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
@@ -774,41 +772,39 @@ func (suite *AvailabilityTestSuite) TestOptions() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *AvailabilityTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *AvailabilityTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestEndpointGroupsTestSuite(t *testing.T) {
+func TestSuiteAR(t *testing.T) {
 	suite.Run(t, new(AvailabilityTestSuite))
 }
