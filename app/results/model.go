@@ -31,7 +31,6 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
-	"gopkg.in/mgo.v2"
 )
 
 type list []interface{}
@@ -81,7 +80,7 @@ type endpointResultQuery struct {
 // 	SuperGroupType    string `bson:"group_of_groups"`
 // }
 
-//EndpointInterface for mongodb object exchanging
+// EndpointInterface for mongodb object exchanging
 type EndpointInterface struct {
 	Name         string            `bson:"name"`
 	Report       string            `bson:"report"`
@@ -140,7 +139,7 @@ type SuperGroupInterface struct {
 	SuperGroup   string  `bson:"supergroup"`
 }
 
-//Availability struct for formating xml/json
+// Availability struct for formating xml/json
 type Availability struct {
 	XMLName      xml.Name `xml:"results" json:"-"`
 	Timestamp    string   `xml:"timestamp,attr,omitempty" json:"timestamp,omitempty"`
@@ -225,7 +224,7 @@ type errorMessage struct {
 // ErrorResponse shortcut to respond.ErrorResponse
 type ErrorResponse respond.ErrorResponse
 
-func (query *basicQuery) Validate(db *mgo.Database) []ErrorResponse {
+func (query *basicQuery) Validate() []ErrorResponse {
 	errs := []ErrorResponse{}
 	query.Granularity = strings.ToLower(query.Granularity)
 	if query.Granularity == "" {

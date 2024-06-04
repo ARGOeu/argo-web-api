@@ -300,15 +300,3 @@ func createMonthEndpointGroupListView(results []MonthEndpointGroupData, msg stri
 	return output, err
 
 }
-
-func createMessageOUT(message string, code int, format string) ([]byte, error) {
-
-	output := []byte("message placeholder")
-	err := error(nil)
-	docRoot := &messageOUT{}
-
-	docRoot.Message = message
-	docRoot.Code = strconv.Itoa(code)
-	output, err = respond.MarshalContent(docRoot, format, "", " ")
-	return output, err
-}

@@ -27,14 +27,15 @@
 package reports
 
 import (
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
@@ -171,13 +172,13 @@ var validators = map[string]string{
 
 // ValidateProfiles ensures that the profiles in a report actually exist in the database and
 // corrects possible name inconsistencies
-func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.ErrorResponse {
+func (report *MongoInterface) ValidateProfiles(db *mongo.Database) []respond.ErrorResponse {
 	errs := []respond.ErrorResponse{}
 	for idx, element := range report.Profiles {
-		var result interface{}
+		var result Profile
 		colName := validators[element.Type]
 		if colName != "" {
-			err := db.C(colName).Find(bson.M{"id": element.ID}).One(&result)
+			err := db.Collection(colName).FindOne(context.TODO(), bson.M{"id": element.ID}).Decode(&result)
 			if err != nil {
 				errs = append(errs,
 					respond.ErrorResponse{
@@ -187,7 +188,7 @@ func (report *MongoInterface) ValidateProfiles(db *mgo.Database) []respond.Error
 					})
 				continue
 			}
-			report.Profiles[idx].Name = result.(bson.M)["name"].(string)
+			report.Profiles[idx].Name = result.Name
 		} else {
 			errs = append(errs,
 				respond.ErrorResponse{
@@ -225,7 +226,7 @@ func GetMetricProfile(input MongoInterface) (string, error) {
 			return element.Name, nil
 		}
 	}
-	return "", errors.New("Unable to find metric profile with specified name")
+	return "", errors.New("unable to find metric profile with specified name")
 }
 
 // searchName is used to create a simple query object based on name

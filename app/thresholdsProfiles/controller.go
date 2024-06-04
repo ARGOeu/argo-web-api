@@ -23,20 +23,21 @@
 package thresholdsProfiles
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
-	"github.com/gorilla/context"
-	"gopkg.in/mgo.v2/bson"
+	gcontext "github.com/gorilla/context"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // datastore collection name that contains threshold profile records
@@ -101,20 +102,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	dateStr := urlValues.Get("date")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 	result := ThresholdsProfile{}
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -122,10 +114,10 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	}
 	thQuery := prepQuery(dt, vars["ID"])
 
-	thCol := session.DB(tenantDbConfig.Db).C(thColName)
-	err = thCol.Find(thQuery).One(&result)
+	thCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(thColName)
+	err = thCol.FindOne(context.TODO(), thQuery).Decode(&result)
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = 404
 			return code, h, output, err
@@ -169,20 +161,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	name := urlValues.Get("name")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Retrieve Results from database
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -190,19 +173,17 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	}
 	thQuery := prepMultiQuery(dt, name)
 
-	thCol := session.DB(tenantDbConfig.Db).C(thColName)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	thCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(thColName)
 
 	results := []ThresholdsProfile{}
-	err = thCol.Pipe(thQuery).All(&results)
+	cursor, err := thCol.Aggregate(context.TODO(), thQuery)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &results)
 
 	// Create view of the results
 	output, err = createListView(results, "Success", code) //Render the results into JSON
@@ -216,7 +197,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	return code, h, output, err
 }
 
-//Create a new metric profile
+// Create a new metric profile
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -231,7 +212,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -241,19 +222,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := ThresholdsProfile{}
 	incoming.DateInt = dt
 	incoming.Date = dateStr
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -269,22 +243,21 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// check if the threshold profile's name is unique
-	results := []ThresholdsProfile{}
+
 	query := bson.M{"name": incoming.Name}
 
-	err = mongo.Find(session, tenantDbConfig.Db, thColName, query, "", &results)
+	thCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(thColName)
 
-	if err != nil {
-		code = http.StatusInternalServerError
+	queryResult := thCol.FindOne(context.TODO(), query)
+
+	if queryResult.Err() == nil {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Threshold Profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
 		return code, h, output, err
 	}
 
-	// If results are returned for the specific name
-	// then we already have an existing report and we must
-	// abort creation notifying the user
-	if len(results) > 0 {
-		output, _ = respond.MarshalContent(respond.ErrConflict("Thresholds profile with the same name already exists"), contentType, "", " ")
-		code = http.StatusConflict
+	if queryResult.Err() != mongo.ErrNoDocuments {
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -299,11 +272,12 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Generate new id
-	incoming.ID = mongo.NewUUID()
-	err = mongo.Insert(session, tenantDbConfig.Db, thColName, incoming)
+	incoming.ID = utils.NewUUID()
+	_, err = thCol.InsertOne(context.TODO(), incoming)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -312,7 +286,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Update function to update contents of an existing thresholds profile
+// Update function to update contents of an existing thresholds profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -337,14 +311,14 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	incoming := ThresholdsProfile{}
 	incoming.Date = dateStr
 	incoming.DateInt = dt
 
 	// ingest body data
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -358,30 +332,24 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	thCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(thColName)
 
-	// create filter to retrieve specific profile with id
-	filter := bson.M{"id": vars["ID"]}
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
 
 	incoming.ID = vars["ID"]
 
 	// Retrieve Results from database
-	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, thColName, filter, "name", &results)
 
-	if err != nil {
-		panic(err)
-	}
+	queryResult := thCol.FindOne(context.TODO(), query)
 
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
+	if queryResult.Err() != nil {
+		if queryResult.Err() == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -395,34 +363,30 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// check if the thresholds profile's name is unique
-	if incoming.Name != results[0].Name {
+	queryCheck := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
 
-		results = []ThresholdsProfile{}
-		query := bson.M{"name": incoming.Name, "id": bson.M{"$ne": vars["ID"]}}
+	queryResult = thCol.FindOne(context.TODO(), queryCheck)
 
-		err = mongo.Find(session, tenantDbConfig.Db, thColName, query, "", &results)
-
-		if err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-
-		// If results are returned for the specific name
-		// then we already have an existing thresholds profile and we must
-		// abort creation notifying the user
-		if len(results) > 0 {
-			output, _ = respond.MarshalContent(respond.ErrConflict("Thresholds profile with the same name already exists"), contentType, "", " ")
-			code = http.StatusConflict
-			return code, h, output, err
-		}
+	if queryResult.Err() == nil {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Thresholds profile with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
+		return code, h, output, err
 	}
 
-	// run the update query
-	err = mongo.Update(session, tenantDbConfig.Db, thColName, filter, incoming)
+	if queryResult.Err() != mongo.ErrNoDocuments {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
+	replaceResult, err := thCol.ReplaceOne(context.TODO(), bson.M{"id": vars["ID"], "date_integer": dt}, incoming, options.Replace().SetUpsert(true))
 	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if replaceResult.MatchedCount == 0 && replaceResult.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
@@ -432,7 +396,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	return code, h, output, err
 }
 
-//Delete metric profile based on id
+// Delete metric profile based on id
 func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -452,39 +416,22 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	thCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(thColName)
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	query := bson.M{"id": vars["ID"]}
 
-	filter := bson.M{"id": vars["ID"]}
-
-	// Retrieve Results from database
-	results := []ThresholdsProfile{}
-	err = mongo.Find(session, tenantDbConfig.Db, thColName, filter, "name", &results)
+	deleteResult, err := thCol.DeleteMany(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
-	mongo.Remove(session, tenantDbConfig.Db, thColName, filter)
-
-	if err != nil {
-		code = http.StatusInternalServerError
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
 
@@ -514,7 +461,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	h.Set("Allow", "GET, POST, DELETE, PUT, OPTIONS")
 	return code, h, output, err
 
 }

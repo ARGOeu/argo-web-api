@@ -23,10 +23,10 @@
 package topology
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -35,34 +35,23 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/app/tenants"
 
-	"gopkg.in/mgo.v2"
-
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // datastore collection name that contains aggregations profile records
-const topoColName = "topology"
+
 const endpointColName = "topology_endpoints"
 const groupColName = "topology_groups"
 const serviceTypeColName = "topology_service_types"
 const feedsDataCol = "feeds_data"
-const tenantsColName = "tenants"
-
-func getCloseDate(c *mgo.Collection, dt int) int {
-	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
-	result := Endpoint{}
-	err := c.Find(dateQuery).One(&result)
-	if err != nil {
-		return -1
-	}
-	return result.DateInt
-}
 
 // ListTopoStats list statistics about the topology used in the report
 func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -80,9 +69,9 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-	groupType := context.Get(r, "group_type").(string)
-	egroupType := context.Get(r, "endpoint_group_type").(string)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+	groupType := gcontext.Get(r, "group_type").(string)
+	egroupType := gcontext.Get(r, "endpoint_group_type").(string)
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -92,23 +81,16 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	//Time Related
 	dateStr := urlValues.Get("date")
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// find the report id first
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, reportName)
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(reportCol, reportName)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -118,20 +100,40 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	var egroupResults []string
 	var groupResults []string
 
-	serviceCol := session.DB(tenantDbConfig.Db).C("service_ar")
-	eGroupCol := session.DB(tenantDbConfig.Db).C("endpoint_group_ar")
+	serviceCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
+	eGroupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 
-	err = serviceCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("name", &serviceResults)
+	distinctServices, err := serviceCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	err = eGroupCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("name", &egroupResults)
+
+	serviceResults, err = utils.DistinctCast(distinctServices)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	err = eGroupCol.Find(bson.M{"report": reportID, "date": dt}).Distinct("supergroup", &groupResults)
+
+	distinctEgroup, err := eGroupCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	egroupResults, err = utils.DistinctCast(distinctEgroup)
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	distinctGroup, err := eGroupCol.Distinct(context.TODO(), "supergroup", bson.M{"report": reportID, "date": dt})
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	groupResults, err = utils.DistinctCast(distinctGroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -178,23 +180,19 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	dateStr := urlValues.Get("date")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	colEndpoint := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
+	colGroup := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
 
-	colEndpoint := session.DB(tenantDbConfig.Db).C(endpointColName)
-	colGroup := session.DB(tenantDbConfig.Db).C(groupColName)
-
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
-	expDate := getCloseDate(colEndpoint, dt)
+	expDate := store.GetCloseDate(colEndpoint, dt)
 
 	resTagsEndpoint := []TagValues{}
 	resTagsGroup := []TagValues{}
@@ -205,13 +203,17 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	err = colEndpoint.Pipe(prepTagAggr(expDate)).All(&resTagsEndpoint)
+	cursor, err := colEndpoint.Aggregate(context.TODO(), prepTagAggr(expDate))
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
 
-	expDate = getCloseDate(colGroup, dt)
+	cursor.All(context.TODO(), &resTagsEndpoint)
+
+	expDate = store.GetCloseDate(colGroup, dt)
 
 	if expDate < 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
@@ -219,11 +221,14 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	err = colGroup.Pipe(prepTagAggr(expDate)).All(&resTagsGroup)
+	cursor, err = colGroup.Aggregate(context.TODO(), prepTagAggr(expDate))
+
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &resTagsGroup)
 
 	// sort unique tag values in each tag occurence
 	for _, tg := range resTagsEndpoint {
@@ -270,13 +275,9 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -290,19 +291,21 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	fltr.Service = urlValues["service"]
 	fltr.Tags = urlValues.Get("tags")
 
-	results, expDate, err := getEndpointResults(tenantDbConfig, dt, fltr)
+	results, expDate, err := getEndpointResults(cfg.MongoClient, tenantDbConfig, dt, fltr)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
 	if mode == "combined" {
+
 		// check for feeds
-		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		dbConfigs := (getComboDBConfigs(cfg.MongoClient, tenantDbConfig, cfg))
 		for _, dbConfig := range dbConfigs {
 			// append subresults to list of combined results
-			subResults := []Endpoint{}
-			subResults, expDate, err = getEndpointResults(dbConfig.Config, dt, fltr)
+
+			subResults, _, err := getEndpointResults(cfg.MongoClient, dbConfig.Config, dt, fltr)
+
 			if err != nil {
 				code = http.StatusInternalServerError
 				return code, h, output, err
@@ -315,6 +318,7 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		}
 	}
 
+	// check if nothing found
 	if expDate < 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
@@ -335,20 +339,24 @@ func ListEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 // getEndpointResults accepts an date in integer format YYYYMMDD, a tenand db configuration,
 // a filter endpoint object and returns relevant topology endpoints
-func getEndpointResults(dbConfig config.MongoConfig, dateInt int, filterE fltrEndpoint) ([]Endpoint, int, error) {
+func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int, filterE fltrEndpoint) ([]Endpoint, int, error) {
 	subResults := []Endpoint{}
-	session, err := mongo.OpenSession(dbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		return subResults, -1, err
+
+	colEndpoint := client.Database(dbConfig.Db).Collection(endpointColName)
+	expDate := store.GetCloseDate(colEndpoint, dateInt)
+	if expDate < 0 {
+		return subResults, expDate, nil
 	}
 
-	colEndpoint := session.DB(dbConfig.Db).C(endpointColName)
-	expDate := getCloseDate(colEndpoint, dateInt)
-	if expDate < 0 {
+	cursor, err := colEndpoint.Find(context.TODO(), prepEndpointQuery(expDate, filterE))
+
+	if err != nil {
 		return subResults, expDate, err
 	}
-	err = colEndpoint.Find(prepEndpointQuery(expDate, filterE)).All(&subResults)
+
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &subResults)
 
 	return subResults, expDate, err
 }
@@ -369,7 +377,7 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 
@@ -380,16 +388,9 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := []Endpoint{}
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 
 	if err != nil {
 		panic(err)
@@ -401,11 +402,11 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// check if topology already exists for current day
 
 	existing := Endpoint{}
-	endpointCol := session.DB(tenantDbConfig.Db).C(endpointColName)
-	err = endpointCol.Find(bson.M{"date_integer": dt}).One(&existing)
+	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
+	err = endpointCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
 	if err != nil {
 		// Stop at any error except not found. We want to have not found
-		if err.Error() != "not found" {
+		if err != mongo.ErrNoDocuments {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
@@ -429,10 +430,16 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 		incoming[i].DateInt = dt
 	}
 
-	err = mongo.MultiInsert(session, tenantDbConfig.Db, endpointColName, incoming)
+	incomingInf := make([]interface{}, len(incoming))
+	for i, value := range incoming {
+		incomingInf[i] = value
+	}
+
+	_, err = endpointCol.InsertMany(context.TODO(), incomingInf)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -457,7 +464,7 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 
 	dateStr := urlValues.Get("date")
@@ -467,28 +474,22 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+
+	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
+	deleteResult, err := endpointCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	endpointCol := session.DB(tenantDbConfig.Db).C(endpointColName)
-	change, err := endpointCol.RemoveAll(bson.M{"date_integer": dt})
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	if change.Removed == 0 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
 
 	// Create view of the results
-	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints deleted for date: %s", change.Removed, dateStr), 200, "json")
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints deleted for date: %s", deleteResult.DeletedCount, dateStr), 200, "json")
 	return code, h, output, err
 }
 
@@ -508,7 +509,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -518,16 +519,9 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := []Group{}
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 
 	if err != nil {
 		panic(err)
@@ -539,11 +533,11 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	// check if topology already exists for current day
 
 	existing := Group{}
-	groupCol := session.DB(tenantDbConfig.Db).C(groupColName)
-	err = groupCol.Find(bson.M{"date_integer": dt}).One(&existing)
+	groupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
+	err = groupCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
 	if err != nil {
 		// Stop at any error except not found. We want to have not found
-		if err.Error() != "not found" {
+		if err != mongo.ErrNoDocuments {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
@@ -567,7 +561,12 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		incoming[i].DateInt = dt
 	}
 
-	err = mongo.MultiInsert(session, tenantDbConfig.Db, groupColName, incoming)
+	incomingInf := make([]interface{}, len(incoming))
+	for i, value := range incoming {
+		incomingInf[i] = value
+	}
+
+	_, err = groupCol.InsertMany(context.TODO(), incomingInf)
 
 	if err != nil {
 		panic(err)
@@ -598,7 +597,7 @@ func appendTags(query bson.M, tags string) bson.M {
 			continue
 		}
 
-		if _, exists := tagmap[kvsplit[0]]; exists == false {
+		if _, exists := tagmap[kvsplit[0]]; !exists {
 			tagmap[kvsplit[0]] = []string{}
 		}
 
@@ -614,25 +613,25 @@ func appendTags(query bson.M, tags string) bson.M {
 				if i != 0 {
 					tagRegStr = tagRegStr + "|"
 				}
-				if value, reg := handleWildcard(tagVal); reg == true {
+				if value, reg := handleWildcard(tagVal); reg {
 					tagRegStr = tagRegStr + value
 				} else {
 					tagRegStr = tagRegStr + tagVal
 				}
 			}
 			tagRegStr = tagRegStr + ")$"
-			query["tags."+tag] = bson.RegEx{Pattern: tagRegStr}
+			query["tags."+tag] = primitive.Regex{Pattern: tagRegStr}
 
 		} else {
 
 			// check if tag filter value has exclude operator and trim it
 			trimValue, exclude := handleExclude(tagmap[tag][0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["tags."+tag] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["tags."+tag] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["tags."+tag] = bson.RegEx{Pattern: value}
+					query["tags."+tag] = primitive.Regex{Pattern: value}
 				}
 
 			} else {
@@ -670,24 +669,24 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = bson.RegEx{Pattern: groupRegStr}
+			query["group"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.Group[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["group"] = bson.RegEx{Pattern: value}
+					query["group"] = primitive.Regex{Pattern: value}
 				}
 
 			} else {
@@ -709,24 +708,24 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = bson.RegEx{Pattern: groupRegStr}
+			query["type"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.GroupType[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["type"] = bson.RegEx{Pattern: value}
+					query["type"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -746,24 +745,24 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["service"] = bson.RegEx{Pattern: groupRegStr}
+			query["service"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.Service[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["service"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["service"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["service"] = bson.RegEx{Pattern: value}
+					query["service"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -783,24 +782,24 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["hostname"] = bson.RegEx{Pattern: groupRegStr}
+			query["hostname"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.Hostname[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["hostname"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["hostname"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["hostname"] = bson.RegEx{Pattern: value}
+					query["hostname"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -894,24 +893,24 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = bson.RegEx{Pattern: groupRegStr}
+			query["group"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.Group[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["group"] = bson.RegEx{Pattern: value}
+					query["group"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -931,24 +930,24 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = bson.RegEx{Pattern: groupRegStr}
+			query["type"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.GroupType[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["type"] = bson.RegEx{Pattern: value}
+					query["type"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -968,24 +967,24 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				if i != 0 {
 					groupRegStr = groupRegStr + "|"
 				}
-				if value, reg := handleWildcard(groupVal); reg == true {
+				if value, reg := handleWildcard(groupVal); reg {
 					groupRegStr = groupRegStr + value
 				} else {
 					groupRegStr = groupRegStr + groupVal
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["subgroup"] = bson.RegEx{Pattern: groupRegStr}
+			query["subgroup"] = primitive.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
 			trimValue, exclude := handleExclude(filter.Subgroup[0])
 
-			if value, reg := handleWildcard(trimValue); reg == true {
+			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["subgroup"] = bson.M{"$not": bson.RegEx{Pattern: value}}
+					query["subgroup"] = bson.M{"$not": primitive.Regex{Pattern: value}}
 				} else {
-					query["subgroup"] = bson.RegEx{Pattern: value}
+					query["subgroup"] = primitive.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1135,7 +1134,7 @@ func getReportGroupType(r reports.MongoInterface) string {
 	return ""
 }
 
-//ListEndpointsByReport lists endpoint topology by report
+// ListEndpointsByReport lists endpoint topology by report
 func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -1159,20 +1158,16 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	reportName := vars["report"]
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	colReports := session.DB(tenantDbConfig.Db).C("reports")
+	colReports := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	//get the report
 
 	report := reports.MongoInterface{}
-	err = colReports.Find(bson.M{"info.name": reportName}).One(&report)
+	err = colReports.FindOne(context.TODO(), bson.M{"info.name": reportName}).Decode(&report)
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, err = createMessageOUT(fmt.Sprintf("No report with name: %s exists!", reportName), 404, "json")
 			code = 404
 			return code, h, output, err
@@ -1184,17 +1179,14 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 	groupType := getReportGroupType(report)
 	egroupType := getReportEndpointGroupType(report)
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
-	fGroup := fltrGroup{}
-	fEndpoint := fltrEndpoint{}
-
-	fGroup, fEndpoint = getReportFilters(report)
+	fGroup, fEndpoint := getReportFilters(report)
 
 	if groupType != "" && (len(fGroup.GroupType) == 0) {
 		fGroup.GroupType = append(fGroup.GroupType, groupType)
@@ -1204,7 +1196,7 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
-	results, expDate, err := getGroupEndpointResults(tenantDbConfig, dt, fGroup, fEndpoint)
+	results, _, err := getGroupEndpointResults(cfg.MongoClient, tenantDbConfig, dt, fGroup, fEndpoint)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1212,11 +1204,11 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 
 	if mode == "combined" {
 		// check for feeds
-		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		dbConfigs := (getComboDBConfigs(cfg.MongoClient, tenantDbConfig, cfg))
 		for _, dbConfig := range dbConfigs {
 			// append subresults to list of combined results
-			subResults := []Endpoint{}
-			subResults, expDate, err = getGroupEndpointResults(dbConfig.Config, dt, fGroup, fEndpoint)
+
+			subResults, _, err := getGroupEndpointResults(cfg.MongoClient, dbConfig.Config, dt, fGroup, fEndpoint)
 			if err != nil {
 				code = http.StatusInternalServerError
 				return code, h, output, err
@@ -1228,12 +1220,6 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 			}
 			results = append(results, subResults...)
 		}
-	}
-
-	if expDate < 0 {
-		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
-		code = 404
-		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -1250,26 +1236,31 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 
 // getGroupEndpointResults accepts an date in integer format YYYYMMDD, a tenand db configuration,
 // a filter group object and a filter endpoint object and returns relevant topology endpoints
-func getGroupEndpointResults(dbConfig config.MongoConfig, dateInt int, filterG fltrGroup, filterE fltrEndpoint) ([]Endpoint, int, error) {
+func getGroupEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int, filterG fltrGroup, filterE fltrEndpoint) ([]Endpoint, int, error) {
 	subResults := []Endpoint{}
-	session, err := mongo.OpenSession(dbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		return subResults, -1, err
-	}
 
-	colGroup := session.DB(dbConfig.Db).C(groupColName)
-	expDate := getCloseDate(colGroup, dateInt)
+	colGroup := client.Database(dbConfig.Db).Collection(groupColName)
+	expDate := store.GetCloseDate(colGroup, dateInt)
 	if expDate < 0 {
-		return subResults, expDate, err
+		return subResults, expDate, nil
 	}
 
 	query := prepGroupEndpointAggr(expDate, filterG, filterE)
-	colGroup.Pipe(query).All(&subResults)
+
+	cursor, err := colGroup.Aggregate(context.TODO(), query)
+
+	if err != nil {
+		return subResults, expDate, err
+	}
+
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &subResults)
+
 	return subResults, expDate, err
 }
 
-//ListGroupsByReport lists group topology by report
+// ListGroupsByReport lists group topology by report
 func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -1293,20 +1284,16 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	reportName := vars["report"]
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	colReports := session.DB(tenantDbConfig.Db).C("reports")
+	colReports := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	//get the report
 
 	report := reports.MongoInterface{}
-	err = colReports.Find(bson.M{"info.name": reportName}).One(&report)
+	err = colReports.FindOne(context.TODO(), bson.M{"info.name": reportName}).Decode(&report)
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, err = createMessageOUT(fmt.Sprintf("No report with name: %s exists!", reportName), 404, "json")
 			code = 404
 			return code, h, output, err
@@ -1317,7 +1304,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	groupType := getReportGroupType(report)
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -1331,7 +1318,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		fGroup.GroupType = append(fGroup.GroupType, groupType)
 	}
 
-	results, expDate, err := getGroupResults(tenantDbConfig, dt, fGroup)
+	results, _, err := getGroupResults(cfg.MongoClient, tenantDbConfig, dt, fGroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1339,11 +1326,11 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	if mode == "combined" {
 		// check for feeds
-		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		dbConfigs := (getComboDBConfigs(cfg.MongoClient, tenantDbConfig, cfg))
 		for _, dbConfig := range dbConfigs {
 			// append subresults to list of combined results
-			subResults := []Group{}
-			subResults, expDate, err = getGroupResults(dbConfig.Config, dt, fGroup)
+
+			subResults, _, err := getGroupResults(cfg.MongoClient, dbConfig.Config, dt, fGroup)
 			if err != nil {
 				code = http.StatusInternalServerError
 				return code, h, output, err
@@ -1357,7 +1344,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 	}
 
 	// check if nothing found
-	if expDate < 0 {
+	if len(results) == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
 		return code, h, output, err
@@ -1391,7 +1378,7 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -1401,16 +1388,9 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := []ServiceType{}
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 
 	if err != nil {
 		panic(err)
@@ -1422,11 +1402,11 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 	// check if topology already exists for current day
 
 	existing := ServiceType{}
-	serviceCol := session.DB(tenantDbConfig.Db).C(serviceTypeColName)
-	err = serviceCol.Find(bson.M{"date_integer": dt}).One(&existing)
+	serviceTypeCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(serviceTypeColName)
+	err = serviceTypeCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
 	if err != nil {
 		// Stop at any error except not found. We want to have not found
-		if err.Error() != "not found" {
+		if err != mongo.ErrNoDocuments {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
@@ -1450,10 +1430,16 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 		incoming[i].DateInt = dt
 	}
 
-	err = mongo.MultiInsert(session, tenantDbConfig.Db, serviceTypeColName, incoming)
+	incomingInf := make([]interface{}, len(incoming))
+	for i, value := range incoming {
+		incomingInf[i] = value
+	}
+
+	_, err = serviceTypeCol.InsertMany(context.TODO(), incomingInf)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	// Create view of the results
@@ -1484,20 +1470,16 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
 		return code, h, output, err
 	}
 
-	results, err := getServiceTypeResults(tenantDbConfig, dt)
+	results, err := getServiceTypeResults(cfg.MongoClient, tenantDbConfig, dt)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1507,10 +1489,10 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 
 		// check for feeds
 
-		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		dbConfigs := (getComboDBConfigs(cfg.MongoClient, tenantDbConfig, cfg))
 		for _, dbConfig := range dbConfigs {
 			// append subresults to list of combined results
-			subResults, err := getServiceTypeResults(dbConfig.Config, dt)
+			subResults, err := getServiceTypeResults(cfg.MongoClient, dbConfig.Config, dt)
 			if err != nil {
 				code = http.StatusInternalServerError
 				return code, h, output, err
@@ -1545,53 +1527,55 @@ func ListServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []b
 
 // getServiceTypeResults accepts an date in integer format YYYYMMDD and a tenand db configuration
 // and returns relevant service types
-func getServiceTypeResults(dbConfig config.MongoConfig, dateInt int) ([]ServiceType, error) {
+func getServiceTypeResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int) ([]ServiceType, error) {
 	subResults := []ServiceType{}
-	session, err := mongo.OpenSession(dbConfig)
-	defer mongo.CloseSession(session)
+
+	subServiceTypeCol := client.Database(dbConfig.Db).Collection(serviceTypeColName)
+	expDate := store.GetCloseDate(subServiceTypeCol, dateInt)
+	if expDate < 0 {
+		return subResults, nil
+	}
+
+	cursor, err := subServiceTypeCol.Find(context.TODO(), bson.M{"date_integer": expDate})
+
 	if err != nil {
 		return subResults, err
 	}
 
-	subServiceType := session.DB(dbConfig.Db).C(serviceTypeColName)
-	expDate := getCloseDate(subServiceType, dateInt)
-	if expDate < 0 {
-		return subResults, err
-	}
+	defer cursor.Close(context.TODO())
 
-	err = subServiceType.Find(bson.M{"date_integer": expDate}).All(&subResults)
+	cursor.All(context.TODO(), &subResults)
+
 	return subResults, err
 }
 
 // getComboDBConfigs returns a list of database configuration objects based on a list of tenant names
-func getComboDBConfigs(comboTenantCfg config.MongoConfig, cfg config.Config) []TenantDB {
+func getComboDBConfigs(client *mongo.Client, comboTenantCfg config.MongoConfig, cfg config.Config) []TenantDB {
 	// empty result
 	result := []TenantDB{}
-	session, err := mongo.OpenSession(comboTenantCfg)
-	defer mongo.CloseSession(session)
+
 	feeds := feeds.Data{}
-	ftCol := session.DB(comboTenantCfg.Db).C(feedsDataCol)
-	err = ftCol.Find(bson.M{}).One(&feeds)
+	ftCol := client.Database(comboTenantCfg.Db).Collection(feedsDataCol)
+	err := ftCol.FindOne(context.TODO(), bson.M{}).Decode(&feeds)
 	// if feeds exist
 
 	if err == nil && feeds.Tenants != nil {
-		// for each tenant grab tenant info and topology data
-		coreSession, err := mongo.OpenSession(cfg.MongoDB)
-		defer mongo.CloseSession(coreSession)
-		if err != nil {
-			// emtpy result
-			return result
-		}
-		tenantsCol := coreSession.DB(cfg.MongoDB.Db).C("tenants")
+
+		tenantsCol := client.Database(cfg.MongoDB.Db).Collection("tenants")
 		tenantResults := []tenants.Tenant{}
 		// grab tenants involved in feeds
-		err = tenantsCol.Find(bson.M{"id": bson.M{"$in": feeds.Tenants}}).All(&tenantResults)
+		cursor, err := tenantsCol.Find(context.TODO(), bson.M{"id": bson.M{"$in": feeds.Tenants}})
 		if err != nil {
 			// emtpy result
 			return result
 		}
 
+		defer cursor.Close(context.TODO())
+
+		cursor.All(context.TODO(), &tenantResults)
+
 		for _, item := range tenantResults {
+
 			if len(item.DbConf) == 0 {
 				continue
 			}
@@ -1630,7 +1614,7 @@ func DeleteServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -1640,28 +1624,21 @@ func DeleteServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	serviceCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(serviceTypeColName)
+	deleteResult, err := serviceCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	serviceCol := session.DB(tenantDbConfig.Db).C(serviceTypeColName)
-	change, err := serviceCol.RemoveAll(bson.M{"date_integer": dt})
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	if change.Removed == 0 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
 
 	// Create view of the results
-	output, err = createMessageOUT(fmt.Sprintf("Topology of %d service types deleted for date: %s", change.Removed, dateStr), 200, "json")
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d service types deleted for date: %s", deleteResult.DeletedCount, dateStr), 200, "json")
 	return code, h, output, err
 }
 
@@ -1687,9 +1664,9 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	mode := urlValues.Get("mode")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -1702,7 +1679,7 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	fltr.Subgroup = urlValues["subgroup"]
 	fltr.Tags = urlValues.Get("tags")
 
-	results, expDate, err := getGroupResults(tenantDbConfig, dt, fltr)
+	results, expDate, err := getGroupResults(cfg.MongoClient, tenantDbConfig, dt, fltr)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1710,11 +1687,11 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	if mode == "combined" {
 		// check for feeds
-		dbConfigs := (getComboDBConfigs(tenantDbConfig, cfg))
+		dbConfigs := (getComboDBConfigs(cfg.MongoClient, tenantDbConfig, cfg))
 		for _, dbConfig := range dbConfigs {
 			// append subresults to list of combined results
-			subResults := []Group{}
-			subResults, expDate, err = getGroupResults(dbConfig.Config, dt, fltr)
+			subResults, _, err := getGroupResults(cfg.MongoClient, dbConfig.Config, dt, fltr)
+
 			if err != nil {
 				code = http.StatusInternalServerError
 				return code, h, output, err
@@ -1748,20 +1725,23 @@ func ListGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 // getGroupResults accepts an date in integer format YYYYMMDD, a tenand db configuration
 // and a filter group object and returns relevant topology groups
-func getGroupResults(dbConfig config.MongoConfig, dateInt int, fltr fltrGroup) ([]Group, int, error) {
+func getGroupResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int, fltr fltrGroup) ([]Group, int, error) {
 	subResults := []Group{}
-	session, err := mongo.OpenSession(dbConfig)
-	defer mongo.CloseSession(session)
+
+	subGroupsCol := client.Database(dbConfig.Db).Collection(groupColName)
+	expDate := store.GetCloseDate(subGroupsCol, dateInt)
+	if expDate < 0 {
+		return subResults, expDate, nil
+	}
+	cursor, err := subGroupsCol.Find(context.TODO(), prepGroupQuery(expDate, fltr))
+
 	if err != nil {
-		return subResults, -1, err
+		return subResults, expDate, nil
 	}
 
-	subGroups := session.DB(dbConfig.Db).C(groupColName)
-	expDate := getCloseDate(subGroups, dateInt)
-	if expDate < 0 {
-		return subResults, expDate, err
-	}
-	subGroups.Find(prepGroupQuery(expDate, fltr)).All(&subResults)
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &subResults)
 
 	return subResults, expDate, err
 }
@@ -1782,7 +1762,7 @@ func DeleteGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	urlValues := r.URL.Query()
 	dateStr := urlValues.Get("date")
 	dt, dateStr, err := utils.ParseZuluDate(dateStr)
@@ -1792,28 +1772,21 @@ func DeleteGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	groupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
+	deleteResult, err := groupCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	groupCol := session.DB(tenantDbConfig.Db).C(groupColName)
-	change, err := groupCol.RemoveAll(bson.M{"date_integer": dt})
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	if change.Removed == 0 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFoundQuery, contentType, "", " ")
 		code = 404
 		return code, h, output, err
 	}
 
 	// Create view of the results
-	output, err = createMessageOUT(fmt.Sprintf("Topology of %d groups deleted for date: %s", change.Removed, dateStr), 200, "json")
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d groups deleted for date: %s", deleteResult.DeletedCount, dateStr), 200, "json")
 	return code, h, output, err
 }
 
@@ -1830,7 +1803,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

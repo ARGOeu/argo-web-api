@@ -48,7 +48,7 @@ type DataOutput struct {
 	Hostname       string            `bson:"host"`
 	Metric         string            `bson:"metric"`
 	Status         string            `bson:"status"`
-	DateInt        string            `bson:"date_int"`
+	DateInt        int               `bson:"date_int"`
 	PrevTimestamp  string            `bson:"previous_timestamp"`
 	PrevStatus     string            `bson:"previous_state"`
 	ActualData     string            `bson:"actual_data"`

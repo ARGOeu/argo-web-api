@@ -7,7 +7,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/authorization"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 )
 
 // // WrapAll Wraps all wrap handlers. Note: Precedence is inversed
@@ -39,23 +39,23 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		// check if api admin authentication is needed (for tenants etc...)
 		if needsAPIAdmin(routeName) {
 
-			if (authentication.AuthenticateAdmin(r.Header, cfg)) == false {
+			if !(authentication.AuthenticateAdmin(r.Header, cfg)) {
 				// Because not authenticated respond with error
 				Error(w, r, ErrAuthen, cfg, errs)
 				return
 			}
 
 			// admin api authenticated so continue serving
-			context.Set(r, "authen", true)
+			gcontext.Set(r, "authen", true)
 			// Add admin restricted or not information -- used in get tenants
 
 			// Check if admin is restricted
 			if authentication.IsAdminRestricted(r.Header, cfg) {
-				context.Set(r, "roles", []string{"super_admin_restricted"})
+				gcontext.Set(r, "roles", []string{"super_admin_restricted"})
 			} else if authentication.IsSuperAdminUI(r.Header, cfg) {
-				context.Set(r, "roles", []string{"super_admin_ui"})
+				gcontext.Set(r, "roles", []string{"super_admin_ui"})
 			} else {
-				context.Set(r, "roles", []string{"super_admin"})
+				gcontext.Set(r, "roles", []string{"super_admin"})
 			}
 
 			hfn.ServeHTTP(w, r)
@@ -70,11 +70,10 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 				return
 			}
 
-			context.Set(r, "roles", tenantConf.Roles)
-			context.Set(r, "hbase_conf", cfg.Hbase)
-			context.Set(r, "tenant_conf", tenantConf)
-			context.Set(r, "tenant_name", name)
-			context.Set(r, "authen", true)
+			gcontext.Set(r, "roles", tenantConf.Roles)
+			gcontext.Set(r, "tenant_conf", tenantConf)
+			gcontext.Set(r, "tenant_name", name)
+			gcontext.Set(r, "authen", true)
 			hfn.ServeHTTP(w, r)
 
 		}
@@ -88,14 +87,13 @@ func WrapAuthorize(hfn http.Handler, cfg config.Config, routeName string) http.H
 
 		var errs []ErrorResponse
 
-		// log.Printf(" >> Authorization takes place here...")
-		var roles []string
-
-		roles = context.Get(r, "roles").([]string)
+		roles := gcontext.Get(r, "roles").([]string)
 
 		if roles != nil {
+
 			author := authorization.HasResourceRoles(cfg, routeName, roles)
-			if author != false {
+
+			if author {
 				hfn.ServeHTTP(w, r)
 				return
 			}

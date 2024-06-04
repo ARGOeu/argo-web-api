@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/twinj/uuid"
 )
 
 const zuluDateOnly = "2006-01-02"
@@ -25,4 +27,20 @@ func ParseZuluDate(dateStr string) (int, string, error) {
 	dateInt, err := strconv.Atoi(parsedTime.Format(ymdForm))
 	return dateInt, dateStr, err
 
+}
+
+func NewUUID() string {
+	return uuid.NewV4().String()
+}
+
+func DistinctCast(distinctRes []interface{}) ([]string, error) {
+	results := make([]string, 0, len(distinctRes))
+	for _, result := range distinctRes {
+		if value, ok := result.(string); ok {
+			results = append(results, value)
+		} else {
+			return nil, fmt.Errorf("expected value of string type, instead got %T", result)
+		}
+	}
+	return results, nil
 }

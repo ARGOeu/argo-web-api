@@ -23,6 +23,7 @@
 package latest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -30,10 +31,12 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // GetMetricResult returns the detailed message from a probe
@@ -52,7 +55,7 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
@@ -74,16 +77,10 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 		lim = 500
 	}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 
 	// find the report id first
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, reportName)
+	reportID, err := store.GetReportID(reportCol, reportName)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -92,19 +89,32 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	resultItems := []MetricData{}
 	result := MetricList{}
 
-	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
+	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
 	// Query the detailed metric results
 	metricResultsQuery := prepQuery(dateStr, reportID, endpointGroup, filter, strict, lim)
+	var cursor *mongo.Cursor
+	findOpts := options.Find()
+	findOpts.SetSort(bson.D{{Key: "time_integer", Value: -1}})
 	if strict {
-		err = metricCol.Pipe(metricResultsQuery).All(&resultItems)
+		cursor, err = metricCol.Aggregate(context.TODO(), metricResultsQuery)
+
 	} else {
 		if lim == -1 {
-			err = metricCol.Find(metricResultsQuery).Sort("-time_integer").All(&resultItems)
+			cursor, err = metricCol.Find(context.TODO(), metricResultsQuery, findOpts)
 		} else {
-			err = metricCol.Find(metricResultsQuery).Sort("-time_integer").Limit(lim).All(&resultItems)
+			findOpts.SetLimit(int64(lim))
+			cursor, err = metricCol.Find(context.TODO(), metricResultsQuery, findOpts)
 		}
 	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &resultItems)
 
 	result.MetricData = resultItems
 
@@ -221,7 +231,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

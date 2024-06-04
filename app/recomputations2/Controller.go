@@ -23,19 +23,22 @@
 package recomputations2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var recomputationsColl = "recomputations"
@@ -60,9 +63,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	qReport := urlValues.Get("report")
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	filter := bson.M{}
+	query := bson.M{}
 
 	// check if there are relevant recomputations for given date
 	if qDate != "" {
@@ -72,28 +75,24 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 			return code, h, output, err
 		}
 
-		filter["$where"] = fmt.Sprintf("'%s' >= this.start_time.split('T')[0] && '%s' <= this.end_time.split('T')[0]", qDate, qDate)
+		query["$where"] = fmt.Sprintf("'%s' >= this.start_time.split('T')[0] && '%s' <= this.end_time.split('T')[0]", qDate, qDate)
 	}
 	if qReport != "" {
-		filter["report"] = qReport
-	}
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
+		query["report"] = qReport
 	}
 
 	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, filter, "timestamp", &results)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), query, findOptions)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 	output, err = createListView(results, contentType)
 
 	return code, h, output, err
@@ -118,24 +117,16 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	filter := bson.M{"id": vars["ID"]}
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	query := bson.M{"id": vars["ID"]}
 
 	result := MongoInterface{}
-
-	err = mongo.FindOne(session, tenantDbConfig.Db, recomputationsColl, filter, &result)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	err = rCol.FindOne(context.TODO(), query).Decode(&result)
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = http.StatusNotFound
 			return code, h, output, err
@@ -165,20 +156,12 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	var recompSubmission IncomingRecomputation
 	// urlValues := r.URL.Query()
 
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -196,7 +179,7 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	history := []HistoryItem{statusItem}
 
 	recomputation := MongoInterface{
-		ID:               mongo.NewUUID(),
+		ID:               utils.NewUUID(),
 		RequesterName:    recompSubmission.RequesterName,
 		RequesterEmail:   recompSubmission.RequesterEmail,
 		StartTime:        recompSubmission.StartTime,
@@ -211,10 +194,13 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 		History:          history,
 	}
 
-	err = mongo.Insert(session, tenantDbConfig.Db, recomputationsColl, recomputation)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+
+	_, err = rCol.InsertOne(context.TODO(), recomputation)
 
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
 	output, err = createSubmitView(recomputation, contentType, r)
@@ -239,53 +225,51 @@ func ResetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	query := bson.M{"id": vars["ID"]}
 
 	// Retrieve Results from database
-	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, query, "", &results)
+	result := MongoInterface{}
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	err = rCol.FindOne(context.TODO(), query).Decode(&result)
 
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	statusItem := HistoryItem{Status: "pending", Timestamp: result.Timestamp}
+	history := []HistoryItem{statusItem}
+
+	recomputation := MongoInterface{
+		ID:             vars["ID"],
+		RequesterName:  result.RequesterName,
+		RequesterEmail: result.RequesterEmail,
+		StartTime:      result.StartTime,
+		EndTime:        result.EndTime,
+		Reason:         result.Reason,
+		Report:         result.Report,
+		Exclude:        result.Exclude,
+		Status:         "pending",
+		Timestamp:      result.Timestamp,
+		History:        history,
+	}
+
+	replaceResult, err := rCol.ReplaceOne(context.TODO(), query, recomputation)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
+	if replaceResult.MatchedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 		code = 404
-		return code, h, output, err
-	}
-
-	statusItem := HistoryItem{Status: "pending", Timestamp: results[0].Timestamp}
-	history := []HistoryItem{statusItem}
-
-	recomputation := MongoInterface{
-		ID:             vars["ID"],
-		RequesterName:  results[0].RequesterName,
-		RequesterEmail: results[0].RequesterEmail,
-		StartTime:      results[0].StartTime,
-		EndTime:        results[0].EndTime,
-		Reason:         results[0].Reason,
-		Report:         results[0].Report,
-		Exclude:        results[0].Exclude,
-		Status:         "pending",
-		Timestamp:      results[0].Timestamp,
-		History:        history,
-	}
-
-	if err = mongo.Update(session, tenantDbConfig.Db, recomputationsColl, query, recomputation); err != nil {
-		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -326,20 +310,12 @@ func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	var statusSubmit IncomingStatus
 	// urlValues := r.URL.Query()
 
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -351,18 +327,17 @@ func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	query := bson.M{"id": vars["ID"]}
 
 	// Retrieve Results from database
-	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, query, "", &results)
+	result := MongoInterface{}
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	err = rCol.FindOne(context.TODO(), query).Decode(&result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
 		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
 		return code, h, output, err
 	}
 
@@ -372,7 +347,7 @@ func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	if isValidStatus(statusSubmit.Status) == false {
+	if !isValidStatus(statusSubmit.Status) {
 		code = http.StatusConflict
 		output, _ = respond.MarshalContent(
 			respond.ErrConflict("status should be among values: \"pending\",\"approved\",\"rejected\",\"running\",\"done\""),
@@ -382,26 +357,33 @@ func ChangeStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	}
 
 	now := time.Now()
-	history := results[0].History
+	history := result.History
 	statusItem := HistoryItem{Status: statusSubmit.Status, Timestamp: now.Format("2006-01-02T15:04:05Z")}
 	history = append(history, statusItem)
 
 	recomputation := MongoInterface{
 		ID:             vars["ID"],
-		RequesterName:  results[0].RequesterName,
-		RequesterEmail: results[0].RequesterEmail,
-		StartTime:      results[0].StartTime,
-		EndTime:        results[0].EndTime,
-		Reason:         results[0].Reason,
-		Report:         results[0].Report,
-		Exclude:        results[0].Exclude,
+		RequesterName:  result.RequesterName,
+		RequesterEmail: result.RequesterEmail,
+		StartTime:      result.StartTime,
+		EndTime:        result.EndTime,
+		Reason:         result.Reason,
+		Report:         result.Report,
+		Exclude:        result.Exclude,
 		Status:         statusSubmit.Status,
-		Timestamp:      results[0].Timestamp,
+		Timestamp:      result.Timestamp,
 		History:        history,
 	}
 
-	if err = mongo.Update(session, tenantDbConfig.Db, recomputationsColl, query, recomputation); err != nil {
+	replaceResult, err := rCol.ReplaceOne(context.TODO(), query, recomputation)
+	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if replaceResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -426,19 +408,12 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	var recompSubmission IncomingRecomputation
 	// urlValues := r.URL.Query()
 
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		panic(err)
 	}
@@ -449,19 +424,18 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	query := bson.M{"id": vars["ID"]}
 
-	// Retrieve Results from database
-	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, query, "", &results)
+	// Retrieve Result from database
+	result := MongoInterface{}
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	err = rCol.FindOne(context.TODO(), query).Decode(&result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			return code, h, output, err
+		}
 		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	// Check if nothing found
-	if len(results) < 1 {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
 		return code, h, output, err
 	}
 
@@ -480,12 +454,19 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		Reason:         recompSubmission.Reason,
 		Report:         recompSubmission.Report,
 		Exclude:        recompSubmission.Exclude,
-		Status:         results[0].Status,
-		Timestamp:      results[0].Timestamp,
+		Status:         result.Status,
+		Timestamp:      result.Timestamp,
 	}
 
-	if err = mongo.Update(session, tenantDbConfig.Db, recomputationsColl, query, recomputation); err != nil {
+	replaceResult, err := rCol.ReplaceOne(context.TODO(), query, recomputation)
+	if err != nil {
 		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if replaceResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
 		return code, h, output, err
 	}
 
@@ -513,42 +494,24 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	query := bson.M{"id": vars["ID"]}
 
-	filter := bson.M{"id": vars["ID"]}
-
-	// Retrieve Results from database
-	results := []MongoInterface{}
-	err = mongo.Find(session, tenantDbConfig.Db, recomputationsColl, filter, "", &results)
+	deleteResult, err := rCol.DeleteOne(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	// Check if nothing found
-	if len(results) < 1 {
+	if deleteResult.DeletedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
+		code = http.StatusNotFound
 		return code, h, output, err
 	}
-
-	mongo.Remove(session, tenantDbConfig.Db, recomputationsColl, filter)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	output, err = createMsgView("Recomputation Successfully Deleted", 200)
 
 	if err != nil {

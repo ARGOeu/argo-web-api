@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
-func createGroupResult(results []GroupInterface, report reports.MongoInterface, format string, custom bool) []*SuperGroup {
+func createGroupResult(results []GroupInterface, report reports.MongoInterface, custom bool) []*SuperGroup {
 
 	result := []*SuperGroup{}
 
@@ -88,7 +88,7 @@ func createGroupResult(results []GroupInterface, report reports.MongoInterface, 
 
 }
 
-func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoInterface, format string, custom bool) []*SuperGroup {
+func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoInterface, custom bool) []*SuperGroup {
 
 	result := []*SuperGroup{}
 
@@ -130,7 +130,7 @@ func createSuperGroupResult(results []SuperGroupInterface, report reports.MongoI
 
 }
 
-func createEndpointResult(results []EndpointInterface, report reports.MongoInterface, id string, custom bool) ([]byte, error) {
+func createEndpointResult(results []EndpointInterface, id string, custom bool) ([]byte, error) {
 
 	docID := &idOUT{}
 	docID.ID = id
@@ -180,11 +180,11 @@ func createEndpointResult(results []EndpointInterface, report reports.MongoInter
 
 }
 
-func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []GroupInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
+func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []GroupInterface, report reports.MongoInterface, custom bool) ([]byte, error) {
 	docRoot := &root{}
 
-	groupResult := createGroupResult(resultsGroups, report, format, custom)
-	superGroupResult := createSuperGroupResult(resultsSuperGroups, report, format, custom)
+	groupResult := createGroupResult(resultsGroups, report, custom)
+	superGroupResult := createSuperGroupResult(resultsSuperGroups, report, custom)
 
 	docRoot.Result = groupResult
 	for i := range docRoot.Result {
@@ -203,7 +203,7 @@ func createResultView(resultsSuperGroups []SuperGroupInterface, resultsGroups []
 
 func createErrorMessage(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &errorMessage{}
 

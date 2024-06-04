@@ -1,10 +1,10 @@
 package metrics
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/app/metricProfiles"
@@ -12,13 +12,14 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//Create a new metrics resource
+// Create a new metrics resource
 const metricsColName = "monitoring_metrics"
 const reportsColName = "reports"
 const mprofilesColName = "metric_profiles"
@@ -71,24 +72,10 @@ func UpdateMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	// open a master session to the argo core database
-	coreSession, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(coreSession)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	incoming := []Metric{}
 
 	// Try ingest request body
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -105,13 +92,20 @@ func UpdateMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	_, err = mongo.Remove(coreSession, cfg.MongoDB.Db, metricsColName, bson.M{})
+	coreCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection(metricsColName)
+
+	_, err = coreCol.DeleteMany(context.TODO(), bson.M{})
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = mongo.MultiInsert(coreSession, cfg.MongoDB.Db, metricsColName, incoming)
+	incomingInf := make([]interface{}, len(incoming))
+	for i, value := range incoming {
+		incomingInf[i] = value
+	}
+
+	_, err = coreCol.InsertMany(context.TODO(), incomingInf)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -141,27 +135,14 @@ func ListMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
-	// open a master session to the argo core database
-	coreSession, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(coreSession)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Retrieve Results from database
-	result := []Metric{}
+	results := []Metric{}
+
+	coreCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection(metricsColName)
+	cursor, err := coreCol.Find(context.TODO(), bson.M{})
 
 	if err != nil {
-		code = http.StatusBadRequest
-		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
-		return code, h, output, err
-	}
-
-	mCol := coreSession.DB(cfg.MongoDB.Db).C(metricsColName)
-	err = mCol.Find(bson.M{}).All(&result)
-	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = 404
 			return code, h, output, err
@@ -170,8 +151,11 @@ func ListMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		return code, h, output, err
 	}
 
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
 	// Create view of the results
-	output, err = createMetricsListView(result, "Success", code) //Render the results into JSON
+	output, err = createMetricsListView(results, "Success", code) //Render the results into JSON
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -182,7 +166,7 @@ func ListMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	return code, h, output, err
 }
 
-//ListMetricsByReport list all metrics available in the metric profile used by a report
+// ListMetricsByReport list all metrics available in the metric profile used by a report
 func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -206,19 +190,15 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 	reportName := vars["report"]
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	// Open session to tenant database
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	colReports := session.DB(tenantDbConfig.Db).C(reportsColName)
+	colReports := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColName)
 	//get the report
 	report := reports.MongoInterface{}
-	err = colReports.Find(bson.M{"info.name": reportName}).One(&report)
+	err = colReports.FindOne(context.TODO(), bson.M{"info.name": reportName}).Decode(&report)
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, err = createMessageOUT(fmt.Sprintf("No report with name: %s exists!", reportName), 404, "json")
 			code = 404
 			return code, h, output, err
@@ -244,10 +224,10 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 
 	mpQuery := prepQueryMprofile(dt, mprofileID)
 
-	colMProfiles := session.DB(tenantDbConfig.Db).C(mprofilesColName)
+	colMProfiles := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(mprofilesColName)
 	//get the report
 	mprofile := metricProfiles.MetricProfile{}
-	err = colMProfiles.Find(mpQuery).One(&mprofile)
+	err = colMProfiles.FindOne(context.TODO(), mpQuery).Decode(&mprofile)
 
 	if err != nil {
 		if err.Error() == "not found" {
@@ -261,16 +241,8 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 
 	metrics := getMetricsFromProfile(mprofile)
 
-	// open a master session to the argo core database
-	coreSession, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(coreSession)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Retrieve Results from database
-	result := []Metric{}
+	results := []Metric{}
 
 	if err != nil {
 		code = http.StatusBadRequest
@@ -278,11 +250,11 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	mCol := coreSession.DB(cfg.MongoDB.Db).C(metricsColName)
-	err = mCol.Find(bson.M{"name": bson.M{"$in": metrics}}).All(&result)
+	mCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection(metricsColName)
+	cursor, err := mCol.Find(context.TODO(), bson.M{"name": bson.M{"$in": metrics}})
 
 	if err != nil {
-		if err.Error() == "not found" {
+		if err == mongo.ErrNoDocuments {
 			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
 			code = 404
 			return code, h, output, err
@@ -291,8 +263,11 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
 	// Create view of the results
-	output, err = createMetricsListView(result, "Success", code) //Render the results into JSON
+	output, err = createMetricsListView(results, "Success", code) //Render the results into JSON
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -318,7 +293,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	h.Set("Allow", "GET, POST, DELETE, PUT, OPTIONS")
 	return code, h, output, err
 
 }

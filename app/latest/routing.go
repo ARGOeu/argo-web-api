@@ -23,31 +23,31 @@
 package latest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"latest.get", "GET", "/{report_name}/{group_type}/{group_name}", routeCheckGroup},
-	{"latest.get", "GET", "/{report_name}/{group_type}", routeCheckGroup},
-	{"latest.options", "OPTIONS", "/{report_name}/{group_name}/{endpoint_group}", Options},
-	{"latest.options", "OPTIONS", "/{report_name}/{group_name}", Options},
+	{Name: "latest.get", Verb: "GET", Path: "/{report_name}/{group_type}/{group_name}", SubrouterHandler: routeCheckGroup},
+	{Name: "latest.get", Verb: "GET", Path: "/{report_name}/{group_type}", SubrouterHandler: routeCheckGroup},
+	{Name: "latest.options", Verb: "OPTIONS", Path: "/{report_name}/{group_name}/{endpoint_group}", SubrouterHandler: Options},
+	{Name: "latest.options", Verb: "OPTIONS", Path: "/{report_name}/{group_name}", SubrouterHandler: Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -55,7 +55,6 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("group check")
 	err := error(nil)
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
@@ -66,17 +65,12 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantcfg := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantcfg)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
-		return code, h, output, err
-	}
+	reportCol := cfg.MongoClient.Database(tenantcfg.Db).Collection("reports")
+
 	result := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"info.name": vars["report_name"]}, &result)
+	err = reportCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&result)
 	if err != nil {
 		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"

@@ -27,6 +27,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"log"
 	"net/http"
@@ -34,12 +35,25 @@ import (
 	"strconv"
 
 	"github.com/ARGOeu/argo-web-api/routing"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	"github.com/ARGOeu/argo-web-api/version"
 	"github.com/gorilla/handlers"
 )
 
 func main() {
 
 	log.SetOutput(os.Stdout)
+	log.Println("starting argo-web-api " + version.Release)
+	//Create a connection to mongo and store client in the configuration object
+
+	cfg.MongoClient = store.GetMongoClient(cfg.MongoDB)
+	// close connection at the end
+	defer func() {
+		if err := cfg.MongoClient.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+
 	//Create the server router and add the middleware
 	var mainRouter http.Handler
 	mainRouter = routing.NewRouter(cfg)
@@ -60,7 +74,7 @@ func main() {
 
 	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: tlsConfig}
 	//Web service binds to server. Requests served over HTTPS.
-
+	log.Println("listening for requests at: " + server.Addr)
 	err := server.ListenAndServeTLS(cfg.Server.Cert, cfg.Server.Privkey)
 
 	if err != nil {

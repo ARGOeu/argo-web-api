@@ -8,14 +8,14 @@ import (
 // HandleAdminSubrouter includes the admin specific calls (put/get)
 func HandleAdminSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appAdminRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appAdminRoutesV2)
 
 }
 
 // HandleSubrouter includes the tenant only specific calls (get only)
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 

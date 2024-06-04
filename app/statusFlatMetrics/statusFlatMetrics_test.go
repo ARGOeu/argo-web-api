@@ -23,7 +23,8 @@
 package statusFlatMetrics
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -33,21 +34,19 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type StatusFlatMetricsTestSuite struct {
 	suite.Suite
-	cfg          config.Config
-	router       *mux.Router
-	confHandler  respond.ConfHandler
-	tenantDbConf config.MongoConfig
+	cfg         config.Config
+	router      *mux.Router
+	confHandler respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -58,7 +57,7 @@ type StatusFlatMetricsTestSuite struct {
 // Also the testdb is seeded with tenants,reports,metric_profiles and status_metrics
 func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
     [server]
@@ -76,28 +75,23 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(true).PathPrefix("/api/v2/status").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
-	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
+	// Add authentication token to mongo testdb
+	authCol := suite.cfg.MongoClient.Database((suite.cfg.MongoDB.Db)).Collection("authentication")
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	authCol.InsertOne(context.TODO(), seedAuth)
 
 	// seed a tenant to use
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -106,7 +100,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
@@ -115,14 +109,14 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "egi_user",
 				"email":   "egi_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
@@ -131,7 +125,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "main",
 				"server":   "localhost",
 				"port":     27017,
@@ -140,19 +134,19 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 				"password": ""},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "eudat_user",
 				"email":   "eudat_user@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.get",
 			"roles":    []string{"editor", "viewer"},
@@ -165,11 +159,11 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY1")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t1conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the report DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("reports")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -186,31 +180,31 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_metrics")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -226,7 +220,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":                 "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":         "nagios3.hellasgrid.gr",
 		"date_integer":           20150501,
@@ -245,7 +239,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"threshold_rule_applied": "latency=1s;0:5;10:60",
 		"original_status":        "OK",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -261,7 +255,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -277,7 +271,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -293,7 +287,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -318,11 +312,11 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "KEY2")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t2conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
 
 	// Now seed the reports DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("reports")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -339,31 +333,31 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "eudat.CRITICAL"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
 	// seed the status detailed metric data
-	c = session.DB(suite.tenantDbConf.Db).C("status_metrics")
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("status_metrics")
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -380,7 +374,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -397,7 +391,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "someService status is CRITICAL",
 		"message":            "someService data upload test failed",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -414,7 +408,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -431,7 +425,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -448,7 +442,7 @@ func (suite *StatusFlatMetricsTestSuite) SetupTest() {
 		"summary":            "someService status is CRITICAL",
 		"message":            "someService data upload test failed",
 	})
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -479,7 +473,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 	}
 
 	expReqs := []expReq{
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobSubmit" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z",
@@ -513,7 +507,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
   }
  ]
 }`},
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobCancel" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z",
@@ -548,7 +542,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
  ]
 }`},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_B/metrics/someService-FileTransfer" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z",
@@ -614,7 +608,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobSubmit" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2&view=details",
@@ -651,7 +645,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/emi.cream.CREAMCE-JobSubmit" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2&nextPageToken=Mg==",
@@ -676,7 +670,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_B/metrics/someService-FileTransfer" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2",
@@ -713,7 +707,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_B/metrics/someService-FileTransfer" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=2&nextPageToken=Mg==",
@@ -761,7 +755,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
 }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_A/metrics/unknown" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=OA==",
@@ -772,7 +766,7 @@ func (suite *StatusFlatMetricsTestSuite) TestFlatListStatusMetrics() {
  }`,
 		},
 
-		expReq{
+		{
 			method: "GET",
 			url: "/api/v2/status/Report_B/metrics/unknown" +
 				"?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:00:00Z&pageSize=4&nextPageToken=OA==",
@@ -814,7 +808,7 @@ func (suite *StatusFlatMetricsTestSuite) TestOptionsStatusFlatMetrics() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -828,11 +822,9 @@ func (suite *StatusFlatMetricsTestSuite) TestOptionsStatusFlatMetrics() {
 // Mainly it's purpose is to drop the testdb
 func (suite *StatusFlatMetricsTestSuite) TearDownTest() {
 
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
-	session.DB("argotest_flatmetrics").DropDatabase()
-	session.DB("argotest_flatmetrics_eudat").DropDatabase()
-	session.DB("argotest_flatmetrics_egi").DropDatabase()
+	suite.cfg.MongoClient.Database("argotest_flatmetrics").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("argotest_flatmetrics_eudat").Drop(context.TODO())
+	suite.cfg.MongoClient.Database("argotest_flatmetrics_egi").Drop(context.TODO())
 }
 
 // This is the first function called when go test is issued

@@ -42,7 +42,7 @@ type GroupData struct {
 	Timestamp        string `bson:"timestamp"`
 	Group            string `bson:"endpoint_group"`
 	Status           string `bson:"status"`
-	DateInteger      string `bson:"date_integer"`
+	DateInteger      int    `bson:"date_integer"`
 	HasThresholdRule bool   `bson:"has_threshold_rule"`
 }
 
@@ -84,7 +84,7 @@ type EndpointData struct {
 	Service          string            `bson:"service"`
 	Hostname         string            `bson:"host"`
 	Status           string            `bson:"status"`
-	DateInt          string            `bson:"date_integer"`
+	DateInt          int               `bson:"date_integer"`
 	HasThresholdRule bool              `bson:"has_threshold_rule"`
 	Info             map[string]string `bson:"info"`
 }
