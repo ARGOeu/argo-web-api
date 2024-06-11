@@ -36,14 +36,13 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/routing"
 	"github.com/ARGOeu/argo-web-api/utils/store"
-	"github.com/ARGOeu/argo-web-api/version"
 	"github.com/gorilla/handlers"
 )
 
 func main() {
 
 	log.SetOutput(os.Stdout)
-	log.Println("starting argo-web-api " + version.Release)
+
 	//Create a connection to mongo and store client in the configuration object
 
 	cfg.MongoClient = store.GetMongoClient(cfg.MongoDB)

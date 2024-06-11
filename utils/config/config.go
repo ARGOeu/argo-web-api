@@ -28,6 +28,7 @@ package config
 
 import (
 	"flag"
+	"log"
 	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -109,8 +110,12 @@ func LoadConfiguration() Config {
 	// var cfg Config
 	mongocfg := MongoConfig{}
 	cfg := Config{MongoDB: mongocfg}
+	log.Println("loading configuration from:", *flConfig)
 	if *flConfig != "" {
-		_ = gcfg.ReadFileInto(&cfg, *flConfig)
+		err := gcfg.ReadFileInto(&cfg, *flConfig)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	} else {
 		_ = gcfg.ReadStringInto(&cfg, defaultConfig)
 	}

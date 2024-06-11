@@ -34,7 +34,8 @@ import (
 	"runtime/pprof"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/go-lru-cache"
+	"github.com/ARGOeu/argo-web-api/version"
+	cache "github.com/ARGOeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache
@@ -46,9 +47,14 @@ func (s mystring) Size() int {
 }
 
 // Load the configurations that we have set through flags and through the configuration file
-var cfg = config.LoadConfiguration()
+
+var cfg config.Config
 
 func init() {
+
+	log.Println("starting argo-web-api " + version.Release)
+
+	cfg = config.LoadConfiguration()
 
 	//Create a recover function to log the case of a failure
 	defer func() {
