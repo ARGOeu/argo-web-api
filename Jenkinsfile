@@ -41,6 +41,8 @@ pipeline {
                 junit '**/junit.xml'
                 cobertura coberturaReportFile: '**/coverage.xml'
 
+                archiveArtifacts artifacts: '**/argo-web-api'
+
             }
         }
         stage ('Deploy Docs') {
