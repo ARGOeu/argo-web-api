@@ -26,6 +26,8 @@ pipeline {
                 export CGO_CFLAGS"=-O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
                 go build -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z relro -z now'"
                 """
+
+                archiveArtifacts artifacts: '**/argo-web-api'
             }
         }
         stage('Test') {
