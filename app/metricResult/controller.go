@@ -62,6 +62,7 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 	input := metricResultQuery{
 		EndpointName: vars["endpoint_name"],
 		ExecTime:     urlValues.Get("exec_time"),
+		Service:      urlValues.Get("service"),
 	}
 
 	filter := urlValues.Get("filter")
@@ -140,33 +141,33 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		EndpointName: vars["endpoint_name"],
 		MetricName:   vars["metric_name"],
 		ExecTime:     urlValues.Get("exec_time"),
+		Service:      urlValues.Get("service"),
 	}
 
-	result := metricResultOutput{}
+	results := []metricResultOutput{}
 
 	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
 	// Query the detailed metric results
-	err = metricCol.FindOne(context.TODO(), prepQuery(input, reportID)).Decode(&result)
+	cursor, err := metricCol.Find(context.TODO(), prepQuery(input, reportID))
 
-	// if not found or other issue
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			code = http.StatusNotFound
-			message := "Metric not found!"
-			output, err := createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		} else {
-			code = http.StatusInternalServerError
-			message := "Internal Server Error!"
-			output, err := createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
-	output, err = createMetricResultView(result, contentType)
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "Metric not found!"
+		output, err := createErrorMessage(message, code, contentType)
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	output, err = createMultipleMetricResultsView(results, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -195,6 +196,11 @@ func prepQuery(input metricResultQuery, reportID string) bson.M {
 		"time_integer": tsInt,
 	}
 
+	// filter by service type
+	if input.Service != "" {
+		query["service"] = input.Service
+	}
+
 	if reportID != "" {
 		query["report"] = reportID
 	}
@@ -215,6 +221,11 @@ func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 	matchQuery := bson.M{
 		"date_integer": tsYMD,
 		"host":         input.EndpointName,
+	}
+
+	// filter by service type
+	if input.Service != "" {
+		matchQuery["service"] = input.Service
 	}
 
 	// convert to lower case for agility in checks

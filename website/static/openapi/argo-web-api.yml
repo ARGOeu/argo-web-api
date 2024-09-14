@@ -5346,6 +5346,11 @@ paths:
         schema:
           type: string
           default: all
+      - name: service
+        in: query
+        description: filter by service type
+        schema:
+          type: string      
       responses:
         200:
           description: Successful retrieval of multiple metric results
@@ -5451,6 +5456,11 @@ paths:
         schema:
           type: string
           default: 2006-01-01T00:04:05Z
+      - name: service
+        in: query
+        description: filter by service type
+        schema:
+          type: string      
       responses:
         200:
           description: Successful retrieval of results
