@@ -179,19 +179,20 @@ func SubmitRecomputation(r *http.Request, cfg config.Config) (int, http.Header, 
 	history := []HistoryItem{statusItem}
 
 	recomputation := MongoInterface{
-		ID:               utils.NewUUID(),
-		RequesterName:    recompSubmission.RequesterName,
-		RequesterEmail:   recompSubmission.RequesterEmail,
-		StartTime:        recompSubmission.StartTime,
-		EndTime:          recompSubmission.EndTime,
-		Reason:           recompSubmission.Reason,
-		Report:           recompSubmission.Report,
-		Exclude:          recompSubmission.Exclude,
-		ExcludeMetrics:   recompSubmission.ExcludeMetrics,
-		ExcludeMonSource: recompSubmission.ExcludeMonSource,
-		Timestamp:        now.Format("2006-01-02T15:04:05Z"),
-		Status:           "pending",
-		History:          history,
+		ID:                   utils.NewUUID(),
+		RequesterName:        recompSubmission.RequesterName,
+		RequesterEmail:       recompSubmission.RequesterEmail,
+		StartTime:            recompSubmission.StartTime,
+		EndTime:              recompSubmission.EndTime,
+		Reason:               recompSubmission.Reason,
+		Report:               recompSubmission.Report,
+		Exclude:              recompSubmission.Exclude,
+		ExcludeMetrics:       recompSubmission.ExcludeMetrics,
+		ExcludeMonSource:     recompSubmission.ExcludeMonSource,
+		AppliedStatusChanges: recompSubmission.AppliedStatusChanges,
+		Timestamp:            now.Format("2006-01-02T15:04:05Z"),
+		Status:               "pending",
+		History:              history,
 	}
 
 	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
@@ -446,16 +447,17 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 
 	recomputation := MongoInterface{
-		ID:             vars["ID"],
-		RequesterName:  recompSubmission.RequesterName,
-		RequesterEmail: recompSubmission.RequesterEmail,
-		StartTime:      recompSubmission.StartTime,
-		EndTime:        recompSubmission.EndTime,
-		Reason:         recompSubmission.Reason,
-		Report:         recompSubmission.Report,
-		Exclude:        recompSubmission.Exclude,
-		Status:         result.Status,
-		Timestamp:      result.Timestamp,
+		ID:                   vars["ID"],
+		RequesterName:        recompSubmission.RequesterName,
+		RequesterEmail:       recompSubmission.RequesterEmail,
+		StartTime:            recompSubmission.StartTime,
+		EndTime:              recompSubmission.EndTime,
+		Reason:               recompSubmission.Reason,
+		Report:               recompSubmission.Report,
+		Exclude:              recompSubmission.Exclude,
+		Status:               result.Status,
+		Timestamp:            result.Timestamp,
+		AppliedStatusChanges: result.AppliedStatusChanges,
 	}
 
 	replaceResult, err := rCol.ReplaceOne(context.TODO(), query, recomputation)
