@@ -729,6 +729,119 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 
 }
 
+func (suite *RecomputationsProfileTestSuite) TestSubmitRecomΑppliedStatuses() {
+	jsonRecomp := `
+	{
+  "id": "56db4f1a-f331-46ca-b0fd-4555b4aa1cfc",
+  "requester_name": "requester",
+  "requester_email": "request@request.gr",
+  "reason": "testing_compute_engine",
+  "start_time": "2022-01-12T00:00:00Z",
+  "end_time": "2022-01-15T00:00:00Z",
+  "exclude": [
+    "SITE-A",
+    "SITE-B"
+  ],
+  "applied_status_changes": [
+    {
+      "metric": "Metric_X",
+      "service": "Service_X",
+      "state": "CRITICAL"
+    },
+    {
+      "metric": "Metric_XX",
+      "service": "Service_X",
+      "state": "OK"
+    },
+    {
+      "metric": "Metric_XXX",
+      "hostname": "Hostname_XXX",
+      "state": "EXCLUDED"
+    },
+    {
+      "metric": "Metric_XXXX",
+      "group": "Group_XXXX",
+      "state": "WARNING"
+    }
+  ],
+  "status": "running",
+  "timestamp": "2022-01-14 14:58:40",
+  "exclude_monitoring_source": [
+    {
+      "host": "monA",
+      "start_time": "2022-01-13T00:00:00Z",
+      "end_time": "2022-01-13T23:59:59Z"
+    }
+  ]
+}`
+
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer([]byte(jsonRecomp)))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Recomputations successfully created",
+  "code": "201"
+ },
+ "data": {
+  "id": ".+",
+  "links": {
+   "self": "https://argo-web-api.grnet.gr:443/api/v2/recomputations/.+"
+  }
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(202, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
+
+	var results []MongoInterface
+	rCol := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(recomputationsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
+	if err != nil {
+		panic(err)
+	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
+	suite.Equal(len(results), 4)
+	suite.Equal("2022-01-12T00:00:00Z", results[3].StartTime)
+	suite.Equal("2022-01-15T00:00:00Z", results[3].EndTime)
+	suite.Equal("requester", results[3].RequesterName)
+	// check first applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[0].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[0].Hostname)
+	suite.Equal("Service_X", results[3].AppliedStatusChanges[0].Service)
+	suite.Equal("Metric_X", results[3].AppliedStatusChanges[0].Metric)
+	suite.Equal("CRITICAL", results[3].AppliedStatusChanges[0].State)
+	// check second applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[1].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[1].Hostname)
+	suite.Equal("Service_X", results[3].AppliedStatusChanges[1].Service)
+	suite.Equal("Metric_XX", results[3].AppliedStatusChanges[1].Metric)
+	suite.Equal("OK", results[3].AppliedStatusChanges[1].State)
+	// check second applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[2].Group)
+	suite.Equal("Hostname_XXX", results[3].AppliedStatusChanges[2].Hostname)
+	suite.Equal("", results[3].AppliedStatusChanges[2].Service)
+	suite.Equal("Metric_XXX", results[3].AppliedStatusChanges[2].Metric)
+	suite.Equal("OK", results[3].AppliedStatusChanges[1].State)
+	// check fourth applied status change item
+	suite.Equal("Group_XXXX", results[3].AppliedStatusChanges[3].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[3].Hostname)
+	suite.Equal("", results[3].AppliedStatusChanges[3].Service)
+	suite.Equal("Metric_XXXX", results[3].AppliedStatusChanges[3].Metric)
+	suite.Equal("WARNING", results[3].AppliedStatusChanges[3].State)
+}
+
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputation2() {
 	submission := IncomingRecomputation{
 		StartTime:        "2015-01-10T12:00:00Z",
