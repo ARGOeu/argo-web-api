@@ -298,6 +298,22 @@ function populate_default_roles() {
         {
             resource: "v3.status.list-by-id",
             roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "consistency.result",
+            roles: ["editor", "consitency-viewer"]
+        },
+        {
+            resource: "consistency.ack",
+            roles: ["consistency-ack"]
+        },
+        {
+            resource: "constistency.auto-check",
+            roles: ["consistency-check"]
+        },
+        {
+            resource: "health",
+            roles: ["editor", "viewer"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
