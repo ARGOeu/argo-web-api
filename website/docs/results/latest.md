@@ -11,9 +11,8 @@ sidebar_position: 3
 | GET: List all latest metric data | List latest metric data .|<a href="#1">Description</a>|
 | GET: List latest metric data for Group | List latest metric data for a specific endpoint group.|<a href="#2">Description</a>|
 
-<a id="1"></a>
 
-## [GET]: List all latest metric data
+## [GET]: List all latest metric data {#1}
 
 This method may be used to retrieve latest metric data available in a report. User can filer the results by status and limit the amount
 of results returned
@@ -154,11 +153,7 @@ Response body:
 ```
 
 
-
-<a id="2"></a>
-
-
-## [GET]: List All Metric Data for a specific endpoint group
+## [GET]: List All Metric Data for a specific endpoint group {#2}
 
 This method may be used to retrieve latest metric data available in a report for a specific endpoint group. User can filer the results by status and limit the amount
 of results returned

@@ -30,28 +30,28 @@ import (
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appRoutesV2 = []respond.AppRoutes{
 
-	{"trends.flapping_metrics_tags", "GET", "/{report_name}/flapping/metrics/tags", ListFlappingMetricsTags},
-	{"trends.flapping_metrics", "GET", "/{report_name}/flapping/metrics", ListFlappingMetrics},
-	{"trends.flapping_endpoints", "GET", "/{report_name}/flapping/endpoints", ListFlappingEndpoints},
-	{"trends.flapping_services", "GET", "/{report_name}/flapping/services", ListFlappingServices},
-	{"trends.flapping_endpoint_groups", "GET", "/{report_name}/flapping/groups", ListFlappingEndpointGroups},
-	{"trends.status_metrics_tags", "GET", "/{report_name}/status/metrics/tags", ListStatusMetricsTags},
-	{"trends.status_metrics", "GET", "/{report_name}/status/metrics", ListStatusMetrics},
-	{"trends.status_endpoints", "GET", "/{report_name}/status/endpoints", ListStatusEndpoints},
-	{"trends.status_services", "GET", "/{report_name}/status/services", ListStatusServices},
-	{"trends.status_endpoint_groups", "GET", "/{report_name}/status/groups", ListStatusEgroups},
-	{"trends.options", "OPTIONS", "/{report_name}/flapping/metrics", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/flapping/endpoints", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/flapping/services", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/flapping/groups", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/status/metrics/tags", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/status/metrics", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/status/endpoints", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/status/services", Options},
-	{"trends.options", "OPTIONS", "/{report_name}/status/groups", Options},
+	{Name: "trends.flapping_metrics_tags", Verb: "GET", Path: "/{report_name}/flapping/metrics/tags", SubrouterHandler: ListFlappingMetricsTags},
+	{Name: "trends.flapping_metrics", Verb: "GET", Path: "/{report_name}/flapping/metrics", SubrouterHandler: ListFlappingMetrics},
+	{Name: "trends.flapping_endpoints", Verb: "GET", Path: "/{report_name}/flapping/endpoints", SubrouterHandler: ListFlappingEndpoints},
+	{Name: "trends.flapping_services", Verb: "GET", Path: "/{report_name}/flapping/services", SubrouterHandler: ListFlappingServices},
+	{Name: `trends.flapping_endpoint_groups`, Verb: "GET", Path: "/{report_name}/flapping/groups", SubrouterHandler: ListFlappingEndpointGroups},
+	{Name: "trends.status_metrics_tags", Verb: "GET", Path: "/{report_name}/status/metrics/tags", SubrouterHandler: ListStatusMetricsTags},
+	{Name: "trends.status_metrics", Verb: "GET", Path: "/{report_name}/status/metrics", SubrouterHandler: ListStatusMetrics},
+	{Name: "trends.status_endpoints", Verb: "GET", Path: "/{report_name}/status/endpoints", SubrouterHandler: ListStatusEndpoints},
+	{Name: "trends.status_services", Verb: "GET", Path: "/{report_name}/status/services", SubrouterHandler: ListStatusServices},
+	{Name: "trends.status_endpoint_groups", Verb: "GET", Path: "/{report_name}/status/groups", SubrouterHandler: ListStatusEgroups},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/flapping/metrics", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/flapping/endpoints", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/flapping/services", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/flapping/groups", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/status/metrics/tags", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/status/metrics", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/status/endpoints", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/status/services", SubrouterHandler: Options},
+	{Name: "trends.options", Verb: "OPTIONS", Path: "/{report_name}/status/groups", SubrouterHandler: Options},
 }

@@ -27,11 +27,11 @@
 package aggregationProfiles
 
 import (
+	"context"
 	"errors"
 
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // AggProfile struct to retrieve and insert aggregation profiles in mongo
@@ -48,7 +48,7 @@ type AggProfile struct {
 	Groups        []Group       `bson:"groups" json:"groups"`
 }
 
-//MetricProfile is just a reference struct holding the name and the uuid of the profile
+// MetricProfile is just a reference struct holding the name and the uuid of the profile
 type MetricProfile struct {
 	Name string `bson:"name" json:"name"`
 	ID   string `bson:"id" json:"id"`
@@ -79,19 +79,20 @@ type Links struct {
 }
 
 // validateID validates the metric profile id
-func (mp *MetricProfile) validateID(session *mgo.Session, db string, col string) error {
-	var results []MetricProfile
-	filter := bson.M{"id": mp.ID}
-	err := mongo.Find(session, db, "metric_profiles", filter, "name", &results)
+func (mp *MetricProfile) validateID(col *mongo.Collection) error {
+	result := MetricProfile{}
+	err := col.FindOne(context.TODO(), bson.M{"id": mp.ID}).Decode(&result)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			err := errors.New("cannot validate")
+			return err
+		}
+
 		return err
 	}
 
-	if len(results) > 0 {
-		mp.Name = results[0].Name
-		return nil
-	}
+	mp.Name = result.Name
 
-	err = errors.New("Cannot validate")
-	return err
+	return nil
+
 }

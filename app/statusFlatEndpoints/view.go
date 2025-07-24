@@ -31,30 +31,7 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/hbase"
-	"github.com/tsuna/gohbase/hrpc"
 )
-
-func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
-
-	dResult := make([]DataOutput, 0)
-
-	for i := range hResults {
-		res := hResults[i]
-		cellMap := hbase.CellsToMap(res.Cells)
-		dOut := DataOutput{}
-		dOut.DateInt = cellMap["date"]
-		dOut.EndpointGroup = cellMap["endpoint_group"]
-		dOut.Report = cellMap["report"]
-		dOut.Status = cellMap["status"]
-		dOut.Timestamp = cellMap["ts_monitored"]
-		dOut.Service = cellMap["service"]
-		dOut.Hostname = cellMap["hostname"]
-		dResult = append(dResult, dOut)
-	}
-
-	return dResult
-}
 
 func createFlatView(results []DataOutput, input InputParams, endDate string, limit int, skip int, details bool) ([]byte, error) {
 
@@ -70,7 +47,7 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootPagedOUT{}
@@ -169,7 +146,7 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &messageOUT{}
 

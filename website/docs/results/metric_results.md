@@ -27,10 +27,10 @@ This method may be used to retrieve a specific service metric result.
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`exec_time`| The execution date of query in zulu format| YES |  |
-|`service`| Filter by service type | NO |  |
+|`service`| Filter by service type | NO | |
 
 ___Notes___:
-`exec_time` : The execution date of query in zulu format. In order to get the correct execution time get status results for all metrics (under a given endpoint, service and endpoint group). ( GET /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics List)
+`exec_time` : The execution date of query in zulu format. In order to get the correct execution time get status results for all metrics (under a given endpoint, service and endpoint group). ( GET /status/\{report_name\}/\{lgroup_type\}/\{lgroup_name\}/services/\{service_name\}/endpoints/\{endpoint_name\}/metrics List)
 
 #### Headers
 ```
@@ -97,7 +97,6 @@ Headers:
 ```
 x-api-key: shared_key_value
 Accept: application/json or application/xml
-
 ```
 ###### Example Response:
 
@@ -145,8 +144,7 @@ This method may be used to retrieve multiple service metric results for a specif
 | Type | Description | Required | Default value |
 |------|-------------|----------|---------------|
 |`hostname`| hostname of service endpoint| YES |  |
-|`service`| Filter by service type | NO |  |
-
+|`service`| Filter by service type | NO | |
 #### Url Parameters
 
 | Type | Description | Required | Default value |
@@ -155,7 +153,7 @@ This method may be used to retrieve multiple service metric results for a specif
 |`filter`| Filter metric results by statuses: non-ok, ok, critical, warning | NO |  |
 
 ___Notes___:
-`exec_time` : The specific date of query in zulu format. The time part of the date is irrelevant because all metrics of that day are returned. ( GET /status/{report_name}/{lgroup_type}/{lgroup_name}/services/{service_name}/endpoints/{endpoint_name}/metrics List)
+`exec_time` : The specific date of query in zulu format. The time part of the date is irrelevant because all metrics of that day are returned. ( GET /status/\{report_name\}/\{lgroup_type\}/\{lgroup_name\}/services/\{service_name\}/endpoints/\{endpoint_name\}/metrics List)
 
 #### Headers
 ```
@@ -257,7 +255,6 @@ Headers:
 ```
 x-api-key: shared_key_value
 Accept: application/json or application/xml
-
 ```
 ###### Example Response:
 

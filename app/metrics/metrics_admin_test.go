@@ -1,7 +1,8 @@
 package metrics
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,24 +11,22 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type MetricsAdminTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
@@ -50,6 +49,9 @@ func (suite *MetricsAdminTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -69,27 +71,22 @@ func (suite *MetricsAdminTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *MetricsAdminTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	authCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
 	seedSuperAdmin := bson.M{"api_key": suite.clientkey}
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	seedResAdminUI := bson.M{"api_key": "ADM1NU1", "super_admin_ui": true}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedSuperAdmin)
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAuth)
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedResAdminUI)
+	authCol.InsertOne(context.TODO(), seedSuperAdmin)
+	authCol.InsertOne(context.TODO(), seedAuth)
+	authCol.InsertOne(context.TODO(), seedResAuth)
+	authCol.InsertOne(context.TODO(), seedResAdminUI)
 
 	// Seed database with tenants
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "TENANT_A",
@@ -98,34 +95,32 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "TENANT_B",
@@ -134,8 +129,7 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -143,21 +137,20 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": "TESTKEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -165,33 +158,33 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics_admin.get",
 			"roles":    []string{"super_admin"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics_admin.update",
 			"roles":    []string{"super_admin"},
 		})
 
 	// Seed database with metrics
-	c = session.DB(suite.cfg.MongoDB.Db).C("monitoring_metrics")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("monitoring_metrics")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_1",
 			"tags": []string{"network", "internal"},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_2",
 			"tags": []string{"disk", "agent"},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_3",
 			"tags": []string{"aai"},
@@ -285,28 +278,20 @@ func (suite *MetricsAdminTestSuite) TestAdminListMetrics() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *MetricsAdminTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *MetricsAdminTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestMetricsAdminTestSuite(t *testing.T) {
+func TestSuiteMetricsAdmin(t *testing.T) {
 	suite.Run(t, new(MetricsAdminTestSuite))
 }

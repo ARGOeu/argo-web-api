@@ -39,7 +39,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/caches"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/logging"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
@@ -56,7 +56,7 @@ type list []interface{}
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 
-//ErrEnum used as type for enumerations of errors
+// ErrEnum used as type for enumerations of errors
 type ErrEnum int
 
 const (
@@ -111,7 +111,7 @@ func PrepAppRoutes(s *mux.Router, confHandler *ConfHandler, routes []AppRoutes) 
 		}
 		s.Methods(route.Verb).
 			Path(route.Path).
-			Handler(context.ClearHandler(handler))
+			Handler(gcontext.ClearHandler(handler))
 	}
 
 	return s

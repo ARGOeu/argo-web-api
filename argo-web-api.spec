@@ -3,7 +3,7 @@
 
 Name: argo-web-api
 Summary: A/R API
-Version: 1.13.3
+Version: 1.14.0
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
@@ -68,6 +68,8 @@ go clean
 %attr(0644,root,root) /usr/lib/systemd/system/argo-web-api.service
 
 %changelog
+* Mon Jun 3 2024 Konstantinos Kagkelidis <kaggis@gmail.com> 1.14.0-1%{dist}
+- Release of argo-web-api version 1.13.3
 * Wed May 10 2023 Konstantinos Kagkelidis <kaggis@gmail.com> 1.13.3-1%{dist}
 - Release of argo-web-api version 1.13.3
 * Tue Feb 28 2023 Konstantinos Kagkelidis <kaggis@gmail.com> 1.13.2-1%{dist}

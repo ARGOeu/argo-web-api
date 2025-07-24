@@ -30,28 +30,27 @@ import (
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"tenants.user_by_id", "GET", "/users:byID/{ID}", GetUserByID},
-	{"tenants.list", "GET", "/tenants", List},
-	{"tenants.get_status", "GET", "/tenants/{ID}/status", ListStatus},
-	{"tenants.get", "GET", "/tenants/{ID}", ListOne},
-	{"tenants.create", "POST", "/tenants", Create},
-	{"tenants.update_status", "PUT", "/tenants/{ID}/status", UpdateStatus},
-	{"tenants.create_user", "POST", "/tenants/{ID}/users", CreateUser},
-	{"tenants.list_users", "GET", "/tenants/{ID}/users", ListUsers},
-	{"tenants.update_user", "PUT", "/tenants/{ID}/users/{USER_ID}", UpdateUser},
-	{"tenants.delete_user", "DELETE", "/tenants/{ID}/users/{USER_ID}", DeleteUser},
-	{"tenants.get_user", "GET", "/tenants/{ID}/users/{USER_ID}", GetUser},
-	{"tenants.user_refresh_token", "POST", "/tenants/{ID}/users/{USER_ID}/renew_api_key", RefreshToken},
-	{"tenants.update", "PUT", "/tenants/{ID}", Update},
-	{"tenants.delete", "DELETE", "/tenants/{ID}", Delete},
-	{"tenants.options", "OPTIONS", "/tenants", Options},
-	{"tenants.options", "OPTIONS", "/tenants/{ID}", Options},
-	{"tenants.options", "OPTIONS", "/tenants/{ID}/users", Options},
-	{"tenants.options", "OPTIONS", "/tenants/{ID}/users/{USER_ID}", Options},
-	{"tenants.options", "OPTIONS", "/tenants/{ID}/users/{USER_ID}/renew_api_key", Options},
+	{Name: "tenants.user_by_id", Verb: "GET", Path: "/users:byID/{ID}", SubrouterHandler: GetUserByID},
+	{Name: "tenants.list", Verb: "GET", Path: "/tenants", SubrouterHandler: List},
+	{Name: "tenants.get_status", Verb: "GET", Path: "/tenants/{ID}/status", SubrouterHandler: ListStatus},
+	{Name: "tenants.get", Verb: "GET", Path: "/tenants/{ID}", SubrouterHandler: ListOne},
+	{Name: "tenants.create", Verb: "POST", Path: "/tenants", SubrouterHandler: Create},
+	{Name: "tenants.update_status", Verb: "PUT", Path: "/tenants/{ID}/status", SubrouterHandler: UpdateStatus},
+	{Name: "tenants.create_user", Verb: "POST", Path: "/tenants/{ID}/users", SubrouterHandler: CreateUser},
+	{Name: "tenants.list_users", Verb: "GET", Path: "/tenants/{ID}/users", SubrouterHandler: ListUsers},
+	{Name: "tenants.update_user", Verb: "PUT", Path: "/tenants/{ID}/users/{USER_ID}", SubrouterHandler: UpdateUser},
+	{Name: "tenants.delete_user", Verb: "DELETE", Path: "/tenants/{ID}/users/{USER_ID}", SubrouterHandler: DeleteUser},
+	{Name: "tenants.get_user", Verb: "GET", Path: "/tenants/{ID}/users/{USER_ID}", SubrouterHandler: GetUser},
+	{Name: "tenants.user_refresh_token", Verb: "POST", Path: "/tenants/{ID}/users/{USER_ID}/renew_api_key", SubrouterHandler: RefreshToken},
+	{Name: "tenants.update", Verb: "PUT", Path: "/tenants/{ID}", SubrouterHandler: Update},
+	{Name: "tenants.delete", Verb: "DELETE", Path: "/tenants/{ID}", SubrouterHandler: Delete},
+	{Name: "tenants.options", Verb: "OPTIONS", Path: "/tenants", SubrouterHandler: Options},
+	{Name: "tenants.options", Verb: "OPTIONS", Path: "/tenants/{ID}", SubrouterHandler: Options},
+	{Name: "tenants.options", Verb: "OPTIONS", Path: "/tenants/{ID}/users", SubrouterHandler: Options},
+	{Name: "tenants.options", Verb: "OPTIONS", Path: "/tenants/{ID}/users/{USER_ID}", SubrouterHandler: Options},
+	{Name: "tenants.options", Verb: "OPTIONS", Path: "/tenants/{ID}/users/{USER_ID}/renew_api_key", SubrouterHandler: Options},
 }

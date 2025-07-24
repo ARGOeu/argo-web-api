@@ -13,9 +13,9 @@ _Note_: These are v3 api calls implementations found under the path `/api/v3`
 | GET: List Status Results | This method retrieves the status results of all top level supergroups and their included endpoints | [Description](#1) |
 | GET: List Latest status result of endpoint by resource-id | This method retrieves the latest status result of a specific endpoint using as reference it's resource id| [Description](#2) |
 
-<a id="1"></a>
 
-## [GET]: List Status results for top level groups and included endpoints
+
+## [GET]: List Status results for top level groups and included endpoints {#1}
 
 The following methods can be used to obtain a tenant's Status timeline results for all top level groups and included endpoints. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly` or `daily`) for retrieved results and also format using the `Accept` header. 
 
@@ -301,9 +301,9 @@ Status: 200 OK
 ```
 
 
-<a id="2"></a>
 
-## [GET]: List latest status result for a specific endpoint using it's resource-id
+
+## [GET]: List latest status result for a specific endpoint using it's resource-id {#2}
 The following method can be used in it's simplest form to retrieve the latest status result of an endpoint, providing it's resource-id. User can specify with the parameter `?view=details` to view the most recent timeline of results for this endpoint. Additionaly can use the `start_time` and `end_time` parameters to view the detailed timeline of results for this specific endpoint under a certain period of time
 
 ### Input (simplest form)

@@ -23,6 +23,7 @@
 package issues
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -30,10 +31,10 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // FlatListEndpointTimelines returns a list of metric timelines
@@ -58,18 +59,20 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []EndpointData{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_endpoints")
 
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoints")
-
-	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	// find the report id first
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(reportCol, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	dt, _, err := utils.ParseZuluDate(urlValues.Get("date"))
 
@@ -79,11 +82,13 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		return code, h, output, err
 	}
 
-	err = metricCollection.Pipe(prepareIssueQuery(reportID, dt, urlValues.Get("filter"))).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), prepareIssueQuery(reportID, dt, urlValues.Get("filter")))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createEndpointListView(results, "Success", 200)
 
@@ -112,18 +117,20 @@ func ListGroupMetricIssues(r *http.Request, cfg config.Config) (int, http.Header
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []GroupMetrics{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_metrics")
-
-	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	// find the report id first
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(reportCol, vars["report_name"])
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	dt, _, err := utils.ParseZuluDate(urlValues.Get("date"))
 
@@ -133,11 +140,13 @@ func ListGroupMetricIssues(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	err = metricCollection.Pipe(prepareGroupIssueQuery(reportID, vars["group_name"], dt, urlValues.Get("filter"))).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), prepareGroupIssueQuery(reportID, vars["group_name"], dt, urlValues.Get("filter")))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createGroupMetricsView(results, "Success", 200)
 
@@ -210,10 +219,10 @@ func prepareGroupIssueQuery(reportID string, egroup string, dt int, filter strin
 				"status":  "$_id.status",
 				"info":    1}},
 		{"$sort": bson.D{
-			{"service", 1},
-			{"host", 1},
-			{"metric", 1},
-			{"status", 1},
+			{Key: "service", Value: 1},
+			{Key: "host", Value: 1},
+			{Key: "metric", Value: 1},
+			{Key: "status", Value: 1},
 		}},
 	}
 
@@ -236,7 +245,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

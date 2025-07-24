@@ -16,9 +16,8 @@ sidebar_position: 2
 | GET: Flat list of Endpoint timelines | This method may be used to retrieve a flat list of all available endpoint status results | <a href="#6">Description</a>|
 | GET: Flat list of Metric timelines for a specific metric | This method may be used to retrieve a flat list of all available endpoint metric status timelines filtered by a specific metric | <a href="#7">Description</a>|
 
-<a id="1"></a>
 
-## [GET]: List Service Metric Status Timelines
+## [GET]: List Service Metric Status Timelines {#1}
 
 This method may be used to retrieve a specific service metric status timeline (applies on a specific host endpoint and a specific service flavor).
 
@@ -370,10 +369,9 @@ By using the url parameter `view=details` the argo-web-api will enrich the statu
 ```
 
 
-<a id="2"></a>
 
 
-## [GET]: List Service Endpoint Status Timelines
+## [GET]: List Service Endpoint Status Timelines {#2}
 
 This method may be used to retrieve a specific service endpoint status timeline (applies on a specific service type).
 
@@ -834,10 +832,9 @@ By using the url parameter `view=details` the argo-web-api will enrich the statu
 }
 ```
 
-<a id="3"></a>
 
 
-## [GET]: List Service Status Timelines
+## [GET]: List Service Status Timelines {#3}
 
 This method may be used to retrieve a specific service flavor status timeline (applies for a specific service endpoint group).
 
@@ -1092,12 +1089,11 @@ By using the url parameter `view=details` the argo-web-api will enrich the statu
 ```
 
 
-<a id="4"></a>
 
 
 
 
-## [GET]: List Endpoint Group Status Timelines
+## [GET]: List Endpoint Group Status Timelines {#4}
 
 This method may be used to retrieve status timelines for endpoint groups.
 
@@ -1326,9 +1322,8 @@ By using the url parameter `view=details` the argo-web-api will enrich the statu
 }
 ```
 
-<a id="5"></a>
 
-## [GET]: Metric Result
+## [GET]: Metric Result {#5}
 
 This method may be used to retrieve a detailed metric result.
 
@@ -1422,9 +1417,8 @@ Response body (JSON):
 ```
 
 
-<a id="6"></a>
 
-# [GET]: Flat List of status timelines for all available service Endpoints
+# [GET]: Flat List of status timelines for all available service Endpoints {#6}
 
 The following methods can be used to obtain a tenant's flat list of all service endpoints status timelines. The api authenticates the tenant using the api-key within the x-api-key header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
 ## [GET] Endpoints Status timelines
@@ -1556,9 +1550,8 @@ Status: 200 OK
 ```
 
 
-<a id="7"></a>
 
-# [GET]: Flat List of status timelines for all available endpoint metrics filter by a specific metric
+# [GET]: Flat List of status timelines for all available endpoint metrics filter by a specific metric {#7}
 
 The following method can be used to obtain a tenant's flat list of all available service endpoints metric status timelines filtered by a specific metric. The api authenticates the tenant using the api-key within the x-api-key header. Pagination is also supported by using the optional parameters `pageSize` to define the size of each result page and `nextPageToken` to proceed to the next available page of results.
 ## [GET] Endpoints Status timelines

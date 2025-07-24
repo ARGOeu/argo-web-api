@@ -31,16 +31,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"metricProfiles.list", "GET", "/metric_profiles", List},
-	{"metricProfiles.get", "GET", "/metric_profiles/{ID}", ListOne},
-	{"metricProfiles.create", "POST", "/metric_profiles", Create},
-	{"metricProfiles.update", "PUT", "/metric_profiles/{ID}", Update},
-	{"metricProfiles.delete", "DELETE", "/metric_profiles/{ID}", Delete},
-	{"metricProfiles.options", "OPTIONS", "/metric_profiles", Options},
-	{"metricProfiles.options", "OPTIONS", "/metric_profiles/{ID}", Options},
+	{Name: "metricProfiles.list", Verb: "GET", Path: "/metric_profiles", SubrouterHandler: List},
+	{Name: "metricProfiles.get", Verb: "GET", Path: "/metric_profiles/{ID}", SubrouterHandler: ListOne},
+	{Name: "metricProfiles.create", Verb: "POST", Path: "/metric_profiles", SubrouterHandler: Create},
+	{Name: "metricProfiles.update", Verb: "PUT", Path: "/metric_profiles/{ID}", SubrouterHandler: Update},
+	{Name: "metricProfiles.delete", Verb: "DELETE", Path: "/metric_profiles/{ID}", SubrouterHandler: Delete},
+	{Name: "metricProfiles.options", Verb: "OPTIONS", Path: "/metric_profiles", SubrouterHandler: Options},
+	{Name: "metricProfiles.options", Verb: "OPTIONS", Path: "/metric_profiles/{ID}", SubrouterHandler: Options},
 }

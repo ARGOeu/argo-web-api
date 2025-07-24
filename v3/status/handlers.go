@@ -23,6 +23,7 @@
 package status
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -31,10 +32,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // ListStatus lists group and endpoint status timelines
@@ -103,7 +103,7 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 		endDate = strings.Split(urlEndTime, "T")[0]
 
-		if latest != false {
+		if latest {
 			code = http.StatusBadRequest
 			message := "Parameter view=latest should not be used when specifing start_time and end_time period"
 			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
@@ -125,58 +125,62 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Mongo Session
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Query the detailed results
 
 	// prepare the match filter
 	report := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&report)
 
 	if err != nil {
 		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
 	input.groupType = report.Topology.Group.Group.Type
 
-	groupCol := session.DB(tenantDbConfig.Db).C(statusGroupColName)
+	groupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusGroupColName)
 	groupResults := []GroupData{}
 
-	err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+	cursor, err := groupCol.Find(context.TODO(), queryGroups(input, report.ID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &groupResults)
 
 	//if no status results yet show previous days results
 	if len(groupResults) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+		cursor, err := groupCol.Find(context.TODO(), queryGroups(input, report.ID))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &groupResults)
 	}
 
-	endpointCol := session.DB(tenantDbConfig.Db).C(statusEndpointColName)
+	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEndpointColName)
 	endpointResults := []EndpointData{}
 
-	err = endpointCol.Find(queryEndpoints(input, report.ID)).All(&endpointResults)
+	cursor, err = endpointCol.Find(context.TODO(), queryEndpoints(input, report.ID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &endpointResults)
 	output, err = createCombinedView(groupResults, endpointResults, input, endDate, details, latest) //Render the results into JSON
 
 	return code, h, output, err
@@ -253,7 +257,7 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 
 		endDate = strings.Split(urlEndTime, "T")[0]
 
-		if latest != false {
+		if latest {
 			code = http.StatusBadRequest
 			message := "Parameter view=latest should not be used when specifing start_time and end_time period"
 			output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(message), contentType, "", " ")
@@ -275,62 +279,67 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	// Mongo Session
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Query the detailed results
 
 	// prepare the match filter
 	report := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&report)
 
 	if err != nil {
 		code = http.StatusNotFound
 		message := "The report with the name " + vars["report_name"] + " does not exist"
-		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}
 
 	input.groupType = report.Topology.Group.Group.Type
 
-	groupCol := session.DB(tenantDbConfig.Db).C(statusGroupColName)
+	groupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusGroupColName)
 	groupResults := []GroupData{}
 
-	err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+	cursor, err := groupCol.Find(context.TODO(), queryGroups(input, report.ID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &groupResults)
 
 	//if no status results yet show previous days results
 	if len(groupResults) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = groupCol.Find(queryGroups(input, report.ID)).All(&groupResults)
+		cursor, err := groupCol.Find(context.TODO(), queryGroups(input, report.ID))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &groupResults)
 	}
 
-	endpointCol := session.DB(tenantDbConfig.Db).C(statusEndpointColName)
+	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEndpointColName)
 	endpointResults := []EndpointData{}
 
-	err = endpointCol.Find(queryEndpoints(input, report.ID)).All(&endpointResults)
+	cursor, err = endpointCol.Find(context.TODO(), queryEndpoints(input, report.ID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &endpointResults)
+
 	if len(endpointResults) == 0 {
 		code = http.StatusNotFound
 		message := "No endpoints found with resource-id: " + vars["id"]
-		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		output, err := createErrorMessage(message, code) //Render the response into XML or JSON
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
 	}

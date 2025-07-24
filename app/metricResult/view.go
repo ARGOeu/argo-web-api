@@ -25,7 +25,6 @@ package metricResult
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"strings"
 )
 
@@ -79,13 +78,13 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 		// we append the detailed results
 		metric.Details = append(metric.Details,
 			&StatusXML{
-				Timestamp:      fmt.Sprintf("%s", result.Timestamp),
-				Value:          fmt.Sprintf("%s", result.Status),
-				Summary:        fmt.Sprintf("%s", result.Summary),
-				Message:        fmt.Sprintf("%s", result.Message),
-				ActualData:     fmt.Sprintf("%s", result.ActualData),
-				RuleApplied:    fmt.Sprintf("%s", result.RuleApplied),
-				OriginalStatus: fmt.Sprintf("%s", result.OriginalStatus),
+				Timestamp:      result.Timestamp,
+				Value:          result.Status,
+				Summary:        result.Summary,
+				Message:        result.Message,
+				ActualData:     result.ActualData,
+				RuleApplied:    result.RuleApplied,
+				OriginalStatus: result.OriginalStatus,
 			})
 
 		prevMetric = result.Metric
@@ -105,7 +104,7 @@ func createMultipleMetricResultsView(results []metricResultOutput, format string
 
 func createErrorMessage(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &errorMessage{}
 

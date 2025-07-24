@@ -13,9 +13,9 @@ _Note_: These are v3 api calls implementations found under the path `/api/v3`
 | GET: List Availability and Reliability results for top level supergroups and included groups | This method retrieves the a/r results of all top level supergroups and their included groups | [Description](#1) |
 | GET: List Availability and Reliability results for specific endpoint using resource id | This method retrieves the a/r results of all endoints with specific resource id | [Description](#2) |
 
-<a id="1"></a>
 
-## [GET]: List Availability and Reliability results for top level supergroups and included groups
+
+## [GET]: List Availability and Reliability results for top level supergroups and included groups {#1}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result metrics for all top level supergroups and included groups. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results and also format using the `Accept` header. 
 
@@ -296,9 +296,9 @@ Status: 200 OK
 }
 ```
 
-<a id="2"></a>
 
-## [GET]: List Availability and Reliability results for endpoints with specific resource-id
+
+## [GET]: List Availability and Reliability results for endpoints with specific resource-id {#2}
 
 The following methods can be used to obtain a tenant's Availability and Reliability result for the endpoints that have a specific resource-id. User can specify a period with `start_time` and `end_time` and granularity(`monthly`, `daily` or `custom`) for retrieved results. `Accept` header is required. 
 

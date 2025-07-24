@@ -27,14 +27,17 @@
 package factors
 
 import (
+	"context"
 	"fmt"
 
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+
+	gcontext "github.com/gorilla/context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)
@@ -55,23 +58,24 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-	defer mongo.CloseSession(session)
+	fCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("weights")
 
 	results := []FactorsOutput{}
-	err = mongo.Find(session, tenantDbConfig.Db, "weights", nil, "name", &results)
+	findOptions := options.Find()
+	// sort by name ascending
+	findOptions.SetSort(bson.M{"name": 1})
+	cursor, err := fCol.Find(context.TODO(), bson.M{}, findOptions)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+
+	cursor.All(context.TODO(), &results)
 
 	output, err = createView(results, contentType)
 
@@ -80,7 +84,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	mongo.CloseSession(session)
 	return code, h, output, err
 }
 
@@ -98,7 +101,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

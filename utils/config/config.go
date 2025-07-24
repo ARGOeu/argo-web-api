@@ -30,10 +30,11 @@ import (
 	"flag"
 	"os"
 
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/gcfg.v1"
 )
 
-//All the flags that can be added when starting the PI
+// All the flags that can be added when starting the PI
 var flConfig = flag.String("conf", "", "specify configuration file")
 var flServerIP = flag.String("ip", "", "ip address the server will bind to")
 var flServerPort = flag.Int("port", 0, "specify the port to listen on")
@@ -41,7 +42,6 @@ var flServerMaxProcs = flag.Int("maxprocs", 0, "specify the GOMAXPROCS")
 var flMongoHost = flag.String("mongo-host", "", "specify the IP address of the MongoDB instance")
 var flMongoPort = flag.Int("mongo-port", 0, "specify the port on which the MongoDB instance listens on")
 var flMongoDatabase = flag.String("mongo-db", "", "specify the MongoDB database to connect to")
-var flHbaseZk = flag.String("hbase-zkquorum", "", "specify the hbase zookeeper quorum list")
 var flCache = flag.String("cache", "no", "specify weather to use cache or not [yes/no]")
 var flGzip = flag.String("gzip", "yes", "specify weather to use compression or not [yes/no]")
 var flProfile = flag.String("cpuprofile", "", "write cpu profile to file")
@@ -64,11 +64,6 @@ type MongoConfig struct {
 	Roles    []string `bson:"roles"`
 }
 
-// HbaseConfig configuration to connect to an hbase instance
-type HbaseConfig struct {
-	ZkQuorum string
-}
-
 // Config configuration for the api
 type Config struct {
 	Server struct {
@@ -84,9 +79,9 @@ type Config struct {
 		EnableCors   bool
 	}
 
-	Hbase   HbaseConfig
-	MongoDB MongoConfig
-	Profile string
+	MongoDB     MongoConfig
+	Profile     string
+	MongoClient *mongo.Client
 }
 
 const defaultConfig = `
@@ -102,22 +97,18 @@ const defaultConfig = `
     reqsizelimit = 1073741824
     enablecors = false
 
-		[hbase]
-		zkquorum = localhost
-
     [mongodb]
     host = "127.0.0.1"
     port = 27017
     db = "argo_core"
 `
 
-//LoadConfiguration function loads the configurations passed either by flags or by the configuration file
+// LoadConfiguration function loads the configurations passed either by flags or by the configuration file
 func LoadConfiguration() Config {
 	flag.Parse()
 	// var cfg Config
 	mongocfg := MongoConfig{}
-	hbasecfg := HbaseConfig{}
-	cfg := Config{MongoDB: mongocfg, Hbase: hbasecfg}
+	cfg := Config{MongoDB: mongocfg}
 	if *flConfig != "" {
 		_ = gcfg.ReadFileInto(&cfg, *flConfig)
 	} else {
@@ -148,10 +139,6 @@ func LoadConfiguration() Config {
 	}
 	if *flMongoDatabase != "" {
 		cfg.MongoDB.Db = *flMongoDatabase
-	}
-
-	if *flHbaseZk != "" {
-		cfg.Hbase.ZkQuorum = *flHbaseZk
 	}
 
 	//Keep cache disabled even if the option is set to "yes" via the cmd line.

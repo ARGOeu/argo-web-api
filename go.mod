@@ -1,29 +1,34 @@
 module github.com/ARGOeu/argo-web-api
 
-go 1.14
+go 1.22.2
 
 require (
-	github.com/ARGOeu/go-lru-cache v0.0.0-20131004110929-c228b0b719e1
-	github.com/Sirupsen/logrus v0.11.6-0.20170317143214-10f801ebc38b // indirect
-	github.com/aristanetworks/goarista v0.0.0-20200521140103-6c3304613b30 // indirect
-	github.com/cznic/b v0.0.0-20160716091950-bcff30a622db // indirect
-	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
-	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
-	github.com/golang/mock v1.4.3 // indirect
-	github.com/gorilla/context v1.1.1
-	github.com/gorilla/handlers v1.5.1
-	github.com/gorilla/mux v1.8.0
-	github.com/myesui/uuid v1.0.0 // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
-	github.com/samuel/go-zookeeper v0.0.0-20161028232340-1d7be4effb13 // indirect
-	github.com/stretchr/testify v1.8.2
-	github.com/tsuna/gohbase v0.0.0-20170228230348-31c6161099f0
+	github.com/ARGOeu/go-lru-cache v0.0.0-20200804134151-fedc0174b921
+	github.com/gorilla/context v1.1.2
+	github.com/gorilla/handlers v1.5.2
+	github.com/gorilla/mux v1.8.1
+	github.com/stretchr/testify v1.9.0
 	github.com/twinj/uuid v1.0.0
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
+	go.mongodb.org/mongo-driver v1.15.0
 	gopkg.in/gcfg.v1 v1.2.3
-	gopkg.in/mgo.v2 v2.0.0-20160818020120-3f83fa500528
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/golang/snappy v0.0.1 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/myesui/uuid v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.1.2 // indirect
+	github.com/xdg-go/stringprep v1.0.4 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
-	gopkg.in/warnings.v0 v0.1.1 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

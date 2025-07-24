@@ -13,9 +13,9 @@ sidebar_position: 5
 | PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3) |
 | DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4) |
 
-<a id='1'></a>
 
-## [GET]: List Reports
+
+## [GET]: List Reports {#1}
 
 This method can be used to retrieve a list of existing reports or a single report according to its ID.
 
@@ -119,9 +119,9 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [POST]: Create a new report
+
+## [POST]: Create a new report {#2}
 
 This method can be used to create a new report
 
@@ -220,9 +220,9 @@ Headers: `Status: 201 Created`
 }
 ```
 
-<a id='3'></a>
 
-## [PUT]: Update an existing report
+
+## [PUT]: Update an existing report {#3}
 
 This method can be used to update an existing report. This will replace all the fields in the record so all the old fields that need to be kept must be included in the json of the update request body
 
@@ -312,9 +312,9 @@ Headers: `Status: 200 OK`
 }
 ```
 
-<a id='4'></a>
 
-## [DELETE]: Delete an existing report
+
+## [DELETE]: Delete an existing report {#4}
 
 This method can be used to update an existing report
 
@@ -348,9 +348,9 @@ Headers: `Status: 200 OK`
 }
 ```
 
-<a id='5'></a>
 
-## Notes on Report Filter tags and topology
+
+## Notes on Report Filter tags and topology {#5}
 
 As we seen before a report can host a list of filter tags using the following list under the filed `filter_tags`:
 
@@ -384,9 +384,9 @@ _note_ : You can use `~` as a negative operator in the beginning of a filter val
 }
 ```
 
-<a id='6'></a>
 
-## Notes on Optional profile references
+
+## Notes on Optional profile references {#6}
 
 In the report's `profiles` list of references, along with the mandatory `metric`, `operations` and `aggregation` profiles, the user can declare references to the optionally used `thresholds` and `weights` profiles. User of the report must ensure that the declared reference `ids` are legit for each corresponding profile type. 
 
@@ -491,9 +491,9 @@ During report creation, in case of wrong profile type reference defined or wrong
 }
 ```
 
-<a id='7'></a>
 
-## Notes on Computations field
+
+## Notes on Computations field {#7}
 Computations field is used per report to define what kind of computations should run per report execution. Each report can produce availability/reliability (ar) results, status timelines and specific trends such as top flapping items, top items in status Critical,Warning etc.. and also top issues reported by tags. User can specify exactly what needs to be computed when a report runs by using the special `computations` field and define the following:
 
 ```json

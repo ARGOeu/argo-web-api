@@ -1,7 +1,8 @@
 package weights
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,23 +11,24 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type WeightsTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
@@ -49,6 +51,9 @@ func (suite *WeightsTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -68,18 +73,14 @@ func (suite *WeightsTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *WeightsTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	client := suite.cfg.MongoClient
 
 	// Seed database with tenants
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -88,34 +89,32 @@ func (suite *WeightsTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -125,7 +124,7 @@ func (suite *WeightsTestSuite) SetupTest() {
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -133,7 +132,7 @@ func (suite *WeightsTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
@@ -141,13 +140,13 @@ func (suite *WeightsTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -155,37 +154,44 @@ func (suite *WeightsTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = client.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.create",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.delete",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.update",
 			"roles":    []string{"editor"},
 		})
 
 	// Seed database with weights
-	c = session.DB(suite.tenantDbConf.Db).C("weights")
-	c.EnsureIndexKey("-date_integer", "id")
-	c.Insert(
+	c = client.Database(suite.tenantDbConf.Db).Collection("weights")
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(false),
+	}
+	c.Indexes().CreateOne(context.TODO(), indexModel)
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "Critical",
@@ -194,13 +200,13 @@ func (suite *WeightsTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SITES",
 			"groups": []bson.M{
-				bson.M{"name": "SITE-A", "value": 1673},
-				bson.M{"name": "SITE-B", "value": 1234},
-				bson.M{"name": "SITE-C", "value": 523},
-				bson.M{"name": "SITE-D", "value": 2},
+				{"name": "SITE-A", "value": 1673},
+				{"name": "SITE-B", "value": 1234},
+				{"name": "SITE-C", "value": 523},
+				{"name": "SITE-D", "value": 2},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "Critical",
@@ -209,13 +215,13 @@ func (suite *WeightsTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SITES",
 			"groups": []bson.M{
-				bson.M{"name": "SITE-A", "value": 3373},
-				bson.M{"name": "SITE-B", "value": 1434},
-				bson.M{"name": "SITE-C", "value": 623},
-				bson.M{"name": "SITE-D", "value": 7},
+				{"name": "SITE-A", "value": 3373},
+				{"name": "SITE-B", "value": 1434},
+				{"name": "SITE-C", "value": 623},
+				{"name": "SITE-D", "value": 7},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -224,11 +230,11 @@ func (suite *WeightsTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SERVICEGROUPS",
 			"groups": []bson.M{
-				bson.M{"name": "SVGROUP-A", "value": 334},
-				bson.M{"name": "SVGROUP-B", "value": 588},
+				{"name": "SVGROUP-A", "value": 334},
+				{"name": "SVGROUP-B", "value": 588},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -237,12 +243,12 @@ func (suite *WeightsTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SERVICEGROUPS",
 			"groups": []bson.M{
-				bson.M{"name": "SVGROUP-A", "value": 400},
-				bson.M{"name": "SVGROUP-B", "value": 188},
+				{"name": "SVGROUP-A", "value": 400},
+				{"name": "SVGROUP-B", "value": 188},
 			},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -251,8 +257,8 @@ func (suite *WeightsTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SERVICEGROUPS",
 			"groups": []bson.M{
-				bson.M{"name": "SVGROUP-A", "value": 634},
-				bson.M{"name": "SVGROUP-B", "value": 888},
+				{"name": "SVGROUP-A", "value": 634},
+				{"name": "SVGROUP-B", "value": 888},
 			},
 		})
 
@@ -281,10 +287,10 @@ func (suite *WeightsTestSuite) TestBadDate() {
 	}
 
 	requests := []reqHeader{
-		reqHeader{Method: "GET", Path: "/api/v2/weights?date=2020-02", Data: ""},
-		reqHeader{Method: "GET", Path: "/api/v2/weights/some-uuid?date=2020-02", Data: ""},
-		reqHeader{Method: "POST", Path: "/api/v2/weights?date=2020-02", Data: ""},
-		reqHeader{Method: "PUT", Path: "/api/v2/weights/some-id?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/weights?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/weights/some-uuid?date=2020-02", Data: ""},
+		{Method: "POST", Path: "/api/v2/weights?date=2020-02", Data: ""},
+		{Method: "PUT", Path: "/api/v2/weights/some-id?date=2020-02", Data: ""},
 	}
 
 	for _, r := range requests {
@@ -477,16 +483,10 @@ func (suite *WeightsTestSuite) TestCreate() {
 	suite.Equal(201, code, "Internal Server Error")
 	// Compare the expected and actual json response
 
-	// Grab id from mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// Retrieve id from database
 	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("weights")
-	c.Find(bson.M{"name": "weight_set3"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("weights")
+	c.FindOne(context.TODO(), bson.M{"name": "weight_set3"}).Decode(&result)
 	id := result["id"].(string)
 
 	// Apply id to output template and check
@@ -660,8 +660,7 @@ func (suite *WeightsTestSuite) TestOptionsWeights() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
-
+	headers := response.Result().Header
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
@@ -673,35 +672,12 @@ func (suite *WeightsTestSuite) TestOptionsWeights() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
 	suite.Equal("GET, POST, DELETE, PUT, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
-
-}
-
-//TearDownTest to tear down every test
-func (suite *WeightsTestSuite) TearDownTest() {
-
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
-	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
-	}
-
-	cols, err = mainDB.CollectionNames()
-	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
-	}
 
 }
 
@@ -1072,20 +1048,12 @@ func (suite *WeightsTestSuite) TestDelete() {
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("weights")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("weights")
+	queryResult := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
-	suite.NotEqual(err, nil, "No not found error")
-	suite.Equal(err.Error(), "not found", "No not found error")
+	suite.Equal(queryResult.Error(), mongo.ErrNoDocuments.Error(), "No not found error")
 }
 
 func (suite *WeightsTestSuite) TestCreateForbidViewer() {
@@ -1170,17 +1138,39 @@ func (suite *WeightsTestSuite) TestDeleteForbidViewer() {
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 }
 
-//TearDownTest to tear down every test
-func (suite *WeightsTestSuite) TearDownSuite() {
+// TearDownTest to tear down every test
+func (suite *WeightsTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+
+	for _, col := range cols {
+		mainDB.Collection(col).Drop(context.TODO())
+	}
+
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, col := range cols {
+		tenantDB.Collection(col).Drop(context.TODO())
+	}
+
 }
 
-func TestWeightsTestSuite(t *testing.T) {
+// TearDownTest to tear down every test
+func (suite *WeightsTestSuite) TearDownSuite() {
+
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+
+}
+
+func TestSuiteWeights(t *testing.T) {
 	suite.Run(t, new(WeightsTestSuite))
 }

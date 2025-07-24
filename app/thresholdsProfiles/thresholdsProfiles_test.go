@@ -23,7 +23,8 @@
 package thresholdsProfiles
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,29 +33,30 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type ThresholdsProfilesTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
 func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
 	    [server]
@@ -74,6 +76,9 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -85,7 +90,7 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 	}
 	suite.clientkey = "123456"
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -93,17 +98,10 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -112,34 +110,32 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -148,8 +144,7 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -157,21 +152,20 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -179,82 +173,91 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.create",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.delete",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.update",
 			"roles":    []string{"editor"},
 		})
 
 	// Seed database with thresholds profiles
-	c = session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
-	c.EnsureIndexKey("-date_integer", "id")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(false),
+	}
+
+	c.Indexes().CreateOne(context.TODO(), indexModel)
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20190105,
 			"date":         "2019-01-05",
 			"name":         "thr01",
-			"rules": []bson.M{bson.M{
+			"rules": []bson.M{{
 				"host":       "hostFoo",
 				"metric":     "metricA",
 				"thresholds": "entries=1;3;2:0;10",
 			}},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
 			"date":         "2019-10-04",
 			"name":         "thr01",
-			"rules": []bson.M{bson.M{
+			"rules": []bson.M{{
 				"host":       "hostFoo",
 				"metric":     "metricA",
 				"thresholds": "freshnesss=1s;10;9:;0;25 entries=1;3;2:0;10",
 			}},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
 			"date":         "2019-10-04",
 			"name":         "thr02",
-			"rules": []bson.M{bson.M{
+			"rules": []bson.M{{
 				"host":       "hostFoo",
 				"metric":     "metricA",
 				"thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10",
 			}},
 		})
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
 			"date":         "2019-10-04",
 			"name":         "thr03",
-			"rules": []bson.M{bson.M{
+			"rules": []bson.M{{
 				"host":       "hostFoo",
 				"metric":     "metricA",
 				"thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10",
@@ -285,10 +288,10 @@ func (suite *ThresholdsProfilesTestSuite) TestBadDate() {
 	}
 
 	requests := []reqHeader{
-		reqHeader{Method: "GET", Path: "/api/v2/thresholds_profiles?date=2020-02", Data: ""},
-		reqHeader{Method: "GET", Path: "/api/v2/thresholds_profiles/some-uuid?date=2020-02", Data: ""},
-		reqHeader{Method: "POST", Path: "/api/v2/thresholds_profiles?date=2020-02", Data: ""},
-		reqHeader{Method: "PUT", Path: "/api/v2/thresholds_profiles/some-id?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/thresholds_profiles?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/thresholds_profiles/some-uuid?date=2020-02", Data: ""},
+		{Method: "POST", Path: "/api/v2/thresholds_profiles?date=2020-02", Data: ""},
+		{Method: "PUT", Path: "/api/v2/thresholds_profiles/some-id?date=2020-02", Data: ""},
 	}
 
 	for _, r := range requests {
@@ -584,19 +587,13 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
 	// Compare the expected and actual json response
 
 	// Grab ID from mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 
 	// Retrieve id from database
-	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
+	var result ThresholdsProfile
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
+	c.FindOne(context.TODO(), bson.M{"name": "thr04"}).Decode(&result)
 
-	c.Find(bson.M{"name": "thr04"}).One(&result)
-
-	id := result["id"].(string)
+	id := result.ID
 
 	// Apply id to output template and check
 	suite.Equal(strings.Replace(jsonOutput, "{{ID}}", id, 2), output, "Response body mismatch")
@@ -869,32 +866,19 @@ func (suite *ThresholdsProfilesTestSuite) TestDelete() {
 	// Compare the expected and actual json response
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 
-	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
 	// try to retrieve item
 	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
 
 	suite.NotEqual(err, nil, "No not found error")
-	suite.Equal(err.Error(), "not found", "No not found error")
+	suite.Equal(err.Error(), mongo.ErrNoDocuments.Error(), "No not found error")
 }
 
 func (suite *ThresholdsProfilesTestSuite) TestListEmpty() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-
-	c := session.DB(suite.tenantDbConf.Db).C("thresholds_profiles")
-	c.DropCollection()
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
+	c.Drop(context.TODO())
 
 	request, _ := http.NewRequest("GET", "/api/v2/thresholds_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -929,7 +913,7 @@ func (suite *ThresholdsProfilesTestSuite) TestOptionsOperationsProfiles() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -944,7 +928,7 @@ func (suite *ThresholdsProfilesTestSuite) TestOptionsOperationsProfiles() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1145,40 +1129,38 @@ func (suite *ThresholdsProfilesTestSuite) TestInvalidUpdate() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *ThresholdsProfilesTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *ThresholdsProfilesTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestThresholdsProfilesTestSuite(t *testing.T) {
+func TestSuiteThresholdsProfiles(t *testing.T) {
 	suite.Run(t, new(ThresholdsProfilesTestSuite))
 }

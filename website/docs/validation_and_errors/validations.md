@@ -14,9 +14,8 @@ Name          | Affected Resources      | Verb   | Shortcut
 `granularity` | `/results`              | GET    | [Description](#4)
 
 
-<a id='1'></a>
 
-### `start_time`
+### `start_time` {#1}
 
 The `start_time` query parameter is used under the `/results` and `/status` resources to define the starting time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`.
 
@@ -56,9 +55,8 @@ In case the parameter value is malformed (not in zulu expected format) the follo
 }
 ```
 
-<a id='2'></a>
 
-### `end_time`
+### `end_time` {#2}
 
 The `end_time` query parameter is used under the `/results` and `/status` resources to define the ending time of the query used to match A/R or status results respectively. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`.
 
@@ -118,9 +116,8 @@ In case neither the `start_time` nor the `end_time` parameters are defined the f
 }
 ```
 
-<a id='3'></a>
 
-### `exec_time`
+### `exec_time` {#3}
 
 The `exec_time` query parameter is used under the `/metric_result` resource to define the execution time of the metric result to fetch from the datastore. The value should be given in zulu format like so: `2006-01-02T15:04:05Z`.
 
@@ -160,10 +157,8 @@ In case the parameter value is malformed (not in zulu expected format) the follo
 }
 ```
 
-<a id='4'></a>
 
-
-### `granularity`
+### `granularity` {#4}
 
 The `granularity` query parameter is used *optionally* under the `/results` resource to indicate the granularity level. It's value may be either monthly or daily. If not set by the user `monthly` is used.
 
@@ -208,9 +203,8 @@ Name          | Affected Resources      | Shortcut
 ------------- | ----------------------- | -----------------
 `Accept`      | All                     | [Description](#5)
 
-<a id='5'></a>
 
-### `Accept`
+### `Accept` {#5}
 
 The `Accept` header is compulsory to use under all api resources. Its value may be either `application/json` or `application/xml`.
 

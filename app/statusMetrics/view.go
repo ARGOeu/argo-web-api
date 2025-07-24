@@ -29,36 +29,11 @@ import (
 	"strings"
 
 	"github.com/ARGOeu/argo-web-api/respond"
-	"github.com/ARGOeu/argo-web-api/utils/hbase"
-	"github.com/tsuna/gohbase/hrpc"
 )
 
-func hbaseToDataOutput(hResults []*hrpc.Result) []DataOutput {
+func createView(results []DataOutput, input InputParams, details bool) ([]byte, error) {
 
-	dResult := make([]DataOutput, 0)
-
-	for i := range hResults {
-		res := hResults[i]
-		cellMap := hbase.CellsToMap(res.Cells)
-		dOut := DataOutput{}
-		dOut.DateInt = cellMap["date"]
-		dOut.EndpointGroup = cellMap["endpoint_group"]
-		dOut.Status = cellMap["status"]
-		dOut.Timestamp = cellMap["ts_monitored"]
-		dOut.Service = cellMap["service"]
-		dOut.Hostname = cellMap["hostname"]
-		dOut.Metric = cellMap["metric"]
-		dOut.PrevStatus = cellMap["prev_status"]
-		dOut.PrevTimestamp = cellMap["prev_ts"]
-		dResult = append(dResult, dOut)
-	}
-
-	return dResult
-}
-
-func createView(results []DataOutput, input InputParams, endDate string, details bool) ([]byte, error) {
-
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootOUT{}
@@ -148,7 +123,7 @@ func createView(results []DataOutput, input InputParams, endDate string, details
 
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &messageOUT{}
 

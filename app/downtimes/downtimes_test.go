@@ -1,7 +1,8 @@
 package downtimes
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,23 +11,24 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
 type DowntimesTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	clientkey                 string
-	respRecomputationsCreated string
-	respUnauthorized          string
+	cfg              config.Config
+	router           *mux.Router
+	confHandler      respond.ConfHandler
+	tenantDbConf     config.MongoConfig
+	clientkey        string
+	respUnauthorized string
 }
 
 // Setup the Test Environment
@@ -49,6 +51,9 @@ func (suite *DowntimesTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respUnauthorized = "Unauthorized"
 	suite.tenantDbConf = config.MongoConfig{
 		Host:     "localhost",
@@ -68,18 +73,11 @@ func (suite *DowntimesTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *DowntimesTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -88,34 +86,32 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_FOO",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "user1",
 					"email":   "user1@email.com",
 					"api_key": "USER1KEY",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user2",
 					"email":   "user2@email.com",
 					"api_key": "USER2KEY",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -125,7 +121,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
 
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -133,7 +129,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
@@ -141,13 +137,13 @@ func (suite *DowntimesTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "user3",
 					"email":   "user3@email.com",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "user4",
 					"email":   "user4@email.com",
 					"api_key": "VIEWERKEY",
@@ -155,77 +151,84 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.create",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.delete",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.update",
 			"roles":    []string{"editor"},
 		})
 
 	// Seed database with downtimes
-	c = session.DB(suite.tenantDbConf.Db).C("downtimes")
-	c.EnsureIndexKey("-date_integer", "id")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("downtimes")
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(false),
+	}
+	c.Indexes().CreateOne(context.TODO(), indexModel)
+	c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191011,
 			"date":         "2019-10-11",
 			"name":         "Critical",
 			"endpoints": []bson.M{
-				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-11T04:00:33Z", "end_time": "2019-10-11T15:33:00Z"},
-				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-11T12:00:33Z", "end_time": "2019-10-11T12:33:00Z"},
-				bson.M{"hostname": "host-C",
+				{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-11T04:00:33Z", "end_time": "2019-10-11T15:33:00Z"},
+				{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-11T12:00:33Z", "end_time": "2019-10-11T12:33:00Z"},
+				{"hostname": "host-C",
 					"service":     "service-C",
 					"start_time":  "2019-10-11T20:00:33Z",
 					"end_time":    "2019-10-11T22:15:00Z",
 					"description": "a simple description"},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191012,
 			"date":         "2019-10-12",
 			"name":         "Critical",
 			"endpoints": []bson.M{
-				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-12T04:00:33Z", "end_time": "2019-10-12T15:33:00Z",
+				{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-12T04:00:33Z", "end_time": "2019-10-12T15:33:00Z",
 					"classification": "unscheduled", "severity": "warning"},
-				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-12T12:00:33Z", "end_time": "2019-10-12T12:33:00Z",
+				{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-12T12:00:33Z", "end_time": "2019-10-12T12:33:00Z",
 					"classification": "unscheduled", "severity": "outage"},
-				bson.M{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-12T20:00:33Z", "end_time": "2019-10-12T22:15:00Z",
+				{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-12T20:00:33Z", "end_time": "2019-10-12T22:15:00Z",
 					"classification": "scheduled", "severity": "warning"},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191013,
 			"date":         "2019-10-13",
 			"name":         "Critical",
 			"endpoints": []bson.M{
-				bson.M{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-13T04:00:33Z", "end_time": "2019-10-13T15:33:00Z"},
-				bson.M{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-13T12:00:33Z", "end_time": "2019-10-13T12:33:00Z"},
-				bson.M{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-13T20:00:33Z", "end_time": "2019-10-13T22:15:00Z"},
+				{"hostname": "host-A", "service": "service-A", "start_time": "2019-10-13T04:00:33Z", "end_time": "2019-10-13T15:33:00Z"},
+				{"hostname": "host-B", "service": "service-B", "start_time": "2019-10-13T12:00:33Z", "end_time": "2019-10-13T12:33:00Z"},
+				{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-13T20:00:33Z", "end_time": "2019-10-13T22:15:00Z"},
 			},
 		})
 
@@ -296,8 +299,8 @@ func (suite *DowntimesTestSuite) TestBadDate() {
 	}
 
 	requests := []reqHeader{
-		reqHeader{Method: "GET", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
-		reqHeader{Method: "POST", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
+		{Method: "GET", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
+		{Method: "POST", Path: "/api/v2/downtimes?date=2020-02", Data: ""},
 	}
 
 	for _, r := range requests {
@@ -671,7 +674,7 @@ func (suite *DowntimesTestSuite) TestOptionsdowntimes() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -684,7 +687,7 @@ func (suite *DowntimesTestSuite) TestOptionsdowntimes() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -693,25 +696,27 @@ func (suite *DowntimesTestSuite) TestOptionsdowntimes() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *DowntimesTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
@@ -768,18 +773,12 @@ func (suite *DowntimesTestSuite) TestDelete() {
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 
 	// check that the element has actually been Deleted
-	// connect to mongodb
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
+
 	// try to retrieve item
-	var result map[string]interface{}
-	c := session.DB(suite.tenantDbConf.Db).C("downtimes")
-	err = c.Find(bson.M{"date_integer": 20191011}).One(&result)
-	// suite.NotEqual(err, nil, "No not found error")
-	// suite.Equal(err.Error(), "not found", "No not found error")
+	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("downtimes")
+	queryResult := c.FindOne(context.TODO(), bson.M{"date_integer": 20191011})
+	suite.NotEqual(queryResult.Err(), nil, "No not found error")
+	suite.Equal(queryResult.Err(), mongo.ErrNoDocuments, "No not found error")
 }
 
 func (suite *DowntimesTestSuite) TestCreateDateConflict() {
@@ -870,17 +869,13 @@ func (suite *DowntimesTestSuite) TestDeleteForbidViewer() {
 	suite.Equal(metricProfileJSON, output, "Response body mismatch")
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *DowntimesTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestDowntimesTestSuite(t *testing.T) {
+func TestSuiteDowntimes(t *testing.T) {
 	suite.Run(t, new(DowntimesTestSuite))
 }

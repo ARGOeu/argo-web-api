@@ -1,7 +1,7 @@
 package status
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 const statusGroupColName = "status_endpoint_groups"

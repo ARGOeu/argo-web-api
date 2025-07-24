@@ -23,6 +23,7 @@
 package statusEndpoints
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -30,11 +31,10 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/hbase"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // parseZuluDate is used to parse a zulu formatted date to integer
@@ -117,53 +117,31 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		details = true
 	}
 
-	dataSrc := urlValues.Get("datasource")
-	// If hbase bypass mongo session
-	if dataSrc == "hbase" {
-		// Get hbase configuration
-		hbCfg := context.Get(r, "hbase_conf").(config.HbaseConfig)
-		// Get tenant name
-		tenantName := context.Get(r, "tenant_name").(string)
-
-		// Query Results from hbase
-		hbResults, errHb := hbase.QueryStatusEndpoints(hbCfg, tenantName, input.report, strconv.Itoa(input.startTime), input.group, input.service, input.hostname)
-		if errHb != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, errHb
-		}
-		// Convert hbase results to data output format
-		doResults := hbaseToDataOutput(hbResults)
-		// Render the reults into xml
-		output, err = createView(doResults, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
-
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, errHb
-	}
-
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoints")
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_endpoints")
 
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(rCol, input.report)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = metricCollection.Pipe(prepareFlatQuery(input, reportID, limit, skip)).All(&results)
+	cursor, err := metricCollection.Find(context.TODO(), prepareFlatQuery(input, reportID, limit, skip))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), results)
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -171,11 +149,14 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 	if len(results) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+		cursor, err := metricCollection.Find(context.TODO(), prepareFlatQuery(input, reportID, limit, skip))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), results)
 	}
 
 	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
@@ -225,53 +206,31 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		details = true
 	}
 
-	dataSrc := urlValues.Get("datasource")
-	// If hbase bypass mongo session
-	if dataSrc == "hbase" {
-		// Get hbase configuration
-		hbCfg := context.Get(r, "hbase_conf").(config.HbaseConfig)
-		// Get tenant name
-		tenantName := context.Get(r, "tenant_name").(string)
-
-		// Query Results from hbase
-		hbResults, errHb := hbase.QueryStatusEndpoints(hbCfg, tenantName, input.report, strconv.Itoa(input.startTime), input.group, input.service, input.hostname)
-		if errHb != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, errHb
-		}
-		// Convert hbase results to data output format
-		doResults := hbaseToDataOutput(hbResults)
-		// Render the reults into xml
-		output, err = createView(doResults, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
-
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-		return code, h, output, errHb
-	}
-
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_endpoints")
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_endpoints")
 
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(rCol, input.report)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+	cursor, err := metricCollection.Find(context.TODO(), prepareQuery(input, reportID))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -279,11 +238,15 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 	if len(results) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = metricCollection.Find(prepareQuery(input, reportID)).All(&results)
+		cursor, err := metricCollection.Find(context.TODO(), prepareQuery(input, reportID))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
+
 	}
 
 	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
@@ -326,7 +289,7 @@ func prepareFlatQuery(input InputParams, reportID string, limit int, skip int) [
 	}
 
 	query := []bson.M{
-		bson.M{"$match": match},
+		{"$match": match},
 	}
 
 	if limit > 0 {
@@ -353,7 +316,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

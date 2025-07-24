@@ -23,6 +23,7 @@
 package results
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -30,24 +31,20 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type SuperGroupAvailabilityTestSuite struct {
 	suite.Suite
-	cfg                       config.Config
-	router                    *mux.Router
-	confHandler               respond.ConfHandler
-	tenantDbConf              config.MongoConfig
-	tenantpassword            string
-	tenantusername            string
-	tenantstorename           string
-	clientkey                 string
-	respRecomputationsCreated string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -69,6 +66,9 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_SuperGroup_availability_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -76,7 +76,7 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupSuite() {
 	suite.clientkey = "secretkey"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -84,17 +84,10 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -103,33 +96,32 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -138,29 +130,27 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_wrong_db_endpointgrouavailability",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
@@ -168,22 +158,22 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.get",
 			"roles":    []string{"editor", "viewer"},
 		})
 	// Seed database with recomputations
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -196,12 +186,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  54.6,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -214,12 +205,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  45,
 			"weight":       4356,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -232,12 +224,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -250,12 +243,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5344,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -268,12 +262,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150624,
@@ -286,12 +281,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  70,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150625,
@@ -304,12 +300,13 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  70,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -322,16 +319,16 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  56,
 			"weight":       4356,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -346,15 +343,15 @@ func (suite *SuperGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"type": "metric",
 				"name": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
@@ -697,7 +694,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestOptionsSuperGroup() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -712,7 +709,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestOptionsSuperGroup() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -740,38 +737,36 @@ func (suite *SuperGroupAvailabilityTestSuite) TestStrictSlashSuperGroupResults()
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *SuperGroupAvailabilityTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *SuperGroupAvailabilityTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
 // TestRecompuptationsTestSuite is responsible for calling the tests

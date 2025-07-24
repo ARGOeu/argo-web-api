@@ -14,9 +14,9 @@ POST: Create a new metric profile  | This method can be used to create a new met
 PUT: Update a metric profile |This method can be used to update information on an existing metric profile | [ Description](#4)
 DELETE: Delete a metric profile |This method can be used to delete an existing metric profile | [ Description](#5)
 
-<a id='1'></a>
 
-## [GET]: List Metric Profiles
+
+## [GET]: List Metric Profiles {#1}
 This method can be used to retrieve a list of current Metric profiles
 
 ### Input
@@ -118,9 +118,9 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
-## [GET]: List A Specific Metric profile
+
+## [GET]: List A Specific Metric profile {#2}
 This method can be used to retrieve specific metric profile based on its id
 
 ### Input
@@ -190,9 +190,9 @@ Json Response
 }
 ```
 
-<a id='3'></a>
 
-## [POST]: Create a new Metric Profile
+
+## [POST]: Create a new Metric Profile {#3}
 This method can be used to insert a new metric profile
 
 ### Input
@@ -263,9 +263,8 @@ Json Response
 }
 ```
 
-<a id='4'></a>
 
-## [PUT]: Update information on an existing metric profile
+## [PUT]: Update information on an existing metric profile {#4}
 This method can be used to update information on an existing metric profile
 
 ### Input
@@ -336,9 +335,8 @@ Json Response
 }
 ```
 
-<a id='5'></a>
 
-## [DELETE]: Delete an existing metric profile
+## [DELETE]: Delete an existing metric profile {#5}
 This method can be used to delete an existing metric profile
 
 ### Input
