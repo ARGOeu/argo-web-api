@@ -2,7 +2,7 @@
 
 All notable changes in argo-web-api project are documented here
 
-## [v2.0.0] - (2025-07-24)
+## [v1.14.0] - (2025-07-24)
 
 ### Added:
 - AO-910 Docs add cc info in footer ([#539](https://github.com/ARGOeu/argo-web-api/pull/539))
