@@ -27,7 +27,8 @@
 package factors
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -36,19 +37,18 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // FactorsTestSuite is a utility suite struct used in tests
 type FactorsTestSuite struct {
 	suite.Suite
 	cfg                 config.Config
-	tenantcfg           config.MongoConfig
+	tenantDbConf        config.MongoConfig
 	router              *mux.Router
 	confHandler         respond.ConfHandler
 	respNokeyprovided   string
@@ -59,7 +59,7 @@ type FactorsTestSuite struct {
 
 func (suite *FactorsTestSuite) SetupSuite() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const coreConfig = `
 	    [server]
@@ -86,41 +86,38 @@ func (suite *FactorsTestSuite) SetupSuite() {
  }
 }`
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
 	// TODO: I don't like it here that I rewrite the test data.
 	// However, this is a test for factors, not for AuthenticateTenant function.
-	suite.tenantcfg.Host = "127.0.0.1"
-	suite.tenantcfg.Port = 27017
-	suite.tenantcfg.Db = "AR_test"
+	suite.tenantDbConf.Host = "127.0.0.1"
+	suite.tenantDbConf.Port = 27017
+	suite.tenantDbConf.Db = "AR_test"
 }
 
 // SetupTest will bootstrap and provide the testing environment
 func (suite *FactorsTestSuite) SetupTest() {
 
-	// Connect to mongo coredb
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		panic(err)
-	}
-
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
 	// Add authentication token to mongo coredb
 	seedAuth := bson.M{"name": "TEST",
-		"db_conf": []bson.M{bson.M{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
-		"users":   []bson.M{bson.M{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret", "roles": []string{"viewer"}}}}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "tenants", seedAuth)
+		"db_conf": []bson.M{{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
+		"users":   []bson.M{{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret", "roles": []string{"viewer"}}}}
+	c.InsertOne(context.TODO(), seedAuth)
 
 	// Add a few factors in collection
-	c := session.DB(suite.tenantcfg.Db).C("weights")
-	c.Insert(bson.M{"hepspec": 14595, "name": "CIEMAT-LCG2"})
-	c.Insert(bson.M{"hepspec": 1019, "name": "CFP-IST"})
-	c.Insert(bson.M{"hepspec": 5406, "name": "CETA-GRID"})
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("weights")
+	c.InsertOne(context.TODO(), bson.M{"hepspec": 14595, "name": "CIEMAT-LCG2"})
+	c.InsertOne(context.TODO(), bson.M{"hepspec": 1019, "name": "CFP-IST"})
+	c.InsertOne(context.TODO(), bson.M{"hepspec": 5406, "name": "CETA-GRID"})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "factors.list",
 			"roles":    []string{"editor", "viewer"},
@@ -193,31 +190,6 @@ func (suite *FactorsTestSuite) TestListFactors() {
 	suite.Equal(401, code, "Return status code mismatch")
 	suite.Equal(suite.respUnauthorized, string(output), "Response body mismatch")
 
-	// Remove the test data from core db not to contaminate other tests
-	// Open session to core mongo
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
-	// Open collection authentication
-	c := session.DB(suite.cfg.MongoDB.Db).C("authentication")
-	// Remove the specific entries inserted during this test
-	c.Remove(bson.M{"name": "John Doe"})
-
-	// Remove the test data from tenant db not to contaminate other tests
-	// Open session to tenant mongo
-	session, err = mgo.Dial(suite.tenantcfg.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
-	// Open collection authentication
-	c = session.DB(suite.tenantcfg.Db).C("weights")
-	// Remove the specific entries inserted during this test
-	c.Remove(bson.M{"name": "CIEMAT-LCG2"})
-	c.Remove(bson.M{"name": "CFP-IST"})
-	c.Remove(bson.M{"name": "CETA-GRID"})
 }
 
 func (suite *FactorsTestSuite) TestOptionsFactors() {
@@ -229,7 +201,7 @@ func (suite *FactorsTestSuite) TestOptionsFactors() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -254,40 +226,38 @@ func (suite *FactorsTestSuite) TestTrailingSlashFactors() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownSuite do things after each test ends
 func (suite *FactorsTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantcfg.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownSuite do things after suite ends
 func (suite *FactorsTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantcfg.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-func TestFactorsTestSuite(t *testing.T) {
+func TestSuiteFactors(t *testing.T) {
 	suite.Run(t, new(FactorsTestSuite))
 }

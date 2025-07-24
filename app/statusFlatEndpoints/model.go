@@ -47,7 +47,7 @@ type DataOutput struct {
 	Service          string            `bson:"service"`
 	Hostname         string            `bson:"host"`
 	Status           string            `bson:"status"`
-	DateInt          string            `bson:"date_integer"`
+	DateInt          int               `bson:"date_integer"`
 	Info             map[string]string `bson:"info"`
 	HasThresholdRule bool              `bson:"has_threshold_rule"`
 }

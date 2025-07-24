@@ -23,6 +23,7 @@
 package trends
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -32,10 +33,11 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 const flapEndpointGroups = "flipflop_trends_endpoint_groups"
@@ -76,7 +78,7 @@ func getDateRange(urlValues url.Values) (int, int, error) {
 	}
 
 	if (startDateStr == "" && endDateStr != "") || (startDateStr != "" && endDateStr == "") {
-		return -1, -1, errors.New("Please use either a date url parameter or a combination of start_date " +
+		return -1, -1, errors.New("please use either a date url parameter or a combination of start_date " +
 			"and end_date parameters to declare range")
 	}
 
@@ -107,19 +109,12 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	metricCollection := session.DB(tenantDbConfig.Db).C(statusMetrics)
-
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusMetrics)
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -164,7 +159,7 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 					"status":   "$status"},
 				"events": bson.M{"$sum": "$trends"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"events", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.status", Value: 1}, {Key: "events", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "status": "$_id.status"},
@@ -185,13 +180,16 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "status", Value: 1}}})
 
-		err = metricCollection.Pipe(query).All(&results)
+		cursor, err := metricCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createStatusMonthMetricListView(results, "Success", 200)
 
@@ -213,7 +211,7 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 				"status":   "$status"},
 			"events": bson.M{"$sum": "$trends"},
 		}},
-		{"$sort": bson.D{{"_id.status", 1}, {"events", -1}}},
+		{"$sort": bson.D{{Key: "_id.status", Value: 1}, {Key: "events", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"status": "$_id.status"},
@@ -230,13 +228,16 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 	}
 
 	// sort end results by month bucket ascending
-	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "status", Value: 1}}})
 
-	err = metricCollection.Pipe(query).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createStatusMetricListView(results, "Success", 200)
 
@@ -265,19 +266,12 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	metricCollection := session.DB(tenantDbConfig.Db).C(statusMetrics)
-
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusMetrics)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -324,7 +318,7 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 					"status":   "$status"},
 				"events": bson.M{"$sum": "$trends"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"_id.tag", 1}, {"events", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.status", Value: 1}, {Key: "_id.tag", Value: 1}, {Key: "events", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "status": "$_id.status", "tag": "$_id.tag"},
@@ -347,13 +341,16 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}, {"tag", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "status", Value: 1}, {Key: "tag", Value: 1}}})
 
-		err = metricCollection.Pipe(query).All(&results)
+		cursor, err := metricCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createStatusMonthMetricListView(results, "Success", 200)
 
@@ -377,7 +374,7 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 				"status":   "$status"},
 			"events": bson.M{"$sum": "$trends"},
 		}},
-		{"$sort": bson.D{{"_id.status", 1}, {"_id.tag", 1}, {"events", -1}}},
+		{"$sort": bson.D{{Key: "_id.status", Value: 1}, {Key: "_id.tag", Value: 1}, {Key: "events", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"status": "$_id.status", "tag": "$_id.tag"},
@@ -394,13 +391,16 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 	}
 
 	// sort end results by month bucket ascending
-	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "status", Value: 1}}})
 
-	err = metricCollection.Pipe(query).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createStatusMetricListView(results, "Success", 200)
 
@@ -429,19 +429,13 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	endpointCollection := session.DB(tenantDbConfig.Db).C(statusEndpoints)
+	endpointCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEndpoints)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 
 	// Query the detailed status endpoints trend results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -485,7 +479,7 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 					"status":   "$status"},
 				"duration": bson.M{"$sum": "$duration"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"duration", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "status": "$_id.status"},
@@ -506,13 +500,16 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "status", Value: 1}}})
 
-		err = endpointCollection.Pipe(query).All(&results)
+		cursor, err := endpointCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createStatusMonthEndpointListView(results, "Success", 200)
 
@@ -533,7 +530,7 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 				"status":   "$status"},
 			"duration": bson.M{"$sum": "$duration"},
 		}},
-		{"$sort": bson.D{{"_id.status", 1}, {"duration", -1}}},
+		{"$sort": bson.D{{Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"status": "$_id.status"},
@@ -550,13 +547,16 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 	}
 
 	// sort end results by month bucket ascending
-	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "status", Value: 1}}})
 
-	err = endpointCollection.Pipe(query).All(&results)
+	cursor, err := endpointCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createStatusEndpointListView(results, "Success", 200)
 
@@ -585,19 +585,12 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	serviceCollection := session.DB(tenantDbConfig.Db).C(statusServices)
-
+	serviceCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusServices)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed status services trend results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -640,7 +633,7 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 					"status":  "$status"},
 				"duration": bson.M{"$sum": "$duration"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"duration", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "status": "$_id.status"},
@@ -661,13 +654,16 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "status", Value: 1}}})
 
-		err = serviceCollection.Pipe(query).All(&results)
+		cursor, err := serviceCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createStatusMonthServiceListView(results, "Success", 200)
 
@@ -687,7 +683,7 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 				"status":  "$status"},
 			"duration": bson.M{"$sum": "$duration"},
 		}},
-		{"$sort": bson.D{{"_id.status", 1}, {"duration", -1}}},
+		{"$sort": bson.D{{Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"status": "$_id.status"},
@@ -704,13 +700,16 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 	}
 
 	// sort end results by month bucket ascending
-	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "status", Value: 1}}})
 
-	err = serviceCollection.Pipe(query).All(&results)
+	cursor, err := serviceCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createStatusServiceListView(results, "Success", 200)
 
@@ -739,19 +738,12 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	egroupCollection := session.DB(tenantDbConfig.Db).C(statusEgroups)
-
+	egroupCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEgroups)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed status services trend results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -793,7 +785,7 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 					"status": "$status"},
 				"duration": bson.M{"$sum": "$duration"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.status", 1}, {"duration", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "status": "$_id.status"},
@@ -814,13 +806,16 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"status", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "status", Value: 1}}})
 
-		err = egroupCollection.Pipe(query).All(&results)
+		cursor, err := egroupCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createStatusMonthEgroupListView(results, "Success", 200)
 
@@ -839,7 +834,7 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 				"status": "$status"},
 			"duration": bson.M{"$sum": "$duration"},
 		}},
-		{"$sort": bson.D{{"_id.status", 1}, {"duration", -1}}},
+		{"$sort": bson.D{{Key: "_id.status", Value: 1}, {Key: "duration", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"status": "$_id.status"},
@@ -856,13 +851,16 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 	}
 
 	// sort end results by month bucket ascending
-	query = append(query, bson.M{"$sort": bson.D{{"status", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "status", Value: 1}}})
 
-	err = egroupCollection.Pipe(query).All(&results)
+	cursor, err := egroupCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createStatusEgroupListView(results, "Success", 200)
 
@@ -891,19 +889,13 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(flapMetrics)
 
-	metricCollection := session.DB(tenantDbConfig.Db).C(flapMetrics)
-
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -947,7 +939,7 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 					"metric":   "$metric"},
 				"flipflop": bson.M{"$sum": "$flipflop"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "flipflop", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month"},
@@ -966,13 +958,16 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}}})
 
-		err = metricCollection.Pipe(query).All(&results)
+		cursor, err := metricCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createMonthMetricListView(results, "Success", 200)
 
@@ -1001,18 +996,21 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 			"metric":   "$_id.metric",
 			"flipflop": "$flipflop"}},
 		{"$sort": bson.D{
-			{"flipflop", -1}}}}
+			{Key: "flipflop", Value: -1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$limit": limit})
 
 	}
 
-	err = metricCollection.Pipe(query).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createMetricListView(results, "Success", 200)
 
@@ -1041,19 +1039,13 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(flapMetrics)
 
-	metricCollection := session.DB(tenantDbConfig.Db).C(flapMetrics)
-
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1099,7 +1091,7 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 					"metric":   "$metric"},
 				"flipflop": bson.M{"$sum": "$flipflop"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"_id.tag", 1}, {"flipflop", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "_id.tag", Value: 1}, {Key: "flipflop", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month", "tag": "$_id.tag"},
@@ -1120,14 +1112,16 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}, {"tag", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}, {Key: "tag", Value: 1}}})
 
-		err = metricCollection.Pipe(query).All(&results)
+		cursor, err := metricCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 		output, err = createMonthMetricListView(results, "Success", 200)
 
 		return code, h, output, err
@@ -1149,7 +1143,7 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 				"metric":   "$metric"},
 			"flipflop": bson.M{"$sum": "$flipflop"},
 		}},
-		{"$sort": bson.D{{"_id.tag", 1}, {"flipflop", -1}}},
+		{"$sort": bson.D{{Key: "_id.tag", Value: 1}, {Key: "flipflop", Value: -1}}},
 		{
 			"$group": bson.M{
 				"_id": bson.M{"tag": "$_id.tag"},
@@ -1168,13 +1162,16 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 	}
 
 	// sort end results by tag
-	query = append(query, bson.M{"$sort": bson.D{{"tag", 1}}})
+	query = append(query, bson.M{"$sort": bson.D{{Key: "tag", Value: 1}}})
 
-	err = metricCollection.Pipe(query).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createTagMetricDataListView(results, "Success", 200)
 
@@ -1203,22 +1200,15 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []EndpointData{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	endpointCollection := session.DB(tenantDbConfig.Db).C(flapEndpoints)
-
+	endpointCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(flapEndpoints)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed endpoint results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1261,7 +1251,7 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 					"endpoint": "$endpoint"},
 				"flipflop": bson.M{"$sum": "$flipflop"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "flipflop", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month"},
@@ -1280,14 +1270,16 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}}})
 
-		err = endpointCollection.Pipe(query).All(&results)
+		cursor, err := endpointCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 		output, err = createMonthEndpointListView(results, "Success", 200)
 
 		return code, h, output, err
@@ -1310,18 +1302,21 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 			"endpoint": "$_id.endpoint",
 			"flipflop": "$flipflop"}},
 		{"$sort": bson.D{
-			{"flipflop", -1}}}}
+			{Key: "flipflop", Value: -1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$limit": limit})
 
 	}
 
-	err = endpointCollection.Pipe(query).All(&results)
+	cursor, err := endpointCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createEndpointListView(results, "Success", 200)
 
@@ -1350,22 +1345,15 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []ServiceData{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	servicesCollection := session.DB(tenantDbConfig.Db).C(flapServices)
-
+	servicesCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(flapServices)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed service results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1407,7 +1395,7 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 					"service": "$service"},
 				"flipflop": bson.M{"$sum": "$flipflop"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "flipflop", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month"},
@@ -1428,11 +1416,14 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 		// sort end results by month bucket ascending
 		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
 
-		err = servicesCollection.Pipe(query).All(&results)
+		cursor, err := servicesCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createMonthServiceListView(results, "Success", 200)
 
@@ -1453,18 +1444,21 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 			"service":  "$_id.service",
 			"flipflop": "$flipflop"}},
 		{"$sort": bson.D{
-			{"flipflop", -1}}}}
+			{Key: "flipflop", Value: -1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$limit": limit})
 
 	}
 
-	err = servicesCollection.Pipe(query).All(&results)
+	cursor, err := servicesCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createServiceListView(results, "Success", 200)
 
@@ -1493,22 +1487,15 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []EndpointGroupData{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
-	eGroupsCollection := session.DB(tenantDbConfig.Db).C(flapEndpointGroups)
-
+	eGroupsCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(flapEndpointGroups)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 	// Query the detailed endpoint group results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, vars["report_name"])
+	reportID, err := store.GetReportID(rCol, vars["report_name"])
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -1550,7 +1537,7 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 					"group": "$group"},
 				"flipflop": bson.M{"$sum": "$flipflop"},
 			}},
-			{"$sort": bson.D{{"_id.month", 1}, {"flipflop", -1}}},
+			{"$sort": bson.D{{Key: "_id.month", Value: 1}, {Key: "flipflop", Value: -1}}},
 			{
 				"$group": bson.M{
 					"_id": bson.M{"month": "$_id.month"},
@@ -1569,13 +1556,16 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}}})
 
-		err = eGroupsCollection.Pipe(query).All(&results)
+		cursor, err := eGroupsCollection.Aggregate(context.TODO(), query)
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 
 		output, err = createMonthEndpointGroupListView(results, "Success", 200)
 
@@ -1594,18 +1584,21 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 			"group":    "$_id.group",
 			"flipflop": "$flipflop"}},
 		{"$sort": bson.D{
-			{"flipflop", -1}}}}
+			{Key: "flipflop", Value: -1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$limit": limit})
 
 	}
 
-	err = eGroupsCollection.Pipe(query).All(&results)
+	cursor, err := eGroupsCollection.Aggregate(context.TODO(), query)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createEndpointGroupListView(results, "Success", 200)
 
@@ -1627,7 +1620,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

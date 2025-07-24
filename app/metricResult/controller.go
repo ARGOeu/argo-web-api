@@ -23,18 +23,19 @@
 package metricResult
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // GetMultipleMetricResults returns the detailed message from a probe
@@ -53,7 +54,7 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	vars := mux.Vars(r)
 	urlValues := r.URL.Query()
@@ -61,22 +62,25 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 	input := metricResultQuery{
 		EndpointName: vars["endpoint_name"],
 		ExecTime:     urlValues.Get("exec_time"),
+		Service:      urlValues.Get("service"),
 	}
 
 	filter := urlValues.Get("filter")
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
+	results := []metricResultOutput{}
+
+	col := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
+
+	// Query the detailed metric results
+	cursor, err := col.Aggregate(context.TODO(), prepMultipleQuery(input, filter))
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	results := []metricResultOutput{}
-
-	// Query the detailed metric results
-	err = mongo.Pipe(session, tenantDbConfig.Db, "status_metrics", prepMultipleQuery(input, filter), &results)
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	output, err = createMultipleMetricResultsView(results, contentType)
 
@@ -104,69 +108,66 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	reportName := urlValues.Get("report")
 	reportID := ""
 
-	if reportName != "" {
-		requestedReport := reports.MongoInterface{}
-		err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": reportName}, &requestedReport)
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
 
-		if err != nil {
-			code = http.StatusNotFound
-			message := "The report with the name " + reportName + " does not exist"
-			output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	if reportName != "" {
+
+		queryResult := reportCol.FindOne(context.TODO(), bson.M{"info.name": reportName})
+
+		if queryResult.Err() != nil {
+			if queryResult.Err() == mongo.ErrNoDocuments {
+				code = http.StatusNotFound
+				message := "The report with the name " + reportName + " does not exist"
+				output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			}
+			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 
-		reportID = requestedReport.ID
 	}
 
 	input := metricResultQuery{
 		EndpointName: vars["endpoint_name"],
 		MetricName:   vars["metric_name"],
 		ExecTime:     urlValues.Get("exec_time"),
+		Service:      urlValues.Get("service"),
 	}
 
-	result := metricResultOutput{}
+	results := []metricResultOutput{}
 
-	metricCol := session.DB(tenantDbConfig.Db).C("status_metrics")
+	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
 	// Query the detailed metric results
-	err = metricCol.Find(prepQuery(input, reportID)).One(&result)
+	cursor, err := metricCol.Find(context.TODO(), prepQuery(input, reportID))
 
-	// if not found or other issue
 	if err != nil {
-		if err.Error() == "not found" {
-			code = http.StatusNotFound
-			message := "Metric not found!"
-			output, err := createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		} else {
-			code = http.StatusInternalServerError
-			message := "Internal Server Error!"
-			output, err := createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
-		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
 
-	output, err = createMetricResultView(result, contentType)
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "Metric not found!"
+		output, err := createErrorMessage(message, code, contentType)
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	output, err = createMultipleMetricResultsView(results, contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -195,6 +196,11 @@ func prepQuery(input metricResultQuery, reportID string) bson.M {
 		"time_integer": tsInt,
 	}
 
+	// filter by service type
+	if input.Service != "" {
+		query["service"] = input.Service
+	}
+
 	if reportID != "" {
 		query["report"] = reportID
 	}
@@ -215,6 +221,11 @@ func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 	matchQuery := bson.M{
 		"date_integer": tsYMD,
 		"host":         input.EndpointName,
+	}
+
+	// filter by service type
+	if input.Service != "" {
+		matchQuery["service"] = input.Service
 	}
 
 	// convert to lower case for agility in checks
@@ -266,9 +277,9 @@ func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 			"original_status":        "$_id.original_status"},
 		},
 		{"$sort": bson.D{
-			{"service", 1},
-			{"metric", 1},
-			{"timestamp", 1},
+			{Key: "service", Value: 1},
+			{Key: "metric", Value: 1},
+			{Key: "timestamp", Value: 1},
 		},
 		},
 	}
@@ -290,7 +301,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

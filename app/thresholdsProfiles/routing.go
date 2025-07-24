@@ -31,16 +31,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"thresholdsProfiles.list", "GET", "/thresholds_profiles", List},
-	{"thresholdsProfiles.get", "GET", "/thresholds_profiles/{ID}", ListOne},
-	{"thresholdsProfiles.create", "POST", "/thresholds_profiles", Create},
-	{"thresholdsProfiles.update", "PUT", "/thresholds_profiles/{ID}", Update},
-	{"thresholdsProfiles.delete", "DELETE", "/thresholds_profiles/{ID}", Delete},
-	{"thresholdsProfiles.options", "OPTIONS", "/thresholds_profiles", Options},
-	{"thresholdsProfiles.options", "OPTIONS", "/thresholds_profiles/{ID}", Options},
+	{Name: "thresholdsProfiles.list", Verb: "GET", Path: "/thresholds_profiles", SubrouterHandler: List},
+	{Name: "thresholdsProfiles.get", Verb: "GET", Path: "/thresholds_profiles/{ID}", SubrouterHandler: ListOne},
+	{Name: "thresholdsProfiles.create", Verb: "POST", Path: "/thresholds_profiles", SubrouterHandler: Create},
+	{Name: "thresholdsProfiles.update", Verb: "PUT", Path: "/thresholds_profiles/{ID}", SubrouterHandler: Update},
+	{Name: "thresholdsProfiles.delete", Verb: "DELETE", Path: "/thresholds_profiles/{ID}", SubrouterHandler: Delete},
+	{Name: "thresholdsProfiles.options", Verb: "OPTIONS", Path: "/thresholds_profiles", SubrouterHandler: Options},
+	{Name: "thresholdsProfiles.options", Verb: "OPTIONS", Path: "/thresholds_profiles/{ID}", SubrouterHandler: Options},
 }

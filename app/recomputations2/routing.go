@@ -31,16 +31,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"recomputations.changeStatus", "POST", "/recomputations/{ID}/status", ChangeStatus},
-	{"recomputations.resetStatus", "DELETE", "/recomputations/{ID}/status", ResetStatus},
-	{"recomputations.list", "GET", "/recomputations", List},
-	{"recomputations.get", "GET", "/recomputations/{ID}", ListOne},
-	{"recomputations.delete", "DELETE", "/recomputations/{ID}", Delete},
-	{"recomputations.update", "PUT", "/recomputations/{ID}", Update},
-	{"recomputations.submit", "POST", "/recomputations", SubmitRecomputation},
+	{Name: "recomputations.changeStatus", Verb: "POST", Path: "/recomputations/{ID}/status", SubrouterHandler: ChangeStatus},
+	{Name: "recomputations.resetStatus", Verb: "DELETE", Path: "/recomputations/{ID}/status", SubrouterHandler: ResetStatus},
+	{Name: "recomputations.list", Verb: "GET", Path: "/recomputations", SubrouterHandler: List},
+	{Name: "recomputations.get", Verb: "GET", Path: "/recomputations/{ID}", SubrouterHandler: ListOne},
+	{Name: "recomputations.delete", Verb: "DELETE", Path: "/recomputations/{ID}", SubrouterHandler: Delete},
+	{Name: "recomputations.update", Verb: "PUT", Path: "/recomputations/{ID}", SubrouterHandler: Update},
+	{Name: "recomputations.submit", Verb: "POST", Path: "/recomputations", SubrouterHandler: SubmitRecomputation},
 }

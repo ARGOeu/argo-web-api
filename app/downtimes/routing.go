@@ -9,7 +9,7 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 

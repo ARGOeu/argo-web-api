@@ -23,6 +23,7 @@
 package ar
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -30,10 +31,10 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ListGroupAR lists supergroup and group availabilities according to the http request
@@ -56,18 +57,11 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	report := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&report)
 
 	if err != nil {
 		code = http.StatusNotFound
@@ -89,8 +83,7 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		}, "",
 	}
 
-	tenantDB := session.DB(tenantDbConfig.Db)
-	errs := input.Validate(tenantDB)
+	errs := input.Validate()
 	if len(errs) > 0 {
 		out := respond.BadRequestSimple
 		out.Errors = errs
@@ -102,11 +95,6 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	resultsGroups := []GroupInterface{}
 	resultsSuperGroups := []SuperGroupInterface{}
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
@@ -115,56 +103,66 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 
 	// Prepare the supergroup results
 	// Select the granularity of the search daily/monthly
+	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
+	var query []primitive.M
 	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := DailySuperGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
+		query = DailySuperGroup(filter)
+
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := MonthlySuperGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
+		query = MonthlySuperGroup(filter)
+
 	} else if input.Granularity == "custom" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := CustomSuperGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsSuperGroups)
+		query = CustomSuperGroup(filter)
 		custom = true
 	}
+
+	cursor, err := arCol.Aggregate(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &resultsSuperGroups)
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := DailyGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsGroups)
+		query = DailyGroup(filter)
+
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := MonthlyGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsGroups)
+		query = MonthlyGroup(filter)
+
 	} else if input.Granularity == "custom" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := CustomGroup(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, groupColName, query, &resultsGroups)
+		query = CustomGroup(filter)
 		custom = true
 	}
+
+	cursor, err = arCol.Aggregate(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	output, err = createResultView(resultsSuperGroups, resultsGroups, report, input.Format, custom)
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &resultsGroups)
+
+	output, err = createResultView(resultsSuperGroups, resultsGroups, report, custom)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -194,18 +192,11 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	report := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantDbConfig.Db, "reports", bson.M{"info.name": vars["report_name"]}, &report)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&report)
 
 	if err != nil {
 		code = http.StatusNotFound
@@ -231,8 +222,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		input.EndTime = time.Now().UTC().Format("2006-01-02") + "T23:59:59Z"
 	}
 
-	tenantDB := session.DB(tenantDbConfig.Db)
-	errs := input.Validate(tenantDB)
+	errs := input.Validate()
 	if len(errs) > 0 {
 		out := respond.BadRequestSimple
 		out.Errors = errs
@@ -243,11 +233,6 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	results := []EndpointInterface{}
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// Construct the query to mongodb based on the input
 	filter := bson.M{
 		"date":    bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
@@ -257,29 +242,35 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
+	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
+	var query []primitive.M
 	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
-		query := DailyEndpoint(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
+		query = DailyEndpoint(filter)
+
 	} else if input.Granularity == "monthly" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := MonthlyEndpoint(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
+		query = MonthlyEndpoint(filter)
+
 	} else if input.Granularity == "custom" {
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
-		query := CustomEndpoint(filter)
-		err = mongo.Pipe(session, tenantDbConfig.Db, endpointColName, query, &results)
+		query = CustomEndpoint(filter)
 		custom = true
 	}
+
+	cursor, err := arCol.Aggregate(context.TODO(), query)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	// if number of returned results is 0 respond with not found
 	if len(results) == 0 {
@@ -290,7 +281,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	output, err = createEndpointResult(results, report, input.Vars["id"], custom)
+	output, err = createEndpointResult(results, input.Vars["id"], custom)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -314,7 +305,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

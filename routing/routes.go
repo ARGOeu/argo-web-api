@@ -47,6 +47,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/topology"
 	"github.com/ARGOeu/argo-web-api/app/trends"
 	"github.com/ARGOeu/argo-web-api/app/weights"
+	"github.com/ARGOeu/argo-web-api/consistency"
+	"github.com/ARGOeu/argo-web-api/health"
 	"github.com/ARGOeu/argo-web-api/v3/ar"
 	"github.com/ARGOeu/argo-web-api/v3/status"
 	"github.com/ARGOeu/argo-web-api/version"
@@ -56,6 +58,8 @@ import (
 var routesV3 = []RouteV3{
 	{"AR", "/results", ar.HandleSubrouter},
 	{"Status", "/status", status.HandleSubrouter},
+	{"Consistency", "", consistency.HandleSubrouter},
+	{"Health", "", health.HandleSubrouter},
 }
 
 var routesV2 = []RouteV2{
@@ -84,6 +88,8 @@ var routesV2 = []RouteV2{
 	{"Metrics_Admin", "/admin", metrics.HandleAdminSubrouter},
 	{"Factors", "", factors.HandleSubrouter},
 	{"Version", "", version.HandleSubrouter},
+	{"Consistency", "", consistency.HandleSubrouter},
+	{"Health", "", health.HandleSubrouter},
 	{"Downtimes", "", downtimes.HandleSubrouter},
 	{"Weights", "", weights.HandleSubrouter},
 }

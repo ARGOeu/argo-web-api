@@ -27,20 +27,22 @@
 package reports
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/context"
-	"gopkg.in/mgo.v2/bson"
+	gcontext "github.com/gorilla/context"
 
 	"github.com/ARGOeu/argo-web-api/respond"
+	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var reportsColl = "reports"
@@ -63,10 +65,10 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Reading the json input from the request body
-	reqBody, err := ioutil.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	reqBody, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 
 	if err != nil {
 		return code, h, output, err
@@ -96,17 +98,11 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer session.Close()
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	db := cfg.MongoClient.Database(tenantDbConfig.Db)
 
 	// Validate profiles given in report
-	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+
+	validationErrors := input.ValidateProfiles(db)
 	validationErrors = append(validationErrors, input.ValidateTrends()...)
 
 	if len(validationErrors) > 0 {
@@ -117,14 +113,19 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	// Prepare structure for storing query results
-	results := []MongoInterface{}
-
 	// Check if report with the same name exists in datastore
 	query := searchName(input.Info.Name)
-	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, query, "name", &results)
 
-	if err != nil {
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+	queryResult := rCol.FindOne(context.TODO(), query)
+
+	if queryResult.Err() == nil {
+		output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
+		code = http.StatusConflict
+		return code, h, output, err
+	}
+
+	if queryResult.Err() != mongo.ErrNoDocuments {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
@@ -132,18 +133,13 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	// If results are returned for the specific name
 	// then we already have an existing report and we must
 	// abort creation notifing the user
-	if len(results) > 0 {
-		output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
-		code = http.StatusConflict
-		return code, h, output, err
-	}
 
 	input.Info.Created = time.Now().Format("2006-01-02 15:04:05")
 	input.Info.Updated = input.Info.Created
-	input.ID = mongo.NewUUID()
+	input.ID = utils.NewUUID()
 	// If no report exists with this name create a new one
 
-	err = mongo.Insert(session, tenantDbConfig.Db, reportsColl, input)
+	_, err = rCol.InsertOne(context.TODO(), input)
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -183,17 +179,8 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-	tenantName := context.Get(r, "tenant_name").(string)
-
-	// Try to open the mongo session
-	session, err := mongo.OpenSession(cfg.MongoDB)
-	defer session.Close()
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := gcontext.Get(r, "tenant_name").(string)
 
 	query := bson.M{}
 
@@ -205,11 +192,16 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	results := []MongoInterface{}
 	// Query tenant collection for all available documents.
 	// nil query param == match everything
-	err = mongo.Find(session, tenantDbConfig.Db, reportsColl, nil, "id", &results)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "id", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	for indx := range results {
 		results[indx].Tenant = tenantName
@@ -250,34 +242,31 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
-	tenantName := context.Get(r, "tenant_name").(string)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantName := gcontext.Get(r, "tenant_name").(string)
 
 	//Extracting urlvar "name" from url path
 
 	id := mux.Vars(r)["id"]
-	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer session.Close()
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
 
 	// Create structure for storing query results
 	result := MongoInterface{}
 	// Create a simple query object to query by name
 	query := bson.M{"id": id}
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
 	// Query collection tenants for the specific tenant name
-	err = mongo.FindOne(session, tenantDbConfig.Db, reportsColl, query, &result)
+	err = rCol.FindOne(context.TODO(), query).Decode(&result)
 
 	// If query returned zero result then no tenant matched this name,
 	// abort and notify user accordingly
 	if err != nil {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = 404
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
@@ -322,13 +311,18 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	//Extracting report name from url
 	id := mux.Vars(r)["id"]
 
 	//Reading the json input
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	input := MongoInterface{}
 	//Unmarshalling the json input into byte form
@@ -363,17 +357,9 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 			"topology_schema": input.Topology,
 		}}
 
-	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer session.Close()
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
+	db := cfg.MongoClient.Database(tenantDbConfig.Db)
 	// Validate profiles given in report
-	validationErrors := input.ValidateProfiles(session.DB(tenantDbConfig.Db))
+	validationErrors := input.ValidateProfiles(db)
 	validationErrors = append(validationErrors, input.ValidateTrends()...)
 
 	if len(validationErrors) > 0 {
@@ -387,45 +373,53 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	queryById := bson.M{"id": id}
 
 	// before updating, check if the report exists and the name is unique
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
 	result := MongoInterface{}
 
-	if err = mongo.FindOne(session, tenantDbConfig.Db, reportsColl, queryById, &result); err != nil {
+	err = rCol.FindOne(context.TODO(), queryById).Decode(&result)
 
-		if err.Error() != "not found" {
-			code = http.StatusInternalServerError
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
 			return code, h, output, err
 		}
-
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = http.StatusNotFound
+		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
 	if result.Info.Name != input.Info.Name {
 
-		results := []MongoInterface{}
 		queryByName := bson.M{"info.name": input.Info.Name}
 
-		if err = mongo.Find(session, tenantDbConfig.Db, reportsColl, queryByName, "", &results); err != nil {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
+		queryResult := rCol.FindOne(context.TODO(), queryByName)
 
-		if len(results) > 0 {
+		if queryResult.Err() == nil {
 			output, _ = respond.MarshalContent(respond.ErrConflict("Report with the same name already exists"), contentType, "", " ")
 			code = http.StatusConflict
+			return code, h, output, err
+
+		}
+
+		if queryResult.Err() != mongo.ErrNoDocuments {
+			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 
 	}
 
-	err = mongo.Update(session, tenantDbConfig.Db, reportsColl, queryById, sanitizedInput)
+	updateChange, err := rCol.UpdateOne(context.TODO(), queryById, sanitizedInput)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	if updateChange.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
 	//Render the response into XML
 	output, err = respond.CreateResponseMessage("Report was successfully updated", "200", contentType)
 
@@ -457,51 +451,30 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
 
 	//Extracting record id from url
 	id := mux.Vars(r)["id"]
 
-	// Try to open the mongo session
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer session.Close()
-
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
-	}
-
 	// We search by name and delete the document in db
 	query := bson.M{"id": id}
-	info, err := mongo.Remove(session, tenantDbConfig.Db, reportsColl, query)
+	deleteResult, err := rCol.DeleteOne(context.TODO(), query)
 
-	if err != nil {
-		if err.Error() != "not found" {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-		//Render the response into JSON
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
-	}
-
-	// info.Removed > 0 means that many documents have been removed
-	// If deletion took place we notify user accordingly.
-	// Else we notify that no tenant matched the specific name
-	if info.Removed > 0 {
-		code = http.StatusOK
-		output, err = respond.CreateResponseMessage("Report was successfully deleted", "200", contentType)
-	} else {
-		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-	}
-	//Render the response into XML
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	if deleteResult.DeletedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	output, err = respond.CreateResponseMessage("Report was successfully deleted", "200", contentType)
 	return code, h, output, err
 
 }
@@ -519,7 +492,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	//STANDARD DECLARATIONS END
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, POST, DELETE, PUT, OPTIONS"))
+	h.Set("Allow", "GET, POST, DELETE, PUT, OPTIONS")
 	return code, h, output, err
 
 }

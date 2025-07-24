@@ -23,6 +23,7 @@
 package statusFlatMetrics
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -30,10 +31,11 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	"github.com/ARGOeu/argo-web-api/utils/store"
+
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // parseZuluDate is used to parse a zulu formatted date to integer
@@ -118,29 +120,31 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 	}
 
 	// Grab Tenant DB configuration from context
-	tenantDbConfig := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
 	// Mongo Session
 	results := []DataOutput{}
 
-	session, err := mongo.OpenSession(tenantDbConfig)
-	defer mongo.CloseSession(session)
-
-	metricCollection := session.DB(tenantDbConfig.Db).C("status_metrics")
+	metricCollection := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
 	// Query the detailed metric results
-	reportID, err := mongo.GetReportID(session, tenantDbConfig.Db, input.report)
+
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	reportID, err := store.GetReportID(rCol, input.report)
 
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	err = metricCollection.Pipe(prepareFlatQuery(input, reportID, limit, skip)).All(&results)
+	cursor, err := metricCollection.Aggregate(context.TODO(), prepareFlatQuery(input, reportID, limit, skip))
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -148,14 +152,17 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 	if len(results) == 0 {
 		// Zero query results
 		input.startTime = parsedPrev
-		err = metricCollection.Pipe(prepareFlatQuery(input, reportID, limit, skip)).All(&results)
+		cursor, err := metricCollection.Aggregate(context.TODO(), prepareFlatQuery(input, reportID, limit, skip))
 		if err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
+
+		defer cursor.Close(context.TODO())
+		cursor.All(context.TODO(), &results)
 	}
 
-	output, err = createFlatView(results, input, urlValues.Get("end_time"), limit, skip, details) //Render the results into JSON/XML format
+	output, err = createFlatView(results, input, limit, skip, details) //Render the results into JSON/XML format
 
 	return code, h, output, err
 }
@@ -174,7 +181,7 @@ func prepareFlatQuery(input InputParams, reportID string, limit int, skip int) [
 	}
 
 	query := []bson.M{
-		bson.M{"$match": match},
+		{"$match": match},
 	}
 
 	if limit > 0 {
@@ -201,7 +208,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

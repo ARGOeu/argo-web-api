@@ -27,18 +27,18 @@
 package authentication
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // AuthenticationProfileTestSuite is a utility suite struct used in tests
@@ -56,7 +56,7 @@ type AuthenticationProfileTestSuite struct {
 // SetupTest will bootstrap and provide the testing environment
 func (suite *AuthenticationProfileTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	const testConfig = `
     [server]
@@ -82,48 +82,42 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 	suite.tenantstorename = "ar"
 
 	// seed mongo
-	session, err := mongo.OpenSession(suite.cfg.MongoDB)
-	if err != nil {
-		panic(err)
-	}
-	defer mongo.CloseSession(session)
+	client := store.GetMongoClient(suite.cfg.MongoDB)
 
+	suite.cfg.MongoClient = client
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"store":    suite.tenantstorename,
 					"server":   "localhost",
 					"port":     27017,
@@ -131,34 +125,33 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 					"username": suite.tenantusername,
 					"password": suite.tenantpassword,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_egi_metric_data",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
 				},
 			}})
-	c = session.DB(suite.cfg.MongoDB.Db).C("authentication")
-	c.Insert(
+	c = client.Database(suite.cfg.MongoDB.Db).Collection("authentication")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"name":    "Igano Kabamaru",
 			"email":   "igano@kabamaru.io",
 			"api_key": "makaronada",
 		},
 	)
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"name":    "Optimus Prime",
 			"email":   "prime@autobots.com",
@@ -196,18 +189,17 @@ func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 	suite.Regexp(tenantdbconfig.Store, suite.tenantstorename, "Store db mismatch")
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *AuthenticationProfileTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantdb).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	defer client.Disconnect(context.TODO())
+
+	client.Database(suite.tenantdb).Drop(context.TODO())
+	client.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
 
 }
 
-func TestRecompuptationsTestSuite(t *testing.T) {
+func TestSuiteAuthentication(t *testing.T) {
 	suite.Run(t, new(AuthenticationProfileTestSuite))
 }

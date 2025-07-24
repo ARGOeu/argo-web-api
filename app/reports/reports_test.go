@@ -27,8 +27,10 @@
 package reports
 
 import (
+	"context"
 	"encoding/json"
-	"io/ioutil"
+
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -38,12 +40,13 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/authentication"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -82,6 +85,9 @@ func (suite *ReportTestSuite) SetupSuite() {
 	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
+
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
 
 	suite.respReportCreated = `{
  "status": {
@@ -173,25 +179,16 @@ func (suite *ReportTestSuite) SetupSuite() {
 // Also the testdb is seeded with two reports
 func (suite *ReportTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
-	// Connect to mongo testdb
-	session, _ := mongo.OpenSession(suite.cfg.MongoDB)
-
+	authCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	_ = mongo.Insert(session, suite.cfg.MongoDB.Db, "authentication", seedAuth)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	authCol.InsertOne(context.TODO(), seedAuth)
 
 	// seed a tenant to use
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(bson.M{
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -200,14 +197,14 @@ func (suite *ReportTestSuite) SetupTest() {
 			"created": "2015-10-20 02:08:04",
 			"updated": "2015-10-20 02:08:04"},
 		"db_conf": []bson.M{
-			bson.M{
+			{
 				"store":    "ar",
 				"server":   "localhost",
 				"port":     27017,
 				"database": "argo_test_tenant_reports2_db1",
 				"username": "admin",
 				"password": "3NCRYPT3D"},
-			bson.M{
+			{
 				"store":    "status",
 				"server":   "b.mongodb.org",
 				"port":     27017,
@@ -216,40 +213,40 @@ func (suite *ReportTestSuite) SetupTest() {
 				"password": "3NCRYPT3D"},
 		},
 		"users": []bson.M{
-			bson.M{
+			{
 				"name":    "cap",
 				"email":   "cap@email.com",
 				"roles":   []string{"editor"},
 				"api_key": "C4PK3Y"},
-			bson.M{
+			{
 				"name":    "thor",
 				"email":   "thor@email.com",
 				"roles":   []string{"viewer"},
 				"api_key": "VIEWERKEY"},
 		}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.create",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.delete",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.update",
 			"roles":    []string{"editor"},
@@ -263,23 +260,24 @@ func (suite *ReportTestSuite) SetupTest() {
 	// add the authentication token which is seeded in testdb
 	request.Header.Set("x-api-key", "C4PK3Y")
 	// authenticate user's api key and find corresponding tenant
-	suite.tenantDbConf, _, err = authentication.AuthenticateTenant(request.Header, suite.cfg)
+	t1conf, _, _ := authentication.AuthenticateTenant(request.Header, suite.cfg)
+	suite.tenantDbConf = t1conf
 
-	c = session.DB(suite.tenantDbConf.Db).C("metric_profiles")
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("metric_profiles")
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "profile1",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
+				{"service": "CREAM-CE",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
 						"emi.wn.WN-Csh",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv2",
+				{"service": "SRMv2",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -291,12 +289,12 @@ func (suite *ReportTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name": "ch.cern.SAM.ROC",
 			"services": []bson.M{
-				bson.M{"service": "CREAM-CE",
+				{"service": "CREAM-CE",
 					"metrics": []string{
 						"emi.cream.CREAMCE-JobSubmit",
 						"emi.wn.WN-Bi",
@@ -305,7 +303,7 @@ func (suite *ReportTestSuite) SetupTest() {
 						"hr.srce.CREAMCE-CertLifetime",
 						"emi.wn.WN-SoftVer"},
 				},
-				bson.M{"service": "SRMv2",
+				{"service": "SRMv2",
 					"metrics": []string{"hr.srce.SRM2-CertLifetime",
 						"org.sam.SRM-Del",
 						"org.sam.SRM-Get",
@@ -318,8 +316,8 @@ func (suite *ReportTestSuite) SetupTest() {
 			},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("aggregation_profiles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("aggregation_profiles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
 			"name":              "profile3",
@@ -332,32 +330,32 @@ func (suite *ReportTestSuite) SetupTest() {
 				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
 			},
 			"groups": []bson.M{
-				bson.M{"name": "compute",
+				{"name": "compute",
 					"operation": "OR",
 					"services": []bson.M{
-						bson.M{
+						{
 							"name":      "CREAM-CE",
 							"operation": "AND",
 						},
-						bson.M{
+						{
 							"name":      "ARC-CE",
 							"operation": "AND",
 						},
 					}},
-				bson.M{"name": "storage",
+				{"name": "storage",
 					"operation": "OR",
 					"services": []bson.M{
-						bson.M{
+						{
 							"name":      "SRMv2",
 							"operation": "AND",
 						},
-						bson.M{
+						{
 							"name":      "SRM",
 							"operation": "AND",
 						},
 					}},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":              "cloud",
@@ -370,34 +368,34 @@ func (suite *ReportTestSuite) SetupTest() {
 				"id":   "5637d684-1f8e-4a02-a502-720e8f11e432",
 			},
 			"groups": []bson.M{
-				bson.M{"name": "compute",
+				{"name": "compute",
 					"operation": "OR",
 					"services": []bson.M{
-						bson.M{
+						{
 							"name":      "SERVICEA",
 							"operation": "AND",
 						},
-						bson.M{
+						{
 							"name":      "SERVICEB",
 							"operation": "AND",
 						},
 					}},
-				bson.M{"name": "images",
+				{"name": "images",
 					"operation": "OR",
 					"services": []bson.M{
-						bson.M{
+						{
 							"name":      "SERVICEC",
 							"operation": "AND",
 						},
-						bson.M{
+						{
 							"name":      "SERVICED",
 							"operation": "AND",
 						},
 					}},
 			}})
 
-	c = session.DB(suite.tenantDbConf.Db).C("operations_profiles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("operations_profiles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 			"name":             "profile2",
@@ -407,38 +405,38 @@ func (suite *ReportTestSuite) SetupTest() {
 				"down":    "B",
 				"unknown": "C"},
 			"operations": []bson.M{
-				bson.M{
+				{
 					"name": "AND",
 					"truth_table": []bson.M{
-						bson.M{
+						{
 							"a": "A",
 							"b": "B",
 							"x": "B",
 						},
-						bson.M{
+						{
 							"a": "A",
 							"b": "C",
 							"x": "C",
 						},
-						bson.M{
+						{
 							"a": "B",
 							"b": "C",
 							"x": "C",
 						}}},
-				bson.M{
+				{
 					"name": "OR",
 					"truth_table": []bson.M{
-						bson.M{
+						{
 							"a": "A",
 							"b": "B",
 							"x": "A",
 						},
-						bson.M{
+						{
 							"a": "A",
 							"b": "C",
 							"x": "A",
 						},
-						bson.M{
+						{
 							"a": "B",
 							"b": "C",
 							"x": "B",
@@ -446,9 +444,18 @@ func (suite *ReportTestSuite) SetupTest() {
 			}})
 
 	// Seed database with weights
-	c = session.DB(suite.tenantDbConf.Db).C("weights")
-	c.EnsureIndexKey("-date_integer", "id")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("weights")
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "date_integer", Value: -1},
+			{Key: "id", Value: 1},
+		},
+		Options: options.Index().SetUnique(false),
+	}
+
+	c.Indexes().CreateOne(context.TODO(), indexModel)
+
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e533",
 			"name":         "Critical",
@@ -457,16 +464,16 @@ func (suite *ReportTestSuite) SetupTest() {
 			"weight_type":  "hepsepc",
 			"group_type":   "SITES",
 			"groups": []bson.M{
-				bson.M{"name": "SITE-A", "value": 1673},
-				bson.M{"name": "SITE-B", "value": 1234},
-				bson.M{"name": "SITE-C", "value": 523},
-				bson.M{"name": "SITE-D", "value": 2},
+				{"name": "SITE-A", "value": 1673},
+				{"name": "SITE-B", "value": 1234},
+				{"name": "SITE-C", "value": 523},
+				{"name": "SITE-D", "value": 2},
 			},
 		})
 
 	// Now seed the report DEFINITIONS
-	c = session.DB(suite.tenantDbConf.Db).C(reportsColl)
-	c.Insert(bson.M{
+	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection(reportsColl)
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -483,29 +490,29 @@ func (suite *ReportTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -522,24 +529,24 @@ func (suite *ReportTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 				"type": "metric",
 				"name": "profile1"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 				"type": "operations",
 				"name": "profile2"},
-			bson.M{
+			{
 				"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
 				"type": "aggregation",
 				"name": "profile3"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
@@ -1635,7 +1642,7 @@ func (suite *ReportTestSuite) TestOptionsReports() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -1856,43 +1863,41 @@ func (suite *ReportTestSuite) TestUpdateReportAlreadyExistingName() {
 
 }
 
-// This function is actually called in the end of all tests
+// This function is actually called in the end of eacj test
 // and clears the test environment.
-// Mainly it's purpose is to drop the testdb
+// Mainly it's purpose is to drop the testdb and maindb
 func (suite *ReportTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownSuite is executed after all tests have finished
 func (suite *ReportTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
 // This is the first function called when go test is issued
-func TestReportSuite(t *testing.T) {
+func TestSuiteReports(t *testing.T) {
 	suite.Run(t, new(ReportTestSuite))
 }

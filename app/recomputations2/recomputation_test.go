@@ -24,8 +24,9 @@ package recomputations2
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -34,12 +35,13 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // This is a util. suite struct used in tests (see pkg "testify")
@@ -75,6 +77,9 @@ func (suite *RecomputationsProfileTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.respRecomputationsCreated = " <root>\n" +
 		"   <Message>A recalculation request has been filed</Message>\n </root>"
 
@@ -89,7 +94,7 @@ func (suite *RecomputationsProfileTestSuite) SetupSuite() {
 	}
 	suite.clientkey = "mysecretcombination"
 
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 
@@ -98,19 +103,12 @@ func (suite *RecomputationsProfileTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *RecomputationsProfileTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -119,34 +117,32 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -155,8 +151,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				"created": "2015-10-20 02:08:04",
 				"updated": "2015-10-20 02:08:04"},
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					// "store":    "ar",
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
@@ -164,7 +159,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   suite.tenantDbConf.Host,
 					"port":     suite.tenantDbConf.Port,
 					"database": suite.tenantDbConf.Db,
@@ -172,13 +167,13 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			},
 			"users": []bson.M{
 
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"editor"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "VIEWERKEY",
@@ -186,45 +181,45 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.submit",
 			"roles":    []string{"editor"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.update",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.changeStatus",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.resetStatus",
 			"roles":    []string{"editor", "viewer"},
 		})
 	// Seed database with recomputations
-	c = session.DB(suite.tenantDbConf.Db).C("recomputations")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("recomputations")
+	c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			RequesterName:  "John Snow",
@@ -239,7 +234,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			History:        []HistoryItem{{Status: "pending", Timestamp: "2015-04-01T14:58:40Z"}},
 		},
 	)
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
 			RequesterName:  "Arya Stark",
@@ -256,7 +251,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 		},
 	)
 
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e777",
 			RequesterName:  "John Doe",
@@ -717,16 +712,134 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	// Compare the expected and actual xml response
 	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
 
-	session, _ := mongo.OpenSession(suite.tenantDbConf)
-	defer mongo.CloseSession(session)
 	var results []MongoInterface
-	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
+	rCol := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(recomputationsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
+	if err != nil {
+		panic(err)
+	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	suite.Equal(len(results), 4)
 	suite.Equal("2015-01-10T12:00:00Z", results[3].StartTime)
 	suite.Equal("2015-01-30T23:00:00Z", results[3].EndTime)
 	suite.Equal("Joe Complexz", results[3].RequesterName)
 
+}
+
+func (suite *RecomputationsProfileTestSuite) TestSubmitRecomΑppliedStatuses() {
+	jsonRecomp := `
+	{
+  "id": "56db4f1a-f331-46ca-b0fd-4555b4aa1cfc",
+  "requester_name": "requester",
+  "requester_email": "request@request.gr",
+  "reason": "testing_compute_engine",
+  "start_time": "2022-01-12T00:00:00Z",
+  "end_time": "2022-01-15T00:00:00Z",
+  "exclude": [
+    "SITE-A",
+    "SITE-B"
+  ],
+  "applied_status_changes": [
+    {
+      "metric": "Metric_X",
+      "service": "Service_X",
+      "state": "CRITICAL"
+    },
+    {
+      "metric": "Metric_XX",
+      "service": "Service_X",
+      "state": "OK"
+    },
+    {
+      "metric": "Metric_XXX",
+      "hostname": "Hostname_XXX",
+      "state": "EXCLUDED"
+    },
+    {
+      "metric": "Metric_XXXX",
+      "group": "Group_XXXX",
+      "state": "WARNING"
+    }
+  ],
+  "status": "running",
+  "timestamp": "2022-01-14 14:58:40",
+  "exclude_monitoring_source": [
+    {
+      "host": "monA",
+      "start_time": "2022-01-13T00:00:00Z",
+      "end_time": "2022-01-13T23:59:59Z"
+    }
+  ]
+}`
+
+	request, _ := http.NewRequest("POST", "https://argo-web-api.grnet.gr:443/api/v2/recomputations", bytes.NewBuffer([]byte(jsonRecomp)))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	recomputationRequestsJSON := `{
+ "status": {
+  "message": "Recomputations successfully created",
+  "code": "201"
+ },
+ "data": {
+  "id": ".+",
+  "links": {
+   "self": "https://argo-web-api.grnet.gr:443/api/v2/recomputations/.+"
+  }
+ }
+}`
+	// Check that we must have a 200 ok code
+	suite.Equal(202, code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
+
+	var results []MongoInterface
+	rCol := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(recomputationsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
+	if err != nil {
+		panic(err)
+	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
+	suite.Equal(len(results), 4)
+	suite.Equal("2022-01-12T00:00:00Z", results[3].StartTime)
+	suite.Equal("2022-01-15T00:00:00Z", results[3].EndTime)
+	suite.Equal("requester", results[3].RequesterName)
+	// check first applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[0].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[0].Hostname)
+	suite.Equal("Service_X", results[3].AppliedStatusChanges[0].Service)
+	suite.Equal("Metric_X", results[3].AppliedStatusChanges[0].Metric)
+	suite.Equal("CRITICAL", results[3].AppliedStatusChanges[0].State)
+	// check second applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[1].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[1].Hostname)
+	suite.Equal("Service_X", results[3].AppliedStatusChanges[1].Service)
+	suite.Equal("Metric_XX", results[3].AppliedStatusChanges[1].Metric)
+	suite.Equal("OK", results[3].AppliedStatusChanges[1].State)
+	// check second applied status change item
+	suite.Equal("", results[3].AppliedStatusChanges[2].Group)
+	suite.Equal("Hostname_XXX", results[3].AppliedStatusChanges[2].Hostname)
+	suite.Equal("", results[3].AppliedStatusChanges[2].Service)
+	suite.Equal("Metric_XXX", results[3].AppliedStatusChanges[2].Metric)
+	suite.Equal("OK", results[3].AppliedStatusChanges[1].State)
+	// check fourth applied status change item
+	suite.Equal("Group_XXXX", results[3].AppliedStatusChanges[3].Group)
+	suite.Equal("", results[3].AppliedStatusChanges[3].Hostname)
+	suite.Equal("", results[3].AppliedStatusChanges[3].Service)
+	suite.Equal("Metric_XXXX", results[3].AppliedStatusChanges[3].Metric)
+	suite.Equal("WARNING", results[3].AppliedStatusChanges[3].State)
 }
 
 func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputation2() {
@@ -768,10 +881,15 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputation2() {
 	// Compare the expected and actual xml response
 	suite.Regexp(recomputationRequestsJSON, output, "Response body mismatch")
 
-	session, _ := mongo.OpenSession(suite.tenantDbConf)
-	defer mongo.CloseSession(session)
 	var results []MongoInterface
-	mongo.Find(session, suite.tenantDbConf.Db, recomputationsColl, nil, "timestamp", &results)
+	rCol := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(recomputationsColl)
+	findOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
+	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
+	if err != nil {
+		panic(err)
+	}
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
 
 	suite.Equal(len(results), 4)
 	suite.Equal("2021-05-06T00:00:00Z", results[3].ExcludeMonSource[0].StartTime)
@@ -1032,25 +1150,27 @@ func (suite *RecomputationsProfileTestSuite) TestChangeAndResetStatus() {
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *RecomputationsProfileTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
@@ -1107,16 +1227,11 @@ func (suite *RecomputationsProfileTestSuite) TestDeleteRecomputation() {
 	suite.Equal(jsonOutput, output)
 
 	// make sure the recomputation was really deleted from the store
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	defer session.Close()
-	if err != nil {
-		panic(err)
-	}
-	result := MongoInterface{}
-	c := session.DB(suite.tenantDbConf.Db).C("recomputations")
-	err = c.Find(bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).One(&result)
 
-	suite.Equal(err.Error(), "not found")
+	rCol := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(recomputationsColl)
+	queryResult := rCol.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"})
+
+	suite.Equal(queryResult.Err(), mongo.ErrNoDocuments)
 
 }
 
@@ -1246,15 +1361,11 @@ func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputationBadJSON() {
 	suite.Equal(recomputationRequestsJSON, output)
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *RecomputationsProfileTestSuite) TearDownSuite() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
 func TestRecompuptationsTestSuite(t *testing.T) {

@@ -24,7 +24,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootOUT{}
@@ -112,7 +112,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 			extraStatus := &statusOUT{}
 			extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
 			extraStatus.Value = lastStatus.Value
-			if latest == true {
+			if latest {
 				value.Statuses = nil
 			}
 			value.Statuses = append(value.Statuses, extraStatus)
@@ -134,7 +134,7 @@ func createCombinedView(resGroups []GroupData, resEndpoints []EndpointData, inpu
 		extraStatus := &statusOUT{}
 		extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
 		extraStatus.Value = lastStatus.Value
-		if latest == true {
+		if latest {
 			value.Statuses = nil
 		}
 		value.Statuses = append(value.Statuses, extraStatus)
@@ -160,7 +160,7 @@ func createViewByID(resEndpoints []EndpointData, input InputParams, endDate stri
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docID := &idOUT{}
@@ -211,7 +211,7 @@ func createViewByID(resEndpoints []EndpointData, input InputParams, endDate stri
 		extraStatus := &statusOUT{}
 		extraStatus.Timestamp = strings.Split(lastStatus.Timestamp, "T")[0] + extraTS
 		extraStatus.Value = lastStatus.Value
-		if latest == true {
+		if latest {
 			value.Statuses = nil
 		}
 		value.Statuses = append(value.Statuses, extraStatus)
@@ -236,7 +236,7 @@ func createMessageOUT(message string, code int, format string) ([]byte, error) {
 	return output, err
 }
 
-func createErrorMessage(message string, code int, format string) ([]byte, error) {
+func createErrorMessage(message string, code int) ([]byte, error) {
 
 	output := []byte("message placeholder")
 	err := error(nil)

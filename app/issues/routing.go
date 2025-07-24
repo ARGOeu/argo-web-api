@@ -30,13 +30,13 @@ import (
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appRoutesV2 = []respond.AppRoutes{
 
-	{"issues.list_group_metrics", "GET", "/{report_name}/groups/{group_name}/metrics", ListGroupMetricIssues},
-	{"issues.options", "OPTIONS", "/{report_name}/groups/{group_name}/metrics", Options},
-	{"issues.list_endpoints", "GET", "/{report_name}/endpoints", FlatListEndpointTimelines},
-	{"issues.options", "OPTIONS", "/{report_name}/endpoints", Options},
+	{Name: "issues.list_group_metrics", Verb: "GET", Path: "/{report_name}/groups/{group_name}/metrics", SubrouterHandler: ListGroupMetricIssues},
+	{Name: "issues.options", Verb: "OPTIONS", Path: "/{report_name}/groups/{group_name}/metrics", SubrouterHandler: Options},
+	{Name: "issues.list_endpoints", Verb: "GET", Path: "/{report_name}/endpoints", SubrouterHandler: FlatListEndpointTimelines},
+	{Name: "issues.options", Verb: "OPTIONS", Path: "/{report_name}/endpoints", SubrouterHandler: Options},
 }

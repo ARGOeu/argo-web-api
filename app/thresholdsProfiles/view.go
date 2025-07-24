@@ -69,7 +69,7 @@ func createErrView(msg string, code int, errList []string) ([]byte, error) {
 	var errRespond []respond.ErrorResponse
 
 	for _, item := range errList {
-		temp := respond.ErrorResponse{"Validation Failed", strconv.Itoa(code), item}
+		temp := respond.ErrorResponse{Message: "Validation Failed", Code: strconv.Itoa(code), Details: item}
 		errRespond = append(errRespond, temp)
 	}
 

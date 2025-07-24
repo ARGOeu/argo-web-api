@@ -23,7 +23,7 @@
 package results
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // FlatDailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
@@ -33,7 +33,7 @@ func FlatDailyEndpoint(filter bson.M, limit int, skip int) []bson.M {
 		{"$match": filter},
 		{"$project": bson.M{
 			"_id":          1,
-			"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+			"date":         bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 			"name":         1,
 			"availability": 1,
 			"reliability":  1,
@@ -45,10 +45,10 @@ func FlatDailyEndpoint(filter bson.M, limit int, skip int) []bson.M {
 			"info":         1,
 			"report":       1}},
 		{"$sort": bson.D{
-			{"name", 1},
-			{"service", 1},
-			{"supergroup", 1},
-			{"date", 1},
+			{Key: "name", Value: 1},
+			{Key: "service", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "date", Value: 1},
 		}}}
 
 	if limit > 0 {
@@ -67,7 +67,7 @@ func DailyEndpoint(filter bson.M) []bson.M {
 		{"$group": bson.M{
 			"_id": bson.M{
 				"id":           "$_id",
-				"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+				"date":         bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 				"name":         "$name",
 				"supergroup":   "$supergroup",
 				"service":      "$service",
@@ -94,10 +94,10 @@ func DailyEndpoint(filter bson.M) []bson.M {
 			"info":         "$info",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"service", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "service", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 
 	return query
 }
@@ -108,7 +108,7 @@ func FlatMonthlyEndpoint(filter bson.M, limit int, skip int) []bson.M {
 		{"$match": filter},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"service":    "$service",
@@ -138,10 +138,10 @@ func FlatMonthlyEndpoint(filter bson.M, limit int, skip int) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"name", 1},
-			{"service", 1},
-			{"supergroup", 1},
-			{"date", 1}}}}
+			{Key: "name", Value: 1},
+			{Key: "service", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "date", Value: 1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$skip": skip})
@@ -186,9 +186,9 @@ func FlatCustomEndpoint(filter bson.M, limit int, skip int) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"name", 1},
-			{"service", 1},
-			{"supergroup", 1}}}}
+			{Key: "name", Value: 1},
+			{Key: "service", Value: 1},
+			{Key: "supergroup", Value: 1}}}}
 
 	if limit > 0 {
 		query = append(query, bson.M{"$skip": skip})
@@ -205,7 +205,7 @@ func MonthlyEndpoint(filter bson.M) []bson.M {
 		{"$match": filter},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"service":    "$service",
@@ -236,9 +236,9 @@ func MonthlyEndpoint(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 	return query
 }
 
@@ -277,8 +277,8 @@ func CustomEndpoint(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"name", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1}}}}
 	return query
 }
 
@@ -288,7 +288,7 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 		{"$match": filter},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":         bson.D{{"$substr", list{"$date", 0, 8}}},
+				"date":         bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 				"name":         "$name",
 				"supergroup":   "$supergroup",
 				"availability": "$availability",
@@ -308,9 +308,9 @@ func DailyServiceFlavor(filter bson.M) []bson.M {
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report"}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 
 	return query
 }
@@ -321,7 +321,7 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 		{"$match": filter},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
 				"name":       "$name",
 				"supergroup": "$supergroup",
 				"report":     "$report"},
@@ -347,9 +347,9 @@ func MonthlyServiceFlavor(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 	return query
 }
 
@@ -383,8 +383,8 @@ func CustomServiceFlavor(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"supergroup", 1},
-			{"name", 1}}}}
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1}}}}
 	return query
 }
 
@@ -407,10 +407,10 @@ func DailyEndpointGroup(filter bson.M) []bson.M {
 			"supergroup":   1,
 			"name":         1}},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 
 	return query
 }
@@ -460,10 +460,10 @@ func MonthlyEndpointGroup(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"name", 1},
-			{"date", 1}}}}
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
 
 	return query
 }
@@ -511,9 +511,9 @@ func CustomEndpointGroup(filter bson.M) []bson.M {
 						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
 					100}}}},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"name", 1}}}}
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1}}}}
 
 	return query
 }
@@ -562,7 +562,7 @@ func DailySuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 				"supergroup": "$supergroup",
 				"report":     "$report"},
 			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weightAv"}}},
@@ -589,9 +589,9 @@ func DailySuperGroup(filter bson.M) []bson.M {
 			"reliability":  1},
 		},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"date", 1}},
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "date", Value: 1}},
 		}}
 
 	return query
@@ -647,7 +647,7 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 				"supergroup": "$supergroup",
 				"report":     "$report"},
 			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weightAv"}}},
@@ -668,7 +668,7 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
 				"supergroup": "$supergroup", "report": "$report"},
 			"availability": bson.M{"$avg": "$availability"},
 			"reliability":  bson.M{"$avg": "$reliability"}},
@@ -681,9 +681,9 @@ func MonthlySuperGroup(filter bson.M) []bson.M {
 			"reliability":  1},
 		},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"date", 1}},
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "date", Value: 1}},
 		}}
 
 	return query
@@ -739,7 +739,7 @@ func CustomSuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 8}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
 				"supergroup": "$supergroup",
 				"report":     "$report"},
 			"availability": bson.M{"$sum": bson.M{"$multiply": list{"$availability", "$weightAv"}}},
@@ -760,7 +760,7 @@ func CustomSuperGroup(filter bson.M) []bson.M {
 		},
 		{"$group": bson.M{
 			"_id": bson.M{
-				"date":       bson.D{{"$substr", list{"$date", 0, 6}}},
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
 				"supergroup": "$supergroup", "report": "$report"},
 			"availability": bson.M{"$avg": "$availability"},
 			"reliability":  bson.M{"$avg": "$reliability"}},
@@ -773,9 +773,9 @@ func CustomSuperGroup(filter bson.M) []bson.M {
 			"reliability":  1},
 		},
 		{"$sort": bson.D{
-			{"report", 1},
-			{"supergroup", 1},
-			{"date", 1}},
+			{Key: "report", Value: 1},
+			{Key: "supergroup", Value: 1},
+			{Key: "date", Value: 1}},
 		}}
 
 	return query

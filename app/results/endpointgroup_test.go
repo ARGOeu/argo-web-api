@@ -23,7 +23,8 @@
 package results
 
 import (
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,23 +33,20 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
+	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gcfg.v1"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type endpointGroupAvailabilityTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -70,6 +68,9 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
+	client := store.GetMongoClient(suite.cfg.MongoDB)
+	suite.cfg.MongoClient = client
+
 	suite.tenantDbConf.Db = "ARGO_test_endpointGroup_availability_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
@@ -77,7 +78,7 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 	suite.clientkey = "secretkey"
 
 	// Create router and confhandler for test
-	suite.confHandler = respond.ConfHandler{suite.cfg}
+	suite.confHandler = respond.ConfHandler{Config: suite.cfg}
 	suite.router = mux.NewRouter().StrictSlash(false).PathPrefix("/api/v2/results").Subrouter()
 	HandleSubrouter(suite.router, &suite.confHandler)
 }
@@ -85,74 +86,63 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupSuite() {
 // This function runs before any test and setups the environment
 func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 
-	log.SetOutput(ioutil.Discard)
-
-	// seed mongo
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
 	//TODO: move tests to
-	c := session.DB(suite.cfg.MongoDB.Db).C("tenants")
-	c.Insert(
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros1",
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_Westeros2",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "John Snow",
 					"email":   "J.Snow@brothers.wall",
 					"api_key": "wh1t3_w@lk3rs",
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "King Joffrey",
 					"email":   "g0dk1ng@kingslanding.gov",
 					"api_key": "sansa <3",
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
-
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": suite.tenantDbConf.Db,
 					"username": suite.tenantDbConf.Username,
 					"password": suite.tenantDbConf.Password,
 				},
-				bson.M{
+				{
 					"server":   "localhost",
 					"port":     27017,
 					"database": "argo_wrong_db_endpointgrouavailability",
 				},
 			},
 			"users": []bson.M{
-
-				bson.M{
+				{
 					"name":    "Joe Complex",
 					"email":   "C.Joe@egi.eu",
 					"api_key": suite.clientkey,
 					"roles":   []string{"viewer"},
 				},
-				bson.M{
+				{
 					"name":    "Josh Plain",
 					"email":   "P.Josh@egi.eu",
 					"api_key": "itsamysterytoyou",
@@ -160,22 +150,22 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 				},
 			}})
 
-	c = session.DB(suite.cfg.MongoDB.Db).C("roles")
-	c.Insert(
+	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "results.get",
 			"roles":    []string{"editor", "viewer"},
 		})
 	// Seed tenant database with data
-	c = session.DB(suite.tenantDbConf.Db).C("endpoint_group_ar")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.Insert(
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -188,12 +178,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  54.6,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -206,12 +197,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  45,
 			"weight":       4356,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -224,12 +216,13 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  100,
 			"weight":       5634,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
-		},
+		})
+	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -242,16 +235,16 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			"reliability":  56,
 			"weight":       4356,
 			"tags": []bson.M{
-				bson.M{
+				{
 					"name":  "",
 					"value": "",
 				},
 			},
 		})
 
-	c = session.DB(suite.tenantDbConf.Db).C("reports")
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.Insert(bson.M{
+	c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -266,15 +259,15 @@ func (suite *endpointGroupAvailabilityTestSuite) SetupTest() {
 			},
 		},
 		"profiles": []bson.M{
-			bson.M{
+			{
 				"type": "metric",
 				"name": "ch.cern.SAM.ROC_CRITICAL"},
 		},
 		"filter_tags": []bson.M{
-			bson.M{
+			{
 				"name":  "name1",
 				"value": "value1"},
-			bson.M{
+			{
 				"name":  "name2",
 				"value": "value2"},
 		}})
@@ -351,6 +344,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListEndpointGroupAvailabili
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityJSON, response.Body.String(), "Response body mismatch")
+
 	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/SITES/ST01?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/xml")
@@ -536,7 +530,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -551,7 +545,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -566,7 +560,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -581,7 +575,7 @@ func (suite *endpointGroupAvailabilityTestSuite) TestOptionsEndpointGroup() {
 
 	code = response.Code
 	output = response.Body.String()
-	headers = response.HeaderMap
+	headers = response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -678,41 +672,38 @@ func (suite *endpointGroupAvailabilityTestSuite) TestListAllEndpointGroupAvailab
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *endpointGroupAvailabilityTestSuite) TearDownTest() {
 
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
+	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
+	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		panic(err)
 	}
 
-	tenantDB := session.DB(suite.tenantDbConf.Db)
-	mainDB := session.DB(suite.cfg.MongoDB.Db)
-
-	cols, err := tenantDB.CollectionNames()
 	for _, col := range cols {
-		tenantDB.C(col).RemoveAll(nil)
+		mainDB.Collection(col).Drop(context.TODO())
 	}
 
-	cols, err = mainDB.CollectionNames()
+	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
+	cols, err = tenantDB.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		panic(err)
+	}
+
 	for _, col := range cols {
-		mainDB.C(col).RemoveAll(nil)
+		tenantDB.Collection(col).Drop(context.TODO())
 	}
 
 }
 
-//TearDownTest to tear down every test
+// TearDownTest to tear down every test
 func (suite *endpointGroupAvailabilityTestSuite) TearDownSuite() {
-
-	session, err := mgo.Dial(suite.cfg.MongoDB.Host)
-	if err != nil {
-		panic(err)
-	}
-	session.DB(suite.tenantDbConf.Db).DropDatabase()
-	session.DB(suite.cfg.MongoDB.Db).DropDatabase()
+	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-// TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestEndpointGroupsTestSuite(t *testing.T) {
+// TestSuiteResultsEndpointGroup is responsible for calling the tests
+func TestSuiteResultsEndpointGroup(t *testing.T) {
 	suite.Run(t, new(endpointGroupAvailabilityTestSuite))
 }

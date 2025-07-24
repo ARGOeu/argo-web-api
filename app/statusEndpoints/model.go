@@ -47,7 +47,7 @@ type DataOutput struct {
 	Service          string            `bson:"service"`
 	Hostname         string            `bson:"host"`
 	Status           string            `bson:"status"`
-	DateInt          string            `bson:"date_integer"`
+	DateInt          int               `bson:"date_integer"`
 	HasThresholdRule bool              `bson:"has_threshold_rule"`
 	Info             map[string]string `bson:"info"`
 }
@@ -57,13 +57,6 @@ type DataOutput struct {
 type rootOUT struct {
 	XMLName        xml.Name            `xml:"root" json:"-"`
 	EndpointGroups []*endpointGroupOUT `json:"groups"`
-}
-
-type rootPagedOUT struct {
-	XMLName   xml.Name       `xml:"root" json:"-"`
-	Endpoints []*endpointOUT `json:"endpoints"`
-	PageToken string         `json:"nextPageToken,omitempty"`
-	PageSize  int            `json:"pageSize,omitempty"`
 }
 
 type endpointGroupOUT struct {

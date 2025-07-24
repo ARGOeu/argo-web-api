@@ -1,0 +1,15 @@
+api: 
+  endpoint: "localhost"
+  access_token: "secret1"
+  verify: false
+  timeout: 10
+
+check_threshold: 50
+
+check_tenants:
+ - name: "TENANTA"
+   access_token: "secret2"
+   reports: ["Default"]
+ - name: "TENANTB"
+   access_token: "secret3"
+   reports: ["CORE"]

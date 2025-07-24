@@ -45,7 +45,7 @@ type DataOutput struct {
 	EndpointGroup    string `bson:"endpoint_group"`
 	Service          string `bson:"service"`
 	Status           string `bson:"status"`
-	DateInteger      string `bson:"date_integer"`
+	DateInteger      int    `bson:"date_integer"`
 	HasThresholdRule bool   `bson:"has_threshold_rule"`
 }
 

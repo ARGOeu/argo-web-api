@@ -23,37 +23,37 @@
 package statusEndpoints
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"github.com/gorilla/context"
+	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appRoutesV2 = []respond.AppRoutes{
 
-	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", routeCheckGroup},
-	{"status.list", "GET", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", routeCheckGroup},
+	{Name: "status.get", Verb: "GET", Path: "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", SubrouterHandler: routeCheckGroup},
+	{Name: "status.list", Verb: "GET", Path: "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", SubrouterHandler: routeCheckGroup},
 
-	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", Options},
-	{"status.options", "OPTIONS", "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", Options},
+	{Name: "status.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints/{endpoint_name}", SubrouterHandler: Options},
+	{Name: "status.options", Verb: "OPTIONS", Path: "/{report_name}/{group_type}/{group_name}/services/{service_name}/endpoints", SubrouterHandler: Options},
 
-	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/endpoints", routeCheckGroup},
-	{"status.get", "GET", "/{report_name}/{group_type}/{group_name}/endpoints", routeCheckGroup},
+	{Name: "status.get", Verb: "GET", Path: "/{report_name}/{group_type}/{group_name}/endpoints", SubrouterHandler: routeCheckGroup},
+	{Name: "status.get", Verb: "GET", Path: "/{report_name}/{group_type}/{group_name}/endpoints", SubrouterHandler: routeCheckGroup},
 
-	{"status.get", "GET", "/{report_name}/endpoints", routeCheckGroup},
-	{"status.options", "OPTIONS", "/{report_name}/endpoints", Options},
+	{Name: "status.get", Verb: "GET", Path: "/{report_name}/endpoints", SubrouterHandler: routeCheckGroup},
+	{Name: "status.options", Verb: "OPTIONS", Path: "/{report_name}/endpoints", SubrouterHandler: Options},
 }
 
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -61,7 +61,6 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("group check")
 	err := error(nil)
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
@@ -72,17 +71,11 @@ func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []by
 	vars := mux.Vars(r)
 
 	// Grab Tenant DB configuration from context
-	tenantcfg := context.Get(r, "tenant_conf").(config.MongoConfig)
+	tenantcfg := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 
-	session, err := mongo.OpenSession(tenantcfg)
-	defer mongo.CloseSession(session)
-	if err != nil {
-		code = http.StatusInternalServerError
-		output, _ = respond.MarshalContent(respond.InternalServerErrorMessage, contentType, "", " ")
-		return code, h, output, err
-	}
 	result := reports.MongoInterface{}
-	err = mongo.FindOne(session, tenantcfg.Db, "reports", bson.M{"info.name": vars["report_name"]}, &result)
+	rCol := cfg.MongoClient.Database(tenantcfg.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report_name"]}).Decode(&result)
 
 	if err != nil {
 		code = http.StatusNotFound

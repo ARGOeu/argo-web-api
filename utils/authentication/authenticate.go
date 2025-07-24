@@ -27,13 +27,14 @@
 package authentication
 
 import (
+	"context"
 	"errors"
 	"log"
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/argo-web-api/utils/mongo"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Auth struct {
@@ -50,28 +51,46 @@ type InfoStruct struct {
 	Name string `bson:"name"`
 }
 
+type Info struct {
+	Name string `bson:"name"`
+}
+
+type DbInfoUsers struct {
+	Info   Info         `bson:"info"`
+	DbConf []DbConfItem `bson:"db_conf"`
+	Users  []UserItem   `bson:"users"`
+}
+
+type DbConfItem struct {
+	Store    string `bson:"store"`
+	Server   string `bson:"server"`
+	Port     int    `bson:"port"`
+	Database string `bson:"database"`
+	Username string `bson:"username"`
+	Password string `bson:"password"`
+}
+
+type UserItem struct {
+	Id     string   `bson:"id"`
+	Name   string   `bson:"name"`
+	Email  string   `bson:"email"`
+	ApiKey string   `bson:"api_key"`
+	Roles  []string `bson:"roles"`
+}
+
 func Authenticate(h http.Header, cfg config.Config) bool {
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		panic(err)
-	}
-
+	authCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("authentication")
+	apiKey := h.Get("x-api-key")
 	query := bson.M{
-		"apiKey": h.Get("x-api-key"),
+		"api_key": apiKey,
 	}
-
-	results := []Auth{}
-	err = mongo.Find(session, cfg.MongoDB.Db, "authentication", query, "apiKey", &results)
-
-	if err != nil {
-		return false
-	}
-
-	if len(results) > 0 {
-		return true
+	result := Auth{}
+	err := authCol.FindOne(context.TODO(), query).Decode(&result)
+	if err == nil {
+		if result.ApiKey == apiKey {
+			return true
+		}
 	}
 	return false
 }
@@ -80,51 +99,24 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 // and allow further CRUD ops wrt the argo_core database (i.e. add a new
 // tenant, modify another tenant's configuration etc)
 func AuthenticateAdmin(h http.Header, cfg config.Config) bool {
-
-	session, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(session)
-
-	if err != nil {
-		panic(err)
-	}
-
-	query := bson.M{"api_key": h.Get("x-api-key")}
-	projection := bson.M{"_id": 0, "name": 0, "email": 0}
-
-	results := []Auth{}
-	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
-
-	if err != nil {
-		return false
-	}
-
-	if len(results) > 0 {
-		return true
-	}
-	return false
+	return Authenticate(h, cfg)
 }
 
 func queryAdminRoles(h http.Header, cfg config.Config) Auth {
-	session, err := mongo.OpenSession(cfg.MongoDB)
-	defer mongo.CloseSession(session)
 
-	if err != nil {
-		panic(err)
+	authCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("authentication")
+
+	query := bson.M{
+		"api_key": h.Get("x-api-key"),
 	}
 
-	query := bson.M{"api_key": h.Get("x-api-key")}
-	projection := bson.M{"_id": 0, "name": 0, "email": 0}
+	result := Auth{}
+	err := authCol.FindOne(context.TODO(), query).Decode(&result)
 
-	results := []Auth{}
-	err = mongo.FindAndProject(session, cfg.MongoDB.Db, "authentication", query, projection, "api_key", &results)
-
-	if err != nil {
-		return Auth{Restricted: false, SuperAdminUI: false}
+	if err == nil {
+		return result
 	}
 
-	if len(results) > 0 {
-		return results[0]
-	}
 	return Auth{Restricted: false, SuperAdminUI: false}
 }
 
@@ -147,42 +139,36 @@ func IsSuperAdminUI(h http.Header, cfg config.Config) bool {
 // returned along with an error
 func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, string, error) {
 
-	session, err := mongo.OpenSession(cfg.MongoDB)
-	if err != nil {
-		return config.MongoConfig{}, "", err
-	}
-	defer mongo.CloseSession(session)
+	tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
 
 	apiKey := h.Get("x-api-key")
 	query := bson.M{"users.api_key": apiKey}
-	projection := bson.M{"_id": 0, "name": 1, "db_conf": 1, "users": 1}
+	projection := bson.M{"_id": 0, "info.name": 1, "db_conf": 1, "users": 1}
 
-	var results []map[string][]config.MongoConfig
-	var tname Tenant
-	mongo.FindAndProject(session, cfg.MongoDB.Db, "tenants", query, projection, "server", &results)
-	mongo.FindOne(session, cfg.MongoDB.Db, "tenants", query, &tname)
+	var result DbInfoUsers
 
-	if len(results) == 0 {
-		return config.MongoConfig{}, "", errors.New("Unauthorized")
-	}
-	mongoConf := results[0]["db_conf"][0]
-	// mongoConf := config.MongoConfig{
-	// 	Host:     conf["server"].(string),
-	// 	Port:     conf["port"].(int),
-	// 	Db:       conf["database"].(string),
-	// 	Username: conf["username"].(string),
-	// 	Password: conf["password"].(string),
-	// 	Store:    conf["store"].(string),
-	// }
-	for _, user := range results[0]["users"] {
-		if user.ApiKey == apiKey {
-			mongoConf.User = user.User
-			mongoConf.Email = user.Email
-			mongoConf.Roles = user.Roles
+	err := tenantsCol.FindOne(context.TODO(), query, options.FindOne().SetProjection(projection)).Decode(&result)
+
+	if err == nil {
+
+		mongoConf := config.MongoConfig{}
+
+		for _, user := range result.Users {
+			if user.ApiKey == apiKey {
+				mongoConf.User = user.Name
+				mongoConf.Email = user.Email
+				mongoConf.Roles = user.Roles
+			}
 		}
+
+		mongoConf.Db = result.DbConf[0].Database
+
+		log.Printf("ACCESS User: %s", mongoConf.User)
+		log.Printf("ACESSS Tenant: %s", result.Info.Name)
+		return mongoConf, result.Info.Name, nil
+
 	}
 
-	log.Printf("ACCESS User: %s", mongoConf.User)
-	log.Printf("ACESSS Tenant: %s", tname.Info.Name)
-	return mongoConf, tname.Info.Name, nil
+	return config.MongoConfig{}, "", errors.New("Unauthorized")
+
 }

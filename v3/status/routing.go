@@ -29,7 +29,7 @@ import (
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s = respond.PrepAppRoutes(s, confhandler, arRoutes)
+	respond.PrepAppRoutes(s, confhandler, arRoutes)
 }
 
 var arRoutes = []respond.AppRoutes{

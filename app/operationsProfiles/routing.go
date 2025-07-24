@@ -31,16 +31,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"operationsProfiles.list", "GET", "/operations_profiles", List},
-	{"operationsProfiles.get", "GET", "/operations_profiles/{ID}", ListOne},
-	{"operationsProfiles.create", "POST", "/operations_profiles", Create},
-	{"operationsProfiles.update", "PUT", "/operations_profiles/{ID}", Update},
-	{"operationsProfiles.delete", "DELETE", "/operations_profiles/{ID}", Delete},
-	{"operationsProfiles.options", "OPTIONS", "/operations_profiles", Options},
-	{"operationsProfiles.options", "OPTIONS", "/operations_profiles/{ID}", Options},
+	{Name: "operationsProfiles.list", Verb: "GET", Path: "/operations_profiles", SubrouterHandler: List},
+	{Name: "operationsProfiles.get", Verb: "GET", Path: "/operations_profiles/{ID}", SubrouterHandler: ListOne},
+	{Name: "operationsProfiles.create", Verb: "POST", Path: "/operations_profiles", SubrouterHandler: Create},
+	{Name: "operationsProfiles.update", Verb: "PUT", Path: "/operations_profiles/{ID}", SubrouterHandler: Update},
+	{Name: "operationsProfiles.delete", Verb: "DELETE", Path: "/operations_profiles/{ID}", SubrouterHandler: Delete},
+	{Name: "operationsProfiles.options", Verb: "OPTIONS", Path: "/operations_profiles", SubrouterHandler: Options},
+	{Name: "operationsProfiles.options", Verb: "OPTIONS", Path: "/operations_profiles/{ID}", SubrouterHandler: Options},
 }

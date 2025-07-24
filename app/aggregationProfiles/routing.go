@@ -31,16 +31,16 @@ import (
 // handling each route with a different subrouter
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"aggregationProfiles.list", "GET", "/aggregation_profiles", List},
-	{"aggregationProfiles.get", "GET", "/aggregation_profiles/{ID}", ListOne},
-	{"aggregationProfiles.create", "POST", "/aggregation_profiles", Create},
-	{"aggregationProfiles.update", "PUT", "/aggregation_profiles/{ID}", Update},
-	{"aggregationProfiles.delete", "DELETE", "/aggregation_profiles/{ID}", Delete},
-	{"aggregationProfiles.options", "OPTIONS", "/aggregation_profiles", Options},
-	{"aggregationProfiles.options", "OPTIONS", "/aggregation_profiles/{ID}", Options},
+	{Name: "aggregationProfiles.list", Verb: "GET", Path: "/aggregation_profiles", SubrouterHandler: List},
+	{Name: "aggregationProfiles.get", Verb: "GET", Path: "/aggregation_profiles/{ID}", SubrouterHandler: ListOne},
+	{Name: "aggregationProfiles.create", Verb: "POST", Path: "/aggregation_profiles", SubrouterHandler: Create},
+	{Name: "aggregationProfiles.update", Verb: "PUT", Path: "/aggregation_profiles/{ID}", SubrouterHandler: Update},
+	{Name: "aggregationProfiles.delete", Verb: "DELETE", Path: "/aggregation_profiles/{ID}", SubrouterHandler: Delete},
+	{Name: "aggregationProfiles.options", Verb: "OPTIONS", Path: "/aggregation_profiles", SubrouterHandler: Options},
+	{Name: "aggregationProfiles.options", Verb: "OPTIONS", Path: "/aggregation_profiles/{ID}", SubrouterHandler: Options},
 }
