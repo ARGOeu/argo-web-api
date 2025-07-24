@@ -5346,6 +5346,11 @@ paths:
         schema:
           type: string
           default: all
+      - name: service
+        in: query
+        description: filter by service type
+        schema:
+          type: string      
       responses:
         200:
           description: Successful retrieval of multiple metric results
@@ -5451,6 +5456,11 @@ paths:
         schema:
           type: string
           default: 2006-01-01T00:04:05Z
+      - name: service
+        in: query
+        description: filter by service type
+        schema:
+          type: string      
       responses:
         200:
           description: Successful retrieval of results
@@ -9547,6 +9557,140 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Version'
+                
+  /v3/health:
+    get:
+      tags:
+      - Health
+      summary: Get health info
+      description: Get health info regarding this api instance
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        200:
+          description: Successful retrieval of health result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /v3/consistency:
+    get:
+      tags:
+      - Consistency
+      summary: Get data consistency status information
+      description: Check if argo-monitoring platform data are consistent
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: verbose
+        in: query
+        description: get verbose results regarding consistency
+        required: true
+        schema:
+          type: boolean
+          default: false
+      responses:
+        200:
+          description: Successful retrieval consistency results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consistency'
+                
+  /v3/consistency/auto-check:
+    post:
+      tags:
+      - Consistency
+      summary: Post auto check results into argo-web-api
+      description: Post consistency status results and message to argo-web-api
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of the recomputation to be created
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+              
+        required: true
+      responses:
+        200:
+          description: Post consistency status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: number
+                    
+  /v3/consistency/ack:
+    post:
+      tags:
+      - Consistency
+      summary: Post ack event into argo-web-api
+      description: Post acknowledgement that either confirms the monitoring issue or overrides it with another status
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of the recomputation to be created
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+                timeout_hours:
+                  type: number
+                  default: 6
+              
+        required: true
+      responses:
+        200:
+          description: Post consistency status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: number
+            
   /v3/results/{report_name}:
     get:
       tags:
@@ -11711,6 +11855,39 @@ components:
           type: string
         architecture:
           type: string
+    Consistency:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+        auto_check_status:
+          type: string
+        auto_check_message:
+          type: string
+        auto_check_timestamp:
+          type: string
+        ack_status:
+          type: string
+        ack_message:
+          type: string
+        ack_timestamp:
+          type: string
+        ack_timeout_hours:
+          type: number
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+  
   responses:
     404:
       description: Item not found
