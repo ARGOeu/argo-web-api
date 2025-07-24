@@ -144,14 +144,17 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		Service:      urlValues.Get("service"),
 	}
 
+
 	results := []metricResultOutput{}
 
 	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
-	// Query the detailed metric results
+
 	cursor, err := metricCol.Find(context.TODO(), prepQuery(input, reportID))
 
+
 	if err != nil {
+
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
@@ -203,6 +206,11 @@ func prepQuery(input metricResultQuery, reportID string) bson.M {
 
 	if reportID != "" {
 		query["report"] = reportID
+	}
+
+	// filter by service type
+	if input.Service != "" {
+		query["service"] = input.Service
 	}
 
 	return query

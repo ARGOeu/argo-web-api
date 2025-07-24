@@ -145,7 +145,6 @@ This method may be used to retrieve multiple service metric results for a specif
 |------|-------------|----------|---------------|
 |`hostname`| hostname of service endpoint| YES |  |
 |`service`| Filter by service type | NO | |
-
 #### Url Parameters
 
 | Type | Description | Required | Default value |

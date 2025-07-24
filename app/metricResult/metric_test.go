@@ -193,6 +193,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
+
 	c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20200501,
@@ -208,6 +209,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
+
 	c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20200501,
