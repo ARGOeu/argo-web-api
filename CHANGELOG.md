@@ -2,14 +2,33 @@
 
 All notable changes in argo-web-api project are documented here
 
-## 1.13.3 - (2023-05-10)
+## [v2.0.0] - (2025-07-24)
+
+### Added:
+- AO-910 Docs add cc info in footer ([#539](https://github.com/ARGOeu/argo-web-api/pull/539))
+- Create LICENSE ([#540](https://github.com/ARGOeu/argo-web-api/pull/540))
+- Create LICENCE ([#569](https://github.com/ARGOeu/argo-web-api/pull/569))
+- ARGO-5002 Support applied status recomputations ([#571](https://github.com/ARGOeu/argo-web-api/pull/571))
+- add documentation for POST recomputations ([#579](https://github.com/ARGOeu/argo-web-api/pull/579))
+- ARGO-5071 Add CHANGELOG.md ([#588](https://github.com/ARGOeu/argo-web-api/pull/588))
+- ARGO-5073 Add support for consistency check ([#589](https://github.com/ARGOeu/argo-web-api/pull/589))
+
+### Fixed:
+- Fix metric-details filter by service regression ([#568](https://github.com/ARGOeu/argo-web-api/pull/568))
+
+### Changed:
+- AO-909 upgrade to docusaurus 3.x ([#541](https://github.com/ARGOeu/argo-web-api/pull/541))
+- Update jenkinsfile node image for doc building ([#542](https://github.com/ARGOeu/argo-web-api/pull/542))
+- Update to golang 1.22 and mongodb 6.0 ([#543](https://github.com/ARGOeu/argo-web-api/pull/543))
+
+## [v1.13.3](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.13.3) - (2023-05-10)
 
 ### Added:
 - ARGO-4207 provide automatically combined endpoints in topology of combined tenants
 - ARGO-4208 Provide automatically combined groups in topology of combined tenants
 - ARGO-4209 Provide automatically combined service types in topology of combined tenants
 
-## 1.13.2 - (2023-02-28)
+## [v1.13.2](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.13.2) - (2023-02-28)
 
 ### Added:
 - ARGO-4206 Add filter by service type when requesting metric results 
@@ -18,7 +37,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-4226 In recomputations fix support for exclude monitoring source
 
 
-## 1.13.1 - (2023-02-02)
+## v[1.13.1](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.13.1) - (2023-02-02)
 
 
 ### Added:
@@ -29,7 +48,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-4124 Fix regression issue with missing date field in supergroup monthly query
 
 
-## 1.13.0 - (2022-11-07)
+## [v1.13.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.13.0) - (2022-11-07)
 
 ### Added:
 - ARGO-4089 support OPTIONS for api v3 calls using resource-ids
@@ -46,7 +65,7 @@ All notable changes in argo-web-api project are documented here
 
 
 
-## 1.12.0 - (2022-06-09)
+## [v1.12.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.12.0) - (2022-06-09)
 
 ### Added:
 - ARGO-3874 Add info on the report about what is computed (ar,status,trends)
@@ -62,7 +81,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-3802 Display api v3 status results in sorted order. Add parameter for display latest status results. Make start end time optional
 
 
-## 1.11.0 - (2022-04-06)
+## [v1.11.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.11.0) - (2022-04-06)
 
 ### Added:
 - ARGO-3408 Serve threshold flag trough web-api
@@ -92,7 +111,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-3581 Remove support for TLS 1.0 and 1.1
 
 
-## 1.10.0 - 2021-09-02
+## [v1.10.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.10.0) - 2021-09-02
 
 ### Added:
 - ARGO-3197 Display status trend results for metrics
@@ -116,7 +135,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-2880 Connect specific weight datasets to each report
 
 
-## 1.9.2 - (2020-12-16)
+## [v1.9.2](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.9.2) - (2020-12-16)
 
 ### Added:
 - ARGO-2703 Implement filter recomputations by date and report
@@ -141,7 +160,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-2570 Migrate argo-web-api docs to docusaurus2
 
 
-## 1.9.1 - (2020-07-08)
+## [v1.9.1](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.9.1) - (2020-07-08)
 
 ### Added:
 - ARGO-2305 Flat list of status results by metric type
@@ -160,7 +179,7 @@ All notable changes in argo-web-api project are documented here
 - DEVOPS-67 Jenkinsfile environmental variable is not being interpreted
 - DEVOPS-59 Generate argo-web-api swagger docs
 
-## 1.9.0 - (2020-03-26)
+## [v1.9.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.9.0) - (2020-03-26)
 
 ### Added:
 - ARGO-2187 Use report topology to filter endpoint items 
@@ -205,7 +224,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-2183 Change topology stats signature path
 
 
-## 1.8.1 - (2019-11-15)
+## [v1.8.1](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.8.1) - (2019-11-15)
 
 ### Fixed:
 - ARGO-2059 Fix latest strict result order by time instead of group name
@@ -213,7 +232,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-2058 Set strict=false by default in latest results call
 
 
-## 1.8.0 - (2019-11-04)
+## [v1.8.0](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.8.0) - (2019-11-04)
 
 ### Added:
 - ARGO-2038 Add version information to binary
@@ -232,7 +251,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-1958 Fix add end of day point in multiple status timelines
 
 
-## 1.7.9 - (2019-03-22)
+## [v1.7.9](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.7.9) - (2019-03-22)
 
 ### Added:
 - ARGO-1438 Implement tenant general status
@@ -242,7 +261,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-1455 - Migrate to golang/dep tool
 
 
-## 1.7.8 - (2018-11-12)
+## [v1.7.8](https://github.com/ARGOeu/argo-web-api/releases/tag/v1.7.8) - (2018-11-12)
 
 ### Added:
 - ARGO-1388 Api call update tenant name field
