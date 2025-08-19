@@ -10,3 +10,6 @@ sources:
 	cd ${TMPDIR} && tar czf ${PKGNAME}-${PKGVERSION}.tar.gz ${PKGNAME}-${PKGVERSION}
 	mv ${TMPDIR}/${PKGNAME}-${PKGVERSION}.tar.gz .
 	if [[ ${TMPDIR} == /tmp* ]]; then rm -rf ${TMPDIR} ;fi
+
+clean:
+	@echo "Clean target - nothing to clean"
