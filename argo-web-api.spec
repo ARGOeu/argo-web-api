@@ -9,13 +9,6 @@ License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group:     ARGO
 Source0: %{name}-%{version}.tar.gz
-BuildRequires: golang
-BuildRequires: bzr
-BuildRequires: git
-Requires: mongo-10gen
-Requires: mongo-10gen-server
-ExcludeArch: i386
-Obsoletes: ar-web-api
 
 %description
 Installs the ARGO API.
@@ -33,7 +26,8 @@ export PATH=$GOPATH/bin:$PATH
 cd src/github.com/ARGOeu/argo-web-api/
 export GIT_COMMIT=$(git rev-list -1 HEAD)
 export BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-go install -ldflags "-X github.com/ARGOeu/argo-web-api/version.Commit=$GIT_COMMIT -X github.com/ARGOeu/argo-web-api/version.BuildTime=$BUILD_TIME"
+export CGO_CFLAGS"=-O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
+go install -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z relro -z now' -X github.com/ARGOeu/argo-web-api/version.Commit=$GIT_COMMIT -X github.com/ARGOeu/argo-web-api/version.BuildTime=$BUILD_TIME"
 
 %install
 %{__rm} -rf %{buildroot}

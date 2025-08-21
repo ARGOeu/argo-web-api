@@ -1,7 +1,7 @@
 pipeline {
     agent { 
         docker { 
-            image 'argo.registry:5000/rocky9-mongo6.0-go1.22' 
+            image 'argo.registry:5000/rocky9-go1.25-mongo6:latest' 
             args '-u jenkins:jenkins'
         }
     }
@@ -13,6 +13,8 @@ pipeline {
         PROJECT_DIR='argo-web-api'
         GH_USER = 'newgrnetci'
         GH_EMAIL = '<argo@grnet.gr>'
+        GOCACHE = '/tmp/go-cache'
+        GOMODCACHE = '/tmp/go-mod-cache'
         GIT_COMMIT=sh(script: "cd ${WORKSPACE}/$PROJECT_DIR && git log -1 --format=\"%H\"",returnStdout: true).trim()
         GIT_COMMIT_HASH=sh(script: "cd ${WORKSPACE}/$PROJECT_DIR && git log -1 --format=\"%H\" | cut -c1-7",returnStdout: true).trim()
         GIT_COMMIT_DATE=sh(script: "date -d \"\$(cd ${WORKSPACE}/$PROJECT_DIR && git show -s --format=%ci ${GIT_COMMIT_HASH})\" \"+%Y%m%d%H%M%S\"",returnStdout: true).trim()
@@ -22,6 +24,7 @@ pipeline {
             steps {
                 echo 'Build...'
                 sh """
+                go version
                 cd ${WORKSPACE}/${PROJECT_DIR}
                 export CGO_CFLAGS"=-O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
                 go build -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z relro -z now'"
@@ -37,12 +40,27 @@ pipeline {
                 sudo mongod --fork --logpath /var/log/mongodb.log 
                 cd ${WORKSPACE}/${PROJECT_DIR}
                 go mod tidy
-                gocov test -p 1 ./... | gocov-xml > ${WORKSPACE}/coverage.xml
-                go test -p 1 ./... -v=1 | go-junit-report > ${WORKSPACE}/junit.xml
+                gotestsum --junitfile ${WORKSPACE}/junit.xml -- -p 1 -v -coverprofile=coverage.out ./...
+                gocover-cobertura < coverage.out > ${WORKSPACE}/coverage.xml
                 """
                 junit '**/junit.xml'
                 cobertura coberturaReportFile: '**/coverage.xml'
 
+            }
+        }
+        stage('Package') {
+            steps {
+                echo 'Building Rpm...'
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
+                                                             keyFileVariable: 'REPOKEY')]) {
+                    sh "/home/jenkins/build-rpm.sh -w ${WORKSPACE} -b ${BRANCH_NAME} -d rocky9 -p ${PROJECT_DIR} -s ${REPOKEY}"
+                }
+                archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
+            }
+            post{
+                always {
+                    cleanWs()
+                }
             }
         }
     }
