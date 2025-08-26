@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/context v1.1.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.0
 	github.com/twinj/uuid v1.0.0
 	go.mongodb.org/mongo-driver v1.17.4
 	gopkg.in/gcfg.v1 v1.2.3
