@@ -6,7 +6,7 @@ import (
 
 var (
 	// Release version of the service. Bump it up during new version release
-	Release = "1.14.0"
+	Release = "1.14.1"
 	// Commit hash provided during build
 	Commit = "Unknown"
 	// BuildTime provided during build
