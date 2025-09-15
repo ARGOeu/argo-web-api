@@ -2,6 +2,14 @@
 
 All notable changes in argo-web-api project are documented here
 
+## [v1.14.1] - (2025-09-15)
+
+### Changed:
+- ARGO-5108 Finalise healthcheck docs ([#615](https://github.com/ARGOeu/argo-web-api/pull/615))
+- dep update @mdx-js/react from 3.1.0 to 3.1.1 ([#614](https://github.com/ARGOeu/argo-web-api/pull/614))
+- dep update testify v1.11.1 ([#613](https://github.com/ARGOeu/argo-web-api/pull/613))
+- ARGO-5096 update to golang 1.25 - bump deps crypto and mongodriver ([#608](https://github.com/ARGOeu/argo-web-api/pull/608))
+
 ## [v1.14.0] - (2025-07-24)
 
 ### Added:
