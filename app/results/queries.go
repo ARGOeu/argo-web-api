@@ -578,8 +578,8 @@ func DailySuperGroup(filter bson.M) []bson.M {
 			"date":         "$_id.date",
 			"supergroup":   "$_id.supergroup",
 			"report":       "$_id.report",
-			"availability": bson.M{"$cond": list{bson.M{"$gt": list{"$weightAv", 0}}, bson.M{"$divide": list{"$availability", "$weightAv"}}, 0}},
-			"reliability":  bson.M{"$cond": list{bson.M{"$gt": list{"$weightRel", 0}}, bson.M{"$divide": list{"$reliability", "$weightRel"}}, 0}}},
+			"availability": bson.M{"$cond": list{bson.M{"$gt": list{"$weightAv", 0}}, bson.M{"$divide": list{"$availability", "$weightAv"}}, "nan"}},
+			"reliability":  bson.M{"$cond": list{bson.M{"$gt": list{"$weightRel", 0}}, bson.M{"$divide": list{"$reliability", "$weightRel"}}, "nan"}}},
 		},
 		{"$project": bson.M{
 			"date":         "$_id.date",
