@@ -31,7 +31,8 @@ pipeline {
                 gocover-cobertura < coverage.out > ${WORKSPACE}/coverage.xml
                 """
                 junit '**/junit.xml'
-                cobertura coberturaReportFile: '**/coverage.xml'
+                // TODO: skip step until a new coverage plugin is used
+                // cobertura coberturaReportFile: '**/coverage.xml'
 
             }
         }

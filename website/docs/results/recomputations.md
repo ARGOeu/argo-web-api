@@ -9,15 +9,13 @@ sidebar_position: 7
 
 Name                                     | Description                                                                            | Shortcut
 ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------
-GET: List Recomputation Requests         | This method can be used to retrieve a list of current Recomputation requests.          | [ Description](#1)
-GET: Get a specific recomputation by id | This method can be used to retrieve a specific recomputation by id                     | [ Description](#2)
-POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#3)
-DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#4)
-POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#5)
-DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#6)
+GET: List Recomputation Requests         | This method can be used to retrieve a list of current Recomputation requests.          | [ Description](#get-list-recomputation-requests)
+GET: Get a specific recomputation by id | This method can be used to retrieve a specific recomputation by id                     | [ Description](#get-get-specific-recomputation-request-by-id)
+POST: Create a new recomputation request | This method can be used to insert a new recomputation request onto the Compute Engine. | [ Description](#post-create-a-new-recomputation-request)
+DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#delete-delete-a-specific-recomputation)
+POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#post-change-status-of-recomputation)
+DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#delete-reset-status-of-a-specific-recomputation)
 
-
-<a id='1'></a>
 
 ## [GET]: List Recomputation Requests
 This method can be used to retrieve a list of current Recomputation requests.
@@ -34,8 +32,6 @@ GET /recomputations
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | `report` | Filter recomputations by report name                                                                                                    | NO       |
 | `date`   | Specific date to retrieve all relevant recomputations that their period include this date                                               | NO       |
-
-
 
 
 #### Request headers
@@ -210,7 +206,6 @@ Json Response
 }
 ```
 
-<a id='2'></a>
 
 ## [GET]: Get specific recomputation request by id
 This method can be used to retrieve a specific recomputation request by its id
@@ -269,8 +264,6 @@ Json Response
 ```
 
 
-<a id='3'></a>
-
 ## [POST]: Create a new recomputation request
 This method can be used to insert a new recomputation request onto the Compute Engine.
 
@@ -305,7 +298,6 @@ Accept: application/json
 ### Response
 Headers: `Status: 201 Created`
 
-<a id='4'></a>
 
 #### Request Body
 
@@ -357,8 +349,6 @@ All these elements are **optional** and can be included individually or together
 ```
 
 
-
-
 ## [DELETE]: Delete a specific recomputation
 
 ```
@@ -375,7 +365,6 @@ Accept: application/json
 ### Response
 `Status 200 OK`
 
-<a id='5'></a>
 
 ## [POST]: Change status of recomputation
 
@@ -422,8 +411,6 @@ Json Response
 }
 ```
 
-
-<a id='6'></a>
 
 ## [DELETE]: Reset status of a specific recomputation
 
