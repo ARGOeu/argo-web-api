@@ -31,8 +31,13 @@ const config = {
   url: 'https://argoeu.github.io',
   baseUrl: '/argo-web-api/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
 
 
