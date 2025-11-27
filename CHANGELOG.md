@@ -2,6 +2,13 @@
 
 All notable changes in argo-web-api project are documented here
 
+## [v1.14.2] - (2025-11-27)
+
+### Changed:
+- ARGO-5195 Update go deps (mongo/crypto) and docusaurus ([#639](https://github.com/ARGOeu/argo-web-api/pull/639))
+- ARGO-5141 Fix supergroup daily aggregation result to default to 0 for… ([#633](https://github.com/ARGOeu/argo-web-api/pull/633))
+- Updates and Trivy ([#626](https://github.com/ARGOeu/argo-web-api/pull/626))
+
 ## [v1.14.1] - (2025-09-15)
 
 ### Changed:
