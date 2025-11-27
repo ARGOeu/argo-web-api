@@ -1,7 +1,7 @@
 pipeline {
     agent { 
         docker { 
-            image 'argo.registry:5000/rocky9-go1.25-mongo6:latest' 
+            image 'argo.registry:5000/rocky9-go1.25-mongo7:latest' 
             args '-u jenkins:jenkins'
         }
     }
@@ -31,9 +31,9 @@ pipeline {
                 gocover-cobertura < coverage.out > ${WORKSPACE}/coverage.xml
                 """
                 junit '**/junit.xml'
-                publishCoverage adapters: [
-                    coberturaAdapter('**/coverage.xml')
-                ]
+                // TODO: skip step until a new coverage plugin is used
+                // cobertura coberturaReportFile: '**/coverage.xml'
+
             }
         }
         stage('Build') {
