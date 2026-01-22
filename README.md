@@ -71,6 +71,18 @@ Declare the variables bellow
        $ cd postman && npm install newman 
        $ ./node_modules/newman/bin/newman.js run ./argo-web-api_tests.json  -k -e ./postman/env.json --env-var last_commit=$COMMIT api_key=$TOKEN
 
+## Dockerised env for local development
+You can quickly run the argo-web-api (along with mongodb) through docker for a quick local development environment.
+
+In order to do it issue:
+```
+cd docker
+docker-compose up
+```
+
+This will kickstart two containers, one for mongo (with port forwarding at localhost:27017) and one for argo-web-api with port forwarding at (localhost:8843)
+
+
 ## Credits
 
 The ARGO Messaging Service is developed by [GRNET](http://www.grnet.gr)
