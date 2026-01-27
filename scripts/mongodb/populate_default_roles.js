@@ -314,6 +314,10 @@ function populate_default_roles() {
         {
             resource: "health",
             roles: ["editor", "viewer"]
+        },
+        {
+            resource: "tenants.update_info",
+            roles: ["super_admin"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
