@@ -215,6 +215,16 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
+			"resource": "tenants.update_db_conf",
+			"roles":    []string{"super_admin"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "tenants.update_topology",
+			"roles":    []string{"super_admin"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
 			"resource": "tenants.update_status",
 			"roles":    []string{"super_admin"},
 		})
@@ -960,6 +970,166 @@ func (suite *TenantTestSuite) TestUpdateTenantInfo() {
 
 	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Equal("groot", result.Users[0].Name)
+	suite.Equal("starlord", result.Users[1].Name)
+
+	// now do the normal update that will replace the users
+
+	request, _ = http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(jsonOutput2, output, "Response body mismatch")
+
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
+	suite.Empty(result.Users)
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantDbConf() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"TENANT_INFO_UPDATED",
+				"email":"bar@example.foo",
+				"website":"updated_info_website"
+			},
+      "db_conf": [{
+	 	"store":"test-ar",
+		"server":"mongo.remote",
+		"port":27017,
+		"username":"foo",
+		"password":""
+	  }],
+      "users": []
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant database configuration successfully updated",
+  "code": "200"
+ }
+}`
+
+	jsonOutput2 := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/db-conf", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+	// try to retrieve item
+	var result Tenant
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+
+	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
+	suite.Equal("test-ar", result.DbConf[0].Store)
+	suite.Equal("mongo.remote", result.DbConf[0].Server)
+	suite.Equal("starlord", result.Users[1].Name)
+
+	// now do the normal update that will replace the users
+
+	request, _ = http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(jsonOutput2, output, "Response body mismatch")
+
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
+	suite.Empty(result.Users)
+
+}
+
+func (suite *TenantTestSuite) TestUpdateTenantTopology() {
+
+	// create json input data for the request
+	putData := `
+  {
+      "info":{
+				"name":"TENANT_INFO_UPDATED",
+				"email":"bar@example.foo",
+				"website":"updated_info_website"
+			},
+	 "db_conf": [{
+	 	"store":"test-ar",
+		"server":"mongo.remote",
+		"port":27017,
+		"username":"foo",
+		"password":""
+	  }],
+      "topology": {
+		"type":"gocdb",
+		"feed":"https://example.url.foo"  
+	 },
+      "users": []
+  }`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Tenant topology successfully updated",
+  "code": "200"
+ }
+}`
+
+	jsonOutput2 := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/topology", strings.NewReader(putData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Internal Server Error")
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+	// try to retrieve item
+	var result Tenant
+	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+
+	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
+	suite.Equal("gocdb", result.Topology.TopoType)
+	suite.Equal("https://example.url.foo", result.Topology.Feed)
 	suite.Equal("starlord", result.Users[1].Name)
 
 	// now do the normal update that will replace the users

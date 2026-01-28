@@ -14,6 +14,8 @@ sidebar_position: 1
 | POST: Create a new tenant             | This method can be used to create a new tenant                                         | [ Description](#3) |
 | PUT: Update a tenant                  | This method can be used to update information on an existing tenant                    | [ Description](#4) |
 | PUT: Update a tenant's info                  | This method can be used to update just the info part on an existing tenant                    | [ Description](#4B) |
+| PUT: Update a tenant's db conf                  | This method can be used to update just the db conf part on an existing tenant                    | [ Description](#4C) |
+| PUT: Update a tenant's topology                  | This method can be used to update just the topology part on an existing tenant                    | [ Description](#4D) |
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
@@ -625,14 +627,14 @@ Json Response
 }
 ```
 
-## [PUT]: Update only the info part of an existing tenant {#4B}
+## [PUT]: Update only the db conf part of an existing tenant {#4C}
 
-This method can be used to update only the info part of an existing tenant
+This method can be used to update only the db conf part of an existing tenant
 
 ### Input
 
 ```
-PUT /admin/tenants/{ID}/info
+PUT /admin/tenants/{ID}/db-conf
 ```
 
 #### Request headers
@@ -646,14 +648,56 @@ Accept: application/json
 
 ```json
 {
-    "info": {
-        "name": "Tenant1",
-        "email": "email1@tenant1.com",
-        "description": "a changed description",
-        "image": "a changed url to nwe image",
-        "website": "www.tenant1.com",
-        "created": "2015-10-20 02:08:04",
-        "updated": "2015-10-20 02:08:04"
+    "db_conf": [{
+        "store": "ar",
+        "server": "mongo-remote.foo",
+        "port": 27017,
+        "database":"argo_TENANT"
+    }]
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant database configuration successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [PUT]: Update only the topology part of an existing tenant {#4D}
+
+This method can be used to update only the topology part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/topology
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "topology": {
+        "type": "csv",
+        "feed": "https://example.foo/path/to/csv",
     }
 }
 ```
@@ -669,11 +713,12 @@ Json Response
 ```json
 {
     "status": {
-        "message": "Tenant info successfully updated",
+        "message": "Tenant topology configuration successfully updated",
         "code": "200"
     }
 }
 ```
+
 
 ## [DELETE]: Delete an existing tenant {#5}
 
