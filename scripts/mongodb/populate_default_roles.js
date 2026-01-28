@@ -318,6 +318,14 @@ function populate_default_roles() {
         {
             resource: "tenants.update_info",
             roles: ["super_admin"]
+        },
+        {
+            resource: "tenants.update_db_conf",
+            roles: ["super_admin"]
+        },
+        {
+            resource: "tenants.update_topology",
+            roles: ["super_admin"]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
