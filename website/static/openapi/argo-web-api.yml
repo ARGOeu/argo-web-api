@@ -40,6 +40,78 @@ tags:
 - name: Issues
   description: List of problematic endpoints
 paths:
+  /v2/admin/tenants/{TENANT_ID}/info:
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant info
+      description: update information on a specific tenant definition
+      operationId: tenants.UpdateInfo
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant definition to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      responses:
+        201:
+          description: Tenant definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        400:
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        404:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
   /v2/admin/tenants/{TENANT_ID}:
     get:
       tags:
