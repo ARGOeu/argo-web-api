@@ -3,7 +3,7 @@ FROM golang:1.25-alpine AS builder
 RUN apk add --no-cache git make curl
 
 WORKDIR /build
-RUN git clone https://github.com/argoeu/argo-web-api.git .
+COPY . .
 
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o argo-web-api .
