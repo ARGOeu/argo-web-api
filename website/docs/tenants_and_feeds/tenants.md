@@ -951,6 +951,20 @@ Json Response
 }
 ```
 
+__Note__: If a user account is meant for a specific component integration then an optional field `"component"` can be specified when creating the user account such as in the following example:
+
+```json
+{
+    "name":"poem_viwer_account",
+    "email":"ops@email.foo",
+    "roles": [
+        "viewer"
+    ],
+    "component": "poem-viewer"
+ }`
+
+```
+
 
 ## [PUT]: Update user {#9}
 
@@ -997,6 +1011,21 @@ Json Response
  }
 }
 ```
+
+__Note__: If a user account is meant for a specific component integration then an optional field `"component"` can be specified when updating the user account such as in the following example:
+
+```json
+{
+    "name":"poem_viwer_account",
+    "email":"ops@email.foo",
+    "roles": [
+        "viewer"
+    ],
+    "component": "poem-viewer"
+ }`
+
+```
+
 
 
 ## [POST]: Renew User API key {#10}

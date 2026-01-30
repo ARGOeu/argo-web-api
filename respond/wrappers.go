@@ -20,6 +20,10 @@ import (
 // 	return handler
 // }
 
+func isComponentRoute(routeName string) bool {
+	return strings.HasPrefix(routeName, "v3.components")
+}
+
 func needsAPIAdmin(routeName string) bool {
 
 	routePart := strings.Split(routeName, ".")[0]
@@ -35,10 +39,23 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var errs []ErrorResponse
+		// check if component route
 
-		// check if api admin authentication is needed (for tenants etc...)
-		if needsAPIAdmin(routeName) {
+		if isComponentRoute(routeName) {
 
+			compRole := authentication.GetComponentRole(r.Header, cfg)
+			// check if user has a component role
+			if compRole != "" {
+				gcontext.Set(r, "roles", []string{compRole})
+			} else {
+				// Because user has no component role
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+			hfn.ServeHTTP(w, r)
+
+		} else if needsAPIAdmin(routeName) {
+			// check if api admin authentication is needed (for tenants etc...)
 			if !(authentication.AuthenticateAdmin(r.Header, cfg)) {
 				// Because not authenticated respond with error
 				Error(w, r, ErrAuthen, cfg, errs)
@@ -48,8 +65,6 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			// admin api authenticated so continue serving
 			gcontext.Set(r, "authen", true)
 			// Add admin restricted or not information -- used in get tenants
-
-			// Check if admin is restricted
 			if authentication.IsAdminRestricted(r.Header, cfg) {
 				gcontext.Set(r, "roles", []string{"super_admin_restricted"})
 			} else if authentication.IsSuperAdminUI(r.Header, cfg) {

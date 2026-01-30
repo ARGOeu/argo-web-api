@@ -282,6 +282,18 @@ type SelfLinks struct {
 	Self string `xml:"self" json:"self"`
 }
 
+func QuickResponse(msg string, code int) ([]byte, error) {
+	docRoot := &ResponseMessage{
+		Status: StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}
+
 // CreateResponseMessage creates an output using the parameters given and the correct marshaller
 // according to the contetnType
 func CreateResponseMessage(message string, code string, contentType string) ([]byte, error) {
