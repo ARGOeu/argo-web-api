@@ -41,6 +41,7 @@ type Auth struct {
 	ApiKey       string `bson:"api_key"`
 	Restricted   bool   `bson:"restricted"`
 	SuperAdminUI bool   `bson:"super_admin_ui"`
+	Component    string `bson:"component"`
 }
 
 type Tenant struct {
@@ -131,6 +132,11 @@ func IsAdminRestricted(h http.Header, cfg config.Config) bool {
 func IsSuperAdminUI(h http.Header, cfg config.Config) bool {
 	auth := queryAdminRoles(h, cfg)
 	return auth.SuperAdminUI
+}
+
+// GetComponentRole returns a component role if exists
+func GetComponentRole(h http.Header, cfg config.Config) string {
+	return queryAdminRoles(h, cfg).Component
 }
 
 // AuthenticateTenant is used to find which tenant the user making the requests

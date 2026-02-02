@@ -110,11 +110,12 @@ type TenantDbConf struct {
 // TenantUser structure holds information about tenant's
 // user
 type TenantUser struct {
-	ID     string   `bson:"id" json:"id"`
-	Name   string   `bson:"name"       json:"name"`
-	Email  string   `bson:"email"      json:"email"`
-	APIkey string   `bson:"api_key"    json:"api_key"`
-	Roles  []string `bson:"roles,omitempty"      json:"roles,omitempty"`
+	ID        string   `bson:"id" json:"id"`
+	Name      string   `bson:"name"       json:"name"`
+	Email     string   `bson:"email"      json:"email"`
+	APIkey    string   `bson:"api_key"    json:"api_key"`
+	Roles     []string `bson:"roles,omitempty"      json:"roles,omitempty"`
+	Component string   `bson:"component,omitempty" json:"component,omitempty"`
 }
 
 // SelfReference to hold links and id

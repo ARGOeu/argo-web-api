@@ -206,7 +206,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -529,7 +529,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -656,7 +656,7 @@ func UpdateInfo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -768,7 +768,7 @@ func UpdateDbConf(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -881,7 +881,7 @@ func UpdateTopology(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1040,7 +1040,7 @@ func GetUserByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 }
 
 // validateTenantUsers validates the uniqueness of the tenant's users' keys
-func validateTenantUsers(tenant Tenant, tenantCol *mongo.Collection) (string, int) {
+func ValidateTenantUsers(tenant Tenant, tenantCol *mongo.Collection) (string, int) {
 
 	usersKeys := make(map[string]bool)
 	errMsg := ""
@@ -1167,7 +1167,7 @@ func CreateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	tenant.Users = append(tenant.Users, incoming)
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1286,7 +1286,7 @@ func UpdateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1372,7 +1372,7 @@ func DeleteUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1580,7 +1580,7 @@ func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1604,7 +1604,7 @@ func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	}
 
 	// Create view for response message
-	output, err = createRenewedToken(token, "User api key succesfully renewed", 200) //Render the results into JSON
+	output, err = CreateRenewedToken(token, "User api key succesfully renewed", 200) //Render the results into JSON
 
 	code = http.StatusOK
 	return code, h, output, err

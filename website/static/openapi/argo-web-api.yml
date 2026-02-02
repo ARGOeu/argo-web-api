@@ -9994,6 +9994,70 @@ paths:
             application/json:
               schema:
                 type: string
+  /v3/integrations/components/{COMPONENT}/by-tenant-name/{TENANT}/refresh:
+    post:
+      tags:
+      - Integrations
+      summary: Renew an account access key for a component that integrates with a specific tenant
+      description: For a specific tenant, renew the access key of a specific integration component
+      operationId: integrations.components.refresh
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: TENANT
+        in: path
+        description: name of the tenant
+        required: true
+        schema:
+          type: string
+      - name: COMPONENT
+        in: path
+        description: name of the component
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: User key renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenewedToken'
+        400:
+          description: Bad request due to malformed JSON in post body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
                 
   /v3/results/{report_name}/id/{resource_id}:
     get:
