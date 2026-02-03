@@ -326,6 +326,10 @@ function populate_default_roles() {
         {
             resource: "tenants.update_topology",
             roles: ["super_admin"]
+        },
+        {
+            resource: 'v3.components.access_refresh',
+            roles: [ 'component_engine', 'component_monbox', 'component_poem' ]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");
