@@ -330,6 +330,14 @@ function populate_default_roles() {
         {
             resource: 'v3.components.access_refresh',
             roles: [ 'component_engine', 'component_monbox', 'component_poem' ]
+        },
+        {
+            resource: 'tenants.update_ready',
+            roles: [ 'super_admin' ]
+        },
+        {
+             resource: 'tenants.get_ready',
+             roles: [ 'super_admin' ]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

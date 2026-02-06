@@ -19,6 +19,8 @@ sidebar_position: 1
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
+| GET: Get a tenant's readiness | This method can be used to get the readiness for a specific tenant                            | [ Description](#7B) |
+| PUT: Update a tenant's readiness  | This method can be used to update readiness information (checks) for a specific tenant | [ Description](#7C) |
 | POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
 | PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
 | POST: Renew User's API key | This method can be used to renew user's api key | [ Description](#10) |
@@ -878,6 +880,114 @@ Accept: application/json
     },
     "engine_config": true,
     "last_check": "2018-08-10T12:32:45Z"
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant successfully updated",
+        "code": "200"
+    }
+}
+```
+
+
+## [GET]: List A Specific tenant's readiness {#7B}
+
+This method can be used to retrieve specific tenant's status based on its id
+
+### Input
+
+```
+GET /admin/tenants/{ID}/status
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": {
+        "id": "3f9e3380-43bc-4fcd-b4c4-d0331b34e1a3",
+        "name": "TENANT-FOO",
+        "ready": false,
+        "data": {
+            "ready": true,
+            "message": "AMS has data. Hdfs has data"
+        },
+        "topology": {
+            "ready": true,
+            "message": "Groups, endpoints and service-types set"
+        },
+        "reports": {
+            "ready": false,
+            "message": "Tenant doesn't have reports"
+        },
+        "last_check": "2026-02-06T00:00:00Z"
+    }
+}
+```
+
+
+## [PUT]: Update argo-engine readines information on an existing tenant {#7C}
+
+This method can be used to update readiness information (checks) on an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/ready
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+  "data": {
+    "ready": true,
+    "message": "AMS has data. Hdfs has data"
+  },
+  "topology": {
+    "ready": true,
+    "message": "Groups, endpoints and service-types set"
+  },
+  "reports": {
+    "ready": true,
+    "message": "Tenant has at least one report"
+  },
+  "last_check": "2026-02-06T01:00:00Z"
 }
 ```
 
