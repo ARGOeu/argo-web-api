@@ -34,7 +34,23 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 )
 
-// createListView constructs the list response template and exports it as json
+// createReadyView constructs the readiness response template and exports it as json
+func createReadyView(result TenantReadyOut, msg string, code int) ([]byte, error) {
+
+	docRoot := &respond.ResponseMessage{
+		Status: respond.StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+	docRoot.Data = result
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+
+}
+
+// createStatusView constructs the status view response template and exports it as json
 func createStatusView(results []TenantStatus, msg string, code int) ([]byte, error) {
 
 	docRoot := &respond.ResponseMessage{

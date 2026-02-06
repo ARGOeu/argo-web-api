@@ -346,6 +346,67 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
+// ListReady shows tenant's readines
+func ListReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	vars := mux.Vars(r)
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// final result
+	result := TenantReadyOut{}
+
+	// Create structure to hold query result
+	tenantRD := TenantReadyData{}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+	// Query collection tenants for the specific tenant id
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&tenantRD)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	result.ID = tenantRD.ID
+	result.Name = tenantRD.Info.Name
+	result.Data = tenantRD.Ready.Data
+	result.Topology = tenantRD.Ready.Topology
+	result.Reports = tenantRD.Ready.Reports
+	result.LastCheck = tenantRD.Ready.LastCheck
+
+	result.Ready = result.Data.Ready && result.Topology.Ready && result.Reports.Ready
+
+	output, err = createReadyView(result, "Success", code)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
 // ListOne function implement an http GET request that accepts
 // a name parameter urlvar and retrieves information only for the
 // specific tenant
@@ -408,6 +469,63 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+func UpdateReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incomingChecks := ReadyChecks{}
+
+	// ingest body data
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incomingChecks); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific tenant with id
+	query := bson.M{"id": vars["ID"]}
+
+	// update and set only the status field
+	setIncoming := bson.M{"$set": bson.M{"ready": incomingChecks}}
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, setIncoming)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
 }
 
 func UpdateStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {

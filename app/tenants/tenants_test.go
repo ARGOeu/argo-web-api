@@ -265,6 +265,16 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
+			"resource": "tenants.get_ready",
+			"roles":    []string{"super_admin"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "tenants.update_ready",
+			"roles":    []string{"super_admin"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
 			"resource": "tenants.user_by_id",
 			"roles":    []string{"super_admin", "super_admin_restricted"},
 		})
@@ -1976,9 +1986,33 @@ func (suite *TenantTestSuite) TestListTenants() {
 
 }
 
-func (suite *TenantTestSuite) TestListTenantStatus() {
+func (suite *TenantTestSuite) TestTenantReadiness() {
 
-	request, _ := http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/status", strings.NewReader(""))
+	postData := `
+ {
+  "data": {
+    "ready": true,
+    "message": "AMS has data. Hdfs has data"
+  },
+  "topology": {
+    "ready": true,
+    "message": "Groups, endpoints and service-types set"
+  },
+  "reports": {
+    "ready": true,
+    "message": "Tenant doesn't have reports"
+  },
+  "last_check": "2026-02-06T01:00:00Z"
+}`
+
+	jsonResp := `{
+ "status": {
+  "message": "Tenant successfully updated",
+  "code": "200"
+ }
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/ready", strings.NewReader(postData))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1988,52 +2022,50 @@ func (suite *TenantTestSuite) TestListTenantStatus() {
 	code := response.Code
 	output := response.Body.String()
 
-	profileJSON := `{
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonResp, output, "Response body mismatch")
+
+	readyJSON := `{
  "status": {
   "message": "Success",
   "code": "200"
  },
- "data": [
-  {
-   "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
-   "info": {
-    "name": "AVENGERS",
-    "email": "email@something",
-    "description": "a simple tenant",
-    "image": "url to image",
-    "website": "www.avengers.com",
-    "created": "2015-10-20 02:08:04",
-    "updated": "2015-10-20 02:08:04"
-   },
-   "status": {
-    "total_status": false,
-    "ams": {
-     "metric_data": {
-      "ingestion": false,
-      "publishing": false,
-      "status_streaming": false,
-      "messages_arrived": 0
-     },
-     "sync_data": {
-      "ingestion": false,
-      "publishing": false,
-      "status_streaming": false,
-      "messages_arrived": 0
-     }
-    },
-    "hdfs": {
-     "metric_data": false
-    },
-    "engine_config": false,
-    "last_check": ""
-   }
-  }
- ]
+ "data": {
+  "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+  "name": "AVENGERS",
+  "ready": true,
+  "data": {
+   "ready": true,
+   "message": "AMS has data. Hdfs has data"
+  },
+  "topology": {
+   "ready": true,
+   "message": "Groups, endpoints and service-types set"
+  },
+  "reports": {
+   "ready": true,
+   "message": "Tenant doesn't have reports"
+  },
+  "last_check": "2026-02-06T01:00:00Z"
+ }
 }`
+
+	request, _ = http.NewRequest("GET", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50b/ready", strings.NewReader(postData))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
 	// Check that we must have a 200 ok code
 	suite.Equal(200, code, "Internal Server Error")
 	// Compare the expected and actual json response
-	suite.Equal(profileJSON, output, "Response body mismatch")
+	suite.Equal(readyJSON, output, "Response body mismatch")
 
 }
 

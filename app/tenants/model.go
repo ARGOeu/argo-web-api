@@ -42,6 +42,34 @@ type TopologyInfo struct {
 	Feed     string `bson:"feed" json:"feed"`
 }
 
+type TenantReadyOut struct {
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Ready     bool       `json:"ready"`
+	Data      ReadyCheck `json:"data"`
+	Topology  ReadyCheck `json:"topology"`
+	Reports   ReadyCheck `json:"reports"`
+	LastCheck string     `json:"last_check"`
+}
+
+type ReadyChecks struct {
+	Data      ReadyCheck `bson:"data" json:"data"`
+	Topology  ReadyCheck `bson:"topology" json:"topology"`
+	Reports   ReadyCheck `bson:"reports" json:"reports"`
+	LastCheck string     `bson:"last_check" json:"last_check"`
+}
+
+type TenantReadyData struct {
+	ID    string      `bson:"id" json:"id"`
+	Info  TenantInfo  `bson:"info" json:"info"`
+	Ready ReadyChecks `bson:"ready" json:"ready,omitempty"`
+}
+
+type ReadyCheck struct {
+	Ready   bool   `json:"ready"`
+	Message string `json:"message,omitempty"`
+}
+
 type TenantStatus struct {
 	ID     string       `bson:"id" json:"id"`
 	Info   TenantInfo   `bson:"info" json:"info"`

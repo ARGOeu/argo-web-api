@@ -653,6 +653,154 @@ paths:
               schema:
                 $ref: '#/components/schemas/Status_error'
       x-codegen-request-body-name: tenant
+  /v2/admin/tenants/{TENANT_ID}/ready:
+    get:
+      tags:
+      - Tenants
+      summary: List a specific tenant's readiness
+      description: List one specific tenant's status designated by its unique id
+      operationId: tenants.ListReady
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        200:
+          description: A list with one tenant's readyness
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant_status_list'
+        401:
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        404:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant's readiness
+      description: update information on a specific tenant's readiness
+      operationId: tenants.UpdateReady
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant's argo-engine status definition to
+          be updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                topology:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                reports:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                last_check:
+                  type: string
+        required: true
+      responses:
+        201:
+          description: Tenant's status definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        400:
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        401:
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        404:
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        406:
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
   /v2/admin/tenants/{TENANT_ID}/users:
     get:
       tags:
