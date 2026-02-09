@@ -5,8 +5,6 @@ title: Integrations - Components
 
 Calls for  components that integrate with argo-web-api and access tenant data.
 
-
-
 ## Refresh Access Token for a Component Integration
 
 Component administrators can request to refresh access keys for their assigned components within a specific tenant.
@@ -15,14 +13,14 @@ Component administrators can request to refresh access keys for their assigned c
 POST /api/v3/integrations/components/{COMPONENT}/by-tenant-name/{TENANT}/refresh
 ```
 
-Where {COMPONENT} the name of the component account supported (one of the following):
+Where `{COMPONENT}` the name of the component account supported (one of the following):
 - engine
 - poem-admin
 - poem-viewer
 - monbox
 - probe
 
-Where {TENANT} the name of the tenant
+Where `{TENANT}` the name of the tenant
 
 ### Request headers
 

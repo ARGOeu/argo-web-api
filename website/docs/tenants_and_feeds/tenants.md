@@ -629,6 +629,54 @@ Json Response
 }
 ```
 
+## [PUT]: Update only the info part of an existing tenant {#4B}
+
+This method can be used to update only the info part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/info
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "info": {
+        "name": "Tenant1-updated",
+        "email": "email1@tenant1.com",
+        "description": "a changed description",
+        "image": "a changed url to nwe image",
+        "website": "www.tenant1-updated.com",
+    }
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant information successfully updated",
+        "code": "200"
+    }
+}
+```
+
 ## [PUT]: Update only the db conf part of an existing tenant {#4C}
 
 This method can be used to update only the db conf part of an existing tenant
@@ -908,7 +956,7 @@ This method can be used to retrieve specific tenant's status based on its id
 ### Input
 
 ```
-GET /admin/tenants/{ID}/status
+GET /admin/tenants/{ID}/ready
 ```
 
 #### Request headers
