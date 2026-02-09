@@ -173,7 +173,6 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	//STANDARD DECLARATIONS END
 
 	urlValues := r.URL.Query()
-
 	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
