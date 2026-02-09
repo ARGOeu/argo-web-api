@@ -38,6 +38,8 @@ import (
 )
 
 type Auth struct {
+	Name         string `bson:"name"`
+	Email        string `bson:"email"`
 	ApiKey       string `bson:"api_key"`
 	Restricted   bool   `bson:"restricted"`
 	SuperAdminUI bool   `bson:"super_admin_ui"`
@@ -94,6 +96,23 @@ func Authenticate(h http.Header, cfg config.Config) bool {
 		}
 	}
 	return false
+}
+
+func AuthenticateAdminName(h http.Header, cfg config.Config) (bool, string, string) {
+
+	authCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("authentication")
+	apiKey := h.Get("x-api-key")
+	query := bson.M{
+		"api_key": apiKey,
+	}
+	result := Auth{}
+	err := authCol.FindOne(context.TODO(), query).Decode(&result)
+	if err == nil {
+		if result.ApiKey == apiKey {
+			return true, result.Name, result.Email
+		}
+	}
+	return false, "", ""
 }
 
 // AuthenticateAdmin is used to authenticate and administrator of ARGO
@@ -171,6 +190,32 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, s
 
 		log.Printf("ACCESS User: %s", mongoConf.User)
 		log.Printf("ACESSS Tenant: %s", result.Info.Name)
+		return mongoConf, result.Info.Name, nil
+
+	}
+
+	return config.MongoConfig{}, "", errors.New("Unauthorized")
+
+}
+
+// AuthenticateAdminTenant is used to authenticate access to a super admin trying to access
+// a tenant's user route
+func AuthenticateAdminTenant(h http.Header, cfg config.Config) (config.MongoConfig, string, error) {
+
+	tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	tenantId := h.Get("x-tenant-id")
+	query := bson.M{"id": tenantId}
+	projection := bson.M{"_id": 0, "info.name": 1, "db_conf": 1}
+
+	var result DbInfoUsers
+
+	err := tenantsCol.FindOne(context.TODO(), query, options.FindOne().SetProjection(projection)).Decode(&result)
+
+	if err == nil {
+
+		mongoConf := config.MongoConfig{}
+		mongoConf.Db = result.DbConf[0].Database
 		return mongoConf, result.Info.Name, nil
 
 	}

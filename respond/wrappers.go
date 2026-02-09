@@ -1,6 +1,7 @@
 package respond
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -41,6 +42,9 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		var errs []ErrorResponse
 		// check if component route
 
+		// check if has x-tenant-id header
+		adminTenantId := r.Header.Get("x-tenant-id")
+
 		if isComponentRoute(routeName) {
 
 			compRole := authentication.GetComponentRole(r.Header, cfg)
@@ -75,6 +79,41 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 
 			hfn.ServeHTTP(w, r)
 
+		} else if adminTenantId != "" {
+			// check if it is an admin trying to access a tenant route
+			authen, username, email := authentication.AuthenticateAdminName(r.Header, cfg)
+			if !(authen) {
+				// Because not authenticated respond with error
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			tenantConf, tenantName, tErr := authentication.AuthenticateAdminTenant(r.Header, cfg)
+			// If error respond with error
+			if tErr != nil {
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			tenantConf.User = username
+			tenantConf.Email = email
+			if authentication.IsAdminRestricted(r.Header, cfg) {
+				gcontext.Set(r, "roles", []string{"super_admin_restricted", "viewer"})
+				tenantConf.Roles = []string{"viewer"}
+			} else if authentication.IsSuperAdminUI(r.Header, cfg) {
+				gcontext.Set(r, "roles", []string{"super_admin_ui", "admin_ui"})
+				tenantConf.Roles = []string{"viewer"}
+			} else {
+				gcontext.Set(r, "roles", []string{"super_admin", "admin"})
+				tenantConf.Roles = []string{"admin"}
+			}
+
+			gcontext.Set(r, "tenant_conf", tenantConf)
+			gcontext.Set(r, "tenant_name", tenantName)
+			gcontext.Set(r, "authen", authen)
+			log.Printf("Admin User: %s Accessing Tenant: %s", username, tenantName)
+			hfn.ServeHTTP(w, r)
+
 		} else {
 
 			// authenticate tenant user
@@ -107,7 +146,6 @@ func WrapAuthorize(hfn http.Handler, cfg config.Config, routeName string) http.H
 		if roles != nil {
 
 			author := authorization.HasResourceRoles(cfg, routeName, roles)
-
 			if author {
 				hfn.ServeHTTP(w, r)
 				return

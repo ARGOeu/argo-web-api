@@ -17,7 +17,6 @@ type QRole struct {
 func HasResourceRoles(cfg config.Config, resource string, roles []string) bool {
 
 	rolesCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("roles")
-
 	query := bson.M{"resource": resource, "roles": bson.M{"$in": roles}}
 	queryResult := rolesCol.FindOne(context.TODO(), query)
 	return (queryResult.Err() == nil)
