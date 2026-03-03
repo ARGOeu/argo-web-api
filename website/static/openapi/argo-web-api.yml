@@ -1403,6 +1403,16 @@ paths:
         schema:
           type: string
           default: SecretKey123
+      - name: name
+        in: query
+        description: search by report name
+        schema:
+          type: string
+      - name: node
+        in: query
+        scription: show only active default node report
+        schema:
+          type: boolean
       responses:
         200:
           description: A list of all available Reports
@@ -12013,6 +12023,8 @@ components:
           type: string
         disabled:
           type: string
+        node:
+          type: boolean
         weight:
           type: string
         info:
@@ -12226,6 +12238,13 @@ components:
             created:
               type: string
             updated:
+              type: string
+        node:
+          type: object
+          properties:
+            id: 
+              type: string
+            name:
               type: string
         db_conf:
           type: array

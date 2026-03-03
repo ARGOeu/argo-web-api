@@ -42,6 +42,10 @@ db.roles.insertMany([
     roles: [ 'admin', 'editor' ]
   },
   {
+    resource: 'reports.set_node_report',
+    roles: [ 'admin', 'editor' ]
+  },
+  {
     resource: 'metric_profiles.get',
     roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
   },

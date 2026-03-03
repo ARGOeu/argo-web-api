@@ -13,9 +13,10 @@ sidebar_position: 1
 | GET: List a specific tenant           | This method can be used to retrieve a specific metric tenant based on its id.          | [ Description](#2) |
 | POST: Create a new tenant             | This method can be used to create a new tenant                                         | [ Description](#3) |
 | PUT: Update a tenant                  | This method can be used to update information on an existing tenant                    | [ Description](#4) |
-| PUT: Update a tenant's info                  | This method can be used to update just the info part on an existing tenant                    | [ Description](#4B) |
-| PUT: Update a tenant's db conf                  | This method can be used to update just the db conf part on an existing tenant                    | [ Description](#4C) |
-| PUT: Update a tenant's topology                  | This method can be used to update just the topology part on an existing tenant                    | [ Description](#4D) |
+| PUT: Update a tenant's info           | This method can be used to update just the info part on an existing tenant             | [ Description](#4B) |
+| PUT: Update a tenant's db conf        | This method can be used to update just the db conf part on an existing tenant          | [ Description](#4C) |
+| PUT: Update a tenant's topology       | This method can be used to update just the topology part on an existing tenant         | [ Description](#4D) |
+| PUT: Update a tenant's node info      | This method can be used to update just the node info part on an existing tenant        | [ Description](#4E) |
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
@@ -138,10 +139,7 @@ Json Response
      "username": "admin",
      "password": "3NCRYPT3D"
     },
-    "topology": {
-    "type": "GOCDB",
-    "feed": "gocdb2.example.foo"
-   },
+   
     {
      "store": "status",
      "server": "b.mongodb.org",
@@ -151,6 +149,10 @@ Json Response
      "password": "3NCRYPT3D"
     }
    ],
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb2.example.foo"
+   },
    "users": [
     {
     "id": "acb74194-553a-11e9-8647-d663bd873d95",
@@ -719,6 +721,52 @@ Json Response
 {
     "status": {
         "message": "Tenant database configuration successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [PUT]: Update only the node info part of an existing tenant {#4C}
+
+Some tenants can represent Nodes and hold optional node information in the nested json object named "node".
+This method can be used to update only the node info part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/node
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "node": {
+        "id": "node-id",
+        "name": "node-namke",
+    }
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant node information successfully updated",
         "code": "200"
     }
 }

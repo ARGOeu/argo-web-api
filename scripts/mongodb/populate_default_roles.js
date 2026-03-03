@@ -41,6 +41,7 @@ function populate_default_roles() {
         { resource: "reports.create", roles: ["admin", "editor"] },
         { resource: "reports.delete", roles: ["admin", "editor"] },
         { resource: "reports.update", roles: ["admin", "editor"] },
+        { resource: "reports.set_node_report", roles: ["admin", "editor"] },
         {
             resource: "metricProfiles.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]

@@ -243,6 +243,11 @@ func (suite *ReportTestSuite) SetupTest() {
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
+			"resource": "reports.set_node_report",
+			"roles":    []string{"admin", "editor"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
 			"resource": "reports.delete",
 			"roles":    []string{"admin", "editor"},
 		})
@@ -1210,6 +1215,147 @@ func (suite *ReportTestSuite) TestDeleteReport() {
 	suite.Equal(404, code, "Incorrect error code")
 	// Compare the expected and actual xml response
 	suite.Equal(suite.respReportNotFound, output, "Response body mismatch")
+}
+
+// Set a report as the default node report
+func (suite *ReportTestSuite) TestSetReportNode() {
+
+	respJSON := `{
+ "status": {
+  "message": "Node report information was successfully updated",
+  "code": "200"
+ }
+}`
+
+	respReportJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
+   "info": {
+    "name": "Report_A",
+    "description": "report aaaaa",
+    "created": "2015-9-10 13:43:00",
+    "updated": "2015-10-11 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
+   "topology_schema": {
+    "group": {
+     "type": "NGI",
+     "group": {
+      "type": "SITE"
+     }
+    }
+   },
+   "profiles": [
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
+    }
+   ],
+   "filter_tags": [
+    {
+     "name": "name1",
+     "value": "value1",
+     "context": ""
+    },
+    {
+     "name": "name2",
+     "value": "value2",
+     "context": ""
+    }
+   ],
+   "node_report": true
+  }
+ ]
+}`
+
+	// Prepare the request object
+	request, _ := http.NewRequest("POST", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364/set-node-report", strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	// Execute the request in the controller
+	response := httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(respJSON, output, "Response body mismatch")
+
+	// Double check that the report is actually removed when you try
+	// to retrieve it's information by name
+	// Prepare the request object using report name as urlvar in url path
+	request, _ = http.NewRequest("GET", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364", strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+	// Pass request to controller calling List() handler method
+	response = httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Incorrect error code")
+	// Compare the expected and actual xml response
+	suite.Equal(respReportJSON, output, "Response body mismatch")
+
+	// Double check that the report is actually removed when you try
+	// to retrieve it's information by name
+	// Prepare the request object using report name as urlvar in url path
+	request, _ = http.NewRequest("GET", "/api/v2/reports?node", strings.NewReader(""))
+	// add the content-type header to application/json
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "C4PK3Y")
+	// Pass request to controller calling List() handler method
+	response = httptest.NewRecorder()
+
+	// Execute the request in the controller
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Incorrect error code")
+	// Compare the expected and actual xml response
+	suite.Equal(respReportJSON, output, "Response body mismatch")
 }
 
 // TestReadOneReport function implements the testing
