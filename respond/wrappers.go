@@ -95,6 +95,12 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 				return
 			}
 
+			// if not tenant database configured response with message
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
+				return
+			}
+
 			tenantConf.User = username
 			tenantConf.Email = email
 			if authentication.IsAdminRestricted(r.Header, cfg) {
@@ -121,6 +127,11 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			// If tenant user not authenticated respond with  error
 			if tErr != nil {
 				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
 				return
 			}
 
