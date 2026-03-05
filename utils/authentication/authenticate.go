@@ -215,7 +215,9 @@ func AuthenticateAdminTenant(h http.Header, cfg config.Config) (config.MongoConf
 	if err == nil {
 
 		mongoConf := config.MongoConfig{}
-		mongoConf.Db = result.DbConf[0].Database
+		if len(result.DbConf) > 0 {
+			mongoConf.Db = result.DbConf[0].Database
+		}
 		return mongoConf, result.Info.Name, nil
 
 	}
