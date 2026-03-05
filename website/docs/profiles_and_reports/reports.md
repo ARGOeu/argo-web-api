@@ -11,6 +11,7 @@ sidebar_position: 5
 | GET: List reports or single report | This method can be used to retrieve a list of existing reports | [ Description](#1) |
 | POST: Create a new report          | This method can be used to create a new report.                | [ Description](#2) |
 | PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3) |
+| POST: Set report as node report     | This method can be used to set an existing report as node report.          | [ Description](#3B) |
 | DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4) |
 
 
@@ -29,6 +30,11 @@ or
 /reports/{id}
 ```
 
+#### Filters on `/reports` list
+
+When using `/reports` to list the available reports you have the following filters that you can use as url values
+- `?name=<report_name>` to search for an exact report name
+- `?node` to show only the default node report
 #### Request headers
 
 ```
@@ -309,6 +315,41 @@ Headers: `Status: 200 OK`
         "message": "Report was successfully updated",
         "code": "200"
     }
+}
+```
+
+## [POST]: Set a report as node report {#3B}
+
+This method can be used to set an existing report as a node report. Node reports are used as default sources for results when requesting node capabilities
+
+### Input
+
+#### URL
+
+```
+/reports/{id}/set-node-report
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response Body
+
+```json
+{
+  "status": {
+    "message": "Node report information was successfully updated",
+    "code": "200"
+  }
 }
 ```
 

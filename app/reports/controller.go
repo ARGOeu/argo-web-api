@@ -46,6 +46,8 @@ import (
 )
 
 var reportsColl = "reports"
+var nodeReportColl = "node_report"
+var nodeReportId = "node-report"
 
 // Create function is used to implement the create report request.
 // The request is an http POST request with the report description
@@ -183,8 +185,18 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 
 	query := bson.M{}
 
+	// check node report
+	nodeReport := NodeReport{}
+
+	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
+	err = nrCol.FindOne(context.TODO(), query).Decode(&nodeReport)
+
 	if urlValues.Get("name") != "" {
 		query["info.name"] = urlValues["name"]
+	}
+
+	if urlValues.Has("node") {
+		query["id"] = nodeReport.Report_id
 	}
 
 	// Create structure for storing query results
@@ -193,7 +205,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// nil query param == match everything
 	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
 	findOptions := options.Find().SetSort(bson.D{{Key: "id", Value: 1}})
-	cursor, err := rCol.Find(context.TODO(), bson.M{}, findOptions)
+	cursor, err := rCol.Find(context.TODO(), query, findOptions)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -203,6 +215,9 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	cursor.All(context.TODO(), &results)
 
 	for indx := range results {
+		if nodeReport.Report_id == results[indx].ID {
+			results[indx].NodeReport = true
+		}
 		results[indx].Tenant = tenantName
 
 		// check if computations field is not set and return the default value
@@ -244,9 +259,13 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
 	tenantName := gcontext.Get(r, "tenant_name").(string)
 
-	//Extracting urlvar "name" from url path
-
 	id := mux.Vars(r)["id"]
+
+	// check node report
+	nodeReport := NodeReport{}
+
+	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
+	err = nrCol.FindOne(context.TODO(), bson.M{}).Decode(&nodeReport)
 
 	// Create structure for storing query results
 	result := MongoInterface{}
@@ -267,6 +286,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
+	}
+
+	// if report is set as a node report enrich the report information with node: true
+	if nodeReport.Report_id == result.ID {
+		result.NodeReport = true
 	}
 
 	// Enrich report with tenant name -- used in argo engine
@@ -421,6 +445,77 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	}
 	//Render the response into XML
 	output, err = respond.CreateResponseMessage("Report was successfully updated", "200", contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// SetNodeReport function is used to set a specific report as node report
+func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	//Extracting report id from url
+	id := mux.Vars(r)["id"]
+
+	queryById := bson.M{"id": id}
+
+	// before updating, check if the report exists and the name is unique
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+	nrCol := cfg.MongoClient.Database((tenantDbConfig.Db)).Collection(nodeReportColl)
+	result := MongoInterface{}
+
+	err = rCol.FindOne(context.TODO(), queryById).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	filter := bson.M{"_id": nodeReportId}
+	update := bson.M{"$set": NodeReport{Report_id: id}}
+	opts := options.Update().SetUpsert(true)
+
+	updateChange, err := nrCol.UpdateOne(context.TODO(), filter, update, opts)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	fmt.Printf("%+v \n", updateChange)
+
+	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Node report information was successfully updated", "200", contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError

@@ -40,6 +40,7 @@ var appRoutesV2 = []respond.AppRoutes{
 	{Name: "tenants.get_status", Verb: "GET", Path: "/tenants/{ID}/status", SubrouterHandler: ListStatus},
 	{Name: "tenants.get", Verb: "GET", Path: "/tenants/{ID}", SubrouterHandler: ListOne},
 	{Name: "tenants.create", Verb: "POST", Path: "/tenants", SubrouterHandler: Create},
+	{Name: "tenants.update_node", Verb: "PUT", Path: "/tenants/{ID}/node", SubrouterHandler: UpdateNode},
 	{Name: "tenants.update_status", Verb: "PUT", Path: "/tenants/{ID}/status", SubrouterHandler: UpdateStatus},
 	{Name: "tenants.update_ready", Verb: "PUT", Path: "/tenants/{ID}/ready", SubrouterHandler: UpdateReady},
 	{Name: "tenants.create_user", Verb: "POST", Path: "/tenants/{ID}/users", SubrouterHandler: CreateUser},
