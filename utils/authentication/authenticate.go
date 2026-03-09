@@ -198,6 +198,46 @@ func AuthenticateTenant(h http.Header, cfg config.Config) (config.MongoConfig, s
 
 }
 
+func AuthenticateNode(h http.Header, cfg config.Config, nodeName string, isAdmin bool) (config.MongoConfig, string, error) {
+
+	tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	apiKey := h.Get("x-api-key")
+	query := bson.M{"node.name": nodeName}
+	if !isAdmin {
+		query["users.api_key"] = apiKey
+	}
+	projection := bson.M{"_id": 0, "info.name": 1, "db_conf": 1, "users": 1}
+
+	var result DbInfoUsers
+
+	err := tenantsCol.FindOne(context.TODO(), query, options.FindOne().SetProjection(projection)).Decode(&result)
+
+	if err == nil {
+
+		mongoConf := config.MongoConfig{}
+
+		for _, user := range result.Users {
+			if user.ApiKey == apiKey {
+				mongoConf.User = user.Name
+				mongoConf.Email = user.Email
+				mongoConf.Roles = user.Roles
+			}
+		}
+
+		mongoConf.Db = result.DbConf[0].Database
+		if !isAdmin {
+			log.Printf("ACCESS User: %s", mongoConf.User)
+		}
+		log.Printf("ACCESS Node: %s - (tenant: %s)", nodeName, result.Info.Name)
+		return mongoConf, result.Info.Name, nil
+
+	}
+
+	return config.MongoConfig{}, "", errors.New("Unauthorized")
+
+}
+
 // AuthenticateAdminTenant is used to authenticate access to a super admin trying to access
 // a tenant's user route
 func AuthenticateAdminTenant(h http.Header, cfg config.Config) (config.MongoConfig, string, error) {

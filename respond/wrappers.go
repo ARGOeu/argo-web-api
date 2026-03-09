@@ -9,6 +9,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authorization"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 // // WrapAll Wraps all wrap handlers. Note: Precedence is inversed
@@ -20,6 +21,10 @@ import (
 //
 // 	return handler
 // }
+
+func isNodeRoute(routeName string) bool {
+	return strings.HasPrefix(routeName, "v4.nodes.availability")
+}
 
 func isComponentRoute(routeName string) bool {
 	return strings.HasPrefix(routeName, "v3.components")
@@ -44,8 +49,40 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 
 		// check if has x-tenant-id header
 		adminTenantId := r.Header.Get("x-tenant-id")
+		if isNodeRoute(routeName) {
 
-		if isComponentRoute(routeName) {
+			vars := mux.Vars(r)
+			nodeName := vars["node_name"]
+			isAdmin := authentication.AuthenticateAdmin(r.Header, cfg)
+			// Add admin restricted or not information -- used in get tenants
+			if isAdmin {
+				if authentication.IsAdminRestricted(r.Header, cfg) {
+					gcontext.Set(r, "roles", []string{"super_admin_restricted"})
+				} else if authentication.IsSuperAdminUI(r.Header, cfg) {
+					gcontext.Set(r, "roles", []string{"super_admin_ui"})
+				} else {
+					gcontext.Set(r, "roles", []string{"super_admin"})
+				}
+			}
+			tenantConf, name, tErr := authentication.AuthenticateNode(r.Header, cfg, nodeName, isAdmin)
+			if tErr != nil {
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
+				return
+			}
+			if !isAdmin {
+				gcontext.Set(r, "roles", tenantConf.Roles)
+			}
+			gcontext.Set(r, "tenant_conf", tenantConf)
+			gcontext.Set(r, "tenant_name", name)
+			gcontext.Set(r, "authen", true)
+			hfn.ServeHTTP(w, r)
+
+		} else if isComponentRoute(routeName) {
 
 			compRole := authentication.GetComponentRole(r.Header, cfg)
 			// check if user has a component role
