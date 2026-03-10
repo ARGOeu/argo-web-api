@@ -49,7 +49,7 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 
 	if err != nil {
 		code = http.StatusNotFound
-		message := "Node report node set"
+		message := "Node report not set"
 		output, err := createErrorMessage(message, code, contentType)
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -164,7 +164,7 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 
 	if err != nil {
 		code = http.StatusNotFound
-		message := "Node report node set"
+		message := "Node report not set"
 		output, err := createErrorMessage(message, code, contentType)
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
@@ -333,7 +333,7 @@ func GetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 
 	if err != nil {
 		code = http.StatusNotFound
-		message := "Node report node set"
+		message := "Node report not set"
 		output, err := createErrorMessage(message, code, contentType)
 		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 		return code, h, output, err
