@@ -339,6 +339,26 @@ function populate_default_roles() {
         {
              resource: 'tenants.get_ready',
              roles: [ 'super_admin' ]
+        },
+        {
+             resource: 'tenants.update_node',
+             roles: ['super_admin']
+        },
+        {
+             resource: 'reports.set_node_report',
+             roles: ['super_admin', 'admin', 'editor']
+        },
+        {
+             resource: 'v4.nodes.availability',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.reliability',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.status',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

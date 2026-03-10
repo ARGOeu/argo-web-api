@@ -43,6 +43,7 @@ type RouteV2 struct {
 
 // Same Route model as V2
 type RouteV3 RouteV2
+type RouteV4 RouteV2
 
 // NewRouter creates the main router that will be used by the api (contains both v2 and v3 routes)
 func NewRouter(cfg config.Config) *mux.Router {
@@ -64,6 +65,15 @@ func NewRouter(cfg config.Config) *mux.Router {
 	for _, subroute := range routesV3 {
 		subrouter := router.
 			PathPrefix("/api/v3" + subroute.Pattern).
+			Name(subroute.Name).
+			Subrouter()
+		subroute.SubrouterHandler(subrouter, &confhandler)
+	}
+
+	// Add v4 subroutes
+	for _, subroute := range routesV4 {
+		subrouter := router.
+			PathPrefix("/api/v4" + subroute.Pattern).
 			Name(subroute.Name).
 			Subrouter()
 		subroute.SubrouterHandler(subrouter, &confhandler)
