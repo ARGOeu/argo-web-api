@@ -23,7 +23,7 @@ import (
 // }
 
 func isNodeRoute(routeName string) bool {
-	return strings.HasPrefix(routeName, "v4.nodes.availability")
+	return strings.HasPrefix(routeName, "v4.nodes")
 }
 
 func isComponentRoute(routeName string) bool {
@@ -50,7 +50,6 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		// check if has x-tenant-id header
 		adminTenantId := r.Header.Get("x-tenant-id")
 		if isNodeRoute(routeName) {
-
 			vars := mux.Vars(r)
 			nodeName := vars["node_name"]
 			isAdmin := authentication.AuthenticateAdmin(r.Header, cfg)

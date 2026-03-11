@@ -143,7 +143,9 @@ func createStatusView(results []GroupStatusData, input InputStatus, endDate stri
 		}
 
 		if latest {
-
+			if endDate == today {
+				status.Timestamp = strings.Split(status.Timestamp, "T")[0] + extraTS
+			}
 			ppEndpointGroup.Results = []StatusResult{status}
 		} else {
 			ppEndpointGroup.Results = append(ppEndpointGroup.Results, status)
