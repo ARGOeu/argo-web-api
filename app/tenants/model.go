@@ -34,18 +34,13 @@ type Tenant struct {
 	DbConf   []TenantDbConf `bson:"db_conf" json:"db_conf,omitempty"`
 	Topology TopologyInfo   `bson:"topology" json:"topology"`
 	Users    []TenantUser   `bson:"users" json:"users,omitempty"`
-	Node     *NodeInfo      `bson:"node" json:"node,omitempty"`
+	Node     bool           `bson:"node" json:"node,omitempty"`
 }
 
 // TopologyInfo contains topology feed information
 type TopologyInfo struct {
 	TopoType string `bson:"type" json:"type"`
 	Feed     string `bson:"feed" json:"feed"`
-}
-
-type NodeInfo struct {
-	Id   string `bson:"id" json:"id"`
-	Name string `bson:"name" json:"name"`
 }
 
 type TenantReadyOut struct {

@@ -203,7 +203,8 @@ func AuthenticateNode(h http.Header, cfg config.Config, nodeName string, isAdmin
 	tenantsCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
 
 	apiKey := h.Get("x-api-key")
-	query := bson.M{"node.name": nodeName}
+
+	query := bson.M{"info.name": nodeName, "node": true}
 	if !isAdmin {
 		query["users.api_key"] = apiKey
 	}

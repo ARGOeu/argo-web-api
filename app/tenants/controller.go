@@ -829,8 +829,8 @@ func UpdateInfo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 }
 
-// UpdateNode function used to update only the node info part of a tenant
-func UpdateNode(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+// NodeSet function used set the tenant as a node
+func NodeSet(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -848,21 +848,6 @@ func UpdateNode(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	vars := mux.Vars(r)
 
 	incoming := Tenant{}
-
-	// ingest body data
-	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
-	if err != nil {
-		panic(err)
-	}
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-	// parse body json
-	if err := json.Unmarshal(body, &incoming); err != nil {
-		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
-		code = http.StatusBadRequest
-		return code, h, output, err
-	}
 
 	// Try to get mongo client and target tenant collection
 	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
@@ -899,7 +884,7 @@ func UpdateNode(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	query = bson.M{"id": vars["ID"]}
 	update := bson.M{
 		"$set": bson.M{
-			"node":         incoming.Node,
+			"node":         true,
 			"info.updated": incoming.Info.Updated,
 		},
 	}
@@ -918,7 +903,88 @@ func UpdateNode(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	}
 
 	// Create view for response message
-	output, err = createMsgView("Tenant node information updated", 200) //Render the results into JSON
+	output, err = createMsgView("Tenant has been set as node", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// NodeUnset function used unset the tenant from being a node
+func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+
+			"info.updated": incoming.Info.Updated,
+		},
+		"$unset": bson.M{"node": ""},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant has been unset from being a node", 200) //Render the results into JSON
 	code = http.StatusOK
 	return code, h, output, err
 

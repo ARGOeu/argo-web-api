@@ -515,7 +515,7 @@ func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 	//Render the response into XML
-	output, err = respond.CreateResponseMessage("Node report information was successfully updated", "200", contentType)
+	output, err = respond.CreateResponseMessage("Report was set as the default node report", "200", contentType)
 
 	if err != nil {
 		code = http.StatusInternalServerError

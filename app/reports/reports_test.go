@@ -1222,7 +1222,7 @@ func (suite *ReportTestSuite) TestSetReportNode() {
 
 	respJSON := `{
  "status": {
-  "message": "Node report information was successfully updated",
+  "message": "Report was set as the default node report",
   "code": "200"
  }
 }`

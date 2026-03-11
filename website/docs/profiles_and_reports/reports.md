@@ -347,7 +347,7 @@ Headers: `Status: 200 OK`
 ```json
 {
   "status": {
-    "message": "Node report information was successfully updated",
+    "message": "Report was set as the default node report",
     "code": "200"
   }
 }
