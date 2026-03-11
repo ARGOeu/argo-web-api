@@ -327,7 +327,7 @@ This method can be used to set an existing report as a node report. Node reports
 #### URL
 
 ```
-/reports/{id}/set-node-report
+POST /reports/{id}/set-node-report
 ```
 
 #### Request headers
