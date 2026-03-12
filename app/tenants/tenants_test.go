@@ -28,6 +28,7 @@ package tenants
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -220,7 +221,12 @@ func (suite *TenantTestSuite) SetupTest() {
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "tenants.update_node",
+			"resource": "tenants.node_set",
+			"roles":    []string{"super_admin"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "tenants.node_unset",
 			"roles":    []string{"super_admin"},
 		})
 	c.InsertOne(context.TODO(),
@@ -1088,36 +1094,21 @@ func (suite *TenantTestSuite) TestUpdateTenantDbConf() {
 
 func (suite *TenantTestSuite) TestUpdateTenantNode() {
 
-	// create json input data for the request
-	putData := `
-  {
-      "info":{
-				"name":"TENANT_INFO_UPDATED",
-				"email":"bar@example.foo",
-				"website":"updated_info_website"
-			},
-      "node": {
-	 	"id": "node_id",
-		"name": "node_name"
-	  },
-      "users": []
-  }`
-
 	jsonOutput := `{
  "status": {
-  "message": "Tenant node information updated",
+  "message": "Tenant has been set as node",
   "code": "200"
  }
 }`
 
 	jsonOutput2 := `{
  "status": {
-  "message": "Tenant successfully updated",
+  "message": "Tenant has been unset from being a node",
   "code": "200"
  }
 }`
 
-	request, _ := http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/node", strings.NewReader(putData))
+	request, _ := http.NewRequest("POST", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/node-set", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response := httptest.NewRecorder()
@@ -1136,13 +1127,11 @@ func (suite *TenantTestSuite) TestUpdateTenantNode() {
 	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
 
 	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
-	suite.Equal("node_id", result.Node.Id)
-	suite.Equal("node_name", result.Node.Name)
-	suite.Equal("starlord", result.Users[1].Name)
+	suite.Equal(true, result.Node)
 
 	// now do the normal update that will replace the users
 
-	request, _ = http.NewRequest("PUT", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c", strings.NewReader(putData))
+	request, _ = http.NewRequest("POST", "/api/v2/admin/tenants/6ac7d684-1f8e-4a02-a502-720e8f11e50c/node-unset", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 	response = httptest.NewRecorder()
@@ -1155,9 +1144,11 @@ func (suite *TenantTestSuite) TestUpdateTenantNode() {
 	suite.Equal(200, code, "Internal Server Error")
 	suite.Equal(jsonOutput2, output, "Response body mismatch")
 
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
-	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
-	suite.Empty(result.Users)
+	var result2 Tenant
+
+	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result2)
+	fmt.Printf("%+v \n", result2)
+	suite.Equal(false, result2.Node)
 
 }
 

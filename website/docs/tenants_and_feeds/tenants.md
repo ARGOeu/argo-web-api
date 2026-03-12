@@ -16,7 +16,8 @@ sidebar_position: 1
 | PUT: Update a tenant's info           | This method can be used to update just the info part on an existing tenant             | [ Description](#4B) |
 | PUT: Update a tenant's db conf        | This method can be used to update just the db conf part on an existing tenant          | [ Description](#4C) |
 | PUT: Update a tenant's topology       | This method can be used to update just the topology part on an existing tenant         | [ Description](#4D) |
-| PUT: Update a tenant's node info      | This method can be used to update just the node info part on an existing tenant        | [ Description](#4E) |
+| POST: Set a tenant as node            | This method can be used to set an existing tenant as node                              | [ Description](#4E) |
+| POST: Unset a tenant from being a node | This method can be used to unset an existing tenant from being a node                 | [ Description](#4F) |
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
@@ -726,52 +727,6 @@ Json Response
 }
 ```
 
-## [PUT]: Update only the node info part of an existing tenant {#4C}
-
-Some tenants can represent Nodes and hold optional node information in the nested json object named "node".
-This method can be used to update only the node info part of an existing tenant
-
-### Input
-
-```
-PUT /admin/tenants/{ID}/node
-```
-
-#### Request headers
-
-```
-x-api-key: shared_key_value
-Accept: application/json
-```
-
-#### PUT BODY
-
-```json
-{
-    "node": {
-        "id": "node-id",
-        "name": "node-namke",
-    }
-}
-```
-
-### Response
-
-Headers: `Status: 200 OK`
-
-#### Response body
-
-Json Response
-
-```json
-{
-    "status": {
-        "message": "Tenant node information successfully updated",
-        "code": "200"
-    }
-}
-```
-
 ## [PUT]: Update only the topology part of an existing tenant {#4D}
 
 This method can be used to update only the topology part of an existing tenant
@@ -812,6 +767,74 @@ Json Response
 {
     "status": {
         "message": "Tenant topology configuration successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [POST]: Set an existing tenant as a node {#4E}
+
+Some tenants can represent Nodes and provide results as capabilities.
+This method can be used to specify that an existing tenant is also a node
+### Input
+
+```
+POST /admin/tenants/{ID}/node-set
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant has been set as node",
+        "code": "200"
+    }
+}
+```
+
+## [POST]: Unset an existing tenant from being an node {#4F}
+
+Some tenants can represent Nodes and provide results as capabilities.
+This method can be used to unset an existing tenant from being a node (thus providing results as capabilities)
+### Input
+
+```
+POST /admin/tenants/{ID}/node-unset
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant has been unset from being a node",
         "code": "200"
     }
 }

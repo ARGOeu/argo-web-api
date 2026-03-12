@@ -93,7 +93,8 @@ func (suite *StatusTestSuite) SetupTest() {
 	//TODO: move tests to
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
 	c.InsertOne(context.TODO(),
-		bson.M{"name": "TENANTA",
+		bson.M{"id": "NODEA-id",
+			"info": bson.M{"name": "NODEA"},
 			"db_conf": []bson.M{
 				{
 					"server":   "localhost",
@@ -106,10 +107,7 @@ func (suite *StatusTestSuite) SetupTest() {
 					"database": "argo_Tenant2",
 				},
 			},
-			"node": bson.M{
-				"id":   "node-A",
-				"name": "NODEA",
-			},
+			"node": true,
 			"users": []bson.M{
 				{
 					"name":    "bob",
@@ -125,7 +123,8 @@ func (suite *StatusTestSuite) SetupTest() {
 				},
 			}})
 	c.InsertOne(context.TODO(),
-		bson.M{"name": "TENANTB",
+		bson.M{"id": "NODEB-id",
+			"info": bson.M{"name": "NODEB"},
 			"db_conf": []bson.M{
 				{
 					"server":   "localhost",
@@ -140,10 +139,7 @@ func (suite *StatusTestSuite) SetupTest() {
 					"database": "argo_wrong_db_endpointgrouavailability",
 				},
 			},
-			"node": bson.M{
-				"id":   "node-B",
-				"name": "NODEB",
-			},
+			"node": true,
 			"users": []bson.M{
 				{
 					"name":    "john",
