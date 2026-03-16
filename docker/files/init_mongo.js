@@ -248,6 +248,14 @@ db.roles.insertMany([
     roles: [ 'super_admin', 'super_admin_ui' ]
   },
   {
+    resource: 'tenants.node_set',
+    roles: [ 'super_admin' ]
+  },
+  {
+    resource: 'tenants.node_unset',
+    roles: [ 'super_admin' ]
+  },
+  {
     resource: 'tenants.create',
     roles: [ 'super_admin' ]
   },
