@@ -59,3 +59,14 @@ func GetReportID(col *mongo.Collection, report string) (string, error) {
 	return "", err
 
 }
+
+// check if a replica set is enabled
+func IsReplicaSet(client *mongo.Client) bool {
+	result := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "isMaster", Value: 1}})
+	resRaw, err := result.Raw()
+	if err != nil {
+		return false
+	}
+	_, err = resRaw.LookupErr("setName")
+	return err == nil
+}
