@@ -23,8 +23,8 @@ db.tenants.insertMany([
       description: 'this is test tenant description',
       image: 'https://test.example.foo/image.png',
       website: 'https://test.example.foo',
-      created: '2025-01-01 00:00:00',
-      updated: '2025-01-02 00:00:00'
+      created: '2015-01-01 00:00:00',
+      updated: '2015-01-02 00:00:00'
     },
     db_conf: [{
       "store": "ar",
@@ -83,8 +83,8 @@ db.tenants.insertMany([
       description: 'this is tenant b description',
       image: 'https://tenantb.example.foo/image.png',
       website: 'https://tenantb.example.foo',
-      created: '2025-01-01 00:00:00',
-      updated: '2025-01-02 00:00:00'
+      created: '2015-01-01 00:00:00',
+      updated: '2015-01-02 00:00:00'
     },
     db_conf: [{
       "store": "ar",
@@ -708,6 +708,13 @@ db.roles.insertMany([
 
 db = db.getSiblingDB('argo_TENANT-TEST');
 
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+
 db.topology_service_types.insertMany(
 [
   {
@@ -750,11 +757,11 @@ db.topology_service_types.insertMany(
 ]  
 )
 
-db.topology_endpoints.insertMany([
+db.topology_endpoints.insertMany(
   [
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "ESHOP",
     "type": "SERVICEGROUPS",
     "service": "webportal",
@@ -772,7 +779,7 @@ db.topology_endpoints.insertMany([
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "ESHOP",
     "type": "SERVICEGROUPS",
     "service": "webportal",
@@ -790,7 +797,7 @@ db.topology_endpoints.insertMany([
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "ESHOP",
     "type": "SERVICEGROUPS",
     "service": "api",
@@ -808,7 +815,7 @@ db.topology_endpoints.insertMany([
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "HELPDESK",
     "type": "SERVICEGROUPS",
     "service": "webportal",
@@ -826,7 +833,7 @@ db.topology_endpoints.insertMany([
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "HELPDESK",
     "type": "SERVICEGROUPS",
     "service": "webportal",
@@ -844,7 +851,7 @@ db.topology_endpoints.insertMany([
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "HELPDESK",
     "type": "SERVICEGROUPS",
     "service": "api",
@@ -861,7 +868,7 @@ db.topology_endpoints.insertMany([
     }
   }
 ]
-])
+)
 
 db.topology_groups.insertMany(
   [
@@ -1149,7 +1156,7 @@ db.metric_profiles.insertMany(
   {
     "id": "bb3cf905-e270-4a05-b053-4234d73b97ba",
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "name": "MON_ALL",
     "description": "all checks",
     "services": [
@@ -1184,7 +1191,7 @@ db.metric_profiles.insertMany(
   {
     "id": "5e8712f7-1b38-4f27-8ca4-d0c697760bf3",
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "name": "MON_HTTP",
     "description": "just the http checks",
     "services": [
@@ -1375,6 +1382,14 @@ db.reports.insertMany(
 
 db = db.getSiblingDB('argo_TENANTB');
 
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+
+
 db.topology_service_types.insertMany(
 [
   {
@@ -1433,7 +1448,7 @@ db.topology_endpoints.insertMany(
   [
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-A",
     "type": "SERVICEGROUPS",
     "service": "compute",
@@ -1451,7 +1466,7 @@ db.topology_endpoints.insertMany(
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-A",
     "type": "SERVICEGROUPS",
     "service": "compute",
@@ -1469,7 +1484,7 @@ db.topology_endpoints.insertMany(
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-A",
     "type": "SERVICEGROUPS",
     "service": "storage",
@@ -1487,7 +1502,7 @@ db.topology_endpoints.insertMany(
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-A",
     "type": "SERVICEGROUPS",
     "service": "iam",
@@ -1505,7 +1520,7 @@ db.topology_endpoints.insertMany(
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-B",
     "type": "SERVICEGROUPS",
     "service": "storage",
@@ -1524,7 +1539,7 @@ db.topology_endpoints.insertMany(
   },
   {
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "group": "CLOUD-B",
     "type": "SERVICEGROUPS",
     "service": "iam",
@@ -1830,7 +1845,7 @@ db.metric_profiles.insertMany(
   {
     "id": "90191168-7690-4967-8769-11ccddb51b1e",
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "name": "MON_CLOUD",
     "description": "cloud checks",
     "services": [
@@ -1874,7 +1889,7 @@ db.metric_profiles.insertMany(
   {
     "id": "ce137987-ad50-49a9-8a37-77f4cde64b90",
     "date": "2015-01-01",
-    "date_integer": 20250101,
+    "date_integer": 20150101,
     "name": "MON_CLOUD_LIGHT",
     "description": "just basic checks",
      "services": [
