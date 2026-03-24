@@ -1696,6 +1696,22 @@ func (suite *topologyTestSuite) TestCreateEndpointGroupTopology() {
 	// Compare the expected and actual json response
 	suite.Equal(expJSON2, output2, "Creation failed")
 
+	// Now test inserting again with force
+
+	request3, _ := http.NewRequest("POST", "/api/v2/topology/endpoints?date=2019-03-03&force=true", strings.NewReader(jsonInput))
+	request3.Header.Set("x-api-key", suite.clientkey)
+	request3.Header.Set("Accept", "application/json")
+	response3 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response3, request3)
+	code3 := response3.Code
+	output3 := response3.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(201, code3, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output3, "Creation failed")
+
 }
 
 func (suite *topologyTestSuite) TestCreateGroupTopology() {
@@ -1744,6 +1760,22 @@ func (suite *topologyTestSuite) TestCreateGroupTopology() {
 	suite.Equal(409, code2, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(expJSON2, output2, "Creation failed")
+
+	// Now test inserting again witch force
+
+	request3, _ := http.NewRequest("POST", "/api/v2/topology/groups?date=2019-03-03&force=true", strings.NewReader(jsonInput))
+	request3.Header.Set("x-api-key", suite.clientkey)
+	request3.Header.Set("Accept", "application/json")
+	response3 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response3, request3)
+	code3 := response3.Code
+	output3 := response3.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(201, code3, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output3, "Creation ok")
 
 }
 
@@ -1848,6 +1880,22 @@ func (suite *topologyTestSuite) TestCreateServiceTypeTopology() {
 	suite.Equal(200, code3, "Internal Server Error")
 	// Compare the expected and actual json response
 	suite.Equal(expJSON3, output3, "Creation failed")
+
+	// Now test again with force
+
+	request4, _ := http.NewRequest("POST", "/api/v2/topology/service-types?date=2019-03-03&force=true", strings.NewReader(jsonInput))
+	request4.Header.Set("x-api-key", suite.clientkey)
+	request4.Header.Set("Accept", "application/json")
+	response4 := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response4, request4)
+	code4 := response4.Code
+	output4 := response4.Body.String()
+
+	// Check that we must have a 409 conflict code
+	suite.Equal(201, code4, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(expJSON, output4, "Creation failed")
 
 }
 

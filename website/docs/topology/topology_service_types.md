@@ -29,6 +29,7 @@ POST /topology/service-types?date=YYYY-MM-DD
 | Type   | Description            | Required | Default value |
 | ------ | ---------------------- | -------- | ------------- |
 | `date` | target a specific date | NO       | today's date  |
+| `force` | force overwriting topology for a specific date | NO | false |
 
 #### Headers
 

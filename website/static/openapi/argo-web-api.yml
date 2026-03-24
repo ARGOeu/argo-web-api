@@ -3510,6 +3510,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of group topology items to be created
         content:
@@ -3736,6 +3742,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of service type items to be created
         content:
@@ -3930,6 +3942,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of endpoint topology items to be created
         content:
