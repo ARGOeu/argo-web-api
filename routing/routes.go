@@ -50,12 +50,20 @@ import (
 	"github.com/ARGOeu/argo-web-api/consistency"
 	"github.com/ARGOeu/argo-web-api/health"
 	"github.com/ARGOeu/argo-web-api/v3/ar"
+	"github.com/ARGOeu/argo-web-api/v3/integrations"
 	"github.com/ARGOeu/argo-web-api/v3/status"
+	"github.com/ARGOeu/argo-web-api/v4/nodes"
 	"github.com/ARGOeu/argo-web-api/version"
 )
 
+// Here we declare the v4 routes
+var routesV4 = []RouteV4{
+	{"nodes", "", nodes.HandleSubrouter},
+}
+
 // Here we declare the v3 routes
 var routesV3 = []RouteV3{
+	{"Integrations", "/integrations", integrations.HandleSubrouter},
 	{"AR", "/results", ar.HandleSubrouter},
 	{"Status", "/status", status.HandleSubrouter},
 	{"Consistency", "", consistency.HandleSubrouter},

@@ -1,6 +1,7 @@
 package respond
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/authorization"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 // // WrapAll Wraps all wrap handlers. Note: Precedence is inversed
@@ -19,6 +21,14 @@ import (
 //
 // 	return handler
 // }
+
+func isNodeRoute(routeName string) bool {
+	return strings.HasPrefix(routeName, "v4.nodes")
+}
+
+func isComponentRoute(routeName string) bool {
+	return strings.HasPrefix(routeName, "v3.components")
+}
 
 func needsAPIAdmin(routeName string) bool {
 
@@ -35,10 +45,57 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var errs []ErrorResponse
+		// check if component route
 
-		// check if api admin authentication is needed (for tenants etc...)
-		if needsAPIAdmin(routeName) {
+		// check if has x-tenant-id header
+		adminTenantId := r.Header.Get("x-tenant-id")
+		if isNodeRoute(routeName) {
+			vars := mux.Vars(r)
+			nodeName := vars["node_name"]
+			isAdmin := authentication.AuthenticateAdmin(r.Header, cfg)
+			// Add admin restricted or not information -- used in get tenants
+			if isAdmin {
+				if authentication.IsAdminRestricted(r.Header, cfg) {
+					gcontext.Set(r, "roles", []string{"super_admin_restricted"})
+				} else if authentication.IsSuperAdminUI(r.Header, cfg) {
+					gcontext.Set(r, "roles", []string{"super_admin_ui"})
+				} else {
+					gcontext.Set(r, "roles", []string{"super_admin"})
+				}
+			}
+			tenantConf, name, tErr := authentication.AuthenticateNode(r.Header, cfg, nodeName, isAdmin)
+			if tErr != nil {
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
 
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
+				return
+			}
+			if !isAdmin {
+				gcontext.Set(r, "roles", tenantConf.Roles)
+			}
+			gcontext.Set(r, "tenant_conf", tenantConf)
+			gcontext.Set(r, "tenant_name", name)
+			gcontext.Set(r, "authen", true)
+			hfn.ServeHTTP(w, r)
+
+		} else if isComponentRoute(routeName) {
+
+			compRole := authentication.GetComponentRole(r.Header, cfg)
+			// check if user has a component role
+			if compRole != "" {
+				gcontext.Set(r, "roles", []string{compRole})
+			} else {
+				// Because user has no component role
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+			hfn.ServeHTTP(w, r)
+
+		} else if needsAPIAdmin(routeName) {
+			// check if api admin authentication is needed (for tenants etc...)
 			if !(authentication.AuthenticateAdmin(r.Header, cfg)) {
 				// Because not authenticated respond with error
 				Error(w, r, ErrAuthen, cfg, errs)
@@ -48,8 +105,6 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			// admin api authenticated so continue serving
 			gcontext.Set(r, "authen", true)
 			// Add admin restricted or not information -- used in get tenants
-
-			// Check if admin is restricted
 			if authentication.IsAdminRestricted(r.Header, cfg) {
 				gcontext.Set(r, "roles", []string{"super_admin_restricted"})
 			} else if authentication.IsSuperAdminUI(r.Header, cfg) {
@@ -60,6 +115,47 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 
 			hfn.ServeHTTP(w, r)
 
+		} else if adminTenantId != "" {
+			// check if it is an admin trying to access a tenant route
+			authen, username, email := authentication.AuthenticateAdminName(r.Header, cfg)
+			if !(authen) {
+				// Because not authenticated respond with error
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			tenantConf, tenantName, tErr := authentication.AuthenticateAdminTenant(r.Header, cfg)
+			// If error respond with error
+			if tErr != nil {
+				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			// if not tenant database configured response with message
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
+				return
+			}
+
+			tenantConf.User = username
+			tenantConf.Email = email
+			if authentication.IsAdminRestricted(r.Header, cfg) {
+				gcontext.Set(r, "roles", []string{"super_admin_restricted", "viewer"})
+				tenantConf.Roles = []string{"viewer"}
+			} else if authentication.IsSuperAdminUI(r.Header, cfg) {
+				gcontext.Set(r, "roles", []string{"super_admin_ui", "admin_ui"})
+				tenantConf.Roles = []string{"viewer"}
+			} else {
+				gcontext.Set(r, "roles", []string{"super_admin", "admin"})
+				tenantConf.Roles = []string{"admin"}
+			}
+
+			gcontext.Set(r, "tenant_conf", tenantConf)
+			gcontext.Set(r, "tenant_name", tenantName)
+			gcontext.Set(r, "authen", authen)
+			log.Printf("Admin User: %s Accessing Tenant: %s", username, tenantName)
+			hfn.ServeHTTP(w, r)
+
 		} else {
 
 			// authenticate tenant user
@@ -67,6 +163,11 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 			// If tenant user not authenticated respond with  error
 			if tErr != nil {
 				Error(w, r, ErrAuthen, cfg, errs)
+				return
+			}
+
+			if tenantConf.Db == "" {
+				Error(w, r, ErrNoTenantDB, cfg, errs)
 				return
 			}
 
@@ -92,7 +193,6 @@ func WrapAuthorize(hfn http.Handler, cfg config.Config, routeName string) http.H
 		if roles != nil {
 
 			author := authorization.HasResourceRoles(cfg, routeName, roles)
-
 			if author {
 				hfn.ServeHTTP(w, r)
 				return

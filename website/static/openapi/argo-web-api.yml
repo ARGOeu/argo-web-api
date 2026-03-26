@@ -40,6 +40,323 @@ tags:
 - name: Issues
   description: List of problematic endpoints
 paths:
+  /v2/admin/tenants/{TENANT_ID}/topology:
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant topology configuration
+      description: update topology configuration on a specific tenant definition
+      operationId: tenants.UpdateTopology
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant definition to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      responses:
+        "201":
+          description: Tenant definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        "400":
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
+  /v2/admin/tenants/{TENANT_ID}/db-conf:
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant database configuration
+      description: update database configuration on a specific tenant definition
+      operationId: tenants.UpdateDboConf
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant definition to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      responses:
+        "201":
+          description: Tenant definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        "400":
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
+  /v2/admin/tenants/{TENANT_ID}/info:
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant info
+      description: update information on a specific tenant definition
+      operationId: tenants.UpdateInfo
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant definition to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      responses:
+        "201":
+          description: Tenant definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        "400":
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+  /v2/admin/tenants/{TENANT_ID}/node-set:
+    post:
+      tags:
+      - Tenants
+      summary: Set tenant as node
+      description: Set an existing tenant as an node.
+      operationId: tenants.NodeSet
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Tenant is set as node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Tenant has been set as node"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
+  /v2/admin/tenants/{TENANT_ID}/node-unset:
+    post:
+      tags:
+      - Tenants
+      summary: Unset a tenant from being an node
+      description: Unset an existing tenant from being an node
+      operationId: tenants.NodeUnset
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Tenant is set as node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Tenant has been unset from being a node"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
   /v2/admin/tenants/{TENANT_ID}:
     get:
       tags:
@@ -62,25 +379,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with one tenant
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tenant_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -120,37 +437,37 @@ paths:
               $ref: '#/components/schemas/Tenant'
         required: true
       responses:
-        201:
+        "201":
           description: Tenant definition updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -184,25 +501,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Tenant definition Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -230,19 +547,19 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list of all available tenants
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tenant_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -276,31 +593,31 @@ paths:
               $ref: '#/components/schemas/Tenant'
         required: true
       responses:
-        200:
+        "200":
           description: Tenant definition created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -335,25 +652,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with one tenant's argo-engine status
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tenant_status_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -394,37 +711,185 @@ paths:
               $ref: '#/components/schemas/Tenant_status'
         required: true
       responses:
-        201:
+        "201":
           description: Tenant's status definition updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: tenant
+  /v2/admin/tenants/{TENANT_ID}/ready:
+    get:
+      tags:
+      - Tenants
+      summary: List a specific tenant's readiness
+      description: List one specific tenant's status designated by its unique id
+      operationId: tenants.ListReady
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: A list with one tenant's readyness
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant_status_list'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+    put:
+      tags:
+      - Tenants
+      summary: Update a tenant's readiness
+      description: update information on a specific tenant's readiness
+      operationId: tenants.UpdateReady
+      parameters:
+      - name: TENANT_ID
+        in: path
+        description: id of the tenant
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of tenant's argo-engine status definition to
+          be updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                topology:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                reports:
+                  type: object
+                  properties:
+                    ready:
+                      type: boolean
+                    message:
+                      type: string
+                last_check:
+                  type: string
+        required: true
+      responses:
+        "201":
+          description: Tenant's status definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        "400":
+          description: Bad request due to malformed JSON in put body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -459,19 +924,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list of all available user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Users_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -511,31 +976,31 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
       responses:
-        201:
+        "201":
           description: User Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -576,19 +1041,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: User information
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -634,31 +1099,31 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
       responses:
-        200:
+        "200":
           description: User Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -698,25 +1163,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: User Deleted and removed from tenant
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -756,31 +1221,31 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: User key renewed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RenewedToken'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -820,25 +1285,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with one user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Users_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -872,25 +1337,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with one report
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Report_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -930,37 +1395,37 @@ paths:
               $ref: '#/components/schemas/Report'
         required: true
       responses:
-        201:
+        "201":
           description: Report definition updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -994,25 +1459,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Report definition Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1039,20 +1504,30 @@ paths:
         schema:
           type: string
           default: SecretKey123
+      - name: name
+        in: query
+        description: search by report name
+        schema:
+          type: string
+      - name: node
+        in: query
+        description: show only active default node report
+        schema:
+          type: string
       responses:
-        200:
+        "200":
           description: A list of all available Reports
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Report_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1086,32 +1561,83 @@ paths:
               $ref: '#/components/schemas/Report'
         required: true
       responses:
-        200:
+        "200":
           description: Report definition created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: report
+  /v2/reports/{REPORT_ID}/set-node-report:
+    post:
+      tags:
+      - Reports
+      summary: Set a report as a default node report
+      description: Set an existing report as a default node report. A default node report will be automatically selected as the source of the results that the user might request through the node's capability endpoints.
+      operationId: report.SetNodeReport
+      parameters:
+      - name: REPORT_ID
+        in: path
+        description: id of the report
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Report is set as node report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Report was set as the default node report"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
           content:
             application/json:
               schema:
@@ -1151,25 +1677,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list with one operations profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Operations_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1216,37 +1742,37 @@ paths:
               $ref: '#/components/schemas/Operations_profile'
         required: true
       responses:
-        201:
+        "201":
           description: Operations profile Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -1281,25 +1807,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Operations profile Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1334,19 +1860,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list of Operations profiles
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Operations_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1385,31 +1911,31 @@ paths:
               $ref: '#/components/schemas/Operations_profile'
         required: true
       responses:
-        200:
+        "200":
           description: Operations profile Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -1450,25 +1976,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list with one aggregation profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Aggregation_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1515,37 +2041,37 @@ paths:
               $ref: '#/components/schemas/Aggregation_profile'
         required: true
       responses:
-        201:
+        "201":
           description: Aggregation profile Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -1580,31 +2106,31 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Aggregation profile Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -1639,19 +2165,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list of aggregation profiles
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Aggregation_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1691,31 +2217,31 @@ paths:
               $ref: '#/components/schemas/Aggregation_profile'
         required: true
       responses:
-        200:
+        "200":
           description: Aggregation profile Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -1756,25 +2282,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with one metric profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Metric_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1821,31 +2347,31 @@ paths:
               $ref: '#/components/schemas/Metric_profile'
         required: true
       responses:
-        201:
+        "201":
           description: Metric profile Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1880,25 +2406,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Metric profile Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1933,19 +2459,19 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list of metric profiles
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Metric_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -1986,25 +2512,25 @@ paths:
               $ref: '#/components/schemas/Metric_profile'
         required: true
       responses:
-        200:
+        "200":
           description: Metric profile Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2045,25 +2571,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with one thresholds profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Thresholds_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2110,31 +2636,31 @@ paths:
               $ref: '#/components/schemas/Thresholds_profile'
         required: true
       responses:
-        201:
+        "201":
           description: Thresholds profile Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2169,25 +2695,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Thresholds profile Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2222,19 +2748,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list of thresholds profiles
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Thresholds_profile_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2275,25 +2801,25 @@ paths:
               $ref: '#/components/schemas/Thresholds_profile'
         required: true
       responses:
-        200:
+        "200":
           description: Thresholds profile Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2328,19 +2854,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list of downtimes resources
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Downtimes_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2381,25 +2907,25 @@ paths:
               $ref: '#/components/schemas/Downtimes'
         required: true
       responses:
-        200:
+        "200":
           description: Downtimes resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2434,25 +2960,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: Downtimes resource deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2492,25 +3018,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with a weights resource
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Weights_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2557,31 +3083,31 @@ paths:
               $ref: '#/components/schemas/Weights'
         required: true
       responses:
-        201:
+        "201":
           description: Weights resource Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2616,25 +3142,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Weights resource deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2668,19 +3194,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: A list of weights resources
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Weights_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2721,25 +3247,25 @@ paths:
               $ref: '#/components/schemas/Weights'
         required: true
       responses:
-        200:
+        "200":
           description: Weights resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2782,19 +3308,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest metric data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopologyResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -2807,19 +3333,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -2848,19 +3374,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest metric data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopologyTags_list'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -2873,19 +3399,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -2940,19 +3466,19 @@ paths:
           type: string
         
       responses:
-        200:
+        "200":
           description: Topology resources listed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -2984,6 +3510,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of group topology items to be created
         content:
@@ -2992,31 +3524,31 @@ paths:
               $ref: '#/components/schemas/TopologyGroups'
         required: true
       responses:
-        200:
+        "200":
           description: Topology resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        409:
+        "409":
           description: Content already created for specific date
           content:
             application/json:
@@ -3050,25 +3582,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: groups topology definition Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3113,19 +3645,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: filtered topology resources listed based on report
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3165,19 +3697,19 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: Topology resources listed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopologyServiceTypes'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3210,6 +3742,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of service type items to be created
         content:
@@ -3218,31 +3756,31 @@ paths:
               $ref: '#/components/schemas/TopologyServiceTypes'
         required: true
       responses:
-        200:
+        "200":
           description: Topology resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        409:
+        "409":
           description: Content already created for specific date
           content:
             application/json:
@@ -3276,25 +3814,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: list of service types deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3359,19 +3897,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Topology resource listed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3404,6 +3942,12 @@ paths:
         schema:
           type: string
           default: todays_date in YYYY-MM-DD format
+      - name: force
+        in: query
+        description: force overwight of existing topology for specific date
+        schema:
+          type: boolean
+          default: false
       requestBody:
         description: Json description of endpoint topology items to be created
         content:
@@ -3412,19 +3956,19 @@ paths:
               $ref: '#/components/schemas/TopologyEndpoints'
         required: true
       responses:
-        200:
+        "200":
           description: Topology resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3458,25 +4002,25 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: Endpoint topology definition Deleted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3521,19 +4065,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: filtered topology resources listed based on report
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3561,19 +4105,19 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: list of metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3613,20 +4157,20 @@ paths:
           type: string
           default: todays_date in YYYY-MM-DD format
       responses:
-        200:
+        "200":
           description: filtered metric list based on the metric profile attached to
             the report
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3654,19 +4198,19 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: list of metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3706,19 +4250,19 @@ paths:
               $ref: '#/components/schemas/MetricList'
         required: true
       responses:
-        200:
+        "200":
           description: Topology resource Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -3787,19 +4331,19 @@ paths:
           type: string
           default: "false"
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest metric data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MetricDataList'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -3812,19 +4356,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -3894,19 +4438,19 @@ paths:
           type: string
           default: "false"
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest metric data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MetricDataList'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -3919,19 +4463,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -3990,7 +4534,7 @@ paths:
           type: string
           default: Group_A
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -3999,7 +4543,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4008,7 +4552,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4031,7 +4575,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4040,7 +4584,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4049,7 +4593,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4104,7 +4648,7 @@ paths:
           type: string
           default: EndpointGroup
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4113,7 +4657,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4122,7 +4666,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4145,7 +4689,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4154,7 +4698,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4163,7 +4707,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4224,7 +4768,7 @@ paths:
           type: string
           default: Group_A
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4233,7 +4777,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4242,7 +4786,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4265,7 +4809,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4274,7 +4818,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4283,7 +4827,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4351,7 +4895,7 @@ paths:
           type: string
           default: argo.test.metric.profile.service.1
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4360,7 +4904,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4369,7 +4913,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4392,7 +4936,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4401,7 +4945,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4410,7 +4954,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4478,7 +5022,7 @@ paths:
           type: string
           default: argo.test.metric.profile.service.1
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4487,7 +5031,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusEndpointResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4496,7 +5040,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4519,7 +5063,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4528,7 +5072,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4537,7 +5081,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4613,7 +5157,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4622,7 +5166,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusEndpointResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4631,7 +5175,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4654,7 +5198,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4663,7 +5207,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4672,7 +5216,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4748,7 +5292,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4757,7 +5301,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusMetricResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4766,7 +5310,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4789,7 +5333,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4798,7 +5342,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4807,7 +5351,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -4890,7 +5434,7 @@ paths:
           type: string
           default: argo.mem.check
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -4899,7 +5443,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusMetricResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -4908,7 +5452,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -4931,7 +5475,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -4940,7 +5484,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -4949,7 +5493,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5002,7 +5546,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5011,7 +5555,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/FlatEndpointStatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5020,7 +5564,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5043,7 +5587,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5052,7 +5596,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5061,7 +5605,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5121,7 +5665,7 @@ paths:
           type: string
           default: Group_A
       responses:
-        200:
+        "200":
           description: Successful retrieval of statuses
           content:
             application/json:
@@ -5130,7 +5674,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/StatusEndpointResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5139,7 +5683,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5162,7 +5706,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5171,7 +5715,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5180,7 +5724,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5239,7 +5783,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5248,7 +5792,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/FlatMetricsStatusResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5257,7 +5801,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5280,7 +5824,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5289,7 +5833,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5298,7 +5842,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5352,7 +5896,7 @@ paths:
         schema:
           type: string      
       responses:
-        200:
+        "200":
           description: Successful retrieval of multiple metric results
           content:
             application/json:
@@ -5361,7 +5905,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/MultipleMetricResults'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5370,7 +5914,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5393,7 +5937,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5402,7 +5946,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5411,7 +5955,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5462,7 +6006,7 @@ paths:
         schema:
           type: string      
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5471,7 +6015,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/MetricResult'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5480,7 +6024,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5503,7 +6047,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5512,7 +6056,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5521,7 +6065,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5603,7 +6147,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5612,7 +6156,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ServiceResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5621,7 +6165,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5644,7 +6188,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5653,7 +6197,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5662,7 +6206,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5751,7 +6295,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5760,7 +6304,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ServiceResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5769,7 +6313,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5792,7 +6336,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5801,7 +6345,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5810,7 +6354,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -5878,7 +6422,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -5887,7 +6431,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ServiceResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -5896,7 +6440,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -5919,7 +6463,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -5928,7 +6472,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -5937,7 +6481,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6012,7 +6556,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6021,7 +6565,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ServiceResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6030,7 +6574,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6053,7 +6597,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6062,7 +6606,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6071,7 +6615,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6160,7 +6704,7 @@ paths:
           type: string
           default: argo.test.metric.profile.service.1
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6169,7 +6713,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6178,7 +6722,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6201,7 +6745,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6210,7 +6754,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6219,7 +6763,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6315,7 +6859,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6324,7 +6868,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6333,7 +6877,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6356,7 +6900,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6365,7 +6909,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6374,7 +6918,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6449,7 +6993,7 @@ paths:
           type: string
           default: argo.test.metric.profile.service.1
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6458,7 +7002,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6467,7 +7011,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6490,7 +7034,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6499,7 +7043,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6508,7 +7052,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6590,7 +7134,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6599,7 +7143,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6608,7 +7152,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6631,7 +7175,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6640,7 +7184,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6649,7 +7193,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6731,7 +7275,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6740,7 +7284,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6749,7 +7293,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6772,7 +7316,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6781,7 +7325,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6790,7 +7334,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -6879,7 +7423,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -6888,7 +7432,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -6897,7 +7441,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -6920,7 +7464,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -6929,7 +7473,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -6938,7 +7482,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7006,7 +7550,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7015,7 +7559,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7024,7 +7568,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7047,7 +7591,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7056,7 +7600,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7065,7 +7609,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7140,7 +7684,7 @@ paths:
           type: string
           default: example1.com
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7149,7 +7693,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7158,7 +7702,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7181,7 +7725,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7190,7 +7734,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7199,7 +7743,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7252,7 +7796,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7261,7 +7805,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/FlatEndpointResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7270,7 +7814,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7293,7 +7837,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7302,7 +7846,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7311,7 +7855,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7393,7 +7937,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7402,7 +7946,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointGroupResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7411,7 +7955,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7434,7 +7978,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7443,7 +7987,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7452,7 +7996,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7513,7 +8057,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7522,7 +8066,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/GroupResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7531,7 +8075,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7554,7 +8098,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7563,7 +8107,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7572,7 +8116,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7640,7 +8184,7 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
@@ -7649,7 +8193,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/EndpointGroupResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -7658,7 +8202,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -7681,7 +8225,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7690,7 +8234,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -7699,7 +8243,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -7742,25 +8286,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with problematic endpoints
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Endpoint_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7813,25 +8357,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with problematic metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GroupMetrics'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7893,25 +8437,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with status trends for metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_status_metrics_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -7972,25 +8516,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with status trends for metrics by tags
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_status_metrics_tags_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8051,25 +8595,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with status trends for endpoints
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_status_endpoints_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8130,25 +8674,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with status trends for services
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_status_services_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8209,25 +8753,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with status trends for endpoint groups
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_status_egroups_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8289,25 +8833,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with flapping metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_metrics_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8369,25 +8913,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with flapping metrics
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_metrics_tags_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8448,25 +8992,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with flapping endpoints
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_endpoints_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8527,25 +9071,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with flapping services
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_services_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8606,25 +9150,25 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: A list with flapping endpoint groups
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Trends_groups_list'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8652,7 +9196,7 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Successful retrieval of factors
           content:
             application/xml:
@@ -8661,7 +9205,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FactorsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/xml:
@@ -8670,7 +9214,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/xml:
@@ -8693,7 +9237,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/xml:
@@ -8702,7 +9246,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/xml:
@@ -8711,7 +9255,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/xml:
@@ -8736,25 +9280,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with a topology feed parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedsTopo'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8788,31 +9332,31 @@ paths:
               $ref: '#/components/schemas/FeedsTopo'
         required: true
       responses:
-        201:
+        "201":
           description: Feeds topology resource Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8841,25 +9385,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with weights feed parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedsTopo'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8893,31 +9437,31 @@ paths:
               $ref: '#/components/schemas/FeedsTopo'
         required: true
       responses:
-        200:
+        "200":
           description: Feeds weights resource Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8946,25 +9490,25 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: A list with data feed parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedsData'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -8998,31 +9542,31 @@ paths:
               $ref: '#/components/schemas/FeedsData'
         required: true
       responses:
-        200:
+        "200":
           description: Feeds data resource Updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Bad request due to malformed JSON in put body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9063,7 +9607,7 @@ paths:
               $ref: '#/components/schemas/recomputation_status'
         required: false
       responses:
-        200:
+        "200":
           description: Successful change of status in recomputation
           content:
             application/json:
@@ -9072,7 +9616,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -9081,7 +9625,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9104,7 +9648,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9113,7 +9657,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -9122,7 +9666,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9152,7 +9696,7 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Successful reset status of recomputation
           content:
             application/json:
@@ -9161,7 +9705,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9184,7 +9728,7 @@ paths:
                     type: string
                   details:
                     type: string
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
@@ -9193,7 +9737,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9202,7 +9746,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9232,7 +9776,7 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Successful retrieval of recomputation details
           content:
             application/json:
@@ -9241,7 +9785,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/RecomputationsListResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -9250,7 +9794,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9273,7 +9817,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9282,7 +9826,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -9291,7 +9835,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9320,7 +9864,7 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: 'Successful deletion of recomputation '
           content:
             application/json:
@@ -9329,7 +9873,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9352,7 +9896,7 @@ paths:
                     type: string
                   details:
                     type: string
-        404:
+        "404":
           description: Item not found
           content:
             application/json:
@@ -9361,7 +9905,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9370,7 +9914,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9405,7 +9949,7 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: Successful retrieval of recomputations
           content:
             application/json:
@@ -9414,7 +9958,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/RecomputationsListResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
@@ -9423,7 +9967,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9446,7 +9990,7 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9455,7 +9999,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
@@ -9464,7 +10008,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9494,7 +10038,7 @@ paths:
               $ref: '#/components/schemas/recomputation_request'
         required: true
       responses:
-        200:
+        "200":
           description: Recomputation Request Created
           content:
             application/json:
@@ -9503,7 +10047,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Self_reference'
-        400:
+        "400":
           description: Bad request due to malformed JSON in post body
           content:
             application/json:
@@ -9512,7 +10056,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: Unauthorized user
           content:
             application/json:
@@ -9521,7 +10065,7 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
@@ -9548,7 +10092,7 @@ paths:
       description: List api version information such as release version, commit hash
         etc
       responses:
-        200:
+        "200":
           description: Successful retrieval of version info
           content:
             application/json:
@@ -9573,7 +10117,7 @@ paths:
           type: string
           default: SecretKey123
       responses:
-        200:
+        "200":
           description: Successful retrieval of health result
           content:
             application/json:
@@ -9601,7 +10145,7 @@ paths:
           type: boolean
           default: false
       responses:
-        200:
+        "200":
           description: Successful retrieval consistency results
           content:
             application/json:
@@ -9636,7 +10180,7 @@ paths:
               
         required: true
       responses:
-        200:
+        "200":
           description: Post consistency status results
           content:
             application/json:
@@ -9679,7 +10223,7 @@ paths:
               
         required: true
       responses:
-        200:
+        "200":
           description: Post consistency status results
           content:
             application/json:
@@ -9735,19 +10279,19 @@ paths:
           type: string
           default: daily
       responses:
-        200:
+        "200":
           description: Successful retrieval of results
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SupergroupResultsResponse'
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9760,24 +10304,88 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
               schema:
                 type: string
+  /v3/integrations/components/{COMPONENT}/by-tenant-name/{TENANT}/refresh:
+    post:
+      tags:
+      - Integrations
+      summary: Renew an account access key for a component that integrates with a specific tenant
+      description: For a specific tenant, renew the access key of a specific integration component
+      operationId: integrations.components.refresh
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: TENANT
+        in: path
+        description: name of the tenant
+        required: true
+        schema:
+          type: string
+      - name: COMPONENT
+        in: path
+        description: name of the component
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User key renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenewedToken'
+        "400":
+          description: Bad request due to malformed JSON in post body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
                 
   /v3/results/{report_name}/id/{resource_id}:
     get:
@@ -9826,7 +10434,7 @@ paths:
           type: string
           default: 2006-01-03T15:04:05Z
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest availability/reliability results
           content:
             application/json:
@@ -9876,13 +10484,13 @@ paths:
                       
              
 
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9895,19 +10503,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -9961,20 +10569,20 @@ paths:
           type: string
           default: "false"
       responses:
-        200:
+        "200":
           description: Successful retrieval of status timelines
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusGroupsEndpointsResponse'
             
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -9987,19 +10595,19 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
           description: internal server error
           content:
             application/json:
@@ -10058,7 +10666,7 @@ paths:
           type: string
           default: "false"
       responses:
-        200:
+        "200":
           description: Successful retrieval of latest status result or timeline
           content:
             application/json:
@@ -10093,13 +10701,13 @@ paths:
                            status: OK
              
 
-        400:
+        "400":
           description: Item not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        401:
+        "401":
           description: unauthorized
           content:
             application/json:
@@ -10112,19 +10720,319 @@ paths:
                     type: string
                   details:
                     type: string
-        406:
+        "406":
           description: Content Not acceptable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        422:
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status_error'
-        500:
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/availability:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service availability scores for a specific node
+      description: this method retrieves retrieves the latest daily availability scores for the node's services
+      operationId: nodeAvailability
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/uptime:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service uptime score for a specific node
+      description: this method retrieves retrieves the latest daily uptime scores for the node's services
+      operationId: nodeUptime
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              uptime:
+                                type: string
+                                example: "100"
+  /v4/nodes/{node_name}/capabilities/status:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service status for a specific node
+      description: this method retrieves retrieves the latest daily uptime scores for the node's services
+      operationId: nodeStatus
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
           description: internal server error
           content:
             application/json:
@@ -11585,6 +12493,8 @@ components:
           type: string
         disabled:
           type: string
+        node:
+          type: boolean
         weight:
           type: string
         info:
@@ -11678,17 +12588,6 @@ components:
           items:
             type: string
         uid_endpoints:
-          type: string
-    FeedsWeights:
-      type: object
-      properties:
-        type:
-          type: string
-        feed_url:
-          type: string
-        weight_type:
-          type: string
-        group_type:
           type: string
     TopologyResponse:
       type: object
@@ -11799,6 +12698,13 @@ components:
               type: string
             updated:
               type: string
+        node:
+          type: object
+          properties:
+            id: 
+              type: string
+            name:
+              type: string
         db_conf:
           type: array
           items:
@@ -11889,19 +12795,19 @@ components:
           type: string
   
   responses:
-    404:
+    "404":
       description: Item not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Status_error'
-    406:
+    "406":
       description: Content Not acceptable
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Status_error'
-    422:
+    "422":
       description: Validation Error
       content:
         application/json:

@@ -41,6 +41,7 @@ function populate_default_roles() {
         { resource: "reports.create", roles: ["admin", "editor"] },
         { resource: "reports.delete", roles: ["admin", "editor"] },
         { resource: "reports.update", roles: ["admin", "editor"] },
+        { resource: "reports.set_node_report", roles: ["admin", "editor"] },
         {
             resource: "metricProfiles.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]
@@ -314,6 +315,50 @@ function populate_default_roles() {
         {
             resource: "health",
             roles: ["editor", "viewer"]
+        },
+        {
+            resource: "tenants.update_info",
+            roles: ["super_admin"]
+        },
+        {
+            resource: "tenants.update_db_conf",
+            roles: ["super_admin"]
+        },
+        {
+            resource: "tenants.update_topology",
+            roles: ["super_admin"]
+        },
+        {
+            resource: 'v3.components.access_refresh',
+            roles: [ 'component_engine', 'component_monbox', 'component_poem' ]
+        },
+        {
+            resource: 'tenants.update_ready',
+            roles: [ 'super_admin' ]
+        },
+        {
+             resource: 'tenants.get_ready',
+             roles: [ 'super_admin' ]
+        },
+        {
+             resource: 'tenants.update_node',
+             roles: ['super_admin']
+        },
+        {
+             resource: 'reports.set_node_report',
+             roles: ['super_admin', 'admin', 'editor']
+        },
+        {
+             resource: 'v4.nodes.availability',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.reliability',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.status',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

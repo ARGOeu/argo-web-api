@@ -361,7 +361,6 @@ func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateI
 	return subResults, expDate, err
 }
 
-// CreateEndpoints Creates a list of endpoints for a specific date
 func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
@@ -399,25 +398,6 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 		panic(err)
 	}
 
-	// check if topology already exists for current day
-
-	existing := Endpoint{}
-	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
-	err = endpointCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
-	if err != nil {
-		// Stop at any error except not found. We want to have not found
-		if err != mongo.ErrNoDocuments {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-		// else continue correctly -
-	} else {
-		// If found we need to inform user that the topology is already created for this date
-		output, err = createMessageOUT(fmt.Sprintf("Topology already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
-		code = 409
-		return code, h, output, err
-	}
-
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
@@ -435,15 +415,67 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 		incomingInf[i] = value
 	}
 
-	_, err = endpointCol.InsertMany(context.TODO(), incomingInf)
+	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
+	force := urlValues.Get("force") != ""
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
+	if force {
+		// If user selects force then the old topology is removed and replaced by the new
+		// If mongo is in replica set we enable transactions
+		if store.IsReplicaSet(cfg.MongoClient) {
+			session, err := cfg.MongoClient.StartSession()
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			defer session.EndSession(context.TODO())
+
+			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+				if _, err := endpointCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
+					return nil, err
+				}
+				_, err := endpointCol.InsertMany(ctx, incomingInf)
+				return nil, err
+			})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			// Without transaction
+			_, err = endpointCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			_, err = endpointCol.InsertMany(context.TODO(), incomingInf)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
+	} else {
+		// Check if topology already exists
+		existing := Endpoint{}
+		err = endpointCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			output, err = createMessageOUT(fmt.Sprintf("Topology already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
+			code = 409
+			return code, h, output, err
+		}
+
+		_, err = endpointCol.InsertMany(context.TODO(), incomingInf)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
-	// Create view of the results
-	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints created for date: %s", len(incoming), dateStr), 201, "json") //Render the results into JSON
+	output, err = createMessageOUT(fmt.Sprintf("Topology of %d endpoints created for date: %s", len(incoming), dateStr), 201, "json")
 	code = 201
 	return code, h, output, err
 }
@@ -530,24 +562,8 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		panic(err)
 	}
 
-	// check if topology already exists for current day
-
-	existing := Group{}
 	groupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
-	err = groupCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
-	if err != nil {
-		// Stop at any error except not found. We want to have not found
-		if err != mongo.ErrNoDocuments {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-		// else continue correctly -
-	} else {
-		// If found we need to inform user that the topology is already created for this date
-		output, err = createMessageOUT(fmt.Sprintf("Topology already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
-		code = 409
-		return code, h, output, err
-	}
+	force := urlValues.Get("force") != ""
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
@@ -566,10 +582,61 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		incomingInf[i] = value
 	}
 
-	_, err = groupCol.InsertMany(context.TODO(), incomingInf)
+	if force {
+		// If user selects force then the old topology is removed and replaced by the new
+		// If mongo is in replica set we enable transactions
+		if store.IsReplicaSet(cfg.MongoClient) {
+			session, err := cfg.MongoClient.StartSession()
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			defer session.EndSession(context.TODO())
 
-	if err != nil {
-		panic(err)
+			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+				if _, err := groupCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
+					return nil, err
+				}
+				_, err := groupCol.InsertMany(ctx, incomingInf)
+				return nil, err
+			})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			// Without transaction
+			_, err = groupCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			_, err = groupCol.InsertMany(context.TODO(), incomingInf)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
+	} else {
+		// Check if topology already exists
+		existing := Endpoint{}
+		err = groupCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			output, err = createMessageOUT(fmt.Sprintf("Topology already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
+			code = 409
+			return code, h, output, err
+		}
+
+		_, err = groupCol.InsertMany(context.TODO(), incomingInf)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	// Create view of the results
@@ -1399,24 +1466,9 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 		panic(err)
 	}
 
-	// check if topology already exists for current day
-
-	existing := ServiceType{}
 	serviceTypeCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(serviceTypeColName)
-	err = serviceTypeCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
-	if err != nil {
-		// Stop at any error except not found. We want to have not found
-		if err != mongo.ErrNoDocuments {
-			code = http.StatusInternalServerError
-			return code, h, output, err
-		}
-		// else continue correctly -
-	} else {
-		// If found we need to inform user that the topology is already created for this date
-		output, err = createMessageOUT(fmt.Sprintf("Topology list of service types already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
-		code = 409
-		return code, h, output, err
-	}
+
+	force := urlValues.Get("force") != ""
 
 	// Parse body json
 	if err := json.Unmarshal(body, &incoming); err != nil {
@@ -1435,11 +1487,61 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 		incomingInf[i] = value
 	}
 
-	_, err = serviceTypeCol.InsertMany(context.TODO(), incomingInf)
+	if force {
+		// If user selects force then the old topology is removed and replaced by the new
+		// If mongo is in replica set we enable transactions
+		if store.IsReplicaSet(cfg.MongoClient) {
+			session, err := cfg.MongoClient.StartSession()
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			defer session.EndSession(context.TODO())
 
-	if err != nil {
-		code = http.StatusInternalServerError
-		return code, h, output, err
+			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+				if _, err := serviceTypeCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
+					return nil, err
+				}
+				_, err := serviceTypeCol.InsertMany(ctx, incomingInf)
+				return nil, err
+			})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			// Without transaction
+			_, err = serviceTypeCol.DeleteMany(context.TODO(), bson.M{"date_integer": dt})
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+			_, err = serviceTypeCol.InsertMany(context.TODO(), incomingInf)
+			if err != nil {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
+	} else {
+		// Check if topology already exists
+		existing := Endpoint{}
+		err = serviceTypeCol.FindOne(context.TODO(), bson.M{"date_integer": dt}).Decode(&existing)
+		if err != nil {
+			if err != mongo.ErrNoDocuments {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		} else {
+			output, err = createMessageOUT(fmt.Sprintf("Topology list of service types already exists for date: %s, please either update it or delete it first!", dateStr), 409, "json")
+			code = 409
+			return code, h, output, err
+		}
+
+		_, err = serviceTypeCol.InsertMany(context.TODO(), incomingInf)
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	// Create view of the results

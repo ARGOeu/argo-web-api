@@ -1,0 +1,46 @@
+
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: argo-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: argo_core
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./files/init_mongo.js:/docker-entrypoint-initdb.d/init_mongo.js
+    networks:
+      - argo-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  argo-web-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: argo-web-api
+    ports:
+      - "8843:443"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      # Configuration file - maps to /etc/argo-web-api.conf in container
+      - ./files/argo-web-api.conf:/etc/argo-web-api.conf:ro
+    networks:
+      - argo-network
+    command: /app/argo-web-api -conf /etc/argo-web-api.conf
+
+networks:
+  argo-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  mongodb_config:

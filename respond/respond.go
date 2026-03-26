@@ -68,6 +68,8 @@ const (
 	ErrValidHead ErrEnum = iota
 	//ErrValidQuery is Error during validation
 	ErrValidQuery ErrEnum = iota
+	//ErrNoTenantDB is error during validation
+	ErrNoTenantDB = iota
 )
 
 // ConfHandler Keeps all the configuration/variables required by all the requests
@@ -149,6 +151,11 @@ func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.C
 		code = http.StatusBadRequest
 		contentType = r.Header.Get("Accept")
 		output = CreateFailureResponseMessage("Bad Request", strconv.Itoa(code), errs).MarshalTo(contentType)
+	case ErrNoTenantDB:
+		msg = ConflictTenantNoDB
+		code = http.StatusConflict
+		contentType = r.Header.Get("Accept")
+		output, _ = MarshalContent(msg, contentType, "", " ")
 	default:
 		msg = InternalServerErrorMessage
 		code = http.StatusInternalServerError
@@ -282,6 +289,18 @@ type SelfLinks struct {
 	Self string `xml:"self" json:"self"`
 }
 
+func QuickResponse(msg string, code int) ([]byte, error) {
+	docRoot := &ResponseMessage{
+		Status: StatusResponse{
+			Message: msg,
+			Code:    strconv.Itoa(code),
+		},
+	}
+
+	output, err := json.MarshalIndent(docRoot, "", " ")
+	return output, err
+}
+
 // CreateResponseMessage creates an output using the parameters given and the correct marshaller
 // according to the contetnType
 func CreateResponseMessage(message string, code string, contentType string) ([]byte, error) {
@@ -354,6 +373,16 @@ var BadRequestInvalidJSON = ResponseMessage{
 	},
 	Errors: []StatusResponse{
 		{Message: "Bad Request", Code: "400", Details: "Request Body contains malformed JSON, thus rendering the Request Bad"},
+	},
+}
+
+var ConflictTenantNoDB = ResponseMessage{
+	Status: StatusResponse{
+		Message: "Conflict",
+		Code:    "409",
+	},
+	Errors: []StatusResponse{
+		{Message: "Conflict", Code: "409", Details: "Tenant database configuration has not been completed yet"},
 	},
 }
 

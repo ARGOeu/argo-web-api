@@ -34,12 +34,41 @@ type Tenant struct {
 	DbConf   []TenantDbConf `bson:"db_conf" json:"db_conf,omitempty"`
 	Topology TopologyInfo   `bson:"topology" json:"topology"`
 	Users    []TenantUser   `bson:"users" json:"users,omitempty"`
+	Node     bool           `bson:"node" json:"node,omitempty"`
 }
 
 // TopologyInfo contains topology feed information
 type TopologyInfo struct {
 	TopoType string `bson:"type" json:"type"`
 	Feed     string `bson:"feed" json:"feed"`
+}
+
+type TenantReadyOut struct {
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Ready     bool       `json:"ready"`
+	Data      ReadyCheck `json:"data"`
+	Topology  ReadyCheck `json:"topology"`
+	Reports   ReadyCheck `json:"reports"`
+	LastCheck string     `json:"last_check"`
+}
+
+type ReadyChecks struct {
+	Data      ReadyCheck `bson:"data" json:"data"`
+	Topology  ReadyCheck `bson:"topology" json:"topology"`
+	Reports   ReadyCheck `bson:"reports" json:"reports"`
+	LastCheck string     `bson:"last_check" json:"last_check"`
+}
+
+type TenantReadyData struct {
+	ID    string      `bson:"id" json:"id"`
+	Info  TenantInfo  `bson:"info" json:"info"`
+	Ready ReadyChecks `bson:"ready" json:"ready,omitempty"`
+}
+
+type ReadyCheck struct {
+	Ready   bool   `json:"ready"`
+	Message string `json:"message,omitempty"`
 }
 
 type TenantStatus struct {
@@ -110,11 +139,12 @@ type TenantDbConf struct {
 // TenantUser structure holds information about tenant's
 // user
 type TenantUser struct {
-	ID     string   `bson:"id" json:"id"`
-	Name   string   `bson:"name"       json:"name"`
-	Email  string   `bson:"email"      json:"email"`
-	APIkey string   `bson:"api_key"    json:"api_key"`
-	Roles  []string `bson:"roles,omitempty"      json:"roles,omitempty"`
+	ID        string   `bson:"id" json:"id"`
+	Name      string   `bson:"name"       json:"name"`
+	Email     string   `bson:"email"      json:"email"`
+	APIkey    string   `bson:"api_key"    json:"api_key"`
+	Roles     []string `bson:"roles,omitempty"      json:"roles,omitempty"`
+	Component string   `bson:"component,omitempty" json:"component,omitempty"`
 }
 
 // SelfReference to hold links and id

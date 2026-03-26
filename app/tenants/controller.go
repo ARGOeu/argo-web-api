@@ -206,7 +206,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		}
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -346,6 +346,67 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	return code, h, output, err
 }
 
+// ListReady shows tenant's readines
+func ListReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	vars := mux.Vars(r)
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// final result
+	result := TenantReadyOut{}
+
+	// Create structure to hold query result
+	tenantRD := TenantReadyData{}
+
+	// Create a simple query object to query by id
+	query := bson.M{"id": vars["ID"]}
+	// Query collection tenants for the specific tenant id
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&tenantRD)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	result.ID = tenantRD.ID
+	result.Name = tenantRD.Info.Name
+	result.Data = tenantRD.Ready.Data
+	result.Topology = tenantRD.Ready.Topology
+	result.Reports = tenantRD.Ready.Reports
+	result.LastCheck = tenantRD.Ready.LastCheck
+
+	result.Ready = result.Data.Ready && result.Topology.Ready && result.Reports.Ready
+
+	output, err = createReadyView(result, "Success", code)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+	return code, h, output, err
+}
+
 // ListOne function implement an http GET request that accepts
 // a name parameter urlvar and retrieves information only for the
 // specific tenant
@@ -408,6 +469,63 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	return code, h, output, err
+}
+
+func UpdateReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incomingChecks := ReadyChecks{}
+
+	// ingest body data
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incomingChecks); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific tenant with id
+	query := bson.M{"id": vars["ID"]}
+
+	// update and set only the status field
+	setIncoming := bson.M{"$set": bson.M{"ready": incomingChecks}}
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, setIncoming)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
 }
 
 func UpdateStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
@@ -529,7 +647,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -594,6 +712,505 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	// Create view for response message
 	output, err = createMsgView("Tenant successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// Update Info function used to update only the info part of a tenant
+func UpdateInfo(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// ingest body data
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// If user chose to change name - check if name already exists
+	if result.Info.Name != incoming.Info.Name {
+
+		query = bson.M{"info.name": incoming.Info.Name}
+		queryResult := tenantCol.FindOne(context.TODO(), query)
+
+		if queryResult.Err() == nil {
+			code = http.StatusConflict
+			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
+			return code, h, output, err
+		}
+
+		if queryResult.Err() != mongo.ErrNoDocuments {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+			"info": incoming.Info,
+		},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant info successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// NodeSet function used set the tenant as a node
+func NodeSet(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+			"node":         true,
+			"info.updated": incoming.Info.Updated,
+		},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant has been set as node", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// NodeUnset function used unset the tenant from being a node
+func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+
+			"info.updated": incoming.Info.Updated,
+		},
+		"$unset": bson.M{"node": ""},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant has been unset from being a node", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// Update Db conf function used to update only the db_conf part of a tenant
+func UpdateDbConf(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// ingest body data
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// If user chose to change name - check if name already exists
+	if result.Info.Name != incoming.Info.Name {
+
+		query = bson.M{"info.name": incoming.Info.Name}
+		queryResult := tenantCol.FindOne(context.TODO(), query)
+
+		if queryResult.Err() == nil {
+			code = http.StatusConflict
+			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
+			return code, h, output, err
+		}
+
+		if queryResult.Err() != mongo.ErrNoDocuments {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+			"db_conf":      incoming.DbConf,
+			"info.updated": incoming.Info.Updated,
+		},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant database configuration successfully updated", 200) //Render the results into JSON
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// UpdateTopology function used to update only the topology part of a tenant
+func UpdateTopology(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	var output []byte
+	err := error(nil)
+	charset := "utf-8"
+
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	vars := mux.Vars(r)
+
+	incoming := Tenant{}
+
+	// ingest body data
+	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
+	if err != nil {
+		panic(err)
+	}
+	if err := r.Body.Close(); err != nil {
+		panic(err)
+	}
+	// parse body json
+	if err := json.Unmarshal(body, &incoming); err != nil {
+		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, err
+	}
+
+	// Try to get mongo client and target tenant collection
+	tenantCol := cfg.MongoClient.Database(cfg.MongoDB.Db).Collection("tenants")
+
+	// create query to retrieve specific profile with id
+	query := bson.M{"id": vars["ID"]}
+
+	incoming.ID = vars["ID"]
+
+	// Retrieve Results from database
+	result := Tenant{}
+	err = tenantCol.FindOne(context.TODO(), query).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+			code = http.StatusNotFound
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if errMsg, errCode := ValidateTenantUsers(incoming, tenantCol); errMsg != "" && errCode != 0 {
+		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
+		code = errCode
+		return code, h, output, err
+	}
+
+	// If user chose to change name - check if name already exists
+	if result.Info.Name != incoming.Info.Name {
+
+		query = bson.M{"info.name": incoming.Info.Name}
+		queryResult := tenantCol.FindOne(context.TODO(), query)
+
+		if queryResult.Err() == nil {
+			code = http.StatusConflict
+			output, _ = respond.MarshalContent(respond.ErrConflict("Tenant with same name already exists"), contentType, "", " ")
+			return code, h, output, err
+		}
+
+		if queryResult.Err() != mongo.ErrNoDocuments {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+	}
+
+	// run the update query
+	incoming.Info.Created = result.Info.Created
+
+	incoming.Info.Updated = time.Now().Format("2006-01-02 15:04:05")
+	query = bson.M{"id": vars["ID"]}
+	update := bson.M{
+		"$set": bson.M{
+			"topology":     incoming.Topology,
+			"info.updated": incoming.Info.Updated,
+		},
+	}
+
+	updateResult, err := tenantCol.UpdateOne(context.TODO(), query, update)
+
+	if updateResult.MatchedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = http.StatusNotFound
+		return code, h, output, err
+	}
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	// Create view for response message
+	output, err = createMsgView("Tenant topology successfully updated", 200) //Render the results into JSON
 	code = http.StatusOK
 	return code, h, output, err
 
@@ -702,7 +1319,7 @@ func GetUserByID(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 }
 
 // validateTenantUsers validates the uniqueness of the tenant's users' keys
-func validateTenantUsers(tenant Tenant, tenantCol *mongo.Collection) (string, int) {
+func ValidateTenantUsers(tenant Tenant, tenantCol *mongo.Collection) (string, int) {
 
 	usersKeys := make(map[string]bool)
 	errMsg := ""
@@ -829,7 +1446,7 @@ func CreateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	tenant.Users = append(tenant.Users, incoming)
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -948,7 +1565,7 @@ func UpdateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1034,7 +1651,7 @@ func DeleteUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1242,7 +1859,7 @@ func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	if errMsg, errCode := validateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
+	if errMsg, errCode := ValidateTenantUsers(tenant, tenantCol); errMsg != "" && errCode != 0 {
 		output, _ = respond.MarshalContent(respond.ErrConflict(errMsg), contentType, "", " ")
 		code = errCode
 		return code, h, output, err
@@ -1266,7 +1883,7 @@ func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	}
 
 	// Create view for response message
-	output, err = createRenewedToken(token, "User api key succesfully renewed", 200) //Render the results into JSON
+	output, err = CreateRenewedToken(token, "User api key succesfully renewed", 200) //Render the results into JSON
 
 	code = http.StatusOK
 	return code, h, output, err

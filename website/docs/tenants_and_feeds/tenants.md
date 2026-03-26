@@ -13,9 +13,16 @@ sidebar_position: 1
 | GET: List a specific tenant           | This method can be used to retrieve a specific metric tenant based on its id.          | [ Description](#2) |
 | POST: Create a new tenant             | This method can be used to create a new tenant                                         | [ Description](#3) |
 | PUT: Update a tenant                  | This method can be used to update information on an existing tenant                    | [ Description](#4) |
+| PUT: Update a tenant's info           | This method can be used to update just the info part on an existing tenant             | [ Description](#4B) |
+| PUT: Update a tenant's db conf        | This method can be used to update just the db conf part on an existing tenant          | [ Description](#4C) |
+| PUT: Update a tenant's topology       | This method can be used to update just the topology part on an existing tenant         | [ Description](#4D) |
+| POST: Set a tenant as node            | This method can be used to set an existing tenant as node                              | [ Description](#4E) |
+| POST: Unset a tenant from being a node | This method can be used to unset an existing tenant from being a node                 | [ Description](#4F) |
 | DELETE: Delete a tenant               | This method can be used to delete an existing tenant                                   | [ Description](#5) |
 | GET: Get a tenant's arg engine status | This method can be used to get status for a specific tenant                            | [ Description](#6) |
 | PUT: Update a tenant's engine status  | This method can be used to update argo engine status information for a specific tenant | [ Description](#7) |
+| GET: Get a tenant's readiness | This method can be used to get the readiness for a specific tenant                            | [ Description](#7B) |
+| PUT: Update a tenant's readiness  | This method can be used to update readiness information (checks) for a specific tenant | [ Description](#7C) |
 | POST: Create tenant user  | This method can be used to add a new user to existing tenant| [ Description](#8) |
 | PUT: Update tenant user  | This method can be used to update information on an existing user of a specific tenant| [ Description](#9) |
 | POST: Renew User's API key | This method can be used to renew user's api key | [ Description](#10) |
@@ -133,10 +140,7 @@ Json Response
      "username": "admin",
      "password": "3NCRYPT3D"
     },
-    "topology": {
-    "type": "GOCDB",
-    "feed": "gocdb2.example.foo"
-   },
+   
     {
      "store": "status",
      "server": "b.mongodb.org",
@@ -146,6 +150,10 @@ Json Response
      "password": "3NCRYPT3D"
     }
    ],
+   "topology": {
+    "type": "GOCDB",
+    "feed": "gocdb2.example.foo"
+   },
    "users": [
     {
     "id": "acb74194-553a-11e9-8647-d663bd873d95",
@@ -538,9 +546,9 @@ Json Response
 ```
 
 
-## [PUT]: Update information on an existing tenant {#4}
+## [PUT]: Update an existing tenant {#4}
 
-This method can be used to update information on an existing tenant
+This method can be used to update the whole definition of an existing tenant
 
 ### Input
 
@@ -619,6 +627,214 @@ Json Response
 {
     "status": {
         "message": "Tenant successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [PUT]: Update only the info part of an existing tenant {#4B}
+
+This method can be used to update only the info part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/info
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "info": {
+        "name": "Tenant1-updated",
+        "email": "email1@tenant1.com",
+        "description": "a changed description",
+        "image": "a changed url to nwe image",
+        "website": "www.tenant1-updated.com",
+    }
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant information successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [PUT]: Update only the db conf part of an existing tenant {#4C}
+
+This method can be used to update only the db conf part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/db-conf
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "db_conf": [{
+        "store": "ar",
+        "server": "mongo-remote.foo",
+        "port": 27017,
+        "database":"argo_TENANT"
+    }]
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant database configuration successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [PUT]: Update only the topology part of an existing tenant {#4D}
+
+This method can be used to update only the topology part of an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/topology
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+    "topology": {
+        "type": "csv",
+        "feed": "https://example.foo/path/to/csv",
+    }
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant topology configuration successfully updated",
+        "code": "200"
+    }
+}
+```
+
+## [POST]: Set an existing tenant as a node {#4E}
+
+Some tenants can represent Nodes and provide results as capabilities.
+This method can be used to specify that an existing tenant is also a node
+### Input
+
+```
+POST /admin/tenants/{ID}/node-set
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant has been set as node",
+        "code": "200"
+    }
+}
+```
+
+## [POST]: Unset an existing tenant from being an node {#4F}
+
+Some tenants can represent Nodes and provide results as capabilities.
+This method can be used to unset an existing tenant from being a node (thus providing results as capabilities)
+### Input
+
+```
+POST /admin/tenants/{ID}/node-unset
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant has been unset from being a node",
         "code": "200"
     }
 }
@@ -804,6 +1020,114 @@ Json Response
 ```
 
 
+## [GET]: List A Specific tenant's readiness {#7B}
+
+This method can be used to retrieve specific tenant's status based on its id
+
+### Input
+
+```
+GET /admin/tenants/{ID}/ready
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": {
+        "id": "3f9e3380-43bc-4fcd-b4c4-d0331b34e1a3",
+        "name": "TENANT-FOO",
+        "ready": false,
+        "data": {
+            "ready": true,
+            "message": "AMS has data. Hdfs has data"
+        },
+        "topology": {
+            "ready": true,
+            "message": "Groups, endpoints and service-types set"
+        },
+        "reports": {
+            "ready": false,
+            "message": "Tenant doesn't have reports"
+        },
+        "last_check": "2026-02-06T00:00:00Z"
+    }
+}
+```
+
+
+## [PUT]: Update argo-engine readines information on an existing tenant {#7C}
+
+This method can be used to update readiness information (checks) on an existing tenant
+
+### Input
+
+```
+PUT /admin/tenants/{ID}/ready
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### PUT BODY
+
+```json
+{
+  "data": {
+    "ready": true,
+    "message": "AMS has data. Hdfs has data"
+  },
+  "topology": {
+    "ready": true,
+    "message": "Groups, endpoints and service-types set"
+  },
+  "reports": {
+    "ready": true,
+    "message": "Tenant has at least one report"
+  },
+  "last_check": "2026-02-06T01:00:00Z"
+}
+```
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response body
+
+Json Response
+
+```json
+{
+    "status": {
+        "message": "Tenant successfully updated",
+        "code": "200"
+    }
+}
+```
+
+
 ## [POST]: Create new user {#8}
 
 This method can be used to create a new user on existing tenant
@@ -856,6 +1180,20 @@ Json Response
 }
 ```
 
+__Note__: If a user account is meant for a specific component integration then an optional field `"component"` can be specified when creating the user account such as in the following example:
+
+```json
+{
+    "name":"poem_viwer_account",
+    "email":"ops@email.foo",
+    "roles": [
+        "viewer"
+    ],
+    "component": "poem-viewer"
+ }`
+
+```
+
 
 ## [PUT]: Update user {#9}
 
@@ -902,6 +1240,21 @@ Json Response
  }
 }
 ```
+
+__Note__: If a user account is meant for a specific component integration then an optional field `"component"` can be specified when updating the user account such as in the following example:
+
+```json
+{
+    "name":"poem_viwer_account",
+    "email":"ops@email.foo",
+    "roles": [
+        "viewer"
+    ],
+    "component": "poem-viewer"
+ }`
+
+```
+
 
 
 ## [POST]: Renew User API key {#10}

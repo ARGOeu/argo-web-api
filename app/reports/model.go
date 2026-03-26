@@ -50,6 +50,7 @@ type MongoInterface struct {
 	Topology     Topology      `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles     []Profile     `bson:"profiles" json:"profiles" xml:"profiles"`
 	Tags         []Tag         `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
+	NodeReport   bool          `bson:"node_report" json:"node_report,omitempty"`
 }
 
 // Info contains info about a report and is used inside the main MongoInterface struct
@@ -115,6 +116,11 @@ type Message struct {
 type RootXML struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Reports interface{}
+}
+
+// NodeReport holds information about which report will be used for the Node (optional)
+type NodeReport struct {
+	Report_id string `bson:"report_id" json:"report_id"`
 }
 
 // GetEndpointGroupType retrieves the deepest type nested inside the group hierarchy

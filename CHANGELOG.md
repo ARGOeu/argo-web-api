@@ -2,6 +2,33 @@
 
 All notable changes in argo-web-api project are documented here
 
+## [v1.14.3] - (2026-03-26)
+
+### Added:
+
+- ARGO-5476 Support force parameter to overwright existing topology ite… ([#683](https://github.com/ARGOeu/argo-web-api/pull/683))
+- ARGO-5450 add dummy tenant data in docker env ([#680](https://github.com/ARGOeu/argo-web-api/pull/680))
+- ARGO-5406 add node endpoint that provides availability capability ([#677](https://github.com/ARGOeu/argo-web-api/pull/677))
+- ARGO-5403 Support nodes in tenants and node reports ([#674](https://github.com/ARGOeu/argo-web-api/pull/674))
+- ARGO-5346 - add tenant readiness support ([#662](https://github.com/ARGOeu/argo-web-api/pull/662))
+- ARGO-5323 Allow component admins to refresh access keys for their int… ([#659](https://github.com/ARGOeu/argo-web-api/pull/659))
+- ARGO-5315 Dockerize local dev argo-web-api ([#653](https://github.com/ARGOeu/argo-web-api/pull/653))
+- ARGO-5321 Create api calls for isolated updates to tenant db conf and… ([#658](https://github.com/ARGOeu/argo-web-api/pull/658))
+- ARGO-5316 Add API call to update just the info part of a tenant def ([#657](https://github.com/ARGOeu/argo-web-api/pull/657))
+
+### Changed:
+
+- ARGO-5449 Refactor mechanism to set/unset tenant as a node ([#679](https://github.com/ARGOeu/argo-web-api/pull/679))
+- ARGO-5347 Allow super admins to access tenant results by selecting te… ([#665](https://github.com/ARGOeu/argo-web-api/pull/665))
+
+
+### Fixed:
+
+- ARGO-5447 Node endpoints minor fixes ([#678](https://github.com/ARGOeu/argo-web-api/pull/678))
+- ARGO-5434 Handle tenants that don't have db configuration yet ([#676](https://github.com/ARGOeu/argo-web-api/pull/676))
+- ARGO-5353 Fix doc issues regarding integrations ([#664](https://github.com/ARGOeu/argo-web-api/pull/664))
+
+
 ## [v1.14.2] - (2025-11-27)
 
 ### Changed:
