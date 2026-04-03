@@ -18,10 +18,11 @@ import (
 
 var ROLE_DICT = map[string]string{
 	"engine":      "component_engine",
-	"monbox":      "component_monbox",
-	"probe":       "component_monbox",
+	"monbox":      "component_poem",
+	"probe":       "component_poem",
 	"poem-admin":  "component_poem",
 	"poem-viewer": "component_poem",
+	"connector":  "component_poem",
 }
 
 func ComponentRefreshKey(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
