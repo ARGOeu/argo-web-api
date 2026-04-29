@@ -440,6 +440,49 @@ func (suite *FeedsTestSuite) TestUpdateFeedTopo() {
 
 }
 
+func (suite *FeedsTestSuite) TestUpdateFeedTopo2() {
+
+	jsonInput := `
+  {
+   "type": "eosc-service-catalog",
+   "feed_service_groups": "https://somewhere2.foo.bar/service_groups",
+   "feed_service_endpoints": "https://somewhere2.foo.bar/service_endpoints",
+   "feed_service_endpoints_extensions": "https://somewhere2.foo.bar/service_endpoints_extensions"
+  }
+`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Feeds resource succesfully updated",
+  "code": "200"
+ },
+ "data": [
+  {
+   "type": "eosc-service-catalog",
+   "feed_service_groups": "https://somewhere2.foo.bar/service_groups",
+   "feed_service_endpoints": "https://somewhere2.foo.bar/service_endpoints",
+   "feed_service_endpoints_extensions": "https://somewhere2.foo.bar/service_endpoints_extensions"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/feeds/topology", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *FeedsTestSuite) TestListTopo() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/feeds/topology", strings.NewReader(""))

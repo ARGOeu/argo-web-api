@@ -12576,6 +12576,8 @@ components:
             type: string
     FeedsTopo:
       type: object
+      required:
+        - type
       properties:
         type:
           type: string
@@ -12589,6 +12591,12 @@ components:
             type: string
         uid_endpoints:
           type: string
+        feed_service_groups:
+           type: string
+        feed_service_endpoints:
+           type: string
+        feed_service_endpoints_extensions:
+           type: string
     TopologyResponse:
       type: object
       properties:
