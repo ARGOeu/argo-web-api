@@ -63,6 +63,29 @@ Json Response
 }
 ```
 
+## Example retrieving feed of eosc-service-catalog type
+
+When user selects a feed of `eosc-service-catalog` type then the following fields are supported:
+- `feed_service_groups`
+- `feed_service_endpoints`
+- `feed_service_endpoints_extensions`
+
+```json
+{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "type": "eosc-service-catalog",
+   "feed_service_groups": "https://example.foo/service_groups",
+   "feed_service_endpoints": "https://example.foo/service_endpoints",
+   "feed_service_endpoints_extensions": "https://example.foo/service_endpoints_extensions",
+  }
+ ]
+}
+```
 
 ## [PUT]: Update topology feed parameters {#2}
 This method is used to update topology feed parameters
