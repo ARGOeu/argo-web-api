@@ -10739,6 +10739,375 @@ paths:
               schema:
                 type: string
 
+  /v4/nodes/{node_name}/capabilities/summary/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List summary of availability and uptime scores for a specific node
+      description: this method retrieves retrieves the latest daily availability and uptime scores for a node's specific service
+      operationId: nodeSummary.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/summary:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service summary of availability and uptime scores for a specific node
+      description: this method retrieves the latest daily availability and uptime scores for the node's services
+      operationId: nodeSummary
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/availability/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service availability scores for a specific node
+      description: this method retrieves retrieves the latest daily availability and scores for a node's specific service
+      operationId: nodeAvailability.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
   /v4/nodes/{node_name}/capabilities/availability:
     get:
       tags:
@@ -10855,6 +11224,90 @@ paths:
             application/json:
               schema:
                 type: string
+  /v4/nodes/{node_name}/capabilities/uptime/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service uptime score for a specific node
+      description: this method retrieves retrieves the latest daily uptime scores for a node's specific services
+      operationId: nodeUptime.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              uptime:
+                                type: string
+                                example: "1"
 
   /v4/nodes/{node_name}/capabilities/uptime:
     get:
@@ -10933,7 +11386,120 @@ paths:
                                 example: "2015-06-22"
                               uptime:
                                 type: string
-                                example: "100"
+                                example: "1"
+
+
+  /v4/nodes/{node_name}/capabilities/status/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service status for a specific node
+      description: this method retrieves retrieves the latest daily uptime scores for a node's specific service
+      operationId: nodeStatus.Services
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
   /v4/nodes/{node_name}/capabilities/status:
     get:
       tags:

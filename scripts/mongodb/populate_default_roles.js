@@ -349,15 +349,35 @@ function populate_default_roles() {
              roles: ['super_admin', 'admin', 'editor']
         },
         {
+             resource: 'v4.nodes.summary',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.summary.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
              resource: 'v4.nodes.availability',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         },
         {
-             resource: 'v4.nodes.reliability',
+             resource: 'v4.nodes.availability.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.uptime',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.uptime.item',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         },
         {
              resource: 'v4.nodes.status',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.status.item',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         }
     ]);
