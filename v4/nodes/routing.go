@@ -13,9 +13,27 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var arRoutes = []respond.AppRoutes{
 	{
+		Name:             "v4.nodes.summary.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/summary/{item}",
+		SubrouterHandler: GetSummary,
+	},
+	{
+		Name:             "v4.nodes.summary",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/summary",
+		SubrouterHandler: GetSummary,
+	},
+	{
 		Name:             "v4.nodes.availability",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/availability",
+		SubrouterHandler: GetAvailability,
+	},
+	{
+		Name:             "v4.nodes.availability.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/availability/{item}",
 		SubrouterHandler: GetAvailability,
 	},
 	{
@@ -25,15 +43,39 @@ var arRoutes = []respond.AppRoutes{
 		SubrouterHandler: GetUptime,
 	},
 	{
+		Name:             "v4.nodes.uptime.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
+		SubrouterHandler: GetAvailability,
+	},
+	{
 		Name:             "v4.nodes.status",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/status",
 		SubrouterHandler: GetStatus,
 	},
 	{
+		Name:             "v4.nodes.status.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/status/{item}",
+		SubrouterHandler: GetStatus,
+	},
+	{
 		Name:             "v4.nodes.status.options",
 		Verb:             "OPTIONS",
 		Path:             "/nodes/{node_name}/capabilities/status",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.status.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/status/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.availability.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/availability/{item}",
 		SubrouterHandler: Options,
 	},
 	{
@@ -46,6 +88,12 @@ var arRoutes = []respond.AppRoutes{
 		Name:             "v4.nodes.uptime.options",
 		Verb:             "OPTIONS",
 		Path:             "/nodes/{node_name}/capabilities/uptime",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.uptime.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
 		SubrouterHandler: Options,
 	},
 }

@@ -213,7 +213,6 @@ func AuthenticateNode(h http.Header, cfg config.Config, nodeName string, isAdmin
 	var result DbInfoUsers
 
 	err := tenantsCol.FindOne(context.TODO(), query, options.FindOne().SetProjection(projection)).Decode(&result)
-
 	if err == nil {
 
 		mongoConf := config.MongoConfig{}

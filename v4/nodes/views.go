@@ -26,6 +26,40 @@ func createErrorMessage(message string, code int, format string) ([]byte, error)
 	return output, err
 }
 
+func createSummaryView(results []GroupInterface) ([]byte, error) {
+
+	docRoot := Data[Summary]{
+		Data: []Results[Summary]{},
+	}
+
+	prevEndpoint := ""
+
+	for i := 0; i < len(results); i++ {
+		row := results[i]
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			docRoot.Data = append(docRoot.Data, Results[Summary]{
+				Name:    row.Name,
+				Results: []Summary{},
+			})
+		}
+
+		currIdx := len(docRoot.Data) - 1
+		prepDate := timestamp.Format(customForm[1])
+
+		docRoot.Data[currIdx].Results = append(docRoot.Data[currIdx].Results,
+			Summary{
+				Date:         prepDate,
+				Availability: fmt.Sprintf("%g", row.Availability),
+				Uptime:       fmt.Sprintf("%g", row.Up),
+			})
+	}
+	return json.MarshalIndent(docRoot, " ", "  ")
+
+}
+
 func createAvailabilityView(results []GroupInterface) ([]byte, error) {
 
 	docRoot := Data[Availability]{

@@ -50,6 +50,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		// check if has x-tenant-id header
 		adminTenantId := r.Header.Get("x-tenant-id")
 		if isNodeRoute(routeName) {
+
 			vars := mux.Vars(r)
 			nodeName := vars["node_name"]
 			isAdmin := authentication.AuthenticateAdmin(r.Header, cfg)
@@ -64,6 +65,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 				}
 			}
 			tenantConf, name, tErr := authentication.AuthenticateNode(r.Header, cfg, nodeName, isAdmin)
+
 			if tErr != nil {
 				Error(w, r, ErrAuthen, cfg, errs)
 				return

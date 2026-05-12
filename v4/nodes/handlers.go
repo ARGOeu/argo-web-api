@@ -16,8 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// GetAvailability lists group availabilities according to the http request
-func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+// GetSummary lists availability, reliability and uptime for a specific group
+func GetSummary(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
 	code := http.StatusOK
@@ -34,6 +34,8 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
+
+	item := vars["item"]
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -67,7 +69,7 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 
 	input :=
 		basicQuery{
-			Name:        "",
+			Name:        item,
 			Granularity: urlValues.Get("granularity"),
 			Format:      contentType,
 			StartTime:   urlValues.Get("start_time"),
@@ -93,6 +95,132 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
 		"report": report.ID,
 	}
+	var query []primitive.M
+
+	if input.Name != "" {
+		filter["name"] = input.Name
+	}
+
+	// Prepare the group results
+	// Select the granularity of the search daily/monthly
+
+	if input.Granularity == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+		query = DailyEndpoint(filter)
+
+	} else if input.Granularity == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query = MonthlyGroup(filter)
+
+	}
+
+	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
+	cursor, err := arCol.Aggregate(context.TODO(), query)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &resultsGroups)
+
+	output, err = createSummaryView(resultsGroups)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+}
+
+// GetAvailability lists group availabilities according to the http request
+func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	item := vars["item"]
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// get node report id
+	nodeReport := NodeReport{}
+
+	report := reports.MongoInterface{}
+	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColName)
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColName)
+
+	err = nrCol.FindOne(context.TODO(), bson.M{"_id": "node-report"}).Decode(&nodeReport)
+
+	if err != nil {
+		code = http.StatusNotFound
+		message := "Node report not set"
+		output, err := createErrorMessage(message, code, contentType)
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	err = rCol.FindOne(context.TODO(), bson.M{"id": nodeReport.ReportId}).Decode(&report)
+
+	if err != nil {
+		code = http.StatusNotFound
+		message := "The report with the id " + nodeReport.ReportId + " does not exist"
+		output, err := createErrorMessage(message, code, contentType)
+		h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+		return code, h, output, err
+	}
+
+	input :=
+		basicQuery{
+			Name:        item,
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start_time"),
+			EndTime:     urlValues.Get("end_time"),
+			Report:      report,
+			Vars:        vars,
+			Date:        urlValues.Get("date"),
+			StartDate:   urlValues.Get("start_date"),
+			EndDate:     urlValues.Get("end_date"),
+		}
+	errs := input.Validate()
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
+
+	resultsGroups := []GroupInterface{}
+
+	filter := bson.M{
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
+	}
+
+	if input.Name != "" {
+		filter["name"] = item
+	}
+
 	var query []primitive.M
 
 	// Prepare the group results
@@ -149,6 +277,7 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	// Parse the request into the input
 	urlValues := r.URL.Query()
 	vars := mux.Vars(r)
+	item := vars["item"]
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -182,7 +311,7 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 
 	input :=
 		basicQuery{
-			Name:        "",
+			Name:        item,
 			Granularity: urlValues.Get("granularity"),
 			Format:      contentType,
 			StartTime:   urlValues.Get("start_time"),
@@ -209,6 +338,10 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		"report": report.ID,
 	}
 	var query []primitive.M
+
+	if input.Name != "" {
+		filter["name"] = input.Name
+	}
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
@@ -265,6 +398,8 @@ func GetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 
 	// Parse the request into the input
 	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+	item := vars["item"]
 
 	// This is going to be used to determine a detailed/latest view of the results
 	view := urlValues.Get("view")
@@ -315,7 +450,7 @@ func GetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		parsedEnd,
 		urlValues.Get("report_name"),
 		urlValues.Get("group_type"),
-		urlValues.Get("group_name"),
+		item,
 		contentType,
 		"",
 	}

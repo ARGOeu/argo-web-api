@@ -69,6 +69,12 @@ type NodeReport struct {
 	ReportId string `bson:"report_id"`
 }
 
+type Summary struct {
+	Date         string `json:"date,omitempty"`
+	Availability string `json:"availability"`
+	Uptime       string `json:"uptime,omitempty"`
+}
+
 type Availability struct {
 	Date         string `json:"date,omitempty"`
 	Availability string `json:"availability"`
@@ -90,12 +96,12 @@ type StatusResult struct {
 	AffectedByThresholdRule bool   `json:"affected_by_threshold_rule,omitempty"`
 }
 
-type Results[T Availability | Uptime] struct {
+type Results[T Availability | Uptime | Summary] struct {
 	Name    string `json:"name"`
 	Results []T    `json:"results"`
 }
 
-type Data[T Availability | Uptime] struct {
+type Data[T Availability | Uptime | Summary] struct {
 	Data []Results[T] `json:"data"`
 }
 
