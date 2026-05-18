@@ -10739,6 +10739,485 @@ paths:
               schema:
                 type: string
 
+  
+
+  /v4/results/groups:
+    get:
+      tags:
+      - Group Results (v4)
+      summary: List service summary of availability and uptime scores for groups
+      description: this method retrieves the latest daily availability and uptime scores for groups
+      operationId: group.results
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: the name of the report to be used for providing the results
+        required: false
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/results/groups/{group_name}:
+    get:
+      tags:
+      - Group Results (v4)
+      summary: List summary of availability and uptime scores for a specific group
+      description: this method retrieves retrieves the latest daily availability and uptime scores for a specific group
+      operationId: group.results.item
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: the name of the report to be used for providing the results
+        required: false
+        schema:
+          type: string
+      - name: group_name
+        in: path
+        description: name of the group
+        required: true
+        schema:
+          type: string
+      - name: period
+        in: query
+        description: A period expressed in days like 7d or in weeks like 4w or in months like 24m
+        required: false
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+
+  /v4/status/groups:
+    get:
+      tags:
+      - Group Status (v4)
+      summary: List service status for a specific group
+      description: this method retrieves retrieves the latest status of a specific group
+      operationId: group.status
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: name of the report used
+        required: true
+        schema:
+          type: string
+      - name: period
+        in: query
+        description: A period expressed in days like 7d or in weeks like 4w or in months like 24m
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/status/groups/{group_name}:
+    get:
+      tags:
+      - Group Status (v4)
+      summary: List service status for a specific group
+      description: this method retrieves the latest status of a specific group
+      operationId: group.status.item
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: name of the report used for status results
+        required: true
+        schema:
+          type: string
+      - name: group_name
+        in: path
+        description: name of the specific group
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  
+
   /v4/nodes/{node_name}/capabilities/summary/{service_name}:
     get:
       tags:
@@ -11394,7 +11873,7 @@ paths:
       tags:
       - Node Capabilities (v4)
       summary: List service status for a specific node
-      description: this method retrieves retrieves the latest daily uptime scores for a node's specific service
+      description: this method retrieves retrieves the latest status result for a node's specific service
       operationId: nodeStatus.Services
       parameters:
       - name: x-api-key
@@ -11505,7 +11984,7 @@ paths:
       tags:
       - Node Capabilities (v4)
       summary: List service status for a specific node
-      description: this method retrieves retrieves the latest daily uptime scores for the node's services
+      description: this method retrieves retrieves the latest status results for the node's services
       operationId: nodeStatus
       parameters:
       - name: x-api-key

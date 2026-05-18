@@ -144,7 +144,7 @@ db.tenants.insertMany([
       },
     ]
   }
-])
+]);
 
 
 db.roles.insertMany([
@@ -732,17 +732,33 @@ db.roles.insertMany([
   {
     resource: 'v4.nodes.status.item',
     roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.results.groups',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.results.groups.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.status.groups',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.status.groups.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
   }
-])
+]);
 
 db = db.getSiblingDB('argo_TENANT-TEST');
 
-db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
-db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 });
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
 
 db.topology_service_types.insertMany(
   [
@@ -784,7 +800,7 @@ db.topology_service_types.insertMany(
       ]
     }
   ]
-)
+);
 
 db.topology_endpoints.insertMany(
   [
@@ -987,7 +1003,7 @@ db.topology_endpoints.insertMany(
       }
     }
   ]
-)
+);
 
 db.topology_groups.insertMany(
   [
@@ -1104,7 +1120,7 @@ db.topology_groups.insertMany(
       }, 
     }
   ]
-)
+);
 
 db.operations_profiles.insertMany([
   {
@@ -1348,7 +1364,7 @@ db.operations_profiles.insertMany([
       }
     ]
   }
-])
+]);
 
 db.metric_profiles.insertMany(
   [
@@ -1418,7 +1434,7 @@ db.metric_profiles.insertMany(
       ]
     }
   ]
-)
+);
 
 db.aggregation_profiles.insertMany(
   [
@@ -1457,7 +1473,7 @@ db.aggregation_profiles.insertMany(
       ]
     }
   ]
-)
+);
 
 db.reports.insertMany(
   [
@@ -1576,7 +1592,7 @@ db.reports.insertMany(
       "node_report": true
     }
   ]
-)
+);
 
 
 db.status_endpoint_groups.insertMany(
@@ -1694,17 +1710,190 @@ db.status_endpoint_groups.insertMany(
       has_threshold_rule: false
     }
   ]
-)
+);
+
+
+const baseRecords = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'ESHOP',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'HELPDESK',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'WIKI',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'FORUM',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'GLOBAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'LOCAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'ARCHIVE',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'ESHOP',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'HELPDESK',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'WIKI',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'FORUM',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'GLOBAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      name: 'LOCAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'ARCHIVE',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 80,
+      reliability: 80,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
 
 
 db = db.getSiblingDB('argo_TENANTB');
 
-db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
-db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 });
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
 
 
 db.topology_service_types.insertMany(
@@ -1759,7 +1948,7 @@ db.topology_service_types.insertMany(
       ]
     }
   ]
-)
+);
 
 db.topology_endpoints.insertMany(
   [
@@ -1931,7 +2120,7 @@ db.topology_endpoints.insertMany(
       }
     }
   ]
-)
+);
 
 db.topology_groups.insertMany(
   [
@@ -2016,7 +2205,7 @@ db.topology_groups.insertMany(
       }
     },
   ]
-)
+);
 
 db.operations_profiles.insertMany([
   {
@@ -2260,7 +2449,7 @@ db.operations_profiles.insertMany([
       }
     ]
   }
-])
+]);
 
 db.metric_profiles.insertMany(
   [
@@ -2344,7 +2533,7 @@ db.metric_profiles.insertMany(
       ]
     }
   ]
-)
+);
 
 db.aggregation_profiles.insertMany(
   [
@@ -2387,7 +2576,7 @@ db.aggregation_profiles.insertMany(
       ]
     }
   ]
-)
+);
 
 db.reports.insertMany(
   [
@@ -2506,7 +2695,103 @@ db.reports.insertMany(
       "node_report": true
     }
   ]
-)
+);
+
+
+
+const baseRecords2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      name: 'CLOUD-A',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-B',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-C',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-D',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-E',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'CLOUD-A',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'CLOUD-B',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords2.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
 
 
 db.status_endpoint_groups.insertMany(
@@ -2568,4 +2853,4 @@ db.status_endpoint_groups.insertMany(
       has_threshold_rule: false
     },
   ]
-)
+);

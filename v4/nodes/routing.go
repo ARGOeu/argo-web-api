@@ -13,6 +13,54 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var arRoutes = []respond.AppRoutes{
 	{
+		Name:             "v4.results.groups.item",
+		Verb:             "GET",
+		Path:             "/results/groups/{item}",
+		SubrouterHandler: GetGroupResults,
+	},
+	{
+		Name:             "v4.results.groups",
+		Verb:             "GET",
+		Path:             "/results/groups",
+		SubrouterHandler: GetGroupResults,
+	},
+	{
+		Name:             "v4.results.groups.options",
+		Verb:             "OPTIONS",
+		Path:             "/results/groups",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.results.groups.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/results/groups/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.status.groups.item",
+		Verb:             "GET",
+		Path:             "/status/groups/{item}",
+		SubrouterHandler: GetGroupStatus,
+	},
+	{
+		Name:             "v4.status.groups",
+		Verb:             "GET",
+		Path:             "/status/groups",
+		SubrouterHandler: GetGroupStatus,
+	},
+	{
+		Name:             "v4.status.groups.options",
+		Verb:             "OPTIONS",
+		Path:             "/status/groups",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.status.groups.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/status/groups/{item}",
+		SubrouterHandler: Options,
+	},
+	{
 		Name:             "v4.nodes.summary.item",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/summary/{item}",
@@ -46,7 +94,7 @@ var arRoutes = []respond.AppRoutes{
 		Name:             "v4.nodes.uptime.item",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
-		SubrouterHandler: GetAvailability,
+		SubrouterHandler: GetUptime,
 	},
 	{
 		Name:             "v4.nodes.status",

@@ -18,7 +18,7 @@ import (
 	"gopkg.in/gcfg.v1"
 )
 
-type AvailabilityTestSuite struct {
+type CapAvailabilityTestSuite struct {
 	suite.Suite
 	cfg             config.Config
 	router          *mux.Router
@@ -31,7 +31,7 @@ type AvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-func (suite *AvailabilityTestSuite) SetupSuite() {
+func (suite *CapAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
 		 [server]
@@ -65,7 +65,7 @@ func (suite *AvailabilityTestSuite) SetupSuite() {
 }
 
 // This function runs before any test and setups the environment
-func (suite *AvailabilityTestSuite) SetupTest() {
+func (suite *CapAvailabilityTestSuite) SetupTest() {
 
 	log.SetOutput(io.Discard)
 
@@ -138,17 +138,32 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
 	c.InsertOne(context.TODO(),
 		bson.M{
+			"resource": "v4.nodes.summary.item",
+			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "v4.nodes.summary",
+			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "v4.nodes.availability.item",
+			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
 			"resource": "v4.nodes.availability",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.nodes.uptime",
+			"resource": "v4.nodes.uptime.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.nodes.status",
+			"resource": "v4.nodes.uptime",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
 
@@ -318,7 +333,200 @@ func (suite *AvailabilityTestSuite) SetupTest() {
 
 }
 
-func (suite *AvailabilityTestSuite) TestAvailability() {
+func (suite *CapAvailabilityTestSuite) TestSummary() {
+
+	request, _ := http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	endpointGroupAvailabilityA := `{
+   "data": [
+     {
+       "name": "ST01",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "66.7",
+           "uptime": "1"
+         },
+         {
+           "date": "2015-06-23",
+           "availability": "100",
+           "uptime": "1"
+         }
+       ]
+     },
+     {
+       "name": "ST02",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "70",
+           "uptime": "1"
+         },
+         {
+           "date": "2015-06-23",
+           "availability": "43.5",
+           "uptime": "1"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointGroupAvailabilityA, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	monthlyAvailJSON := `{
+   "data": [
+     {
+       "name": "ST01",
+       "results": [
+         {
+           "date": "2015-06",
+           "availability": "99.99999900000002",
+           "uptime": "1"
+         }
+       ]
+     },
+     {
+       "name": "ST02",
+       "results": [
+         {
+           "date": "2015-06",
+           "availability": "99.99999900000002",
+           "uptime": "1"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(monthlyAvailJSON, response.Body.String(), "Response body mismatch")
+
+	// check by start and end date
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary?start_date=2015-06-20&end_date=2015-06-23", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(endpointGroupAvailabilityA, response.Body.String(), "Response body mismatch")
+
+	oneItemJSON := `{
+   "data": [
+     {
+       "name": "ST01",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "66.7",
+           "uptime": "1"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// check by date
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary/ST01?date=2015-06-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(oneItemJSON, response.Body.String(), "Response body mismatch")
+
+	oneDateJSON := `{
+   "data": [
+     {
+       "name": "ST01",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "66.7",
+           "uptime": "1"
+         }
+       ]
+     },
+     {
+       "name": "ST02",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "70",
+           "uptime": "1"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// check by date
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary?date=2015-06-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(oneDateJSON, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/summary?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	unauthorizedresponse := `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
+
+}
+
+func (suite *CapAvailabilityTestSuite) TestAvailability() {
 
 	request, _ := http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/availability?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -414,6 +622,34 @@ func (suite *AvailabilityTestSuite) TestAvailability() {
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupAvailabilityA, response.Body.String(), "Response body mismatch")
 
+	oneItemJSON := `{
+   "data": [
+     {
+       "name": "ST02",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "availability": "70"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// check by date
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/availability/ST02?date=2015-06-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(oneItemJSON, response.Body.String(), "Response body mismatch")
+
 	oneDateJSON := `{
    "data": [
      {
@@ -474,7 +710,7 @@ func (suite *AvailabilityTestSuite) TestAvailability() {
 
 }
 
-func (suite *AvailabilityTestSuite) TestAvailabilityOptions() {
+func (suite *CapAvailabilityTestSuite) TestAvailabilityOptions() {
 
 	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/availability", strings.NewReader(""))
 
@@ -493,7 +729,26 @@ func (suite *AvailabilityTestSuite) TestAvailabilityOptions() {
 
 }
 
-func (suite *AvailabilityTestSuite) TestUptime() {
+func (suite *CapAvailabilityTestSuite) TestAvailabilityItemOptions() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/availability/ST01", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *CapAvailabilityTestSuite) TestUptime() {
 
 	request, _ := http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/uptime?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -589,6 +844,34 @@ func (suite *AvailabilityTestSuite) TestUptime() {
 	// Compare the expected and actual xml response
 	suite.Equal(endpointGroupUptimeA, response.Body.String(), "Response body mismatch")
 
+	oneItemJSON := `{
+   "data": [
+     {
+       "name": "ST01",
+       "results": [
+         {
+           "date": "2015-06-22",
+           "uptime": "1"
+         }
+       ]
+     }
+   ]
+ }`
+
+	// check by date
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/uptime/ST01?date=2015-06-22", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(oneItemJSON, response.Body.String(), "Response body mismatch")
+
 	oneDateJSON := `{
    "data": [
      {
@@ -649,7 +932,7 @@ func (suite *AvailabilityTestSuite) TestUptime() {
 
 }
 
-func (suite *AvailabilityTestSuite) TestUptimeOptions() {
+func (suite *CapAvailabilityTestSuite) TestUptimeOptions() {
 
 	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/uptime", strings.NewReader(""))
 
@@ -668,8 +951,27 @@ func (suite *AvailabilityTestSuite) TestUptimeOptions() {
 
 }
 
+func (suite *CapAvailabilityTestSuite) TestUptimeItemOptions() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/uptime/ST01", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.HeaderMap
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
 // TearDownTest to tear down every test
-func (suite *AvailabilityTestSuite) TearDownTest() {
+func (suite *CapAvailabilityTestSuite) TearDownTest() {
 
 	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
 	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
@@ -694,13 +996,13 @@ func (suite *AvailabilityTestSuite) TearDownTest() {
 }
 
 // TearDownTest to tear down every test
-func (suite *AvailabilityTestSuite) TearDownSuite() {
+func (suite *CapAvailabilityTestSuite) TearDownSuite() {
 
 	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
 	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-// TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestSuiteAR(t *testing.T) {
-	suite.Run(t, new(AvailabilityTestSuite))
+// CapTestSuiteAR is responsible for calling the tests
+func CapTestSuiteAR(t *testing.T) {
+	suite.Run(t, new(CapAvailabilityTestSuite))
 }

@@ -40,7 +40,7 @@ import (
 	"gopkg.in/gcfg.v1"
 )
 
-type StatusTestSuite struct {
+type CapStatusTestSuite struct {
 	suite.Suite
 	cfg          config.Config
 	router       *mux.Router
@@ -51,7 +51,7 @@ type StatusTestSuite struct {
 }
 
 // Setup the Test Environment
-func (suite *StatusTestSuite) SetupSuite() {
+func (suite *CapStatusTestSuite) SetupSuite() {
 
 	const testConfig = `
 		   [server]
@@ -85,7 +85,7 @@ func (suite *StatusTestSuite) SetupSuite() {
 }
 
 // This function runs before any test and setups the environment
-func (suite *StatusTestSuite) SetupTest() {
+func (suite *CapStatusTestSuite) SetupTest() {
 
 	log.SetOutput(io.Discard)
 
@@ -159,12 +159,12 @@ func (suite *StatusTestSuite) SetupTest() {
 
 	c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.status.groups",
+			"resource": "v4.nodes.status",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.status.groups.item",
+			"resource": "v4.nodes.status.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
 
@@ -252,10 +252,10 @@ func (suite *StatusTestSuite) SetupTest() {
 
 }
 
-// TestListGroupStatus test the status results
-func (suite *StatusTestSuite) TestListGroupStatus() {
+// TestListStatus test the status results
+func (suite *CapStatusTestSuite) TestListStatus() {
 
-	request, _ := http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -315,7 +315,7 @@ func (suite *StatusTestSuite) TestListGroupStatus() {
 	// Compare the expected and actual json response
 	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v4/status/groups/SITEB?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status/SITEB?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -354,7 +354,7 @@ func (suite *StatusTestSuite) TestListGroupStatus() {
 	// Compare the expected and actual json response
 	suite.Equal(expItemResp, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/json")
 
@@ -376,7 +376,7 @@ func (suite *StatusTestSuite) TestListGroupStatus() {
 	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
 
 	// Case of bad start_time input
-	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -403,7 +403,7 @@ func (suite *StatusTestSuite) TestListGroupStatus() {
 	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
 
 	// Case of bad end_time input
-	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -432,9 +432,9 @@ func (suite *StatusTestSuite) TestListGroupStatus() {
 }
 
 // TestOptions tests responses in case the OPTIONS http verb is used
-func (suite *StatusTestSuite) TestOptions() {
+func (suite *CapStatusTestSuite) TestOptions() {
 
-	request, _ := http.NewRequest("OPTIONS", "/api/v4/status/groups", strings.NewReader(""))
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/status", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -451,9 +451,9 @@ func (suite *StatusTestSuite) TestOptions() {
 
 }
 
-func (suite *StatusTestSuite) TestItemOptions() {
+func (suite *CapStatusTestSuite) TestItemOptions() {
 
-	request, _ := http.NewRequest("OPTIONS", "/api/v4/status/groups/ST01", strings.NewReader(""))
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/status/ST01", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -471,7 +471,7 @@ func (suite *StatusTestSuite) TestItemOptions() {
 }
 
 // TearDownTest to tear down every test
-func (suite *StatusTestSuite) TearDownTest() {
+func (suite *CapStatusTestSuite) TearDownTest() {
 
 	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
 	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
@@ -496,13 +496,13 @@ func (suite *StatusTestSuite) TearDownTest() {
 }
 
 // TearDownTest to tear down every test
-func (suite *StatusTestSuite) TearDownSuite() {
+func (suite *CapStatusTestSuite) TearDownSuite() {
 
 	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
 	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-// TestEndpointGroupsTestSuite is responsible for calling the tests
-func TestSuiteStatus(t *testing.T) {
-	suite.Run(t, new(StatusTestSuite))
+// TestSuiteCap is responsible for calling the tests
+func TestSuiteCapStatus(t *testing.T) {
+	suite.Run(t, new(CapStatusTestSuite))
 }
