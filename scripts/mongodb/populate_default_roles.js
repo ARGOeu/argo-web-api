@@ -379,6 +379,22 @@ function populate_default_roles() {
         {
              resource: 'v4.nodes.status.item',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.results.groups.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.results.groups',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.status.groups',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.status.groups.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         }
     ]);
     print("INFO\tPolulated default roles in 'roles' collection");

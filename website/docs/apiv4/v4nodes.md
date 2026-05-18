@@ -1,7 +1,7 @@
 ---
 id: v4_nodes
 title: Node Capabilities
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 ## Node capabilities
