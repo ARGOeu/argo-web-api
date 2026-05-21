@@ -1696,7 +1696,7 @@ db.status_endpoint_groups.insertMany(
     {
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "LOCAL-PORTAL",
-      status: "WARNING",
+      status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
       has_threshold_rule: false
@@ -1704,7 +1704,7 @@ db.status_endpoint_groups.insertMany(
     {
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "ARCHIVE",
-      status: "WARNING",
+      status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
       has_threshold_rule: false
@@ -1730,9 +1730,9 @@ const baseRecords = [
       name: 'HELPDESK',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
       unknown: 0,
       down: 0
     },
@@ -1741,9 +1741,9 @@ const baseRecords = [
       name: 'WIKI',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
       unknown: 0,
       down: 0
     },
@@ -1752,9 +1752,9 @@ const baseRecords = [
       name: 'FORUM',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
       unknown: 0,
       down: 0
     },
@@ -1763,9 +1763,9 @@ const baseRecords = [
       name: 'GLOBAL-PORTAL',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+       availability: 98,
+      reliability: 98,
+      up: 0.98,
       unknown: 0,
       down: 0
     },
@@ -1796,8 +1796,8 @@ const baseRecords = [
       name: 'ESHOP',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -1807,8 +1807,8 @@ const baseRecords = [
       name: 'HELPDESK',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -1818,8 +1818,8 @@ const baseRecords = [
       name: 'WIKI',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -1840,8 +1840,8 @@ const baseRecords = [
       name: 'GLOBAL-PORTAL',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -1851,8 +1851,8 @@ const baseRecords = [
       name: 'LOCAL-PORTAL',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -1862,8 +1862,8 @@ const baseRecords = [
       name: 'ARCHIVE',
       supergroup: 'PROJECTA',
       weight: 0,
-      availability: 80,
-      reliability: 80,
+      availability: 100,
+      reliability: 100,
       up: 1,
       unknown: 0,
       down: 0
@@ -2698,7 +2698,6 @@ db.reports.insertMany(
 );
 
 
-
 const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
@@ -2727,9 +2726,9 @@ const baseRecords2 = [
       name: 'CLOUD-C',
       supergroup: 'CLOUDINFRA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
       unknown: 0,
       down: 0
     },
@@ -2760,9 +2759,9 @@ const baseRecords2 = [
       name: 'CLOUD-A',
       supergroup: 'CLOUDINFRA',
       weight: 0,
-      availability: 100,
-      reliability: 100,
-      up: 1,
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
       unknown: 0,
       down: 0
     },
@@ -2792,7 +2791,6 @@ for (let i = 0; i < 7; i++) {
   db.endpoint_group_ar.insertMany(docs);
 
 };
-
 
 db.status_endpoint_groups.insertMany(
   [
