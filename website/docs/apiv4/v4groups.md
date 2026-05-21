@@ -42,6 +42,7 @@ The report can be specified by using the `report` parameter
 | Type            | Description                                                                                     | Required | Default value |
 | --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
 | `[date]`        | UTC date in YYYY-MM-DD format                                                                   | NO       |               |
+| `[period]`      | Specify the lookback window in days or weeks (e.g., 7d or 2w)                                   | NO       |               |
 | `[start_time]`  | UTC time in W3C format                                                                          | NO       |               |
 | `[end_time]`    | UTC time in W3C format                                                                          | NO       |               |
 | `[start_date]`  | UTC date in YYYY-MM-DD format                                                                   | NO       |               |
