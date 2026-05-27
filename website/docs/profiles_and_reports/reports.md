@@ -12,6 +12,8 @@ sidebar_position: 5
 | POST: Create a new report          | This method can be used to create a new report.                | [ Description](#2) |
 | PUT: Update an existing report     | This method can be used to update an existing report.          | [ Description](#3) |
 | POST: Set report as node report     | This method can be used to set an existing report as node report.          | [ Description](#3B) |
+| POST: Set report as public     | This method can be used to set an existing report as public.          | [ Description](#3C) |
+| POST: Set report as private     | This method can be used to set an existing report as private.          | [ Description](#3D) |
 | DELETE: Delete an existing Report  | This method can be used to delete an existing report.          | [ Description](#4) |
 
 
@@ -35,6 +37,8 @@ or
 When using `/reports` to list the available reports you have the following filters that you can use as url values
 - `?name=<report_name>` to search for an exact report name
 - `?node` to show only the default node report
+- `?public` to show only the public reports
+- `?private` to show only the private reports
 #### Request headers
 
 ```
@@ -348,6 +352,165 @@ Headers: `Status: 200 OK`
 {
   "status": {
     "message": "Report was set as the default node report",
+    "code": "200"
+  }
+}
+```
+
+
+## [POST]: Set a report as public {#3C}
+
+All reports are by default created as private. This method can be used to set an existing report as public
+
+### Input
+
+#### URL
+
+```
+POST /reports/{id}/set-public
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response Body
+
+```json
+{
+  "status": {
+    "message": "Report is set as public",
+    "code": "200"
+  }
+}
+```
+
+An existing public report will have the `"public": true` boolean field appear on its body and we can quickly list the public reports by using the url parameter `?public` as show below:
+
+### Request:
+
+```
+GET /reports?public
+```
+
+### Response:
+
+
+```json
+{
+    "status": {
+        "message": "Success",
+        "code": "200"
+    },
+    "data": [
+        {
+            "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+            "tenant": "TenantA",
+            "disabled": false,
+            "info": {
+                "name": "Report_A",
+                "description": "report aaaaa",
+                "created": "2015-9-10 13:43:00",
+                "updated": "2015-10-11 13:43:00"
+            },
+            "computations": {
+                "ar": true,
+                "status": true,
+                "trends": [
+                              "flapping",
+                              "status",
+                              "tags"
+                          ]
+            },
+            "topology_schema": {
+                "group": {
+                    "type": "NGI",
+                    "group": {
+                        "type": "SITE"
+                    }
+                }
+            },
+            "thresholds": {
+                "availability": 80.0,
+                "reliability": 85.0,
+                "uptime": 80.0,
+                "unknown": 10.0,
+                "downtime": 10.0
+            },
+            "profiles": [
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+                    "name": "profile1",
+                    "type": "metric"
+                },
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+                    "name": "profile2",
+                    "type": "operations"
+                },
+                {
+                    "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+                    "name": "profile3",
+                    "type": "aggregation"
+                }
+            ],
+            "filter_tags": [
+                {
+                    "name": "name1",
+                    "value": "value1",
+                    "context": ""
+                },
+                {
+                    "name": "name2",
+                    "value": "value2",
+                    "context": ""
+                }
+            ],
+            "public": true
+        }
+    ]
+}
+```
+
+
+## [POST]: Set a report as private {#3D}
+
+This method can be used to set an existing report as private
+
+### Input
+
+#### URL
+
+```
+POST /reports/{id}/set-private
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+
+### Response
+
+Headers: `Status: 200 OK`
+
+#### Response Body
+
+```json
+{
+  "status": {
+    "message": "Report is set as private",
     "code": "200"
   }
 }
