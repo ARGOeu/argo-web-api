@@ -248,6 +248,16 @@ func (suite *ReportTestSuite) SetupTest() {
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
+			"resource": "reports.set_public",
+			"roles":    []string{"admin", "editor"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "reports.set_private",
+			"roles":    []string{"admin", "editor"},
+		})
+	c.InsertOne(context.TODO(),
+		bson.M{
 			"resource": "reports.delete",
 			"roles":    []string{"admin", "editor"},
 		})
@@ -1356,6 +1366,400 @@ func (suite *ReportTestSuite) TestSetReportNode() {
 	suite.Equal(200, code, "Incorrect error code")
 	// Compare the expected and actual xml response
 	suite.Equal(respReportJSON, output, "Response body mismatch")
+}
+
+func (suite *ReportTestSuite) TestSetReportPublic() {
+
+	respJSON := `{
+ "status": {
+  "message": "Report is set as public",
+  "code": "200"
+ }
+}`
+
+	respPrivateJSON := `{
+ "status": {
+  "message": "Report is set as private",
+  "code": "200"
+ }
+}`
+
+	respReportJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
+   "info": {
+    "name": "Report_A",
+    "description": "report aaaaa",
+    "created": "2015-9-10 13:43:00",
+    "updated": "2015-10-11 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
+   "topology_schema": {
+    "group": {
+     "type": "NGI",
+     "group": {
+      "type": "SITE"
+     }
+    }
+   },
+   "profiles": [
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
+    }
+   ],
+   "filter_tags": [
+    {
+     "name": "name1",
+     "value": "value1",
+     "context": ""
+    },
+    {
+     "name": "name2",
+     "value": "value2",
+     "context": ""
+    }
+   ]
+  }
+ ]
+}`
+
+	respReportPublicJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
+   "tenant": "GUARDIANS",
+   "disabled": false,
+   "info": {
+    "name": "Report_A",
+    "description": "report aaaaa",
+    "created": "2015-9-10 13:43:00",
+    "updated": "2015-10-11 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
+   "topology_schema": {
+    "group": {
+     "type": "NGI",
+     "group": {
+      "type": "SITE"
+     }
+    }
+   },
+   "profiles": [
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
+    }
+   ],
+   "filter_tags": [
+    {
+     "name": "name1",
+     "value": "value1",
+     "context": ""
+    },
+    {
+     "name": "name2",
+     "value": "value2",
+     "context": ""
+    }
+   ],
+   "public": true
+  }
+ ]
+}`
+
+	respReport2JSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
+   "tenant": "GUARDIANS",
+   "disabled": false,
+   "info": {
+    "name": "Report_B",
+    "description": "report bbb",
+    "created": "2015-10-08 13:43:00",
+    "updated": "2015-10-09 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
+   "topology_schema": {
+    "group": {
+     "type": "ARCHIPELAGO",
+     "group": {
+      "type": "ISLAND"
+     }
+    }
+   },
+   "profiles": [
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
+    }
+   ],
+   "filter_tags": [
+    {
+     "name": "name1",
+     "value": "value1",
+     "context": ""
+    },
+    {
+     "name": "name2",
+     "value": "value2",
+     "context": ""
+    }
+   ]
+  }
+ ]
+}`
+
+	respReport2PublicJSON := `{
+ "status": {
+  "message": "Success",
+  "code": "200"
+ },
+ "data": [
+  {
+   "id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
+   "tenant": "GUARDIANS",
+   "disabled": false,
+   "info": {
+    "name": "Report_B",
+    "description": "report bbb",
+    "created": "2015-10-08 13:43:00",
+    "updated": "2015-10-09 13:43:00"
+   },
+   "computations": {
+    "ar": true,
+    "status": true,
+    "trends": [
+     "flapping",
+     "status",
+     "tags"
+    ]
+   },
+   "topology_schema": {
+    "group": {
+     "type": "ARCHIPELAGO",
+     "group": {
+      "type": "ISLAND"
+     }
+    }
+   },
+   "profiles": [
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
+     "name": "profile1",
+     "type": "metric"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e523",
+     "name": "profile2",
+     "type": "operations"
+    },
+    {
+     "id": "6ac7d684-1f8e-4a02-a502-720e8f11e50q",
+     "name": "profile3",
+     "type": "aggregation"
+    }
+   ],
+   "filter_tags": [
+    {
+     "name": "name1",
+     "value": "value1",
+     "context": ""
+    },
+    {
+     "name": "name2",
+     "value": "value2",
+     "context": ""
+    }
+   ],
+   "public": true
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("POST", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364/set-public", strings.NewReader(""))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(respJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364", strings.NewReader(""))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect error code")
+	suite.Equal(respReportPublicJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/reports?public", strings.NewReader(""))
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect error code")
+	suite.Equal(respReportPublicJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/reports?private", strings.NewReader(""))
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect error code")
+	suite.Equal(respReport2JSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("POST", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494364/set-private", strings.NewReader(""))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(respPrivateJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("POST", "/api/v2/reports/eba61a9e-22e9-4521-9e47-ecaa4a494360/set-public", strings.NewReader(""))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect Error Code")
+	suite.Equal(respJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/reports?private", strings.NewReader(""))
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect error code")
+	suite.Equal(respReportJSON, output, "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v2/reports?public", strings.NewReader(""))
+
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("x-api-key", "C4PK3Y")
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code = response.Code
+	output = response.Body.String()
+
+	suite.Equal(200, code, "Incorrect error code")
+	suite.Equal(respReport2PublicJSON, output, "Response body mismatch")
+
 }
 
 // TestReadOneReport function implements the testing

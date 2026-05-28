@@ -165,6 +165,14 @@ db.roles.insertMany([
     roles: ['admin', 'editor']
   },
   {
+    resource: 'reports.set_public',
+    roles: ['admin', 'editor']
+  },
+  {
+    resource: 'reports.set_private',
+    roles: ['admin', 'editor']
+  },
+  {
     resource: 'metric_profiles.get',
     roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },

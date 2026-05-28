@@ -199,6 +199,15 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		query["id"] = nodeReport.Report_id
 	}
 
+	if urlValues.Has("public") {
+		query["public"] = true
+
+	}
+
+	if urlValues.Has("private") {
+		query["public"] = bson.M{"$exists": false}
+	}
+
 	// Create structure for storing query results
 	results := []MongoInterface{}
 	// Query tenant collection for all available documents.
@@ -456,6 +465,109 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// SetPublic function is used to set a specific report as public
+func SetPublic(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	//Extracting report id from url
+	id := mux.Vars(r)["id"]
+
+	// before updating, check if the report exists and the name is unique
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+
+	filter := bson.M{"id": id}
+	update := bson.M{"$set": bson.M{"public": true}}
+
+	updateChange, err := rCol.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Report is set as public", "200", contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// SetPrivate function is used to set a specific report as private
+func SetPrivate(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	//Extracting report id from url
+	id := mux.Vars(r)["id"]
+
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+
+	filter := bson.M{"id": id}
+	update := bson.M{"$unset": bson.M{"public": ""}}
+
+	updateChange, err := rCol.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Report is set as private", "200", contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
 // SetNodeReport function is used to set a specific report as node report
 func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
@@ -506,8 +618,6 @@ func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
-	fmt.Printf("%+v \n", updateChange)
 
 	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")

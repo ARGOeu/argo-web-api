@@ -51,6 +51,7 @@ type MongoInterface struct {
 	Profiles     []Profile     `bson:"profiles" json:"profiles" xml:"profiles"`
 	Tags         []Tag         `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
 	NodeReport   bool          `bson:"node_report" json:"node_report,omitempty"`
+	Public       bool          `bson:"public" json:"public,omitempty"`
 }
 
 // Info contains info about a report and is used inside the main MongoInterface struct

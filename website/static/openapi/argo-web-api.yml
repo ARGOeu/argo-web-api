@@ -1514,6 +1514,16 @@ paths:
         description: show only active default node report
         schema:
           type: string
+      - name: public
+        in: query
+        description: show only public reports
+        schema:
+          type: string
+      - name: private
+        in: query
+        description: show only private reports
+        schema:
+          type: string
       responses:
         "200":
           description: A list of all available Reports
@@ -1629,6 +1639,108 @@ paths:
               example:
                 status:
                   message: "Report was set as the default node report"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: report
+  /v2/reports/{REPORT_ID}/set-public:
+    post:
+      tags:
+      - Reports
+      summary: Set a report as public
+      description: Set an existing report as public
+      operationId: report.SetPublic
+      parameters:
+      - name: REPORT_ID
+        in: path
+        description: id of the report
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Report is set as public
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Report is set as public"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: report
+  /v2/reports/{REPORT_ID}/set-private:
+    post:
+      tags:
+      - Reports
+      summary: Set a report as private
+      description: Set an existing report as private
+      operationId: report.SetPrivate
+      parameters:
+      - name: REPORT_ID
+        in: path
+        description: id of the report
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Report is set as private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Report is set as private"
                   code: "200"
         "401":
           description: Unauthorized user
@@ -13612,6 +13724,8 @@ components:
                 type: string
               context:
                 type: string
+        public:
+          type: boolean
     FeedsData:
       type: object
       properties:
