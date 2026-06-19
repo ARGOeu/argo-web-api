@@ -1489,6 +1489,7 @@ db.reports.insertMany(
       "id": "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       "tenant": "",
       "disabled": false,
+      "public": true,
       "info": {
         "name": "CORE",
         "description": "Core A/R report",
@@ -2592,6 +2593,7 @@ db.reports.insertMany(
       "id": "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       "tenant": "",
       "disabled": false,
+      "public": true,
       "info": {
         "name": "CORE",
         "description": "Core A/R report",
@@ -2646,6 +2648,7 @@ db.reports.insertMany(
       "id": "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       "tenant": "",
       "disabled": false,
+      "public":true,
       "info": {
         "name": "CLOUD-AB",
         "description": "Report only for cloud-a and cloud-b",
