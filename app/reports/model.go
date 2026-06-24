@@ -50,8 +50,8 @@ type MongoInterface struct {
 	Topology     Topology      `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles     []Profile     `bson:"profiles" json:"profiles" xml:"profiles"`
 	Tags         []Tag         `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
-	NodeReport   bool          `bson:"node_report" json:"node_report,omitempty"`
-	Public       bool          `bson:"public" json:"public,omitempty"`
+	NodeReport   bool          `bson:"node_report,omitempty" json:"node_report,omitempty"`
+	Public       bool          `bson:"public,omitempty" json:"public,omitempty"`
 }
 
 // Info contains info about a report and is used inside the main MongoInterface struct
