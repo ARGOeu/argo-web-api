@@ -977,6 +977,10 @@ func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
+	// unset the node report in the tenant's designated database
+	tDB := result.DbConf[0].Database
+	nodeReport_col := cfg.MongoClient.Database(tDB).Collection("node_report")
+	err = nodeReport_col.Drop(context.TODO())
 
 	if err != nil {
 		code = http.StatusInternalServerError
