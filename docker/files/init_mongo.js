@@ -1880,6 +1880,8 @@ const baseRecords = [
 ];
 
 
+
+
 for (let i = 0; i < 7; i++) {
   const day = new Date(now);
   day.setUTCDate(now.getUTCDate() - i);   
@@ -1888,6 +1890,21 @@ for (let i = 0; i < 7; i++) {
                 + day.getUTCDate();
 
   const docs = baseRecords.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
 
   db.endpoint_group_ar.insertMany(docs);
 
@@ -2798,6 +2815,21 @@ for (let i = 0; i < 7; i++) {
                 + day.getUTCDate();
 
   const docs = baseRecords2.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
 
   db.endpoint_group_ar.insertMany(docs);
 
