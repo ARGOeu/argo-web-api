@@ -11104,9 +11104,6 @@ paths:
             application/json:
               schema:
                 type: string
-
-
-
   /v4/status/groups:
     get:
       tags:
@@ -12195,6 +12192,535 @@ paths:
             application/json:
               schema:
                 type: string
+
+
+  /v5/results/{report-name}/supergroups:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for supergroups
+      description: this method retrieves the availability and reliability results for top level supergroups such as projects
+      operationId: v5.get_supergroups
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupergroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                      - name: PROJECT-B
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+                      - name: PROJECT-B
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+
+  /v5/results/{report-name}/supergroups/{supergroup-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific supergroup
+      description: this method retrieves the availability and reliability results for a specific top level supergroup
+      operationId: v5.get_supergroup
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: supergroup-name
+        in: path
+        description: name of the specific supergroup to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupergroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+                      
+             
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+  /v5/results/{report-name}/groups:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific group
+      description: this method retrieves the availability and reliability results for a specific group such as a specific SERVICEGROUP.
+      operationId: v5.get_groups
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 90
+                                reliability: 90
+                                unknown: 0
+                                uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+
+  /v5/results/{report-name}/groups/{group-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific group
+      description: this method retrieves the availability and reliability results for a specific group such as a specific SERVICEGROUP.
+      operationId: v5.get_group
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-A
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 80
+                                reliability: 80
+                                unknown: 0
+                                uptime: 0.8
+                                downtime: 0
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-X
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 80
+                                reliability: 80
+                                unknown: 0
+                                uptime: 0.8
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 90
+                                reliability: 90
+                                unknown: 0
+                                uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-A
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-X
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 99
+                                reliability: 99
+                                unknown: 0
+                                uptime: 0.99
+                                downtime: 0
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
                 
 components:
   schemas:
@@ -12412,6 +12938,58 @@ components:
                       type: number
                     downtime:
                       type: number
+    
+    SupergroupAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    availability: 
+                      type: number
+                    reliability:
+                      type: number
+
+    GroupAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    availability: 
+                      type: number
+                    reliability:
+                      type: number
+                    uptime:
+                      type: number
+                    downtime:
+                      type: number
+                    unknown:
+                      type: number
+
+      
     FactorsResponse:
       type: object
       properties:

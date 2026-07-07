@@ -230,13 +230,7 @@ func WrapValidate(hfn http.Handler, cfg config.Config, routeName string) http.Ha
 					return
 				}
 			}
-			if strings.Contains(resource, "results") {
-				errs = ValidateResultsParams(queries)
-				if len(errs) > 0 {
-					Error(w, r, ErrValidQuery, cfg, errs)
-					return
-				}
-			}
+
 			if strings.Contains(resource, "metricResult") {
 				errs = ValidateMetricParams(queries)
 				if len(errs) > 0 {
