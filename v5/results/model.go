@@ -86,6 +86,42 @@ type Result struct {
 	Downtime     RoundedFloat `json:"downtime"`
 }
 
+// EndpointInterface for mongodb object exchanging
+type EndpointInterface struct {
+	Name         string            `bson:"name"`
+	Report       string            `bson:"report"`
+	Date         string            `bson:"date"`
+	Type         string            `bson:"type"`
+	Up           float64           `bson:"up"`
+	Down         float64           `bson:"down"`
+	Unknown      float64           `bson:"unknown"`
+	Availability float64           `bson:"availability"`
+	Reliability  float64           `bson:"reliability"`
+	SuperGroup   string            `bson:"supergroup"`
+	Service      string            `bson:"service"`
+	Info         map[string]string `bson:"info"`
+}
+
+// ServuceEndpointGroup struct listing included endpoints in a service for formating xjson
+type ServiceEndpointGroup struct {
+	Name      string        `json:"name"`
+	Type      string        `json:"type"`
+	Endpoints []interface{} `json:"endpoints"`
+}
+
+// ServiceFlavorGroup struct for formating json
+type ServiceFlavorGroup struct {
+	Name          string        `json:"name"`
+	Type          string        `json:"type"`
+	ServiceFlavor []interface{} `json:"service-types"`
+}
+
+type endpointResultQuery struct {
+	basicQuery
+	EndpointGroup string `bson:"supergroup"`
+	Service       string `bson:"service"`
+}
+
 // Endpoint A/R struct for formating json
 type Endpoint struct {
 	Name       string            `json:"name"`

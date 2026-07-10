@@ -396,3 +396,128 @@ func CustomSuperGroup(filter bson.M) []bson.M {
 
 	return query
 }
+
+// DailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
+func DailyEndpoint(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"id":           "$_id",
+				"date":         bson.D{{Key: "$substr", Value: list{"$date", 0, 8}}},
+				"name":         "$name",
+				"supergroup":   "$supergroup",
+				"service":      "$service",
+				"availability": "$availability",
+				"reliability":  "$reliability",
+				"unknown":      "$unknown",
+				"up":           "$up",
+				"down":         "$down",
+				"report":       "$report"},
+			"info": bson.M{"$first": "$info"},
+		}},
+
+		{"$project": bson.M{
+			"_id":          "$_id.id",
+			"date":         "$_id.date",
+			"name":         "$_id.name",
+			"availability": "$_id.availability",
+			"reliability":  "$_id.reliability",
+			"unknown":      "$_id.unknown",
+			"up":           "$_id.up",
+			"down":         "$_id.down",
+			"supergroup":   "$_id.supergroup",
+			"service":      "$_id.service",
+			"info":         "$info",
+			"report":       "$_id.report"}},
+		{"$sort": bson.D{
+			{Key: "supergroup", Value: 1},
+			{Key: "service", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
+
+	return query
+}
+
+// MonthlyEndpoint query to aggregate monthly a/r results from mongoDB
+func MonthlyEndpoint(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"date":       bson.D{{Key: "$substr", Value: list{"$date", 0, 6}}},
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"service":    "$service",
+				"report":     "$report"},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"},
+			"info":       bson.M{"$first": "$info"}}},
+
+		{"$project": bson.M{
+			"date":       "$_id.date",
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"service":    "$_id.service",
+			"report":     "$_id.report",
+			"info":       "$info",
+			"unknown":    "$avgunknown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+		{"$sort": bson.D{
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1},
+			{Key: "date", Value: 1}}}}
+	return query
+}
+
+// CustomEndpoint query to aggregate a/r results over a custom period of time from mongoDB
+func CustomEndpoint(filter bson.M) []bson.M {
+	query := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"name":       "$name",
+				"supergroup": "$supergroup",
+				"service":    "$service",
+				"report":     "$report"},
+			"avgup":      bson.M{"$avg": "$up"},
+			"avgunknown": bson.M{"$avg": "$unknown"},
+			"avgdown":    bson.M{"$avg": "$down"},
+			"info":       bson.M{"$first": "$info"}}},
+
+		{"$project": bson.M{
+			"name":       "$_id.name",
+			"supergroup": "$_id.supergroup",
+			"service":    "$_id.service",
+			"report":     "$_id.report",
+			"info":       "$info",
+			"unknown":    "$avgunknown",
+			"up":         "$avgup",
+			"down":       "$avgdown",
+			"availability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{1.00000001, "$avgunknown"}}}},
+					100}},
+			"reliability": bson.M{
+				"$multiply": list{
+					bson.M{"$divide": list{
+						"$avgup", bson.M{"$subtract": list{bson.M{"$subtract": list{1.00000001, "$avgunknown"}}, "$avgdown"}}}},
+					100}}}},
+		{"$sort": bson.D{
+			{Key: "supergroup", Value: 1},
+			{Key: "name", Value: 1}}}}
+	return query
+}
