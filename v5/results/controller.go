@@ -249,6 +249,131 @@ func GetSupergroups(r *http.Request, cfg config.Config) (int, http.Header, []byt
 	return code, h, output, err
 }
 
+// GetEndpoints is responsible to return results for endpoints
+func GetEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	report := reports.MongoInterface{}
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+	err = rCol.FindOne(context.TODO(), bson.M{"info.name": vars["report-name"]}).Decode(&report)
+
+	if err != nil {
+		code = http.StatusNotFound
+		message := "The report with the name " + vars["report_name"] + " does not exist"
+		output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+		return code, h, output, err
+	}
+
+	input := endpointResultQuery{
+		basicQuery: basicQuery{
+			Name: vars["endpoint-name"],
+
+			Granularity: urlValues.Get("granularity"),
+			Format:      contentType,
+			StartTime:   urlValues.Get("start-time"),
+			EndTime:     urlValues.Get("end-time"),
+			Report:      report,
+			Vars:        vars,
+		},
+		EndpointGroup: vars["group-name"],
+		Service:       vars["service-type"],
+	}
+
+	errs := input.Validate()
+	if len(errs) > 0 {
+		out := respond.BadRequestSimple
+		out.Errors = errs
+		output = out.MarshalTo(contentType)
+		code = 400
+		return code, h, output, err
+	}
+
+	results := []EndpointInterface{}
+
+	// Construct the query to mongodb based on the input
+	filter := bson.M{
+		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
+		"report": report.ID,
+	}
+
+	if input.Name != "" {
+		filter["name"] = input.Name
+	}
+
+	if input.EndpointGroup != "" {
+		filter["supergroup"] = input.EndpointGroup
+	}
+
+	if input.Service != "" {
+		filter["service"] = input.Service
+	}
+
+	// Select the granularity of the search daily/monthly
+	custom := false
+	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
+	var query []primitive.M
+	if input.Granularity == "daily" {
+		customForm[0] = "20060102"
+		customForm[1] = "2006-01-02"
+		query = DailyEndpoint(filter)
+
+	} else if input.Granularity == "monthly" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query = MonthlyEndpoint(filter)
+
+	} else if input.Granularity == "custom" {
+		customForm[0] = "200601"
+		customForm[1] = "2006-01"
+		query = CustomEndpoint(filter)
+		custom = true
+	}
+
+	cursor, err := arCol.Aggregate(context.TODO(), query)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	defer cursor.Close(context.TODO())
+	cursor.All(context.TODO(), &results)
+
+	if len(results) == 0 {
+		code = http.StatusNotFound
+		message := "No results found for given query"
+		output, err = createErrorMessage(message, code, contentType)
+		return code, h, output, err
+	}
+
+	output, err = createEndpointResultView(results, report, input.Format, custom)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+
+}
+
 func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START

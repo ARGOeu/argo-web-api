@@ -14,6 +14,10 @@ _Note_: These are v5 api calls implementations found under the path `/api/v5`
 | Get results for specific supergroup| This method retrieves the a/r results for a specific supergroup | [Description](#2) |
 | Get results for top level groups| This method retrieves the a/r results of all top level groups | [Description](#3) |
 | Get results for specific group| This method retrieves the a/r results for a specific group | [Description](#4) |
+| Get results for endpoints | This method retrieves the a/r results of all endpoints  | [Description](#5) |
+| Get results for specific endpoint | This method retrieves the a/r results for a specific endpoint | [Description](#6) |
+| Get results for endpoints of a specific group | This method retrieves the a/r results of all endpoints of a specific group | [Description](#7) |
+| Get results for specific endpoint of a specific group | This method retrieves the a/r results for a specific endpoint of a specific group | [Description](#8) |
 
 
 
@@ -53,11 +57,11 @@ HTTP GET /api/v5/results/{report-name}/supergroups?[start-time]&[end-time]&[gran
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v5/results/Report_A/supergroups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v3/results/Report_A/supergroups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v5/results/Report_A/supergroups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -126,7 +130,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v5/results/Report_A/supergroups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -186,7 +190,7 @@ This means that for each item the user will receive one availability and reliabi
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+/api/v5/results/Report_A/supergroups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
 ```
 ##### Headers
 
@@ -270,11 +274,11 @@ HTTP GET /api/v5/results/{report-name}/supergroups/{supergroup-name}?[start-time
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups/PROJECT-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v5/results/Report_A/supergroups/PROJECT-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v3/results/Report_A/supergroups/PROJECT-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v5/results/Report_A/supergroups/PROJECT-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -327,7 +331,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups/PROJECT-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v5/results/Report_A/supergroups/PROJECT-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -376,7 +380,7 @@ This means that for each item the user will receive one availability and reliabi
 ##### Path
 
 ```
-/api/v5/results/Report_A/supergroups/PROJECT-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+/api/v5/results/Report_A/supergroups/PROJECT-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
 ```
 ##### Headers
 
@@ -450,11 +454,11 @@ HTTP GET /api/v5/results/{report-name}/groups?[start-time]&[end-time]&[granulari
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v5/results/Report_A/groups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v3/results/Report_A/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v5/results/Report_A/groups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -591,7 +595,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v5/results/Report_A/groups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -697,7 +701,7 @@ This means that for each item the user will receive one availability and reliabi
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+/api/v5/results/Report_A/groups?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
 ```
 ##### Headers
 
@@ -827,11 +831,11 @@ HTTP GET /api/v5/results/{report-name}/groups/{group-name}?[start-time]&[end-tim
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups/GROUP-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z 
+/api/v5/results/Report_A/groups/GROUP-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
 ```
 or 
 ```
-/api/v3/results/Report_A/groups/GROUP-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=daily`
+/api/v5/results/Report_A/groups/GROUP-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
 ```
 
 ##### Headers
@@ -896,7 +900,7 @@ Status: 200 OK
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups/GROUP-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=monthly
+/api/v5/results/Report_A/groups/GROUP-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
 ```
 ##### Headers
 
@@ -954,7 +958,7 @@ This means that for each item the user will receive one availability and reliabi
 ##### Path
 
 ```
-/api/v5/results/Report_A/groups/GROUP-A?start_time=2015-06-20T12:00:00Z&end_time=2015-06-26T23:00:00Z&granularity=custom
+/api/v5/results/Report_A/groups/GROUP-A?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
 ```
 ##### Headers
 
@@ -999,3 +1003,1086 @@ Status: 200 OK
   ]
 }
 ```
+
+## Get results for endpoints {#5}
+
+The following method can be used to obtain a tenant's Availability and Reliability result metrics for all endpoints. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results 
+
+### Input
+
+```
+HTTP GET /api/v5/results/{report-name}/endpoints?[start-time]&[end-time]&[granularity]
+```
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end-time]`    | UTC time in W3C format                                                                          | YES      |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily` or `custom` | NO       | `daily`       |
+
+#### Path Parameters
+
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+
+
+### Example Request 1: default daily granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
+```
+or 
+```
+/api/v5/results/Report_A/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 2: monthly granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 3: Custom granularity
+This request returns availability/reliability score numbers for the whole custom period defined between `start-time` and `end-time`. 
+This means that for each item the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+## Get results for specific endpoint {#6}
+
+The following method can be used to obtain a tenant's Availability and Reliability result metrics for specific group. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results 
+
+### Input
+
+```
+HTTP GET /api/v5/results/{report-name}/endpoints/{endpoint-name}?[start-time]&[end-time]&[granularity]
+```
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end-time]`    | UTC time in W3C format                                                                          | YES      |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily` or `custom` | NO       | `daily`       |
+
+#### Path Parameters
+
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+| `{endpoint-name}`  | Name of the specific endpoint to target | YES      |
+
+
+### Example Request 1: default daily granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
+```
+or 
+```
+/api/v5/results/Report_A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 2: monthly granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 3: Custom granularity
+This request returns availability/reliability score numbers for the whole custom period defined between `start-time` and `end-time`. 
+This means that for each item the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+
+
+## Get results for endpoints of a specific group {#7}
+
+The following method can be used to obtain a tenant's Availability and Reliability result metrics for all endpoints of a specific group. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results 
+
+### Input
+
+```
+HTTP GET /api/v5/results/{report-name}/groups/{group-name}/endpoints?[start-time]&[end-time]&[granularity]
+```
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end-time]`    | UTC time in W3C format                                                                          | YES      |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily` or `custom` | NO       | `daily`       |
+
+#### Path Parameters
+
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+| `{group-name}` | Name of the group that contains the results | YES      |
+
+
+### Example Request 1: default daily granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/{group-name}/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
+```
+or 
+```
+/api/v5/results/Report_A/groups/{group-name}/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 2: monthly granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/{group-name}/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 3: Custom granularity
+This request returns availability/reliability score numbers for the whole custom period defined between `start-time` and `end-time`. 
+This means that for each item the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/{group-name}/endpoints?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        },
+                        {
+                            "name": "host2.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939894",
+                                "URL": "https://host2.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+## Get results for specific group and specific endpoint {#8}
+
+The following method can be used to obtain a tenant's Availability and Reliability result metrics for specific group. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify time granularity (`monthly`, `daily` or `custom`) for retrieved results 
+
+### Input
+
+```
+HTTP GET /api/v5/results/{report-name}/groups/{group-name}/endpoints/{endpoint-name}?[start-time]&[end-time]&[granularity]
+```
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end-time]`    | UTC time in W3C format                                                                          | YES      |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily` or `custom` | NO       | `daily`       |
+
+#### Path Parameters
+
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+| `{group-name}`  | Name of the specific group to target | YES      |
+| `{endpoint-name}`  | Name of the specific endpoint to target | YES      |
+
+
+### Example Request 1: default daily granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/GROUP-A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z 
+```
+or 
+```
+/api/v5/results/Report_A/groups/GROUP-A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=daily`
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03-12",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                },
+                                {
+                                    "timestamp": "2026-03-13",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 2: monthly granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/GROUP-A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=monthly
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 100,
+                                    "reliability": 100,
+                                    "unknown": 0,
+                                    "uptime": 1,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request 3: Custom granularity
+This request returns availability/reliability score numbers for the whole custom period defined between `start-time` and `end-time`. 
+This means that for each item the user will receive one availability and reliability result concerning the whole period (instead of multiple daily or monthly results)
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v5/results/Report_A/groups/GROUP-A/endpoints/host1.example.foo?start-time=2015-06-20T12:00:00Z&end-time=2015-06-26T23:00:00Z&granularity=custom
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+    "results": [
+        {
+            "name": "GROUP-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webapi",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.example.foo",
+                            "type": "endpoint",
+                            "info": {
+                                "ID": "8838939893",
+                                "URL": "https://host1.example.foo/specific/path"
+                            },
+                            "results": [
+                                {
+                                    "timestamp": "2026-03",
+                                    "availability": 70,
+                                    "reliability": 70,
+                                    "unknown": 0,
+                                    "uptime": 0.7,
+                                    "downtime": 0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+

@@ -103,6 +103,73 @@ func createSuperGroupView(results []SuperGroupInterface, report reports.MongoInt
 
 }
 
+func createEndpointResultView(results []EndpointInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
+	docRoot := &root{}
+
+	prevServiceFlavorGroup := ""
+	prevServiceFlavor := ""
+	prevEndpoint := ""
+	serviceFlavorGroup := &ServiceFlavorGroup{}
+	serviceEndpointGroup := &ServiceEndpointGroup{}
+	endpoint := &Endpoint{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		//if new superGroup value does not match the previous superGroup value
+		//we create a new superGroup in the xml
+		if prevServiceFlavorGroup != row.SuperGroup {
+			prevServiceFlavorGroup = row.SuperGroup
+			serviceFlavorGroup = &ServiceFlavorGroup{
+				Name: row.SuperGroup,
+				Type: report.GetEndpointGroupType(), // Endpoint groups are parents of SFs
+			}
+			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
+			prevServiceFlavor = ""
+		}
+		//if new service flavor does not match the previous service value
+		//we create a new service flavor entry in the xml/json output
+		if prevServiceFlavor != row.Service {
+			prevServiceFlavor = row.Service
+			serviceEndpointGroup = &ServiceEndpointGroup{
+				Name: row.Service,
+				Type: "service",
+			}
+			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceEndpointGroup)
+			prevEndpoint = ""
+		}
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			endpoint = &Endpoint{
+				Name: row.Name,
+				Type: "endpoint",
+				Info: row.Info,
+			}
+			serviceEndpointGroup.Endpoints = append(serviceEndpointGroup.Endpoints, endpoint)
+		}
+		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
+		endpoint.Results = append(endpoint.Results,
+			&Result{
+				Timestamp:    prepDate,
+				Availability: RoundedFloat(row.Availability),
+				Reliability:  RoundedFloat(row.Reliability),
+				Unknown:      RoundedFloat(row.Unknown),
+				Uptime:       RoundedFloat(row.Up),
+				Downtime:     RoundedFloat(row.Down),
+			})
+	}
+
+	return json.MarshalIndent(docRoot, " ", "  ")
+
+}
+
 func createErrorMessage(message string, code int, format string) ([]byte, error) {
 
 	var output []byte

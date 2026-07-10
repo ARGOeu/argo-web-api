@@ -14,9 +14,17 @@ var resultsV5Routes = []respond.AppRoutes{
 	{Name: "results.get", Verb: "GET", Path: "/{report-name}/supergroups/{supergroup-name}", SubrouterHandler: GetSupergroups},
 	{Name: "results.list", Verb: "GET", Path: "/{report-name}/groups", SubrouterHandler: GetGroups},
 	{Name: "results.get", Verb: "GET", Path: "/{report-name}/groups/{group-name}", SubrouterHandler: GetGroups},
+	{Name: "results.list", Verb: "GET", Path: "/{report-name}/endpoints", SubrouterHandler: GetEndpoints},
+	{Name: "results.get", Verb: "GET", Path: "/{report-name}/endpoints/{endpoint-name}", SubrouterHandler: GetEndpoints},
+	{Name: "results.list", Verb: "GET", Path: "/{report-name}/groups/{group-name}/endpoints", SubrouterHandler: GetEndpoints},
+	{Name: "results.list", Verb: "GET", Path: "/{report-name}/groups/{group-name}/endpoints/{endpoint-name}", SubrouterHandler: GetEndpoints},
 
 	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/groups", SubrouterHandler: Options},
 	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}", SubrouterHandler: Options},
 	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/supergroups", SubrouterHandler: Options},
 	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/supergroups/{supergroup-name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "OPTIONS", Path: "/{report-name}/endpoints/{endpoint-name}", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "GET", Path: "/{report-name}/groups/{group-name}/endpoints", SubrouterHandler: Options},
+	{Name: "results.options", Verb: "GET", Path: "/{report-name}/groups/{group-name}/endpoints/{endpoint-name}", SubrouterHandler: Options},
 }
