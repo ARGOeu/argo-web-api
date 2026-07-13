@@ -1910,6 +1910,191 @@ for (let i = 7; i < 57; i++) {
 
 };
 
+const base_endpoints = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ESHOP',
+      service: 'webportal',
+      name: 'hostname1.eshop.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'HELPDESK',
+      service: 'webportal',
+      name: 'hostname1.helpdesk.foo',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'WIKI',
+      service: 'webportal',
+      name: 'hostname1.wiki.foo',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'FORUM',
+      service: 'webportal',
+      name: 'hostname1.forum.foo',
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'GLOBAL-PORTAL',
+      service: 'webportal',
+      name: 'hostname1.global-portal.foo',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'LOCAL-PORTAL',
+      service: 'webportal',
+      name: 'hostname1.local-portal.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ARCHIVE',
+      service: 'webportal',
+      name: 'hostname1.project-a.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ESHOP',
+      service: 'webportal',
+      name: 'hostname1.eshop.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'HELPDESK',
+      service: 'webportal',
+      name: 'hostname1.helpdesk.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'WIKI',
+      service: 'webportal',
+      name: 'hostname1.wiki.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'FORUM',
+      service: 'webportal',
+      name: 'hostname1.forum.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'GLOBAL-PORTAL',
+      service: 'webportal',
+      name: 'hostname1.golbal-portal.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      supergroup: 'LOCAL-PORTAL',
+      service: 'webportal',
+      name: 'hostname1.local-portal.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ARCHIVE',
+      service: 'webportal',
+      name: 'hostname1.archive.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
 
 
 db = db.getSiblingDB('argo_TENANTB');
@@ -2835,6 +3020,137 @@ for (let i = 7; i < 57; i++) {
 
 };
 
+const base_endpoints_2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      supergroup: 'CLOUD-A',
+      service: 'webportal',
+      name: 'host1.cloud-a.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+       service: 'webportal',
+      name: 'host1.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host2.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-C',
+      service: 'webportal',
+      name: 'host1.cloud-c.foo',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-D',
+      service: 'webportal',
+      name: 'host1.cloud-d.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-E',
+      service: 'webportal',
+      name: 'host1.cloud-e.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-A',
+      service: 'webportal',
+      name: 'host1.cloud-a.foo',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host1.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host2.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints_2.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints_2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
 db.status_endpoint_groups.insertMany(
   [
     {
@@ -2895,3 +3211,4 @@ db.status_endpoint_groups.insertMany(
     },
   ]
 );
+
