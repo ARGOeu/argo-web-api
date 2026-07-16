@@ -40,7 +40,7 @@ import (
 	"gopkg.in/gcfg.v1"
 )
 
-type endpointAvailabilityTestSuite struct {
+type serviceFlavorAvailabilityTestSuite struct {
 	suite.Suite
 	cfg          config.Config
 	router       *mux.Router
@@ -50,28 +50,28 @@ type endpointAvailabilityTestSuite struct {
 }
 
 // Setup the Test Environment
-func (suite *endpointAvailabilityTestSuite) SetupSuite() {
+func (suite *serviceFlavorAvailabilityTestSuite) SetupSuite() {
 
 	const testConfig = `
-	 [server]
-	 bindip = ""
-	 port = 8080
-	 maxprocs = 4
-	 cache = false
-	 lrucache = 700000000
-	 gzip = true
-	 [mongodb]
-	 host = "127.0.0.1"
-	 port = 27017
-	 db = "ARGO_test_endpoint_availability"
-	 `
+	[server]
+	bindip = ""
+	port = 8080
+	maxprocs = 4
+	cache = false
+	lrucache = 700000000
+	gzip = true
+	[mongodb]
+	host = "127.0.0.1"
+	port = 27017
+	db = "ARGO_test_service_types_availability"
+	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
 
 	client := store.GetMongoClient(suite.cfg.MongoDB)
 	suite.cfg.MongoClient = client
 
-	suite.tenantDbConf.Db = "ARGO_test_new_endpoint_availability_tenant"
+	suite.tenantDbConf.Db = "ARGO_test_service_types_availability_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
@@ -84,7 +84,7 @@ func (suite *endpointAvailabilityTestSuite) SetupSuite() {
 }
 
 // This function runs before any test and setups the environment
-func (suite *endpointAvailabilityTestSuite) SetupTest() {
+func (suite *serviceFlavorAvailabilityTestSuite) SetupTest() {
 
 	log.SetOutput(io.Discard)
 
@@ -109,13 +109,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 				{
 					"name":    "bob",
 					"email":   "bob@tenant-aa.foo",
-					"api_key": "bob_secret",
+					"api_key": "bob_key",
 					"roles":   []string{"viewer"},
 				},
 				{
 					"name":    "alice",
 					"email":   "alice@tenant-aa.foo",
-					"api_key": "alice_secret",
+					"api_key": "alice_key",
 					"roles":   []string{"viewer"},
 				},
 			}})
@@ -132,11 +132,10 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 				{
 					"server":   "localhost",
 					"port":     27017,
-					"database": "argo_wrong_db_endpoint_availability",
+					"database": "argo_wrong_db_serviceflavoravailability",
 				},
 			},
 			"users": []bson.M{
-
 				{
 					"name":    "bob",
 					"email":   "bob@tenant-bb.foo",
@@ -145,8 +144,8 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 				},
 				{
 					"name":    "alice",
-					"email":   "alice@tenant-cc.foo",
-					"api_key": "alice_secret2",
+					"email":   "alice@tenant-bb.foo",
+					"api_key": "alice_key",
 					"roles":   []string{"viewer"},
 				},
 			}})
@@ -162,17 +161,16 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 			"resource": "results.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-
-	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_ar")
+	// Seed database with recomputations
+	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("service_ar")
 
 	// Insert seed data
 	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
-			"name":         "e01",
+			"name":         "SF01",
 			"supergroup":   "ST01",
-			"service":      "service_a",
 			"up":           0.98264,
 			"down":         0,
 			"unknown":      0,
@@ -184,17 +182,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-			"info": bson.M{
-				"Url": "https://foo.example.url",
-			},
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
-			"name":         "e02",
+			"name":         "SF02",
 			"supergroup":   "ST01",
-			"service":      "service_a",
 			"up":           0.96875,
 			"down":         0,
 			"unknown":      0,
@@ -211,47 +205,8 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
-			"name":         "e03",
+			"name":         "SF03",
 			"supergroup":   "ST02",
-			"service":      "service_b",
-			"up":           0.96875,
-			"down":         0,
-			"unknown":      0,
-			"availability": 96.875,
-			"reliability":  96.875,
-			"tags": []bson.M{
-				{
-					"name":  "production",
-					"value": "Y",
-				},
-			},
-		})
-	c.InsertOne(context.TODO(),
-		bson.M{
-			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
-			"date":         20150622,
-			"name":         "e03",
-			"supergroup":   "ST02",
-			"service":      "service_x",
-			"up":           0.96875,
-			"down":         0,
-			"unknown":      0,
-			"availability": 96.875,
-			"reliability":  96.875,
-			"tags": []bson.M{
-				{
-					"name":  "production",
-					"value": "Y",
-				},
-			},
-		})
-	c.InsertOne(context.TODO(),
-		bson.M{
-			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
-			"date":         20150622,
-			"name":         "e03",
-			"supergroup":   "STX",
-			"service":      "service_b",
 			"up":           0.96875,
 			"down":         0,
 			"unknown":      0,
@@ -268,9 +223,8 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
-			"name":         "e01",
+			"name":         "SF01",
 			"supergroup":   "ST01",
-			"service":      "service_a",
 			"up":           0.53472,
 			"down":         0.33333,
 			"unknown":      0.01042,
@@ -282,17 +236,13 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 					"value": "Y",
 				},
 			},
-			"info": bson.M{
-				"Url": "https://foo.example.url",
-			},
 		})
 	c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
-			"name":         "e02",
+			"name":         "SF02",
 			"supergroup":   "ST01",
-			"service":      "service_a",
 			"up":           1,
 			"down":         0,
 			"unknown":      0,
@@ -337,88 +287,49 @@ func (suite *endpointAvailabilityTestSuite) SetupTest() {
 		}})
 }
 
-// TestListEndpointAvailabilityMonthly tests if monthly results are returned correctly
-func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly() {
+// TestListServiceFlavorAvailabilityMonthly tests if daily results are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceTypeAvailabilityMonthly() {
 
-	request, _ := http.NewRequest("GET", "/api/v5/results/Report_A/endpoints/e01?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v5/results/Report_A/groups/ST01/service-types?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/xml")
+	request.Header.Set("Accept", "application/json")
 
 	response := httptest.NewRecorder()
 
 	suite.router.ServeHTTP(response, request)
 	responseBody := response.Body.String()
-	endpointAvailabilityJSON1 := `{
+
+	serviceFlavorAvailabilityJSON := `{
    "results": [
      {
        "name": "ST01",
        "type": "SITE",
        "service-types": [
          {
-           "name": "service_a",
+           "name": "SF01",
            "type": "service",
-           "endpoints": [
+           "results": [
              {
-               "name": "e01",
-               "type": "endpoint",
-               "info": {
-                 "Url": "https://foo.example.url"
-               },
-               "results": [
-                 {
-                   "timestamp": "2015-06",
-                   "availability": 76.27,
-                   "reliability": 91.61,
-                   "unknown": 0.01,
-                   "uptime": 0.76,
-                   "downtime": 0.17
-                 }
-               ]
+               "timestamp": "2015-06",
+               "availability": 76.27,
+               "reliability": 91.61,
+               "unknown": 0.01,
+               "uptime": 0.76,
+               "downtime": 0.17
              }
            ]
-         }
-       ]
-     }
-   ]
- }`
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Incorrect HTTP response code")
-	// Compare the expected and actual json response
-	suite.Equal(endpointAvailabilityJSON1, responseBody, "Response body mismatch")
-
-	request, _ = http.NewRequest("GET", "/api/v5/results/Report_A/endpoints/e02?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-
-	response = httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-	responseBody = response.Body.String()
-
-	endpointAvailabilityJSON := `{
-   "results": [
-     {
-       "name": "ST01",
-       "type": "SITE",
-       "service-types": [
+         },
          {
-           "name": "service_a",
+           "name": "SF02",
            "type": "service",
-           "endpoints": [
+           "results": [
              {
-               "name": "e02",
-               "type": "endpoint",
-               "results": [
-                 {
-                   "timestamp": "2015-06",
-                   "availability": 98.44,
-                   "reliability": 98.44,
-                   "unknown": 0,
-                   "uptime": 0.98,
-                   "downtime": 0
-                 }
-               ]
+               "timestamp": "2015-06",
+               "availability": 98.44,
+               "reliability": 98.44,
+               "unknown": 0,
+               "uptime": 0.98,
+               "downtime": 0
              }
            ]
          }
@@ -430,104 +341,152 @@ func (suite *endpointAvailabilityTestSuite) TestListEndpointAvailabilityMonthly(
 	// Check that we must have a 200 ok code
 	suite.Equal(200, response.Code, "Incorrect HTTP response code")
 	// Compare the expected and actual xml response
-	suite.Equal(endpointAvailabilityJSON, responseBody, "Response body mismatch")
-
-	expectedMonthly := `{
-   "results": [
-     {
-       "name": "ST01",
-       "type": "SITE",
-       "service-types": [
-         {
-           "name": "service_a",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "e02",
-               "type": "endpoint",
-               "results": [
-                 {
-                   "timestamp": "2015-06",
-                   "availability": 98.44,
-                   "reliability": 98.44,
-                   "unknown": 0,
-                   "uptime": 0.98,
-                   "downtime": 0
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-     }
-   ]
- }`
-
-	// Test monthly a/r
-	request, _ = http.NewRequest("GET", "/api/v5/results/Report_A/endpoints/e02?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-
-	response = httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-	responseBody = response.Body.String()
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Incorrect HTTP response code")
-	// Compare the expected and actual xml response
-	suite.Equal(expectedMonthly, responseBody, "Response body mismatch")
-
-	// Test endpoint ar through specific group
-
-	expectedSpecGroup := `{
-   "results": [
-     {
-       "name": "STX",
-       "type": "SITE",
-       "service-types": [
-         {
-           "name": "service_b",
-           "type": "service",
-           "endpoints": [
-             {
-               "name": "e03",
-               "type": "endpoint",
-               "results": [
-                 {
-                   "timestamp": "2015-06",
-                   "availability": 96.87,
-                   "reliability": 96.87,
-                   "unknown": 0,
-                   "uptime": 0.97,
-                   "downtime": 0
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-     }
-   ]
- }`
-	request, _ = http.NewRequest("GET", "/api/v5/results/Report_A/groups/STX/endpoints?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
-	request.Header.Set("x-api-key", suite.clientkey)
-	request.Header.Set("Accept", "application/json")
-
-	response = httptest.NewRecorder()
-
-	suite.router.ServeHTTP(response, request)
-	responseBody = response.Body.String()
-
-	// Check that we must have a 200 ok code
-	suite.Equal(200, response.Code, "Incorrect HTTP response code")
-	// Compare the expected and actual xml response
-	suite.Equal(expectedSpecGroup, responseBody, "Response body mismatch")
+	suite.Equal(serviceFlavorAvailabilityJSON, responseBody, "Response body mismatch")
 
 }
 
-func (suite *SuperGroupAvailabilityTestSuite) TestOptionsEndpoints() {
-	request, _ := http.NewRequest("OPTIONS", "/api/v5/results/Report_A/endpoints", strings.NewReader(""))
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceTypeAvailabilityCustom() {
+
+	request, _ := http.NewRequest("GET", "/api/v5/results/Report_A/groups/ST01/service-types?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z&granularity=custom", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+	responseBody := response.Body.String()
+	serviceFlavorAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "service-types": [
+         {
+           "name": "SF01",
+           "type": "service",
+           "results": [
+             {
+               "availability": 76.27,
+               "reliability": 91.61,
+               "unknown": 0.01,
+               "uptime": 0.76,
+               "downtime": 0.17
+             }
+           ]
+         },
+         {
+           "name": "SF02",
+           "type": "service",
+           "results": [
+             {
+               "availability": 98.44,
+               "reliability": 98.44,
+               "unknown": 0,
+               "uptime": 0.98,
+               "downtime": 0
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(serviceFlavorAvailabilityJSON, responseBody, "Response body mismatch")
+
+}
+
+// TestListServiceFlavorAvailabilityDaily tests if daily results are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestListServiceTypeAvailabilityDaily() {
+
+	request, _ := http.NewRequest("GET", "/api/v5/results/Report_A/groups/ST01/service-types?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	serviceFlavorAvailabilityJSON := `{
+   "results": [
+     {
+       "name": "ST01",
+       "type": "SITE",
+       "service-types": [
+         {
+           "name": "SF01",
+           "type": "service",
+           "results": [
+             {
+               "timestamp": "2015-06-22",
+               "availability": 98.26,
+               "reliability": 98.26,
+               "unknown": 0,
+               "uptime": 0.98,
+               "downtime": 0
+             },
+             {
+               "timestamp": "2015-06-23",
+               "availability": 54.04,
+               "reliability": 81.48,
+               "unknown": 0.01,
+               "uptime": 0.53,
+               "downtime": 0.33
+             }
+           ]
+         },
+         {
+           "name": "SF02",
+           "type": "service",
+           "results": [
+             {
+               "timestamp": "2015-06-22",
+               "availability": 96.88,
+               "reliability": 96.88,
+               "unknown": 0,
+               "uptime": 0.97,
+               "downtime": 0
+             },
+             {
+               "timestamp": "2015-06-23",
+               "availability": 100,
+               "reliability": 100,
+               "unknown": 0,
+               "uptime": 1,
+               "downtime": 0
+             }
+           ]
+         }
+       ]
+     }
+   ]
+ }`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual xml response
+	suite.Equal(serviceFlavorAvailabilityJSON, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v5/results/Report_A/groups/ST01/service-types?start-time=2015-06-22T00:00:00Z&end-time=2015-06-23T23:59:59Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", "AWRONGKEY")
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	// Check that we must have a 401 Unauthorized code
+	suite.Equal(401, response.Code, "Incorrect HTTP response code")
+
+}
+
+// TestOptionsServiceFlavor tests responses in case the OPTIONS http verb is used
+func (suite *serviceFlavorAvailabilityTestSuite) TestOptionsServiceFlavor() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v5/results/Report_A/groups/ST01/service-types", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -542,7 +501,7 @@ func (suite *SuperGroupAvailabilityTestSuite) TestOptionsEndpoints() {
 	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
 	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
 
-	request, _ = http.NewRequest("OPTIONS", "/api/v5/results/Report_A/endpoints/e01", strings.NewReader(""))
+	request, _ = http.NewRequest("OPTIONS", "/api/v5/results/Report_A/groups/ST01/service-types/service_a", strings.NewReader(""))
 
 	response = httptest.NewRecorder()
 
@@ -559,8 +518,27 @@ func (suite *SuperGroupAvailabilityTestSuite) TestOptionsEndpoints() {
 
 }
 
+// TestStrictSlashServiceFlavorResults test if not found responses are returned correctly
+func (suite *serviceFlavorAvailabilityTestSuite) TestStrictSlashServiceFlavorResults() {
+
+	request, _ := http.NewRequest("GET", "/api/v2/results/Report_A/groups/ST01/service-types/?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response := httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+	request, _ = http.NewRequest("GET", "/api/v2/results/Report_A/groups/ST01/service-types/SF01/?start_time=2015-06-22T00:00:00Z&end_time=2015-06-23T23:59:59Z&granularity=monthly", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/xml")
+	response = httptest.NewRecorder()
+	suite.router.ServeHTTP(response, request)
+	suite.Equal(404, response.Code, "Incorrect HTTP response code")
+
+}
+
 // TearDownTest to tear down every test
-func (suite *endpointAvailabilityTestSuite) TearDownTest() {
+func (suite *serviceFlavorAvailabilityTestSuite) TearDownTest() {
 
 	mainDB := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db)
 	cols, err := mainDB.ListCollectionNames(context.TODO(), bson.M{})
@@ -581,16 +559,17 @@ func (suite *endpointAvailabilityTestSuite) TearDownTest() {
 	for _, col := range cols {
 		tenantDB.Collection(col).Drop(context.TODO())
 	}
+
 }
 
 // TearDownTest to tear down every test
-func (suite *endpointAvailabilityTestSuite) TearDownSuite() {
+func (suite *serviceFlavorAvailabilityTestSuite) TearDownSuite() {
 
 	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
 	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
 }
 
-// TestSuiteResultsEndpoint is responsible for calling the tests
-func TestSuiteResultsEndpoint(t *testing.T) {
-	suite.Run(t, new(endpointAvailabilityTestSuite))
+// TestSuiteResultService responsible for calling the tests
+func TestSuiteResultsService(t *testing.T) {
+	suite.Run(t, new(serviceFlavorAvailabilityTestSuite))
 }
