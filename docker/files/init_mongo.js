@@ -2096,6 +2096,180 @@ for (let i = 7; i < 57; i++) {
 };
 
 
+const base_services = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ESHOP',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'HELPDESK',
+      name: 'webportal',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'WIKI',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'FORUM',
+      name: 'webportal',
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'GLOBAL-PORTAL',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'LOCAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ARCHIVE',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ESHOP',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'HELPDESK',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'WIKI',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'FORUM',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'GLOBAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      supergroup: 'LOCAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ARCHIVE',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services.map(r => ({ ...r, date: putDate }));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+
+
+
 
 db = db.getSiblingDB('argo_TENANTB');
 
@@ -3148,6 +3322,111 @@ for (let i = 7; i < 57; i++) {
   const docs = base_endpoints_2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
 
   db.endpoint_ar.insertMany(docs);
+
+};
+
+
+
+
+const base_services_2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      supergroup: 'CLOUD-A',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-C',
+      name: 'webportal',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-D',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-E',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-A',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services_2.map(r => ({ ...r, date: putDate }));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services_2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.service_ar.insertMany(docs);
 
 };
 

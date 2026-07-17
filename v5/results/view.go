@@ -185,3 +185,60 @@ func createErrorMessage(message string, code int, format string) ([]byte, error)
 	}
 	return output, err
 }
+
+func createServiceFlavorResultView(results []ServiceFlavorInterface, report reports.MongoInterface, format string, custom bool) ([]byte, error) {
+
+	docRoot := &root{}
+
+	prevServiceFlavorGroup := ""
+	prevServiceFlavor := ""
+	serviceFlavor := &ServiceFlavor{}
+	serviceFlavorGroup := &ServiceFlavorGroup{}
+
+	// we iterate through the results struct array
+	// keeping only the value of each row
+	for _, row := range results {
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+		//if new superGroup value does not match the previous superGroup value
+		//we create a new superGroup in the xml
+		if prevServiceFlavorGroup != row.SuperGroup {
+			prevServiceFlavorGroup = row.SuperGroup
+			serviceFlavorGroup = &ServiceFlavorGroup{
+				Name: row.SuperGroup,
+				Type: report.GetEndpointGroupType(), // Endpoint groups are parents of SFs
+			}
+			docRoot.Result = append(docRoot.Result, serviceFlavorGroup)
+			prevServiceFlavor = ""
+		}
+		//if new service flavor does not match the previous service value
+		//we create a new service flavor entry in the xml/json output
+		if prevServiceFlavor != row.Name {
+			prevServiceFlavor = row.Name
+			serviceFlavor = &ServiceFlavor{
+				Name: row.Name,
+				Type: "service",
+			}
+			serviceFlavorGroup.ServiceFlavor = append(serviceFlavorGroup.ServiceFlavor, serviceFlavor)
+		}
+		//we append the new availability values
+		prepDate := timestamp.Format(customForm[1])
+		if custom {
+			prepDate = ""
+		}
+		serviceFlavor.Availability = append(serviceFlavor.Availability,
+			&Result{
+				Timestamp:    prepDate,
+				Availability: RoundedFloat(row.Availability),
+				Reliability:  RoundedFloat(row.Reliability),
+				Unknown:      RoundedFloat(row.Unknown),
+				Uptime:       RoundedFloat(row.Up),
+				Downtime:     RoundedFloat(row.Down),
+			})
+	}
+
+	if strings.ToLower(format) == "application/json" {
+		return json.MarshalIndent(docRoot, " ", "  ")
+	}
+	return xml.MarshalIndent(docRoot, " ", "  ")
+
+}
