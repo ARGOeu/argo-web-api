@@ -12430,8 +12430,8 @@ paths:
     get:
       tags:
       - v5
-      summary: List availability & reliability results for a specific group
-      description: this method retrieves the availability and reliability results for a specific group such as a specific SERVICEGROUP.
+      summary: List availability & reliability results for all groups
+      description: this method retrieves the availability and reliability results for all groups.
       operationId: v5.get_groups
       parameters:
       - name: x-api-key
@@ -12719,9 +12719,1220 @@ paths:
           content:
             application/json:
               schema:
+                type: string
+
+  /v5/results/{report-name}/endpoints:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for all endpoints
+      description: this method retrieves the availability and reliability results for all endpoints.
+      operationId: v5.get_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
                 type: string                
 
-                
+
+  /v5/results/{report-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific endpoint
+      description: this method retrieves the availability and reliability results for a specific endpoint.
+      operationId: v5.get_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /v5/results/{report-name}/groups/{group-name}/endpoints:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for all endpoints of a specific group.
+      description: this method retrieves the availability and reliability results for all endpoints of a specific group.
+      operationId: v5.get_group_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific endpoint and specific group
+      description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
+      operationId: v5.get_group_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for all endpoints of a specific group and a specific service-type.
+      description: this method retrieves the availability and reliability results for all endpoints of a specific group.
+      operationId: v5.get_group_services_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: service type name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific endpoint, group and service-type
+      description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
+      operationId: v5.get_group_service_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: name of the specific service-type
+        required: true
+        schema:
+          type: string
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/results/{report-name}/groups/{group-name}/service-types:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for all service-types of a specific group
+      description: this method retrieves the availability and reliability results for all service-types of a specific group.
+      operationId: v5.get_group_service_types
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}:
+    get:
+      tags:
+      - v5
+      summary: List availability & reliability results for a specific service-type and group
+      description: this method retrieves the availability and reliability results for a specific service type and specific group.
+      operationId: v5.get_group_service_type
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: name of the specific service-type
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
 components:
   schemas:
     Endpoint_list:
@@ -12988,6 +14199,88 @@ components:
                       type: number
                     unknown:
                       type: number
+    
+    EndpointAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              service-types:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name: 
+                      type: string
+                    type:
+                      type: string
+                    endpoint:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          type: 
+                            type: string
+                          results:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                availability: 
+                                  type: number
+                                reliability:
+                                  type: number
+                                uptime:
+                                  type: number
+                                downtime:
+                                  type: number
+                                unknown:
+                                  type: number
+    ServiceAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              service-types:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name: 
+                      type: string
+                    type:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          availability: 
+                            type: number
+                          reliability:
+                            type: number
+                          uptime:
+                            type: number
+                          downtime:
+                            type: number
+                          unknown:
+                            type: number
 
       
     FactorsResponse:
