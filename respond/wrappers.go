@@ -223,13 +223,14 @@ func WrapValidate(hfn http.Handler, cfg config.Config, routeName string) http.Ha
 				Error(w, r, ErrValidHead, cfg, errs)
 				return
 			}
-			if strings.Contains(resource, "status") {
-				errs = ValidateStatusParams(queries)
-				if len(errs) > 0 {
-					Error(w, r, ErrValidQuery, cfg, errs)
-					return
-				}
-			}
+			// TODO this can be clean up later and used here - for the time being is not needed and we keep it commented out as reference
+			// if !strings.Contains(resource, "v5") && strings.Contains(resource, "status") {
+			// 	errs = ValidateStatusParams(queries)
+			// 	if len(errs) > 0 {
+			// 		Error(w, r, ErrValidQuery, cfg, errs)
+			// 		return
+			// 	}
+			// }
 
 			if strings.Contains(resource, "metricResult") {
 				errs = ValidateMetricParams(queries)

@@ -12197,7 +12197,7 @@ paths:
   /v5/results/{report-name}/supergroups:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for supergroups
       description: this method retrieves the availability and reliability results for top level supergroups such as projects
       operationId: v5.get_supergroups
@@ -12316,7 +12316,7 @@ paths:
   /v5/results/{report-name}/supergroups/{supergroup-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific supergroup
       description: this method retrieves the availability and reliability results for a specific top level supergroup
       operationId: v5.get_supergroup
@@ -12429,7 +12429,7 @@ paths:
   /v5/results/{report-name}/groups:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for all groups
       description: this method retrieves the availability and reliability results for all groups.
       operationId: v5.get_groups
@@ -12547,7 +12547,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific group
       description: this method retrieves the availability and reliability results for a specific group such as a specific SERVICEGROUP.
       operationId: v5.get_group
@@ -12724,7 +12724,7 @@ paths:
   /v5/results/{report-name}/endpoints:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for all endpoints
       description: this method retrieves the availability and reliability results for all endpoints.
       operationId: v5.get_endpoints
@@ -12877,7 +12877,7 @@ paths:
   /v5/results/{report-name}/endpoints/{endpoint-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific endpoint
       description: this method retrieves the availability and reliability results for a specific endpoint.
       operationId: v5.get_endpoint
@@ -13012,7 +13012,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/endpoints:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for all endpoints of a specific group.
       description: this method retrieves the availability and reliability results for all endpoints of a specific group.
       operationId: v5.get_group_endpoints
@@ -13171,7 +13171,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/endpoints/{endpoint-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific endpoint and specific group
       description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
       operationId: v5.get_group_endpoint
@@ -13312,7 +13312,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for all endpoints of a specific group and a specific service-type.
       description: this method retrieves the availability and reliability results for all endpoints of a specific group.
       operationId: v5.get_group_services_endpoints
@@ -13477,7 +13477,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific endpoint, group and service-type
       description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
       operationId: v5.get_group_service_endpoint
@@ -13624,7 +13624,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/service-types:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for all service-types of a specific group
       description: this method retrieves the availability and reliability results for all service-types of a specific group.
       operationId: v5.get_group_service_types
@@ -13777,7 +13777,7 @@ paths:
   /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}:
     get:
       tags:
-      - v5
+      - v5-results
       summary: List availability & reliability results for a specific service-type and group
       description: this method retrieves the availability and reliability results for a specific service type and specific group.
       operationId: v5.get_group_service_type
@@ -13931,6 +13931,1274 @@ paths:
             application/json:
               schema:
                 type: string
+
+  /v5/status/{report}/groups:
+    get:
+      tags:
+      - v5-status
+      operationId: getGroupStatusAll
+      summary: Status timelines for all groups
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Group status timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, statuses]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        statuses:
+                          type: array
+                          items:
+                            type: object
+                            required: [timestamp, value]
+                            properties:
+                              timestamp:
+                                type: string
+                                description: >
+                                  RFC 3339 UTC timestamp
+                                example: "2026-07-23T09:44:14Z"
+                              value:
+                                type: string
+                                description: Status value
+                                example: WARNING
+
+  /v5/status/{report}/groups/{group-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: getGroupStatus
+      summary: Status timeline for a single group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Group status timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, statuses]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        statuses:
+                          type: array
+                          items:
+                            type: object
+                            required: [timestamp, value]
+                            properties:
+                              timestamp:
+                                type: string
+                                description: >
+                                  RFC 3339 UTC timestamp
+                                example: "2026-07-23T09:44:14Z"
+                              value:
+                                type: string
+                                description: Status value
+                                example: WARNING
+ 
+  /v5/status/{report}/groups/{group_name}/service-types:
+    get:
+      tags:
+      - v5-status
+      operationId: listServiceTypeStatuses
+      summary: Status timelines for the service types in a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group_name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Service type status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, statuses]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              statuses:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [timestamp, value]
+                                  properties:
+                                    timestamp:
+                                      type: string
+                                      description: >
+                                        RFC 3339 UTC auto_check_timestamp
+                                      example: "2026-07-23T09:44:14Z"
+                                    value:
+                                      type: string
+                                      description: Status value
+                                      example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listServiceTypeStatusesSpecific
+      summary: Status timelines for a specific service type in a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Service type status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, statuses]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              statuses:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [timestamp, value]
+                                  properties:
+                                    timestamp:
+                                      type: string
+                                      description: >
+                                        RFC 3339 UTC auto_check_timestamp
+                                      example: "2026-07-23T09:44:14Z"
+                                    value:
+                                      type: string
+                                      description: Status value
+                                      example: WARNING
+ 
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesAll
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesSpecific
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: endpoint-name type name.
+          schema:
+            type: string
+          example: host1.example.foo_id34
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+  
+  /v5/status/{report}/groups/{group-name}/endpoints:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesAllDirect
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesSpecificDirect
+      summary: Status timelines for the endpoints of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: endpoint-name type name.
+          schema:
+            type: string
+          example: host1.example.foo_id34
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+ 
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatuses
+      summary: Status timelines for the metrics of a single endpoint
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting pedior (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesSpecific
+      summary: Status timelines for the specific metrics of a single endpoint
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: metric-name
+          in: path
+          required: true
+          description: name of the metric
+          schema:
+            type: string
+          example: http.connect
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}/metrics:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesDirect
+      summary: Status timelines for the metrics of a single endpoint of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting pedior (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}/metrics/{metric-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesSpecificDirect
+      summary: Status timelines for the specific metrics of a single endpoint of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: metric-name
+          in: path
+          required: true
+          description: name of the metric
+          schema:
+            type: string
+          example: http.connect
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
 
 
 components:
