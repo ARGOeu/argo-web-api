@@ -1721,9 +1721,140 @@ db.status_endpoint_groups.insertMany(
   ]
 );
 
+db.status_services.insertMany(
+  [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    }
+  ]
+);
 
 
-db.status_endpoint_groups.insertMany(
+
+db.status_endpoints.insertMany(
   [
     {
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
