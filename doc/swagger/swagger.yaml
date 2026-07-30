@@ -3,10 +3,7 @@ info:
   title: ARGO web api
   description: "ARGO is a lightweight service for Service Level Monitoring designed for medium and large sized e-Infrastructures. This swagger UI interface provides access to the ARGO web api, which in turn can be used for either retrieving Availability/Reliability and status results or for defining profiles and reports that should be used within the SLM computations. The ARGO web api is multitenant and can hence be used by multiple e-Infrastructure providers. To list, add, update or remove tenants use the Tenants resource below. Under all other resources use per given tenant the corresponding api key."
   version: 1.11.0
-  contact:
-    name: ARGO Developers
-    url: http://argoeu.github.io/
-    email: argo-dev@lists.grnet.gr
+
 host: localhost
 schemes:
   - https
