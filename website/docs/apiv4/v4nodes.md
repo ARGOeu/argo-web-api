@@ -27,10 +27,207 @@ _Note_: The following calls implement the node capabilities
 
 | Name                                                                          | Description                                                                                                                                                                                                                              | Shortcut          |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| GET: Monitoric capability metric results for the node's services | This method retrieves by default the latest daily availability and uptime for a node's service | [Description](#1AA) |
 | GET: Summary results for the node's services | This method retrieves by default the latest daily availability and uptime for a node's service | [Description](#1A) |
 | GET: Availability results for the node's services | This method retrieves by default the latest daily availability for a node's service | [Description](#1) |
 | GET: Uptime results for the node's services | This method retrieves by default the latest daily availability for a node's service | [Description](#2) |
 | GET: Status results for the node's services | This method retrieves by default the latest daily availability for a node's service | [Description](#3) |
+
+
+
+
+## [GET]: Monitoric capability metric results for the node's services {#1AA}
+
+The following methods can be used to obtain availability and uptime results for a node's services. The api authenticates the tenant using the api-key within the x-api-key header. User can specify time granularity (`monthly`, `daily`) for retrieved results and also format using the `Accept` header. 
+
+### Input
+
+```
+/nodes/{node_name}/capabilities/monitoring/metrics?[start-date]&[end-date]&[granularity]
+/nodes/{node_name}/capabilities/monitoring/metrics/{service-name}?[start-date]&[end-date]&[granularity]
+```
+
+#### Query Parameters
+
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-date]`  | UTC date in YYYY-MM-DD format                                                                   | NO       |               |
+| `[start-date]`  | UTC date in YYYY-MM-DD format                                                                   | NO       |               |
+| `[granularity]` | Granularity of time that will be used to present data. Possible values are `monthly`,  `daily`  | NO       | `daily`       |
+
+- If a user doesn't specify any query parameter the api returns the latest daily availability results.
+- If a user specifies the date parameter the api retuerns the daily availability results for that date
+- A user can specify the period of availability results by using start_date and end_date instead of start_time and end_time
+
+#### Path Parameters
+
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{service-name}`| Target a specific service. If omitted you get a result list for all the services                | NO       |               |
+| `{node_name}` | Name of the node | YES      |
+
+
+### Example Request 1: Get default daily metrics for all services of NODE_A
+
+```
+/api/v4/nodes/NODE_A/capabilities/monitoring/metrics`
+```
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+  "data": [
+    {
+      "name": "SERVICE001",
+      "results": [
+        {
+          "date": "2015-06-26",
+          "availability": 100,
+          "reliability": 100,
+          "uptime": 1
+        }
+      ]
+    },
+    {
+      "name": "SERVICE002",
+      "results": [
+        {
+          "date": "2015-06-26",
+          "availability": 100,
+          "reliability": 100,
+          "uptime": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+### Example Request 2: daily metrics for a specific service over a period
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v4/nodes/NODE_A/capabilities/monitoring/metrics/SERVICE001?start-date=2015-06-20Z&end-date=2015-06-22T&granularity=daily`
+```
+
+
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+   "data": [
+     {
+       "name": "SERVICE001",
+       "results": [
+         {
+           "date": "2015-06-20",
+           "availability": 100,
+           "reliability": 100,
+           "uptime": 1
+         },
+         {
+           "date": "2015-06-21",
+           "availability": 100,
+           "reliability": 100,
+           "uptime": 1
+         },
+         {
+           "date": "2015-06-22",
+           "availability": 100,
+           "reliability": 100,
+           "uptime": 1
+         }
+       ]
+     }
+   ]
+ }
+```
+
+### Example Request 3: monthly granularity
+
+#### Request
+
+##### Method
+`HTTP GET`
+
+##### Path
+
+```
+/api/v4/nodes/NODE_A/capabilities/monitoring/metrics/SERVICE001?start-date=2015-07-01&end-date=2015-07-31&granularity=monthly
+```
+##### Headers
+
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+
+#### Response
+
+##### Code
+
+```
+Status: 200 OK
+```
+
+##### Body
+
+```json
+{
+  "data": [
+    {
+      "name": "SERVICE001",
+      "results": [
+        {
+          "date": "2015-06",
+          "availability": 100,
+          "reliability": 100,
+          "uptime": 1
+        }
+      ]
+    }
+  ]
+}  
+```
+
 
 
 ## [GET]: Availability results for the node's services {#1A}

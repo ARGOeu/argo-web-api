@@ -60,6 +60,41 @@ func createSummaryView(results []GroupInterface) ([]byte, error) {
 
 }
 
+func createMetricsView(results []GroupInterface) ([]byte, error) {
+
+	docRoot := Data[Metrics]{
+		Data: []Results[Metrics]{},
+	}
+
+	prevEndpoint := ""
+
+	for i := 0; i < len(results); i++ {
+		row := results[i]
+		timestamp, _ := time.Parse(customForm[0], fmt.Sprint(row.Date))
+
+		if prevEndpoint != row.Name {
+			prevEndpoint = row.Name
+			docRoot.Data = append(docRoot.Data, Results[Metrics]{
+				Name:    row.Name,
+				Results: []Metrics{},
+			})
+		}
+
+		currIdx := len(docRoot.Data) - 1
+		prepDate := timestamp.Format(customForm[1])
+
+		docRoot.Data[currIdx].Results = append(docRoot.Data[currIdx].Results,
+			Metrics{
+				Date:         prepDate,
+				Availability: RoundedFloat(row.Availability),
+				Reliability:  RoundedFloat(row.Availability),
+				Uptime:       RoundedFloat(row.Up),
+			})
+	}
+	return json.MarshalIndent(docRoot, " ", "  ")
+
+}
+
 func createAvailabilityView(results []GroupInterface) ([]byte, error) {
 
 	docRoot := Data[Availability]{
