@@ -16,6 +16,7 @@ _Note_: These are v5 api calls implementations found under the path `/api/v5/sta
 | Get status for specific group | This method retrieves the status timeline for a specific group | [Description](#2) |
 | Get status for service-types of a specific group | This method retrieves the status timelines of all service-types of a specific group | [Description](#3) |
 | Get status for a specific service-type of a specific group | This method retrieves the status timeline for a specific service-type of a specific group | [Description](#4) |
+| Get status for endpoints or specific endpoint | This method retrieves the status timelines of all endpoints or a specific endpoint | [Description](#5A) |
 | Get status for endpoints of a specific group and a specific service-type | This method retrieves the status timelines of all endpoints of a specific group and a specific service-type | [Description](#5) |
 | Get status for specific endpoint of a specific group and a specific service-type | This method retrieves the status timeline for a specific endpoint of a specific group and a specific service-type | [Description](#6) |
 | Get status for metrics of a specific endpoint | This method retrieves the status timelines of all metrics of a specific endpoint | [Description](#7) |
@@ -349,6 +350,198 @@ Status: 200 OK
                         {
                             "timestamp": "2026-07-23T09:45:26Z",
                             "value": "WARNING"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+ 
+## Get status for endpoints or a specific endpoint {#5A}
+ 
+The following methods can be used to obtain a tenant's status timelines for all endpoints or a specific endpoint. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify the period of the retrieved timelines using `start-time` and `end-time`
+ 
+### Input
+ 
+```
+HTTP GET /api/v5/status/{report-name}/endpoints?[start-time]&[end-time]
+```
+
+or 
+
+```
+HTTP GET /api/v5/status/{report-name}/endpoints/{endpoint-name}?[start-time]&[end-time]
+```
+ 
+#### Query Parameters
+ 
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[start-time]`  | UTC time in W3C format                                                                          | YES      |
+| `[end-time]`    | UTC time in W3C format                                                                          | YES      |
+ 
+#### Path Parameters
+ 
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+| `{endpoint-name}`  | Name of the specific endpoint to target | NO      |
+ 
+### Example Request
+ 
+#### Request
+ 
+##### Method
+`HTTP GET`
+ 
+##### Path
+ 
+```
+/api/v5/status/CORE/endpoints?start-time=2026-07-23T00:00:00Z&end-time=2026-07-23T23:59:59Z
+```
+ 
+##### Headers
+ 
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+ 
+#### Response
+ 
+##### Code
+ 
+```
+Status: 200 OK
+```
+ 
+##### Body
+ 
+```json
+{
+    "groups": [
+        {
+            "name": "CLOUD-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webportal",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.clouda.foo_ID1",
+                            "info": {
+                                "ID": "ID1",
+                                "URL": "https://host1.clouda.foo"
+                            },
+                            "statuses": [
+                                {
+                                    "timestamp": "2026-07-23T09:44:14Z",
+                                    "value": "WARNING"
+                                },
+                                {
+                                    "timestamp": "2026-07-23T09:45:09Z",
+                                    "value": "WARNING"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "CLOUD-B",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webportal",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.cloudb.foo_ID2",
+                            "info": {
+                                "ID": "ID1",
+                                "URL": "https://host1.cloudb.foo"
+                            },
+                            "statuses": [
+                                {
+                                    "timestamp": "2026-07-23T09:44:14Z",
+                                    "value": "OK"
+                                },
+                                {
+                                    "timestamp": "2026-07-23T09:45:09Z",
+                                    "value": "OK"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Example Request
+ 
+#### Request
+ 
+##### Method
+`HTTP GET`
+ 
+##### Path
+ 
+```
+/api/v5/status/CORE/endpoints/host1.clouda.foo_ID1?start-time=2026-07-23T00:00:00Z&end-time=2026-07-23T23:59:59Z
+```
+ 
+##### Headers
+ 
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+ 
+#### Response
+ 
+##### Code
+ 
+```
+Status: 200 OK
+```
+ 
+##### Body
+ 
+```json
+{
+    "groups": [
+        {
+            "name": "CLOUD-A",
+            "type": "SERVICEGROUPS",
+            "service-types": [
+                {
+                    "name": "webportal",
+                    "type": "service",
+                    "endpoints": [
+                        {
+                            "name": "host1.clouda.foo_ID1",
+                            "info": {
+                                "ID": "ID1",
+                                "URL": "https://host1.clouda.foo"
+                            },
+                            "statuses": [
+                                {
+                                    "timestamp": "2026-07-23T09:44:14Z",
+                                    "value": "WARNING"
+                                },
+                                {
+                                    "timestamp": "2026-07-23T09:45:09Z",
+                                    "value": "WARNING"
+                                }
+                            ]
                         }
                     ]
                 }
