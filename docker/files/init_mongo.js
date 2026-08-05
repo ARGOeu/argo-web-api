@@ -1868,9 +1868,9 @@ db.status_endpoints.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "ESHOP",
       service: "webportal",
-      host: 'eshop.example.foo_ID1',
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       info: {
-       ID: 'ID1',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
        URL: 'https://eshop.example.foo'
       },
       status: "OK",
@@ -1882,9 +1882,9 @@ db.status_endpoints.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "HELPDESK",
       service: "webportal",
-      host: 'helpdesk.example.foo_ID2',
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       info: {
-       ID: 'ID2',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
        URL: 'https://helpdesk.example.foo'
       },
       status: "CRITICAL",
@@ -1896,9 +1896,9 @@ db.status_endpoints.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "WIKI",
       service: "webportal",
-      host: 'wiki.example.foo_ID3',
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       info: {
-       ID: 'ID3',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
        URL: 'https://wiki.example.foo'
       },
       status: "WARNING",
@@ -1910,9 +1910,9 @@ db.status_endpoints.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "FORUM",
       service: "webportal",
-      host: 'forum.example.foo_ID4',
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       info: {
-       ID: 'ID4',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
        URL: 'https://forum.example.foo'
       },
       status: "CRITICAL",
@@ -1925,9 +1925,9 @@ db.status_endpoints.insertMany(
       endpoint_group: "GLOBAL-PORTAL",
       service: "webportal",
       status: "WARNING",
-      host: 'gportal.example.foo_ID5',
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
       info: {
-       ID: 'ID5',
+       ID: 'service-2fdb8bcfb525',
        URL: 'https://gportal.example.foo'
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
@@ -1938,9 +1938,9 @@ db.status_endpoints.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "LOCAL-PORTAL",
       service: "webportal",
-      host: 'lportal.example.foo_ID6',
+      host: 'lportal.example.foo_service-4xdb8b6',
       info: {
-       ID: 'ID6',
+       ID: 'service-4xdb8b6',
        URL: 'https://lportal.example.foo'
       },
       status: "MISSING",
@@ -1953,9 +1953,9 @@ db.status_endpoints.insertMany(
       endpoint_group: "ARCHIVE",
       service: "webportal",
       status: "UNKNOWN",
-      host: 'archive.example.foo_ID7',
+      host: 'archive.example.foo_service-6wzv3n7',
       info: {
-       ID: 'ID7',
+       ID: 'service-6wzv3n7',
        URL: 'https://archive.example.foo'
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
@@ -1966,9 +1966,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "ESHOP",
       service: "webportal",
-      host: 'eshop.example.foo_ID1',
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       info: {
-       ID: 'ID1',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
        URL: 'https://eshop.example.foo'
       },
       status: "OK",
@@ -1980,9 +1980,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "HELPDESK",
       service: "webportal",
-      host: 'helpdesk.example.foo_ID2',
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       info: {
-       ID: 'ID2',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
        URL: 'https://helpdesk.example.foo'
       },
       status: "OK",
@@ -1994,9 +1994,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "WIKI",
       service: "webportal",
-      host: 'wiki.example.foo_ID3',
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       info: {
-       ID: 'ID3',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
        URL: 'https://wiki.example.foo'
       },
       status: "OK",
@@ -2008,9 +2008,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "FORUM",
       service: "webportal",
-      host: 'forum.example.foo_ID4',
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       info: {
-       ID: 'ID4',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
        URL: 'https://forum.example.foo'
       },
       status: "OK",
@@ -2022,9 +2022,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "GLOBAL-PORTAL",
       service: "webportal",
-      host: 'gportal.example.foo_ID5',
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
       info: {
-       ID: 'ID5',
+       ID: 'service-2fdb8bcfb525',
        URL: 'https://gportal.example.foo'
       },
       status: "OK",
@@ -2036,9 +2036,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "LOCAL-PORTAL",
       service: "webportal",
-      host: 'lportal.example.foo_ID6',
+      host: 'lportal.example.foo_service-4xdb8b6',
       info: {
-       ID: 'ID6',
+       ID: 'service-4xdb8b6',
        URL: 'https://lportal.example.foo'
       },
       status: "OK",
@@ -2050,9 +2050,9 @@ db.status_endpoints.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "ARCHIVE",
       service: "webportal",
-      host: 'archive.example.foo_ID7',
+      host: 'archive.example.foo_service-6wzv3n7',
       info: {
-       ID: 'ID7',
+       ID: 'service-6wzv3n7',
        URL: 'https://archive.example.foo'
       },
       status: "OK",
@@ -2070,11 +2070,11 @@ db.status_metrics.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "ESHOP",
       service: "webportal",
-      host: 'eshop.example.foo_ID1',
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID1',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
        URL: 'https://eshop.example.foo'
       },
       status: "OK",
@@ -2086,11 +2086,11 @@ db.status_metrics.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "HELPDESK",
       service: "webportal",
-      host: 'helpdesk.example.foo_ID2',
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID2',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
        URL: 'https://helpdesk.example.foo'
       },
       status: "CRITICAL",
@@ -2102,11 +2102,11 @@ db.status_metrics.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "WIKI",
       service: "webportal",
-      host: 'wiki.example.foo_ID3',
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID3',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
        URL: 'https://wiki.example.foo'
       },
       status: "WARNING",
@@ -2118,11 +2118,11 @@ db.status_metrics.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "FORUM",
       service: "webportal",
-      host: 'forum.example.foo_ID4',
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID4',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
        URL: 'https://forum.example.foo'
       },
       status: "CRITICAL",
@@ -2135,11 +2135,11 @@ db.status_metrics.insertMany(
       endpoint_group: "GLOBAL-PORTAL",
       service: "webportal",
       status: "WARNING",
-      host: 'gportal.example.foo_ID5',
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID5',
+       ID: 'service-2fdb8bcfb525',
        URL: 'https://gportal.example.foo'
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
@@ -2150,11 +2150,11 @@ db.status_metrics.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "LOCAL-PORTAL",
       service: "webportal",
-      host: 'lportal.example.foo_ID6',
+      host: 'lportal.example.foo_service-4xdb8b6',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID6',
+       ID: 'service-4xdb8b6',
        URL: 'https://lportal.example.foo'
       },
       status: "MISSING",
@@ -2167,11 +2167,11 @@ db.status_metrics.insertMany(
       endpoint_group: "ARCHIVE",
       service: "webportal",
       status: "UNKNOWN",
-      host: 'archive.example.foo_ID7',
+      host: 'archive.example.foo_service-6wzv3n7',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID7',
+       ID: 'service-6wzv3n7',
        URL: 'https://archive.example.foo'
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
@@ -2182,11 +2182,11 @@ db.status_metrics.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "ESHOP",
       service: "webportal",
-      host: 'eshop.example.foo_ID1',
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID1',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
        URL: 'https://eshop.example.foo'
       },
       status: "OK",
@@ -2198,11 +2198,11 @@ db.status_metrics.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "HELPDESK",
       service: "webportal",
-      host: 'helpdesk.example.foo_ID2',
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID2',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
        URL: 'https://helpdesk.example.foo'
       },
       status: "OK",
@@ -2214,11 +2214,11 @@ db.status_metrics.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "WIKI",
       service: "webportal",
-      host: 'wiki.example.foo_ID3',
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID3',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
        URL: 'https://wiki.example.foo'
       },
       status: "OK",
@@ -2230,11 +2230,11 @@ db.status_metrics.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "FORUM",
       service: "webportal",
-      host: 'forum.example.foo_ID4',
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID4',
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
        URL: 'https://forum.example.foo'
       },
       status: "OK",
@@ -2248,9 +2248,9 @@ db.status_metrics.insertMany(
       service: "webportal",
       metric: 'generic.http.connect',
       message: "metric log",
-      host: 'gportal.example.foo_ID5',
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
       info: {
-       ID: 'ID5',
+       ID: 'service-2fdb8bcfb525',
        URL: 'https://gportal.example.foo'
       },
       status: "OK",
@@ -2264,9 +2264,9 @@ db.status_metrics.insertMany(
       service: "webportal",
       metric: 'generic.http.connect',
       message: "metric log",
-      host: 'lportal.example.foo_ID6',
+      host: 'lportal.example.foo_service-4xdb8b6',
       info: {
-       ID: 'ID6',
+       ID: 'service-4xdb8b6',
        URL: 'https://lportal.example.foo'
       },
       status: "OK",
@@ -2278,11 +2278,11 @@ db.status_metrics.insertMany(
       report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
       endpoint_group: "ARCHIVE",
       service: "webportal",
-      host: 'archive.example.foo_ID7',
+      host: 'archive.example.foo_service-6wzv3n7',
       metric: 'generic.http.connect',
       message: "metric log",
       info: {
-       ID: 'ID7',
+       ID: 'service-6wzv3n7',
        URL: 'https://archive.example.foo'
       },
       status: "OK",
@@ -2487,7 +2487,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'ESHOP',
       service: 'webportal',
-      name: 'hostname1.eshop.foo_f4dd6e5e-fa7e-420c-9f65-b0d42524eed2',
+      name: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2498,7 +2498,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'HELPDESK',
       service: 'webportal',
-      name: 'hostname1.helpdesk.foo',
+      name: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       availability: 30,
       reliability: 30,
       up: 0.3,
@@ -2509,7 +2509,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'WIKI',
       service: 'webportal',
-      name: 'hostname1.wiki.foo',
+      name: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       availability: 98,
       reliability: 98,
       up: 0.98,
@@ -2520,7 +2520,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'FORUM',
       service: 'webportal',
-      name: 'hostname1.forum.foo',
+      name: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       availability: 25,
       reliability: 25,
       up: 0.25,
@@ -2531,7 +2531,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'GLOBAL-PORTAL',
       service: 'webportal',
-      name: 'hostname1.global-portal.foo',
+      name: 'gportal.example.foo_service-2fdb8bcfb525',
       availability: 98,
       reliability: 98,
       up: 0.98,
@@ -2542,7 +2542,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'LOCAL-PORTAL',
       service: 'webportal',
-      name: 'hostname1.local-portal.foo',
+      name: 'lportal.example.foo_service-4xdb8b6',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2553,7 +2553,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'ARCHIVE',
       service: 'webportal',
-      name: 'hostname1.project-a.foo',
+      name: 'archive.example.foo_service-6wzv3n7',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2564,7 +2564,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'ESHOP',
       service: 'webportal',
-      name: 'hostname1.eshop.foo_f4dd6e5e-fa7e-420c-9f65-b0d42524eed2',
+      name: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2575,7 +2575,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'HELPDESK',
       service: 'webportal',
-      name: 'hostname1.helpdesk.foo',
+      name: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2586,7 +2586,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'WIKI',
       service: 'webportal',
-      name: 'hostname1.wiki.foo',
+      name: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2597,7 +2597,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'FORUM',
       service: 'webportal',
-      name: 'hostname1.forum.foo',
+      name: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2608,7 +2608,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'GLOBAL-PORTAL',
       service: 'webportal',
-      name: 'hostname1.golbal-portal.foo',
+      name: 'gportal.example.foo_service-2fdb8bcfb525',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2619,7 +2619,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
       supergroup: 'LOCAL-PORTAL',
       service: 'webportal',
-      name: 'hostname1.local-portal.foo',
+      name: 'lportal.example.foo_service-4xdb8b6',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2630,7 +2630,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'ARCHIVE',
       service: 'webportal',
-      name: 'hostname1.archive.foo',
+      name: 'archive.example.foo_service-6wzv3n7',
       availability: 100,
       reliability: 100,
       up: 1,
