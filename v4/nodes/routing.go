@@ -103,6 +103,18 @@ var arRoutes = []respond.AppRoutes{
 		SubrouterHandler: GetStatus,
 	},
 	{
+		Name:             "v4.nodes.monitoring.metrics",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics",
+		SubrouterHandler: GetMetrics,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics/{item}",
+		SubrouterHandler: GetMetrics,
+	},
+	{
 		Name:             "v4.nodes.status.item",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/status/{item}",
@@ -142,6 +154,18 @@ var arRoutes = []respond.AppRoutes{
 		Name:             "v4.nodes.uptime.item.options",
 		Verb:             "OPTIONS",
 		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics_item",
 		SubrouterHandler: Options,
 	},
 }

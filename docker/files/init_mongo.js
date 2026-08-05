@@ -710,6 +710,14 @@ db.roles.insertMany([
     roles: ['super_admin', 'admin', 'editor']
   },
   {
+    resource: 'v4.nodes.monitoring.metrics',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.monitoring.metrics.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
     resource: 'v4.nodes.summary',
     roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
   },
@@ -2479,7 +2487,7 @@ const base_endpoints = [
       report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
       supergroup: 'ESHOP',
       service: 'webportal',
-      name: 'hostname1.eshop.foo',
+      name: 'hostname1.eshop.foo_f4dd6e5e-fa7e-420c-9f65-b0d42524eed2',
       availability: 100,
       reliability: 100,
       up: 1,
@@ -2556,7 +2564,7 @@ const base_endpoints = [
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       supergroup: 'ESHOP',
       service: 'webportal',
-      name: 'hostname1.eshop.foo',
+      name: 'hostname1.eshop.foo_f4dd6e5e-fa7e-420c-9f65-b0d42524eed2',
       availability: 100,
       reliability: 100,
       up: 1,

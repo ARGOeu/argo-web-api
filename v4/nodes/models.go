@@ -1,6 +1,9 @@
 package nodes
 
 import (
+	"encoding/json"
+	"math"
+
 	"github.com/ARGOeu/argo-web-api/app/reports"
 )
 
@@ -15,6 +18,12 @@ func init() {
 const zuluForm = "2006-01-02T15:04:05Z"
 const ymdForm = "20060102"
 const dtForm = "2006-01-02"
+
+type RoundedFloat float64
+
+func (rf RoundedFloat) MarshalJSON() ([]byte, error) {
+	return json.Marshal(math.Round(float64(rf)*100) / 100)
+}
 
 type basicQuery struct {
 	Name         string                 `bson:"name"`
@@ -69,6 +78,13 @@ type NodeReport struct {
 	ReportId string `bson:"report_id"`
 }
 
+type Metrics struct {
+	Date         string       `json:"date,omitempty"`
+	Availability RoundedFloat `json:"availability"`
+	Reliability  RoundedFloat `json:"reliability"`
+	Uptime       RoundedFloat `json:"uptime,omitempty"`
+}
+
 type Summary struct {
 	Date         string `json:"date,omitempty"`
 	Availability string `json:"availability"`
@@ -96,12 +112,12 @@ type StatusResult struct {
 	AffectedByThresholdRule bool   `json:"affected_by_threshold_rule,omitempty"`
 }
 
-type Results[T Availability | Uptime | Summary] struct {
+type Results[T Availability | Uptime | Summary | Metrics] struct {
 	Name    string `json:"name"`
 	Results []T    `json:"results"`
 }
 
-type Data[T Availability | Uptime | Summary] struct {
+type Data[T Availability | Uptime | Summary | Metrics] struct {
 	Data []Results[T] `json:"data"`
 }
 

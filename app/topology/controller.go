@@ -1263,6 +1263,8 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
+	fmt.Println("$$$$$", groupType, egroupType)
+
 	results, _, err := getGroupEndpointResults(cfg.MongoClient, tenantDbConfig, dt, fGroup, fEndpoint)
 	if err != nil {
 		code = http.StatusInternalServerError
