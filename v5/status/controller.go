@@ -439,9 +439,12 @@ func endpointQuery(input EndpointInputParams, reportID string) bson.M {
 
 	// prepare the match filter
 	filter := bson.M{
-		"date_integer":   bson.M{"$gte": input.startTime, "$lte": input.endTime},
-		"report":         reportID,
-		"endpoint_group": input.group,
+		"date_integer": bson.M{"$gte": input.startTime, "$lte": input.endTime},
+		"report":       reportID,
+	}
+
+	if len(input.group) > 0 {
+		filter["endpoint_group"] = input.group
 	}
 
 	if len(input.service) > 0 {
