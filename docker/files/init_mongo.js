@@ -1618,6 +1618,118 @@ db.status_endpoint_groups.insertMany(
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "ESHOP",
       status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
       has_threshold_rule: false
@@ -4004,6 +4116,62 @@ for (let i = 7; i < 57; i++) {
 
 db.status_endpoint_groups.insertMany(
   [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       endpoint_group: "CLOUD-A",
