@@ -1848,6 +1848,132 @@ db.status_services.insertMany(
       endpoint_group: "ESHOP",
       service: "webportal",
       status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
       has_threshold_rule: false
@@ -1976,6 +2102,202 @@ db.status_services.insertMany(
 
 db.status_endpoints.insertMany(
   [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "ESHOP",
@@ -2178,6 +2500,230 @@ db.status_endpoints.insertMany(
 
 db.status_metrics.insertMany(
   [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
       endpoint_group: "ESHOP",
@@ -4236,6 +4782,195 @@ db.status_endpoint_groups.insertMany(
 
 db.status_services.insertMany(
   [
+     {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       endpoint_group: "CLOUD-A",
@@ -4306,6 +5041,104 @@ db.status_services.insertMany(
 
 db.status_endpoints.insertMany(
   [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       endpoint_group: "CLOUD-A",
@@ -4411,6 +5244,118 @@ db.status_endpoints.insertMany(
 
 db.status_metrics.insertMany(
   [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
     {
       report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       endpoint_group: "CLOUD-A",
