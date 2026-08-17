@@ -7,14 +7,13 @@ require (
 	github.com/gorilla/context v1.1.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.0
 	github.com/twinj/uuid v1.0.0
 	go.mongodb.org/mongo-driver v1.17.9
 	gopkg.in/gcfg.v1 v1.2.3
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
