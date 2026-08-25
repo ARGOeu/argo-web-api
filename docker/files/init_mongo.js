@@ -2514,6 +2514,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2530,6 +2531,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2546,6 +2548,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2562,6 +2565,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2578,6 +2582,7 @@ db.status_metrics.insertMany(
       },
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2594,6 +2599,7 @@ db.status_metrics.insertMany(
       status: "MISSING",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2610,6 +2616,7 @@ db.status_metrics.insertMany(
       },
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2626,6 +2633,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2642,6 +2650,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2658,6 +2667,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2674,6 +2684,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2690,6 +2701,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2706,6 +2718,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2722,6 +2735,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2738,6 +2752,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2754,6 +2769,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2770,6 +2786,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2786,6 +2803,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2802,6 +2820,7 @@ db.status_metrics.insertMany(
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2818,6 +2837,7 @@ db.status_metrics.insertMany(
       status: "MISSING",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2834,6 +2854,7 @@ db.status_metrics.insertMany(
       },
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2850,6 +2871,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2866,6 +2888,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2882,6 +2905,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2898,6 +2922,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2914,6 +2939,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2930,6 +2956,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -2946,6 +2973,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     }
   ]
@@ -5258,6 +5286,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5274,6 +5303,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5290,6 +5320,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5306,6 +5337,7 @@ db.status_metrics.insertMany(
       status: "MISSING",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5322,6 +5354,7 @@ db.status_metrics.insertMany(
       status: "UNKNOWN",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5338,6 +5371,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5354,6 +5388,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5370,6 +5405,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5386,6 +5422,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5402,6 +5439,7 @@ db.status_metrics.insertMany(
       status: "CRITICAL",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5418,6 +5456,7 @@ db.status_metrics.insertMany(
       status: "MISSING",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5434,6 +5473,7 @@ db.status_metrics.insertMany(
       status: "UNKNOWN",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5450,6 +5490,7 @@ db.status_metrics.insertMany(
       status: "WARNING",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
     {
@@ -5466,6 +5507,7 @@ db.status_metrics.insertMany(
       status: "OK",
       timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
       date_integer: dateInteger,
+      time_integer: 0,
       has_threshold_rule: false
     },
   ]

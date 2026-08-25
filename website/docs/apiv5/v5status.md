@@ -19,6 +19,7 @@ _Note_: These are v5 api calls implementations found under the path `/api/v5/sta
 | Get status for specific endpoint of a specific group and a specific service-type | This method retrieves the status timeline for a specific endpoint of a specific group and a specific service-type | [Description](#6) |
 | Get status for metrics of a specific endpoint | This method retrieves the status timelines of all metrics of a specific endpoint | [Description](#7) |
 | Get status for a specific metric of a specific endpoint | This method retrieves the status timeline for a specific metric of a specific endpoint | [Description](#8) |
+| Get Detais for a status metric result at an exact timestamp | This method can be used to obtain the details of a metric result at an exact timestamp where the check was exectued | [Description](#9) |
  
 ## Status timelines
  
@@ -926,3 +927,80 @@ Status: 200 OK
     ]
 }
 ```
+
+## Get Detais for a status metric result at an exact timestamp {#9}
+ 
+The following method can be used to obtain the details of a metric result at an exact timestamp where the check was exectued. The api authenticates the tenant using the api-key within the x-api-key header (or using an admin key along with `x-tenant-id` param). User can specify the period of the retrieved timelines using `start-time` and `end-time`
+ 
+### Input
+ 
+```
+HTTP GET /v5/status/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}/details?[timestamp]
+```
+ 
+#### Query Parameters
+ 
+| Type            | Description                                                                                     | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `[timestamp]`   | UTC time in W3C format                                                                          | YES      |
+
+ 
+#### Path Parameters
+ 
+| Name            | Description                                                                                           | Required | Default value |
+| --------------- | ----------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| `{report-name}` | Name of the report that contains the results | YES      |
+| `{group-name}`  | Name of the specific group to target | YES      |
+| `{service-type-name}`  | Name of the specific service-type to target | YES      |
+| `{endpoint-name}`  | Name of the specific endpoint to target | YES      |
+| `{metric-name}`  | Name of the specific metric to target | YES      |
+ 
+### Example Request
+ 
+#### Request
+ 
+##### Method
+`HTTP GET`
+ 
+##### Path
+ 
+```
+/api/v5/status/CORE/groups/CLOUD-A/service-types/webportal/endpoints/host1.clouda.foo_ID1/metrics/generic.http.connect/details?timestamp=2026-07-23T09:35:46Z
+```
+ 
+##### Headers
+ 
+```
+x-api-key: "tenant_key_value"
+Accept: "application/json"
+```
+ 
+#### Response
+ 
+##### Code
+ 
+```
+Status: 200 OK
+```
+ 
+##### Body
+ 
+```json
+{
+    "timestamp": "2026-07-23T09:35:46Z",
+    "group": "CLOUD-A",
+    "hostname": "host1.clouda.foo_ID1",
+    "service_type": "webportal",
+    "metric": "generic.http.connect",
+    "status": "CRITICAL",
+    "summary": "Http connectivity timeout after 20seconds",
+    "message": "Http connectivity issue",
+    "info": {
+        "ID": "ID1",
+        "URL": "https://host1.clouda.foo/ "
+    },
+    "actual_data": "perf1=33;22;0;; perf2=33;3;44;;"
+}
+```
+
+__Note__: fields like `info` and `actual_data` are optional. Also in some cases `summary` or `message` might be empty (that depends on the check it self)

@@ -200,3 +200,27 @@ type messageOUT struct {
 	Message string `json:"message"`
 	Code    string `json:"code,omitempty"`
 }
+
+type metricDetailsQuery struct {
+	EndpointName    string `bson:"hostname"`
+	MetricName      string `bson:"metric_name"`
+	ExecTime        string `bson:"exec_time"` // UTC time in W3C format
+	ServiceTypeName string `bson:"service"`
+	GroupName       string `bson:"endpoint_group"`
+}
+
+// metricDetailsOutput structure holds mongo results
+type metricResultOutput struct {
+	Timestamp      string             `bson:"timestamp" json:"timestamp"`
+	EndpointGroup  string             `bson:"endpoint_group" json:"group"`
+	Hostname       string             `bson:"host" json:"hostname"`
+	Service        string             `bson:"service" json:"service_type"`
+	Metric         string             `bson:"metric" json:"metric"`
+	Status         string             `bson:"status" json:"status"`
+	Summary        string             `bson:"summary" json:"summary"`
+	Message        string             `bson:"message" json:"message"`
+	Info           *map[string]string `bson:"info" json:"info,omitempty"`
+	ActualData     string             `bson:"actual_data" json:"actual_data,omitempty"`
+	RuleApplied    string             `bson:"threshold_rule_applied" json:"threshold_rule_applied,omitempty"`
+	OriginalStatus string             `bson:"original_status" json:"original_status,omitempty"`
+}
