@@ -898,6 +898,44 @@ func (suite *StatusMetricsTestSuite) TestMultipleItemsDetails() {
 
 }
 
+func (suite *StatusMetricsTestSuite) TestMetricDetails() {
+
+	fullurl1 := "/api/v5/status/Report_A/groups/GROUP-03" +
+		"/service-types/CREAM-CE/endpoints/cream01.example.foo/metrics/emi.cream.CREAMCE-JobCancel/details" +
+		"?timestamp=2015-05-01T01:00:00Z"
+
+	respJSON1 := `{
+   "timestamp": "2015-05-01T01:00:00Z",
+   "group": "GROUP-03",
+   "hostname": "cream01.example.foo",
+   "service_type": "CREAM-CE",
+   "metric": "emi.cream.CREAMCE-JobCancel",
+   "status": "CRITICAL",
+   "summary": "Cream status is CRITICAL",
+   "message": "Cream job submission test failed",
+   "actual_data": "latency=15s",
+   "threshold_rule_applied": "latency=1s;0:5;10:60",
+   "original_status": "OK"
+ }`
+
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+
+	// Compare the expected and actual json response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+}
+
 func (suite *StatusMetricsTestSuite) TestOptionsStatusMetrics() {
 	request, _ := http.NewRequest("OPTIONS", "/api/v5/status/Report_A/groups/GROUP_A/service-types/service_a/endpoints/endpoint_a/metrics", strings.NewReader(""))
 

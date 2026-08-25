@@ -2,6 +2,7 @@ package statusV5
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -504,5 +506,116 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
+
+}
+
+// GetMetricDetails returns the detailed message from a probe
+func GetMetricDetails(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	code := http.StatusOK
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	// Parse the request into the input
+	urlValues := r.URL.Query()
+	vars := mux.Vars(r)
+
+	reportName := urlValues.Get("report")
+	reportID := ""
+
+	reportCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("reports")
+
+	if reportName != "" {
+
+		queryResult := reportCol.FindOne(context.TODO(), bson.M{"info.name": reportName})
+
+		if queryResult.Err() != nil {
+			if queryResult.Err() == mongo.ErrNoDocuments {
+				code = http.StatusNotFound
+				message := "The report with the name " + reportName + " does not exist"
+				output, err := createErrorMessage(message, code, contentType) //Render the response into XML or JSON
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			}
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
+	}
+
+	input := metricDetailsQuery{
+		GroupName:       vars["group-name"],
+		ServiceTypeName: vars["service-type-name"],
+		EndpointName:    vars["endpoint-name"],
+		MetricName:      vars["metric-name"],
+		ExecTime:        urlValues.Get("timestamp"),
+	}
+
+	var result metricResultOutput
+
+	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
+	q := prepQuery(input, reportID)
+	fmt.Println(q)
+	err = metricCol.FindOne(context.TODO(), q).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			code = http.StatusNotFound
+			message := "Metric not found!"
+			output, err := createErrorMessage(message, code, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	output, err = json.MarshalIndent(result, " ", "  ")
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	return code, h, output, err
+}
+
+func prepQuery(input metricDetailsQuery, reportID string) bson.M {
+
+	//Time Related
+	const zuluForm = "2006-01-02T15:04:05Z"
+	const ymdForm = "20060102"
+
+	ts, _ := time.Parse(zuluForm, input.ExecTime)
+	tsYMD, _ := strconv.Atoi(ts.Format(ymdForm))
+
+	// parse time as integer
+	tsInt := (ts.Hour() * 10000) + (ts.Minute() * 100) + ts.Second()
+
+	query := bson.M{
+		"date_integer":   tsYMD,
+		"endpoint_group": input.GroupName,
+		"service":        input.ServiceTypeName,
+		"host":           input.EndpointName,
+		"metric":         input.MetricName,
+		"time_integer":   tsInt,
+	}
+
+	if reportID != "" {
+		query["report"] = reportID
+	}
+
+	return query
 
 }

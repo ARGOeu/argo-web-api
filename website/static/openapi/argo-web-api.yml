@@ -15629,6 +15629,136 @@ paths:
                                                   description: Status value
                                                   example: WARNING
 
+  /v5/status/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}/details:
+    get:
+      summary: Get the details of a metric result
+      description: >
+        Returns the details of the metric result such as the check message and summary
+      operationId: getMetricDetails
+      tags:
+      - v5-status
+      parameters:
+        - name: report-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Report-1
+          description: Name of the report.
+        - name: group-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Group-A
+          description: Name of the endpoint group.
+        - name: service-type-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: SERVICE-A
+          description: Name of the service type.
+        - name: endpoint-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: hostname.example.foo
+          description: Name (hostname) of the endpoint.
+        - name: metric-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: generic.http.check
+          description: Name of the metric.
+      responses:
+        '200':
+          description: Metric details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-03-11T22:23:19Z"
+                  group:
+                    type: string
+                    example: "Group-A"
+                  hostname:
+                    type: string
+                    example: "hostname.example.foo"
+                  service_type:
+                    type: string
+                    example: "service-a"
+                  metric:
+                    type: string
+                    example: "http-connect"
+                  status:
+                    type: string
+                    example: "CRITICAL"
+                  summary:
+                    type: string
+                    example: "Http connect timeout after 10s"
+                  message:
+                    type: string
+                    example: "Http connectivity issue"
+                  info:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    example:
+                      ID: "ID1"
+                      URL: "https://id1.example.foo/ "
+                  actual_data:
+                    type: string
+                required:
+                  - timestamp
+                  - group
+                  - hostname
+                  - service_type
+                  - metric
+                  - status
+              example:
+                timestamp: "2026-03-11T22:23:19Z"
+                group: "Group-A"
+                hostname: "host.example.foo"
+                service_type: "service-a"
+                metric: "http.connect"
+                status: "CRITICAL"
+                summary: >-
+                  Http connect timeout after 10s
+                message: "Http connectivity issue"
+                info:
+                  ID: "ID1"
+                  URL: "https://id.example.foo/ "
+                actual_data: "data1=3;45;0;; data2=33;14;0;;"
+        '404':
+          description: Report, group, service type, endpoint, or metric not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
 
 components:
   schemas:

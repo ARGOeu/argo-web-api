@@ -24,6 +24,7 @@ var statusV5Routes = []respond.AppRoutes{
 	{Name: "status.get", Verb: "GET", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}", SubrouterHandler: GetEndpointStatus},
 	{Name: "status.list", Verb: "GET", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics", SubrouterHandler: GetMetricStatus},
 	{Name: "status.get", Verb: "GET", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}", SubrouterHandler: GetMetricStatus},
+	{Name: "status.get", Verb: "GET", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}/details", SubrouterHandler: GetMetricDetails},
 
 	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups", SubrouterHandler: Options},
 	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}", SubrouterHandler: Options},
@@ -39,4 +40,5 @@ var statusV5Routes = []respond.AppRoutes{
 	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}", SubrouterHandler: Options},
 	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics", SubrouterHandler: Options},
 	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}", SubrouterHandler: Options},
+	{Name: "status.options", Verb: "OPTIONS", Path: "/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}/details", SubrouterHandler: Options},
 }
