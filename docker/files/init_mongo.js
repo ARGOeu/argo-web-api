@@ -5363,6 +5363,7 @@ db.status_metrics.insertMany(
       service: "webportal",
       host: 'host1.clouda.foo_ID1',
       metric: 'generic.http.connect',
+      summary: "check",
       message: "metric log",
       info: {
        ID: 'ID1',
@@ -5389,6 +5390,144 @@ db.status_metrics.insertMany(
       timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
       date_integer: dateInteger,
       time_integer: 0,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:03:00Z',
+      date_integer: dateInteger,
+      time_integer: 300,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:09:00Z',
+      date_integer: dateInteger,
+      time_integer: 900,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:10:00Z',
+      date_integer: dateInteger,
+      time_integer: 1000,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:13:00Z',
+      date_integer: dateInteger,
+      time_integer: 1300,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:15:00Z',
+      date_integer: dateInteger,
+      time_integer: 1500,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:16:00Z',
+      date_integer: dateInteger,
+      time_integer: 1500,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      summary: 'HTTP OK',
+      message: "HTTP Connect OK - Content Received - Content: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur pretium mi, auctor pellentesque ipsum fringilla vel. Nulla egestas a eros a ullamcorper. Curabitur tempor vel tortor quis venenatis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce imperdiet odio mauris, non egestas elit finibus a. Aliquam erat volutpat. Fusce sodales diam sit amet urna ornare ullamcorper ac vitae turpis. Morbi viverra porta purus, ut convallis est volutpat nec. Pellentesque posuere risus in ante commodo, sit amet gravida erat tempor.\nSed quis purus mattis, eleifend diam a, vulputate leo. Maecenas venenatis ac augue et mattis. Aenean mi augue, eleifend sit amet vulputate vel, vulputate id mi. Nunc scelerisque sed sapien ac varius. Aliquam iaculis urna vitae purus facilisis mollis. Sed ut metus urna. Morbi vel interdum lacus. Sed vulputate facilisis urna, nec semper est dapibus ac. Donec porta finibus mattis. Nulla dignissim ante id dui viverra, lacinia egestas purus egestas. Etiam volutpat pharetra metus eu mollis. Integer tempor sollicitudin rutrum. Aliquam erat volutpat.\nVestibulum quis dolor ex. Cras non velit ut tortor tristique dapibus pellentesque sit amet eros. Proin ultricies tortor sem, egestas posuere libero dictum sit amet. Phasellus congue purus et libero congue consequat. Pellentesque sed nunc viverra, mattis massa eget, venenatis risus. Donec viverra ante ante, ut pulvinar quam sollicitudin non. Curabitur pharetra laoreet porta. Quisque maximus, dolor eget bibendum cursus, tellus tortor lobortis velit, vitae maximus libero nisi ut velit. Morbi et enim tincidunt, congue urna sit amet, consectetur enim.\nQuisque dictum consequat tellus vel vestibulum. Aliquam elementum malesuada mi vel molestie. Vivamus pretium mi sit amet ligula condimentum, quis bibendum erat facilisis. Duis vitae libero justo. Cras luctus efficitur lacinia. Aliquam fermentum tincidunt turpis, ut hendrerit massa iaculis non. Ut arcu nisl, congue sed lorem quis, posuere pretium felis. Nullam eu orci at lacus aliquam aliquet. Nam sollicitudin mi sed ipsum viverra, eu pellentesque tortor ullamcorper. Integer sit amet purus ipsum. Nulla bibendum vulputate justo, sit amet porttitor urna consequat eu.",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:19:00Z',
+      date_integer: dateInteger,
+      time_integer: 1900,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      summary: 'HTTP OK',
+      message: "HTTP Connect OK - Content Received - Content: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur pretium mi, auctor pellentesque ipsum fringilla vel. Nulla egestas a eros a ullamcorper. Curabitur tempor vel tortor quis venenatis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce imperdiet odio mauris, non egestas elit finibus a. Aliquam erat volutpat. Fusce sodales diam sit amet urna ornare ullamcorper ac vitae turpis. Morbi viverra porta purus, ut convallis est volutpat nec. Pellentesque posuere risus in ante commodo, sit amet gravida erat tempor.\nSed quis purus mattis, eleifend diam a, vulputate leo. Maecenas venenatis ac augue et mattis. Aenean mi augue, eleifend sit amet vulputate vel, vulputate id mi. Nunc scelerisque sed sapien ac varius. Aliquam iaculis urna vitae purus facilisis mollis. Sed ut metus urna. Morbi vel interdum lacus. Sed vulputate facilisis urna, nec semper est dapibus ac. Donec porta finibus mattis. Nulla dignissim ante id dui viverra, lacinia egestas purus egestas. Etiam volutpat pharetra metus eu mollis. Integer tempor sollicitudin rutrum. Aliquam erat volutpat.\nVestibulum quis dolor ex. Cras non velit ut tortor tristique dapibus pellentesque sit amet eros. Proin ultricies tortor sem, egestas posuere libero dictum sit amet. Phasellus congue purus et libero congue consequat. Pellentesque sed nunc viverra, mattis massa eget, venenatis risus. Donec viverra ante ante, ut pulvinar quam sollicitudin non. Curabitur pharetra laoreet porta. Quisque maximus, dolor eget bibendum cursus, tellus tortor lobortis velit, vitae maximus libero nisi ut velit. Morbi et enim tincidunt, congue urna sit amet, consectetur enim.\nQuisque dictum consequat tellus vel vestibulum. Aliquam elementum malesuada mi vel molestie. Vivamus pretium mi sit amet ligula condimentum, quis bibendum erat facilisis. Duis vitae libero justo. Cras luctus efficitur lacinia. Aliquam fermentum tincidunt turpis, ut hendrerit massa iaculis non. Ut arcu nisl, congue sed lorem quis, posuere pretium felis. Nullam eu orci at lacus aliquam aliquet. Nam sollicitudin mi sed ipsum viverra, eu pellentesque tortor ullamcorper. Integer sit amet purus ipsum. Nulla bibendum vulputate justo, sit amet porttitor urna consequat eu.",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:20:00Z',
+      date_integer: dateInteger,
+      time_integer: 2000,
       has_threshold_rule: false
     },
     {
