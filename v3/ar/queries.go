@@ -1,6 +1,6 @@
 package ar
 
-import "go.mongodb.org/mongo-driver/bson"
+import "go.mongodb.org/mongo-driver/v2/bson"
 
 // datastore collection name that contains aggregations profile records
 const groupColName = "endpoint_group_ar"

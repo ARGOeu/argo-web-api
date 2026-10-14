@@ -35,8 +35,7 @@ import (
 
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // FlatListEndpointResults is responsible for handling request to flat list all available endpoint results
@@ -144,7 +143,7 @@ func FlatListEndpointResults(r *http.Request, cfg config.Config) (int, http.Head
 	// Select the granularity of the search daily/monthly
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
 	custom := false
-	var query []primitive.M
+	var query []bson.M
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
@@ -275,7 +274,7 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
-	var query []primitive.M
+	var query []bson.M
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
@@ -401,7 +400,7 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
@@ -523,7 +522,7 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
@@ -633,7 +632,7 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	custom := false
 
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
-	var query []primitive.M
+	var query []bson.M
 	// Select the granularity of the search daily/monthly
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"

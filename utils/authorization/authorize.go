@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // QRole holds roles resources relationships

@@ -12,9 +12,8 @@ import (
 
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ListGroupResults list monitoring results (availability/reliability)
@@ -87,7 +86,7 @@ func GetGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
@@ -206,7 +205,7 @@ func GetSupergroups(r *http.Request, cfg config.Config) (int, http.Header, []byt
 	custom := false
 
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
-	var query []primitive.M
+	var query []bson.M
 	// Select the granularity of the search daily/monthly
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
@@ -328,7 +327,7 @@ func GetEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
-	var query []primitive.M
+	var query []bson.M
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
@@ -447,7 +446,7 @@ func GetServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Select the granularity of the search daily/monthly
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"

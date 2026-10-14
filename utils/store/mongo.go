@@ -7,22 +7,23 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // OpenSession to mongodb
 func GetMongoClient(mongoCfg config.MongoConfig) *mongo.Client {
 	conURL := "mongodb://" + mongoCfg.Host + ":" + strconv.Itoa(mongoCfg.Port)
 	clientOptions := options.Client().ApplyURI(conURL)
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//ping the database
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)

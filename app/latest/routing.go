@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // HandleSubrouter uses the subrouter for a specific calls and creates a tree of sorts

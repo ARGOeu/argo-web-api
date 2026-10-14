@@ -37,7 +37,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 

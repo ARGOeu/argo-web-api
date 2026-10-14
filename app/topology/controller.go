@@ -41,9 +41,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // datastore collection name that contains aggregations profile records
@@ -103,7 +102,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	serviceCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
 	eGroupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 
-	distinctServices, err := serviceCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
+	var distinctServices []interface{}
+	err = serviceCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt}).Decode(&distinctServices)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -115,7 +115,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	distinctEgroup, err := eGroupCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
+	var distinctEgroup []interface{}
+	err = eGroupCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt}).Decode(&distinctEgroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -127,7 +128,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	distinctGroup, err := eGroupCol.Distinct(context.TODO(), "supergroup", bson.M{"report": reportID, "date": dt})
+	var distinctGroup []interface{}
+	err = eGroupCol.Distinct(context.TODO(), "supergroup", bson.M{"report": reportID, "date": dt}).Decode(&distinctGroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -429,7 +431,7 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := endpointCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}
@@ -593,7 +595,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := groupCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}
@@ -687,7 +689,7 @@ func appendTags(query bson.M, tags string) bson.M {
 				}
 			}
 			tagRegStr = tagRegStr + ")$"
-			query["tags."+tag] = primitive.Regex{Pattern: tagRegStr}
+			query["tags."+tag] = bson.Regex{Pattern: tagRegStr}
 
 		} else {
 
@@ -696,9 +698,9 @@ func appendTags(query bson.M, tags string) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["tags."+tag] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["tags."+tag] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["tags."+tag] = primitive.Regex{Pattern: value}
+					query["tags."+tag] = bson.Regex{Pattern: value}
 				}
 
 			} else {
@@ -743,7 +745,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = primitive.Regex{Pattern: groupRegStr}
+			query["group"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -751,9 +753,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["group"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["group"] = primitive.Regex{Pattern: value}
+					query["group"] = bson.Regex{Pattern: value}
 				}
 
 			} else {
@@ -782,7 +784,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = primitive.Regex{Pattern: groupRegStr}
+			query["type"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -790,9 +792,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["type"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["type"] = primitive.Regex{Pattern: value}
+					query["type"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -819,7 +821,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["service"] = primitive.Regex{Pattern: groupRegStr}
+			query["service"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -827,9 +829,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["service"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["service"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["service"] = primitive.Regex{Pattern: value}
+					query["service"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -856,7 +858,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["hostname"] = primitive.Regex{Pattern: groupRegStr}
+			query["hostname"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -864,9 +866,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["hostname"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["hostname"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["hostname"] = primitive.Regex{Pattern: value}
+					query["hostname"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -967,7 +969,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = primitive.Regex{Pattern: groupRegStr}
+			query["group"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -975,9 +977,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["group"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["group"] = primitive.Regex{Pattern: value}
+					query["group"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1004,7 +1006,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = primitive.Regex{Pattern: groupRegStr}
+			query["type"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -1012,9 +1014,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["type"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["type"] = primitive.Regex{Pattern: value}
+					query["type"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1041,7 +1043,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["subgroup"] = primitive.Regex{Pattern: groupRegStr}
+			query["subgroup"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -1049,9 +1051,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["subgroup"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["subgroup"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["subgroup"] = primitive.Regex{Pattern: value}
+					query["subgroup"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1500,7 +1502,7 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := serviceTypeCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}

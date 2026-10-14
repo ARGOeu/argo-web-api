@@ -12,9 +12,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 const conColName = "consistency"
@@ -150,7 +150,7 @@ func PostAutoCheck(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 	filter := bson.M{"_id": conID}
 	update := bson.M{"$set": autoCheckInput}
-	opts := options.Update().SetUpsert(true)
+	opts := options.UpdateOne().SetUpsert(true)
 
 	_, err = conCol.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
@@ -211,7 +211,7 @@ func PostAck(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	filter := bson.M{"_id": conID}
 	update := bson.M{"$set": ackInput}
-	opts := options.Update().SetUpsert(false)
+	opts := options.UpdateOne().SetUpsert(false)
 
 	updateResult, err := conCol.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {

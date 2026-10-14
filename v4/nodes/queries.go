@@ -1,7 +1,7 @@
 package nodes
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // datastore collection name that contains aggregations profile records
