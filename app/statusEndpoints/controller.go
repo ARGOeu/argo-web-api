@@ -34,7 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // parseZuluDate is used to parse a zulu formatted date to integer

@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"github.com/gorilla/mux"
 )

@@ -12,8 +12,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 var ROLE_DICT = map[string]string{

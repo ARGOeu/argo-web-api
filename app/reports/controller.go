@@ -40,9 +40,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var reportsColl = "reports"
@@ -610,7 +610,7 @@ func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 	filter := bson.M{"_id": nodeReportId}
 	update := bson.M{"$set": NodeReport{Report_id: id}}
-	opts := options.Update().SetUpsert(true)
+	opts := options.UpdateOne().SetUpsert(true)
 
 	updateChange, err := nrCol.UpdateOne(context.TODO(), filter, update, opts)
 

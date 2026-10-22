@@ -33,8 +33,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // ListGroupAR lists supergroup and group availabilities according to the http request
@@ -104,7 +103,7 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	// Prepare the supergroup results
 	// Select the granularity of the search daily/monthly
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
-	var query []primitive.M
+	var query []bson.M
 	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"
@@ -243,7 +242,7 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
-	var query []primitive.M
+	var query []bson.M
 	custom := false
 	if input.Granularity == "daily" {
 		customForm[0] = "20060102"

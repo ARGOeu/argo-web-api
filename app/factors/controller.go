@@ -36,8 +36,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 
 	gcontext "github.com/gorilla/context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)

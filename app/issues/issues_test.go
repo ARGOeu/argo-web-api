@@ -39,7 +39,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 

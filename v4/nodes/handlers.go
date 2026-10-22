@@ -12,8 +12,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // GetMetrics lists availability, reliability, uptime for a specific group
@@ -92,7 +91,7 @@ func GetMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
 		"report": report.ID,
 	}
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Name != "" {
 		filter["name"] = input.Name
@@ -213,7 +212,7 @@ func GetSummary(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
 		"report": report.ID,
 	}
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Name != "" {
 		filter["name"] = input.Name
@@ -339,7 +338,7 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 		filter["name"] = item
 	}
 
-	var query []primitive.M
+	var query []bson.M
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
@@ -455,7 +454,7 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		"date":   bson.M{"$gte": input.StartTimeInt, "$lte": input.EndTimeInt},
 		"report": report.ID,
 	}
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Name != "" {
 		filter["name"] = input.Name
@@ -608,7 +607,7 @@ func GetGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []by
 		"report": report.ID,
 	}
 
-	var query []primitive.M
+	var query []bson.M
 
 	if input.Name != "" {
 		filter["name"] = input.Name

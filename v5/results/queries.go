@@ -1,7 +1,7 @@
 package resultsV5
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // DailyGroup query to aggregate daily results from mongodb

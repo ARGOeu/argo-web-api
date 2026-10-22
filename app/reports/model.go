@@ -34,8 +34,8 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats

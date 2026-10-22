@@ -23,7 +23,7 @@
 package results
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // FlatDailyEndpoint query to aggregate daily endpoint a/r results from mongoDB
