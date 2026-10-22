@@ -2,6 +2,33 @@
 
 All notable changes in argo-web-api project are documented here
 
+## [v1.14.4] - (2026-10-21)
+
+### Added
+
+- ARGO-5411 Migrate to mongo driver v2([#784](https://github.com/ARGOeu/argo-web-api/pull/784))
+- ARGO-5932 Add latest metric data call without specifing group type ([#772](https://github.com/ARGOeu/argo-web-api/pull/772))
+- ARGO-5879 Add v5 status metric details api call ([#763](https://github.com/ARGOeu/argo-web-api/pull/763))
+- ARGO-5841 Provide api call that returns status timelines for all endp… ([#755](https://github.com/ARGOeu/argo-web-api/pull/755))
+- ARGO-5788 Provide monitoring capability metrics according to spec ([#754](https://github.com/ARGOeu/argo-web-api/pull/754))
+- ARGO-5795 provide new status related calls ([#743](https://github.com/ARGOeu/argo-web-api/pull/743))
+- ARGO-5770 list a/r results for service types ([#741](https://github.com/ARGOeu/argo-web-api/pull/741))
+- ARGO-5730 provide new api calls for endpoint a/r results ([#733](https://github.com/ARGOeu/argo-web-api/pull/733))
+- ARGO-5716 Provide new calls to retrieve a/r results for supergroups a… ([#732](https://github.com/ARGOeu/argo-web-api/pull/732))
+- ARGO-5579 Add public reports to local env data ([#726](https://github.com/ARGOeu/argo-web-api/pull/726))
+- ARGO-5579 Support public reports ([#721](https://github.com/ARGOeu/argo-web-api/pull/721))
+- ARGO-5548 add v4 endpoints to serve group results and statuses ([#717](https://github.com/ARGOeu/argo-web-api/pull/717))
+- ARGO-5480 Add latest status data for all groups/reports in local env ([#712](https://github.com/ARGOeu/argo-web-api/pull/712))
+- ARGO-5532 Introduce summary capability. Add ability to target specifi… ([#713](https://github.com/ARGOeu/argo-web-api/pull/713))
+- ARGO-5519 Support eosc-service-catalog connector in feeds topology ([#704](https://github.com/ARGOeu/argo-web-api/pull/704))
+- ARGO-5490 Add support for connector component to issue credentials ([#692](https://github.com/ARGOeu/argo-web-api/pull/692))
+
+### Changed
+
+- ARGO-5563 Make local dummy datasets more consistent between scores an… ([#719](https://github.com/ARGOeu/argo-web-api/pull/719))
+- ARGO-5702 Unset node report when a tenant is unset from node ([#731](https://github.com/ARGOeu/argo-web-api/pull/731))
+
+
 ## [v1.14.3] - (2026-03-26)
 
 ### Added:
