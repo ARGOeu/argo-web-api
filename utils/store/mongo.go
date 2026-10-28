@@ -37,8 +37,12 @@ type DatedItem struct {
 
 func GetCloseDate(c *mongo.Collection, dt int) int {
 	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	opts := options.FindOne().
+		SetSort(bson.D{{Key: "date_integer", Value: -1}}).
+		SetProjection(bson.M{"date_integer": 1})
+
 	result := DatedItem{}
-	err := c.FindOne(context.TODO(), dateQuery).Decode(&result)
+	err := c.FindOne(context.TODO(), dateQuery, opts).Decode(&result)
 	if err != nil {
 		return -1
 	}

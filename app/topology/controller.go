@@ -905,13 +905,13 @@ func prepTagAggr(date int) []bson.M {
 
 }
 
-func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
+func prepGroupEndpointAggr(groupDate int, endpointDate int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
 
 	// prepare match query for applying filtering on the groups based on report
-	groupMatch := prepGroupQuery(date, fgroup)
+	groupMatch := prepGroupQuery(groupDate, fgroup)
 
 	// prepare match query for applying further filtering on already filtered by groups endpoints based on report
-	endpointMatch := prepEndpointQuery(date, fendpoint)
+	endpointMatch := prepEndpointQuery(endpointDate, fendpoint)
 
 	// Endpoints must be filtered based on the filtered groups they belong to. So we begin an aggregation firstly
 	// by filtering groups and then trying to find using lookup which endpoints belong to those filtered groups.
@@ -927,19 +927,15 @@ func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) [
 		{"$match": groupMatch},
 		{"$lookup": bson.M{"from": endpointColName,
 			"let": bson.M{
-				"group_date":     "$date_integer",
 				"group_subgroup": "$subgroup",
 			},
 			"pipeline": []bson.M{
 				{"$match": bson.M{
+					"date_integer": endpointDate,
 					"$expr": bson.M{
-						"$and": []bson.M{
-							{"$eq": []string{"$$group_subgroup", "$group"}},
-							{"$eq": []string{"$$group_date", "$date_integer"}},
-						},
+						"$eq": []string{"$$group_subgroup", "$group"},
 					},
-				},
-				},
+				}},
 			},
 			"as": "endp"}},
 		{"$unwind": "$endp"},
@@ -1265,8 +1261,6 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 		fEndpoint.GroupType = append(fEndpoint.GroupType, egroupType)
 	}
 
-	fmt.Println("$$$$$", groupType, egroupType)
-
 	results, _, err := getGroupEndpointResults(cfg.MongoClient, tenantDbConfig, dt, fGroup, fEndpoint)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -1310,25 +1304,35 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 func getGroupEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int, filterG fltrGroup, filterE fltrEndpoint) ([]Endpoint, int, error) {
 	subResults := []Endpoint{}
 
-	colGroup := client.Database(dbConfig.Db).Collection(groupColName)
-	expDate := store.GetCloseDate(colGroup, dateInt)
-	if expDate < 0 {
-		return subResults, expDate, nil
+	db := client.Database(dbConfig.Db)
+	colGroup := db.Collection(groupColName)
+	colEndpoint := db.Collection(endpointColName)
+
+	// endpoints: closest snapshot to the requested date
+	endpointDate := store.GetCloseDate(colEndpoint, dateInt)
+	if endpointDate < 0 {
+		return subResults, endpointDate, nil
 	}
 
-	query := prepGroupEndpointAggr(expDate, filterG, filterE)
+	// groups: closest snapshot to the endpoint snapshot date
+	groupDate := store.GetCloseDate(colGroup, endpointDate)
+	if groupDate < 0 {
+		return subResults, groupDate, nil
+	}
+
+	query := prepGroupEndpointAggr(groupDate, endpointDate, filterG, filterE)
 
 	cursor, err := colGroup.Aggregate(context.TODO(), query)
-
 	if err != nil {
-		return subResults, expDate, err
+		return subResults, endpointDate, err
 	}
-
 	defer cursor.Close(context.TODO())
 
-	cursor.All(context.TODO(), &subResults)
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, endpointDate, err
+	}
 
-	return subResults, expDate, err
+	return subResults, endpointDate, nil
 }
 
 // ListGroupsByReport lists group topology by report

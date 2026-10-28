@@ -3773,6 +3773,215 @@ db.topology_endpoints.insertMany(
   ]
 );
 
+db.topology_endpoints.insertMany(
+  [
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute1.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute154.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute2.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          "iam-ops@cloud-a.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam345.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          "iam-ops@cloud-a.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          "storage-ops@cloud-b.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-C",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-c.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "C"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-D",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-d.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "D"
+      }
+    },
+     {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-E",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-e.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "E"
+      }
+    }
+  ]
+);
+
+
 db.topology_groups.insertMany(
   [
     {
