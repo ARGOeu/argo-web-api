@@ -42,8 +42,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutesV2 = []respond.AppRoutes{
-	{"version.list", "GET", "/version", ListVersion},
-	{"version.options", "OPTIONS", "/version", Options},
+	{Name: "version.list", Verb: "GET", Path: "/version", SubrouterHandler: ListVersion},
+	{Name: "version.options", Verb: "OPTIONS", Path: "/version", SubrouterHandler: Options},
 }
 
 // Version struct holds version information about the binary build
