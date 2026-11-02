@@ -3,7 +3,7 @@ package statusV5
 import (
 	"encoding/json"
 	"encoding/xml"
-	"strconv"
+	"errors"
 	"strings"
 	"time"
 
@@ -102,7 +102,7 @@ func createServiceView(report reports.MongoInterface, results []ServiceDataOutpu
 		extraTS = "T23:59:59Z"
 	}
 
-	output := []byte("reponse output")
+	var output []byte
 	err := error(nil)
 
 	docRoot := &rootServiceOUT{}
@@ -197,13 +197,12 @@ func createEndpointView(report reports.MongoInterface, results []EndpointDataOut
 
 	docRoot := &rootEndpointOUT{}
 
+	if !strings.EqualFold(input.format, "application/json") {
+		return nil, errors.New("unsupported content type: only application/json is available")
+	}
+
 	if len(results) == 0 {
-		if strings.EqualFold(input.format, "application/json") {
-			output, err = json.MarshalIndent(docRoot, " ", "  ")
-		} else {
-			output, err = xml.MarshalIndent(docRoot, " ", "  ")
-		}
-		return output, err
+		return json.MarshalIndent(docRoot, " ", "  ")
 	}
 
 	prevHostname := ""
@@ -284,13 +283,12 @@ func createMetricView(report reports.MongoInterface, results []MetricDataOutput,
 
 	docRoot := &rootMetricOUT{}
 
+	if !strings.EqualFold(input.format, "application/json") {
+		return nil, errors.New("unsupported content type: only application/json is available")
+	}
+
 	if len(results) == 0 {
-		if strings.EqualFold(input.format, "application/json") {
-			output, err = json.MarshalIndent(docRoot, " ", "  ")
-		} else {
-			output, err = xml.MarshalIndent(docRoot, " ", "  ")
-		}
-		return output, err
+		return json.MarshalIndent(docRoot, " ", "  ")
 	}
 
 	prevHostname := ""
@@ -380,17 +378,5 @@ func createErrorMessage(message string, code int, format string) ([]byte, error)
 	} else {
 		output, err = xml.MarshalIndent(docRoot, " ", "  ")
 	}
-	return output, err
-}
-
-func createMessageOUT(message string, code int, format string) ([]byte, error) {
-
-	var output []byte
-	err := error(nil)
-	docRoot := &messageOUT{}
-
-	docRoot.Message = message
-	docRoot.Code = strconv.Itoa(code)
-	output, err = respond.MarshalContent(docRoot, format, "", " ")
 	return output, err
 }

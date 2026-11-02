@@ -44,10 +44,9 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type TrendsTestSuite struct {
 	suite.Suite
-	cfg          config.Config
-	router       *mux.Router
-	confHandler  respond.ConfHandler
-	tenantDbConf config.MongoConfig
+	cfg         config.Config
+	router      *mux.Router
+	confHandler respond.ConfHandler
 }
 
 // Setup the Test Environment
@@ -89,11 +88,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	authCol.InsertOne(context.TODO(), seedAuth)
-
+	_, err := authCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -117,58 +116,69 @@ func (suite *TrendsTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_metrics",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_metrics_tags",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_endpoints",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_services",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.flapping_endpoint_groups",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_metrics",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_endpoints",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_services",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_metrics_tags",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "trends.status_endpoint_groups",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -182,7 +192,7 @@ func (suite *TrendsTestSuite) SetupTest() {
 
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -220,79 +230,89 @@ func (suite *TrendsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends for endpoint group data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_groups")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"status":   "CRITICAL",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-B",
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"status":   "WARNING",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-C",
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"status":   "UNKNOWN",
 		"duration": 45,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-C",
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
 		"status":   "CRITICAL",
 		"duration": 7,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends service data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_services")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -300,8 +320,9 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -309,7 +330,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -317,7 +339,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -325,8 +348,9 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -334,7 +358,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -342,7 +367,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -350,8 +376,9 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 45,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -359,7 +386,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -367,10 +395,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 7,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends endpoint data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -379,39 +408,40 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"endpoint": "hostb.example.foo",
-
 		"status":   "UNKNOWN",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"service":  "service-XA",
 		"endpoint": "hosta.examplex2.foo",
-
 		"status":   "CRITICAL",
 		"duration": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"endpoint": "hosta.example.foo",
-
 		"status":   "WARNING",
 		"duration": 55,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -420,7 +450,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -429,7 +460,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -438,8 +470,9 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"duration": 45,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -448,7 +481,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"duration": 8,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -457,10 +491,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"duration": 7,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends metric data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_trends_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -470,7 +505,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -480,7 +516,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   40,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -490,7 +527,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -500,7 +538,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -510,7 +549,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -520,7 +560,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   40,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -530,7 +571,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "WARNING",
 		"trends":   12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -540,7 +582,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -550,7 +593,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "UNKNOWN",
 		"trends":   45,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -561,7 +605,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"trends":   32,
 		"tags":     []string{"STORAGE"},
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -572,7 +617,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"trends":   8,
 		"tags":     []string{"NETWORK", "HTTP"},
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -582,10 +628,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"status":   "CRITICAL",
 		"trends":   7,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends metric data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -594,7 +641,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -603,7 +651,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-2",
 		"flipflop": 40,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -612,7 +661,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -621,7 +671,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -630,7 +681,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -639,7 +691,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-2",
 		"flipflop": 40,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -648,7 +701,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -657,7 +711,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "web-check",
 		"flipflop": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -666,7 +721,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"metric":   "check-1",
 		"flipflop": 45,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -676,7 +732,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"tags":     []string{"MEMORY"},
 		"flipflop": 32,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -686,7 +743,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"tags":     []string{"NETWORK", "HTTP"},
 		"flipflop": 8,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -696,10 +754,11 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"tags":     []string{"NETWORK", "HTTP"},
 		"flipflop": 7,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends endpoint data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -707,7 +766,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
@@ -715,7 +775,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 2,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
@@ -723,8 +784,9 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.exampleX2.foo",
 		"flipflop": 35,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -732,7 +794,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
@@ -740,7 +803,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
@@ -748,7 +812,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example2.foo",
 		"flipflop": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -756,7 +821,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example.foo",
 		"flipflop": 48,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
@@ -764,7 +830,8 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hostb.example.foo",
 		"flipflop": 7,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
@@ -772,113 +839,129 @@ func (suite *TrendsTestSuite) SetupTest() {
 		"endpoint": "hosta.example2.foo",
 		"flipflop": 3,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends service data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_services")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 25,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 16,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"service":  "service-XA",
 		"flipflop": 3,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 12,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
 		"service":  "service-A",
 		"flipflop": 5,
 	})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"service":  "service-A",
 		"flipflop": 43,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"service":  "service-B",
 		"flipflop": 11,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
 		"service":  "service-A",
 		"flipflop": 4,
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed trends group data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("flipflop_trends_endpoint_groups")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-A",
 		"flipflop": 35,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150401,
 		"group":    "SITE-XB",
 		"flipflop": 3,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-A",
 		"flipflop": 55,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150501,
 		"group":    "SITE-B",
 		"flipflop": 5,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-A",
 		"flipflop": 11,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":   "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date":     20150502,
 		"group":    "SITE-B",
 		"flipflop": 4,
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -3578,8 +3661,8 @@ func (suite *TrendsTestSuite) TestOptionsTrendsEndpointGroups() {
 // Mainly it's purpose is to drop the testdb
 func (suite *TrendsTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("argotest_trends").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_trends_tenant").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_trends").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_trends_tenant").Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

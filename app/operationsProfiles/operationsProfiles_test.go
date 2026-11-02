@@ -99,9 +99,9 @@ func (suite *OperationsProfilesTestSuite) SetupSuite() {
 func (suite *OperationsProfilesTestSuite) SetupTest() {
 
 	// Seed database with tenants
-	//TODO: move tests to
+
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -135,7 +135,8 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -172,33 +173,38 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "operationsProfiles.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "operationsProfiles.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "operationsProfiles.create",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "operationsProfiles.delete",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "operationsProfiles.update",
 			"roles":    []string{"editor"},
 		})
+	suite.Require().NoError(err)
 
 	// Seed database with operations profiles
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("operations_profiles")
@@ -211,9 +217,10 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 		Options: options.Index().SetUnique(false),
 	}
 
-	c.Indexes().CreateOne(context.TODO(), indexModel)
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":             "ops1",
@@ -243,7 +250,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"b": "C",
 							"x": "C",
 						}}},
-				bson.M{
+				{
 					"name": "OR",
 					"truth_table": []bson.M{
 						{
@@ -262,8 +269,9 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "B",
 						}}},
 			}})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":             "ops1",
@@ -312,8 +320,9 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "B",
 						}}},
 			}})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":             "ops2",
@@ -362,7 +371,8 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "Y",
 						}}},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":             "ops2",
@@ -411,6 +421,7 @@ func (suite *OperationsProfilesTestSuite) SetupTest() {
 							"x": "Y",
 						}}},
 			}})
+	suite.Require().NoError(err)
 }
 
 func (suite *OperationsProfilesTestSuite) TestBadDate() {
@@ -1160,7 +1171,8 @@ func (suite *OperationsProfilesTestSuite) TestCreate() {
 	var result OpsProfile
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("operations_profiles")
 
-	c.FindOne(context.TODO(), bson.M{"name": "tops1", "date": "2019-12-12"}).Decode(&result)
+	err := c.FindOne(context.TODO(), bson.M{"name": "tops1", "date": "2019-12-12"}).Decode(&result)
+	suite.Require().NoError(err)
 	id := result.ID
 
 	// Apply id to output template and check
@@ -1892,7 +1904,7 @@ func (suite *OperationsProfilesTestSuite) TestDeleteNotFound() {
 func (suite *OperationsProfilesTestSuite) TestListEmpty() {
 
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("operations_profiles")
-	c.Drop(context.TODO())
+	suite.Require().NoError(c.Drop(context.TODO()))
 
 	request, _ := http.NewRequest("GET", "/api/v2/operations_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -2077,7 +2089,7 @@ func (suite *OperationsProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -2087,7 +2099,7 @@ func (suite *OperationsProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -2095,8 +2107,8 @@ func (suite *OperationsProfilesTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *OperationsProfilesTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteOperationsProfiles(t *testing.T) {

@@ -26,7 +26,7 @@
 
 package metricProfiles
 
-//MetricProfile struct used to retrieve and insert metricProfiles in mongo
+// MetricProfile struct used to retrieve and insert metricProfiles in mongo
 type MetricProfile struct {
 	ID          string    `bson:"id" json:"id"`
 	DateInt     int       `bson:"date_integer" json:"-"`

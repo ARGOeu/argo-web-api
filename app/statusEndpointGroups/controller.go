@@ -86,10 +86,7 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -115,8 +112,10 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -130,8 +129,10 @@ func ListEndpointGroupTimelines(r *http.Request, cfg config.Config) (int, http.H
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 	}
 

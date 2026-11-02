@@ -22,10 +22,9 @@ import (
 // This is a util. suite struct used in tests (see pkg "testify")
 type StatusEndpointsTestSuite struct {
 	suite.Suite
-	cfg          config.Config
-	router       *mux.Router
-	confHandler  respond.ConfHandler
-	tenantDbConf config.MongoConfig
+	cfg         config.Config
+	router      *mux.Router
+	confHandler respond.ConfHandler
 }
 
 func (suite *StatusEndpointsTestSuite) SetupTest() {
@@ -59,11 +58,11 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 	authCol := suite.cfg.MongoClient.Database((suite.cfg.MongoDB.Db)).Collection("authentication")
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	authCol.InsertOne(context.TODO(), seedAuth)
-
+	_, err := authCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "TENANT-AA",
@@ -87,8 +86,9 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "TENANT-BB",
@@ -112,17 +112,20 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "status.get",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -135,7 +138,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -173,9 +176,10 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("status_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
@@ -186,7 +190,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -197,7 +202,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -208,7 +214,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -218,7 +225,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T08:47:00Z",
@@ -228,7 +236,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T12:00:00Z",
@@ -238,7 +247,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -248,7 +258,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T04:40:00Z",
@@ -258,7 +269,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "UNKNOWN",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T06:00:00Z",
@@ -269,7 +281,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -279,7 +292,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "check.storage",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T06:40:00Z",
@@ -289,7 +303,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "check.storage",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T09:00:00Z",
@@ -300,6 +315,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
 	})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -313,7 +329,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 
 	// Now seed the reports DEFINITIONS
 	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -351,10 +367,11 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(t2conf.Db).Collection("status_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -364,7 +381,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -374,7 +392,8 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -384,6 +403,7 @@ func (suite *StatusEndpointsTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -1004,9 +1024,9 @@ func (suite *StatusEndpointsTestSuite) TestOptionsStatusEndpoints() {
 // Mainly it's purpose is to drop the testdb
 func (suite *StatusEndpointsTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("argotest_status_endpoints").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_status_endpoints_ta").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_status_endpoints_tb").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_status_endpoints").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_status_endpoints_ta").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_status_endpoints_tb").Drop(context.TODO()))
 
 }
 

@@ -65,10 +65,7 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -97,8 +94,10 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start-time"))
 
@@ -112,8 +111,10 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 	}
 
@@ -157,10 +158,7 @@ func GetServiceStatus(r *http.Request, cfg config.Config) (int, http.Header, []b
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -193,8 +191,10 @@ func GetServiceStatus(r *http.Request, cfg config.Config) (int, http.Header, []b
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start-time"))
 
@@ -208,8 +208,10 @@ func GetServiceStatus(r *http.Request, cfg config.Config) (int, http.Header, []b
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	output, err = createServiceView(report, results, input, urlValues.Get("end-time"), details) //Render the results into JSON
@@ -254,10 +256,7 @@ func GetEndpointStatus(r *http.Request, cfg config.Config) (int, http.Header, []
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -291,8 +290,10 @@ func GetEndpointStatus(r *http.Request, cfg config.Config) (int, http.Header, []
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start-time"))
 
@@ -306,8 +307,10 @@ func GetEndpointStatus(r *http.Request, cfg config.Config) (int, http.Header, []
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 	}
 
@@ -341,11 +344,7 @@ func GetMetricStatus(r *http.Request, cfg config.Config) (int, http.Header, []by
 	parsedEnd, _ := parseZuluDate(urlValues.Get("end-time"))
 
 	view := urlValues.Get("view")
-	details := false
-
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	input := MetricInputParams{
 		parsedStart,
@@ -391,8 +390,10 @@ func GetMetricStatus(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -406,8 +407,10 @@ func GetMetricStatus(r *http.Request, cfg config.Config) (int, http.Header, []by
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	output, err = createMetricView(report, results, input, details) //Render the results into XML format

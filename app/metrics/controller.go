@@ -61,7 +61,7 @@ func prepQueryMprofile(dt int, id string) interface{} {
 // Update request handler creates a new list of metrics
 func UpdateMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -151,8 +151,10 @@ func ListMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Create view of the results
 	output, err = createMetricsListView(results, "Success", code) //Render the results into JSON
@@ -215,7 +217,7 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	dt, dateStr, err := utils.ParseZuluDate(dateStr)
+	dt, _, err := utils.ParseZuluDate(dateStr)
 	if err != nil {
 		code = http.StatusBadRequest
 		output, _ = respond.MarshalContent(respond.ErrBadRequestDetails(err.Error()), contentType, "", " ")
@@ -263,8 +265,10 @@ func ListMetricsByReport(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Create view of the results
 	output, err = createMetricsListView(results, "Success", code) //Render the results into JSON

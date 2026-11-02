@@ -22,11 +22,6 @@
 
 package issues
 
-import "encoding/xml"
-
-const zuluForm = "2006-01-02T15:04:05Z"
-const ymdForm = "20060102"
-
 // EndpointData struct holds the queried endpoint data from datastore
 type EndpointData struct {
 	Timestamp     string            `bson:"timestamp" json:"timestamp"`
@@ -45,11 +40,4 @@ type GroupMetrics struct {
 	Metric   string            `bson:"metric" json:"metric,omitempty"`
 	Status   string            `bson:"status" json:"status,omitempty"`
 	Info     map[string]string `bson:"info" json:"info,omitempty"`
-}
-
-// Message struct to hold the json/xml response
-type messageOUT struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Message string   `xml:"message" json:"message"`
-	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }

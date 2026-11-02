@@ -195,12 +195,6 @@ type statusOUT struct {
 	AffectedByThresholdRule bool   `json:"affected_by_threshold_rule,omitempty"`
 }
 
-// Message struct to hold the json/xml response
-type messageOUT struct {
-	Message string `json:"message"`
-	Code    string `json:"code,omitempty"`
-}
-
 type metricDetailsQuery struct {
 	EndpointName    string `bson:"hostname"`
 	MetricName      string `bson:"metric_name"`

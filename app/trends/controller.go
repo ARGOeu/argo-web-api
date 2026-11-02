@@ -188,8 +188,10 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createStatusMonthMetricListView(results, "Success", 200)
 
@@ -236,8 +238,10 @@ func ListStatusMetrics(r *http.Request, cfg config.Config) (int, http.Header, []
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusMetricListView(results, "Success", 200)
 
@@ -349,8 +353,10 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createStatusMonthMetricListView(results, "Success", 200)
 
@@ -399,8 +405,10 @@ func ListStatusMetricsTags(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusMetricListView(results, "Success", 200)
 
@@ -508,8 +516,10 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createStatusMonthEndpointListView(results, "Success", 200)
 
@@ -555,8 +565,10 @@ func ListStatusEndpoints(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusEndpointListView(results, "Success", 200)
 
@@ -662,8 +674,10 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createStatusMonthServiceListView(results, "Success", 200)
 
@@ -708,8 +722,10 @@ func ListStatusServices(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusServiceListView(results, "Success", 200)
 
@@ -814,8 +830,10 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createStatusMonthEgroupListView(results, "Success", 200)
 
@@ -859,8 +877,10 @@ func ListStatusEgroups(r *http.Request, cfg config.Config) (int, http.Header, []
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusEgroupListView(results, "Success", 200)
 
@@ -966,8 +986,10 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createMonthMetricListView(results, "Success", 200)
 
@@ -1009,8 +1031,10 @@ func ListFlappingMetrics(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createMetricListView(results, "Success", 200)
 
@@ -1120,8 +1144,10 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 		output, err = createMonthMetricListView(results, "Success", 200)
 
 		return code, h, output, err
@@ -1170,8 +1196,10 @@ func ListFlappingMetricsTags(r *http.Request, cfg config.Config) (int, http.Head
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createTagMetricDataListView(results, "Success", 200)
 
@@ -1278,8 +1306,10 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 		output, err = createMonthEndpointListView(results, "Success", 200)
 
 		return code, h, output, err
@@ -1315,8 +1345,10 @@ func ListFlappingEndpoints(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createEndpointListView(results, "Success", 200)
 
@@ -1422,8 +1454,10 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		output, err = createMonthServiceListView(results, "Success", 200)
 
@@ -1457,8 +1491,10 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createServiceListView(results, "Success", 200)
 
@@ -1564,9 +1600,10 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
-
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 		output, err = createMonthEndpointGroupListView(results, "Success", 200)
 
 		return code, h, output, err
@@ -1597,8 +1634,10 @@ func ListFlappingEndpointGroups(r *http.Request, cfg config.Config) (int, http.H
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createEndpointGroupListView(results, "Success", 200)
 

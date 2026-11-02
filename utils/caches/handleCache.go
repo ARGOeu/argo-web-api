@@ -30,7 +30,7 @@ import (
 	"fmt"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/go-lru-cache"
+	cache "github.com/ARGOeu/go-lru-cache"
 )
 
 var httpcache *cache.LRUCache
@@ -41,23 +41,23 @@ func (s mystring) Size() int {
 	return len(s)
 }
 
-//TODO Add multitenant support on cache util.
+// TODO Add multitenant support on cache util.
 func HitCache(name string, input interface{}, cfg config.Config) (bool, []byte) {
 	output := []byte(nil)
 	found := false
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache {
 		out, found := httpcache.Get(name + fmt.Sprint(input))
 		if found {
-			output = []byte(fmt.Sprint(out))
+			output = fmt.Append(nil, out)
 		}
 	}
 	return found, output
 }
 
-//TODO Add multitenant support on cache util.
+// TODO Add multitenant support on cache util.
 func WriteCache(name string, input interface{}, output interface{}, cfg config.Config) bool {
 
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache {
 		httpcache.Set(name+fmt.Sprint(input), output.(mystring))
 	}
 	return true

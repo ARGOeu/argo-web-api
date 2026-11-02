@@ -88,11 +88,12 @@ func (suite *LatestTestSuite) SetupTest() {
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	coreCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
-	coreCol.InsertOne(context.TODO(), seedAuth)
+	_, err := coreCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -116,8 +117,8 @@ func (suite *LatestTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
-
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
@@ -141,27 +142,32 @@ func (suite *LatestTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.get.groups",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.get.group",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -174,7 +180,7 @@ func (suite *LatestTestSuite) SetupTest() {
 
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -212,10 +218,10 @@ func (suite *LatestTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-
+	suite.Require().NoError(err)
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -231,7 +237,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -247,7 +254,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -263,7 +271,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -279,7 +288,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -295,6 +305,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -308,7 +319,7 @@ func (suite *LatestTestSuite) SetupTest() {
 
 	// Now seed the reports DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -346,10 +357,11 @@ func (suite *LatestTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -365,7 +377,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -381,7 +394,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is CRITICAL",
 		"message":            "someService data upload test failed",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -397,7 +411,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -413,7 +428,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -429,6 +445,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -1511,9 +1528,9 @@ func (suite *LatestTestSuite) TestListLatestNoGroupType() {
 // Mainly it's purpose is to drop the testdb
 func (suite *LatestTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("argotest_metrics").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_metrics_tenant2").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_metrics_egi").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics_tenant2").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics_egi").Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

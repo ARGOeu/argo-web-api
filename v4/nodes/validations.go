@@ -40,7 +40,7 @@ func (query *basicQuery) Validate() []ErrorResponse {
 	}
 
 	if query.StartDate != "" || query.EndDate != "" {
-		if !(query.StartDate != "" && query.EndDate != "") {
+		if query.StartDate == "" || query.EndDate == "" {
 			errs = append(errs, ErrorResponse{
 				Message: "date parsing error",
 				Code:    "400",
@@ -147,7 +147,7 @@ func (query *basicQuery) ValidateV2() []ErrorResponse {
 	}
 
 	if query.StartDate != "" || query.EndDate != "" {
-		if !(query.StartDate != "" && query.EndDate != "") {
+		if query.StartDate == "" || query.EndDate == "" {
 			errs = append(errs, ErrorResponse{
 				Message: "date parsing error",
 				Code:    "400",

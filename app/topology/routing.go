@@ -68,7 +68,7 @@ var appRoutesV2 = []respond.AppRoutes{
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

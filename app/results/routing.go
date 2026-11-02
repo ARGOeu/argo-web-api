@@ -106,7 +106,7 @@ var appRoutesV2 = []respond.AppRoutes{
 func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -134,7 +134,8 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 
 	selectedGroupType := requestedReport.DetermineGroupType(vars["group_type"])
 
-	if selectedGroupType == "endpoint" {
+	switch selectedGroupType {
+	case "endpoint":
 		if vars["lgroup_type"] == "" {
 			vars["lgroup_type"] = vars["group_type"]
 			vars["lgroup_name"] = vars["group_name"]
@@ -142,7 +143,7 @@ func routeGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 			vars["group_name"] = ""
 		}
 		return ListEndpointGroupResults(r, cfg)
-	} else if selectedGroupType == "group" {
+	case "group":
 		return ListSuperGroupResults(r, cfg)
 	}
 

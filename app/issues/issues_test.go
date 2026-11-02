@@ -89,11 +89,12 @@ func (suite *IssuesTestSuite) SetupTest() {
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	coreCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
-	coreCol.InsertOne(context.TODO(), seedAuth)
+	_, err := coreCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -118,7 +119,9 @@ func (suite *IssuesTestSuite) SetupTest() {
 				"api_key": "KEY1"},
 		}})
 
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
@@ -143,17 +146,21 @@ func (suite *IssuesTestSuite) SetupTest() {
 				"api_key": "KEY2"},
 		}})
 
+	suite.Require().NoError(err)
+
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "issues.list_endpoints",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "issues.list_group_metrics",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -167,7 +174,7 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -205,9 +212,10 @@ func (suite *IssuesTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
@@ -218,7 +226,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -229,7 +238,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -240,7 +250,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -250,7 +261,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T08:47:00Z",
@@ -260,7 +272,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T12:00:00Z",
@@ -270,7 +283,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -280,7 +294,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T04:40:00Z",
@@ -290,7 +305,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "UNKNOWN",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T06:00:00Z",
@@ -300,10 +316,11 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 		"status": "CRITICAL",
 	})
+	suite.Require().NoError(err)
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"info":           bson.M{"Url": "http://example.foo/path/to/service"},
@@ -314,7 +331,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -325,7 +343,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -336,7 +355,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -346,7 +366,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T08:47:00Z",
@@ -356,7 +377,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T12:00:00Z",
@@ -366,7 +388,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -376,7 +399,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T04:40:00Z",
@@ -386,7 +410,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "UNKNOWN",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T06:00:00Z",
@@ -396,6 +421,7 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "emi.cream.CREAMCE-JobSubmit",
 		"status":         "CRITICAL",
 	})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -409,7 +435,7 @@ func (suite *IssuesTestSuite) SetupTest() {
 
 	// Now seed the reports DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -447,10 +473,11 @@ func (suite *IssuesTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("status_endpoints")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -460,7 +487,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -470,7 +498,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -480,7 +509,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
@@ -490,7 +520,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
@@ -500,7 +531,8 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
@@ -510,6 +542,7 @@ func (suite *IssuesTestSuite) SetupTest() {
 		"metric":         "typeA.metric.Memory",
 		"status":         "WARNING",
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -755,9 +788,9 @@ func (suite *IssuesTestSuite) TestOptionsIssuesGroups() {
 // Mainly it's purpose is to drop the testdb
 func (suite *IssuesTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("argotest_flatendpoints").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_flatendpoints_eudat").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_flatendpoints_egi").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_flatendpoints").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_flatendpoints_eudat").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_flatendpoints_egi").Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

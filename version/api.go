@@ -38,7 +38,7 @@ import (
 
 // HandleSubrouter for api access to version infomation
 func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
-	s = respond.PrepAppRoutes(s, confhandler, appRoutesV2)
+	respond.PrepAppRoutes(s, confhandler, appRoutesV2)
 }
 
 var appRoutesV2 = []respond.AppRoutes{
@@ -64,9 +64,9 @@ func ListVersion(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 
 	code := http.StatusOK
 	h := http.Header{}
-	output := []byte("")
+	var output []byte
 	err := error(nil)
-	contentType := "text/xml"
+	var contentType string
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -108,7 +108,7 @@ func Options(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 	//STANDARD DECLARATIONS END
 
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-	h.Set("Allow", fmt.Sprintf("GET, OPTIONS"))
+	h.Set("Allow", "GET, OPTIONS")
 	return code, h, output, err
 
 }

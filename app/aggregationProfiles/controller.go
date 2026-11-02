@@ -188,9 +188,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 	// Create view of the results
 	output, err = createListView(results, "Success", code) //Render the results into JSON
 
@@ -207,7 +208,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -294,7 +295,7 @@ func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 // Update function to update contents of an existing aggregation profile
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

@@ -179,119 +179,143 @@ func (suite *TenantTestSuite) SetupTest() {
 
 	c := client.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
-	c.InsertOne(context.TODO(), seedAuth)
-	c.InsertOne(context.TODO(), seedResAuth)
-	c.InsertOne(context.TODO(), seedResAdminUI)
+	_, err := c.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), seedResAuth)
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), seedResAdminUI)
+	suite.Require().NoError(err)
 
 	c = client.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.list",
 			"roles":    []string{"super_admin", "super_admin_restricted", "super_admin_ui"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get",
 			"roles":    []string{"super_admin", "super_admin_ui"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.create",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.delete",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_info",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_db_conf",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.node_set",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.node_unset",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_topology",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_status",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.create_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.list_users",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.delete_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get_user",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.user_refresh_token",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get_status",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.get_ready",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.update_ready",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "tenants.user_by_id",
 			"roles":    []string{"super_admin", "super_admin_restricted"},
 		})
+	suite.Require().NoError(err)
 	// seed first tenant
 	c = client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 		"info": bson.M{
 			"name":        "AVENGERS",
@@ -335,9 +359,10 @@ func (suite *TenantTestSuite) SetupTest() {
 				"api_key": "TH0RK3Y",
 				"roles":   []string{"admin"}},
 		}})
+	suite.Require().NoError(err)
 
 	// seed second tenant
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -379,6 +404,7 @@ func (suite *TenantTestSuite) SetupTest() {
 				"api_key": "ST4RL0RDK3Y",
 				"roles":   []string{"admin"}},
 		}})
+	suite.Require().NoError(err)
 }
 
 // TestCreateTenant function implements testing the http POST create tenant request.
@@ -524,7 +550,8 @@ func (suite *TenantTestSuite) TestCreateTenant() {
 
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
 
-	c.FindOne(context.TODO(), bson.M{"info.name": "mutants"}).Decode(&result)
+	err := c.FindOne(context.TODO(), bson.M{"info.name": "mutants"}).Decode(&result)
+	suite.Require().NoError(err)
 	//id := result["id"].(string)
 	//info := result["info"].(map[string]interface{})
 	//timestamp := info["created"].(string)
@@ -987,8 +1014,8 @@ func (suite *TenantTestSuite) TestUpdateTenantInfo() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Equal("groot", result.Users[0].Name)
 	suite.Equal("starlord", result.Users[1].Name)
@@ -1008,7 +1035,8 @@ func (suite *TenantTestSuite) TestUpdateTenantInfo() {
 	suite.Equal(200, code, "Internal Server Error")
 	suite.Equal(jsonOutput2, output, "Response body mismatch")
 
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	err = c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Empty(result.Users)
 
@@ -1064,8 +1092,8 @@ func (suite *TenantTestSuite) TestUpdateTenantDbConf() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Equal("test-ar", result.DbConf[0].Store)
 	suite.Equal("mongo.remote", result.DbConf[0].Server)
@@ -1086,7 +1114,8 @@ func (suite *TenantTestSuite) TestUpdateTenantDbConf() {
 	suite.Equal(200, code, "Internal Server Error")
 	suite.Equal(jsonOutput2, output, "Response body mismatch")
 
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	err = c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Empty(result.Users)
 
@@ -1124,8 +1153,8 @@ func (suite *TenantTestSuite) TestUpdateTenantNode() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Equal(true, result.Node)
 
@@ -1146,7 +1175,8 @@ func (suite *TenantTestSuite) TestUpdateTenantNode() {
 
 	var result2 Tenant
 
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result2)
+	err = c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result2)
+	suite.Require().NoError(err)
 	fmt.Printf("%+v \n", result2)
 	suite.Equal(false, result2.Node)
 
@@ -1206,8 +1236,8 @@ func (suite *TenantTestSuite) TestUpdateTenantTopology() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.NotEqual("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Equal("gocdb", result.Topology.TopoType)
 	suite.Equal("https://example.url.foo", result.Topology.Feed)
@@ -1228,7 +1258,8 @@ func (suite *TenantTestSuite) TestUpdateTenantTopology() {
 	suite.Equal(200, code, "Internal Server Error")
 	suite.Equal(jsonOutput2, output, "Response body mismatch")
 
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	err = c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c"}).Decode(&result)
+	suite.Require().NoError(err)
 	suite.Equal("TENANT_INFO_UPDATED", result.Info.Name)
 	suite.Empty(result.Users)
 
@@ -1272,8 +1303,8 @@ func (suite *TenantTestSuite) TestTenantCreateUser() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
+	suite.Require().NoError(err)
 	user := result.Users[len(result.Users)-1]
 
 	suite.Equal(201, code, "Internal Server Error")
@@ -1398,8 +1429,8 @@ func (suite *TenantTestSuite) TestTenantUpdateUser() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
+	suite.Require().NoError(err)
 	found := false
 	for _, usr := range result.Users {
 		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
@@ -1439,8 +1470,8 @@ func (suite *TenantTestSuite) TestTenantDeleteUser() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
+	suite.Require().NoError(err)
 	found := false
 	for _, usr := range result.Users {
 		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
@@ -1481,8 +1512,8 @@ func (suite *TenantTestSuite) TestTenantRefreshUserToken() {
 	// try to retrieve item
 	var result Tenant
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50b"}).Decode(&result)
+	suite.Require().NoError(err)
 	token := ""
 	for _, usr := range result.Users {
 		if usr.ID == "acb74194-553a-11e9-8647-d663bd873d93" {
@@ -2394,7 +2425,7 @@ func (suite *TenantTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		testDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(testDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -2402,7 +2433,7 @@ func (suite *TenantTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *TenantTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

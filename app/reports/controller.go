@@ -29,6 +29,7 @@ package reports
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -191,6 +192,11 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
 	err = nrCol.FindOne(context.TODO(), query).Decode(&nodeReport)
 
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	if urlValues.Get("name") != "" {
 		query["info.name"] = urlValues["name"]
 	}
@@ -220,8 +226,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	for indx := range results {
 		if nodeReport.Report_id == results[indx].ID {
@@ -253,7 +261,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -275,6 +283,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
 	err = nrCol.FindOne(context.TODO(), bson.M{}).Decode(&nodeReport)
+
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Create structure for storing query results
 	result := MongoInterface{}
@@ -331,7 +344,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -469,7 +482,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 func SetPublic(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -521,7 +534,7 @@ func SetPublic(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 func SetPrivate(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -572,7 +585,7 @@ func SetPrivate(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -642,7 +655,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS START
 
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

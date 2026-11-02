@@ -91,8 +91,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 	output, err = createListView(results, contentType)
 
 	return code, h, output, err

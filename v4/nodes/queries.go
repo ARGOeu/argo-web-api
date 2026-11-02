@@ -6,7 +6,6 @@ import (
 
 // datastore collection name that contains aggregations profile records
 const groupColName = "endpoint_group_ar"
-const endpointColName = "endpoint_ar"
 const nodeReportColName = "node_report"
 const reportsColName = "reports"
 const statusGroupColName = "status_endpoint_groups"

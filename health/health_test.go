@@ -98,9 +98,8 @@ func (suite *consistencyTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"name": "TestTenant",
 			"db_conf": []bson.M{
 
@@ -131,20 +130,23 @@ func (suite *consistencyTestSuite) SetupTest() {
 					"roles":   []string{"consistency-ack"},
 				},
 			}})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "health",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("consistency")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"_id":                  conID,
 			"auto_check_status":    "OK",
 			"auto_check_timestamp": "2025-07-01T00:00:00Z",
 			"auto_check_message":   "No flapping items",
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -175,10 +177,10 @@ func (suite *consistencyTestSuite) TestCheckConsistency() {
 // TearDownTest to tear down every test
 func (suite *consistencyTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenant1db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenant2db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenant1db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenant2db).Drop(context.TODO()))
 
 }
 

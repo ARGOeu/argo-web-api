@@ -77,7 +77,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 
 	// Seed database with tenants
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -111,7 +111,10 @@ func (suite *DowntimesTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -151,33 +154,39 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				},
 			}})
 
+	suite.Require().NoError(err)
+
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.create",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.delete",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "downtimes.update",
 			"roles":    []string{"editor"},
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with downtimes
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("downtimes")
 	indexModel := mongo.IndexModel{
@@ -187,8 +196,9 @@ func (suite *DowntimesTestSuite) SetupTest() {
 		},
 		Options: options.Index().SetUnique(false),
 	}
-	c.Indexes().CreateOne(context.TODO(), indexModel)
-	c.InsertOne(context.TODO(),
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191011,
@@ -204,7 +214,8 @@ func (suite *DowntimesTestSuite) SetupTest() {
 					"description": "a simple description"},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191012,
@@ -219,7 +230,8 @@ func (suite *DowntimesTestSuite) SetupTest() {
 					"classification": "scheduled", "severity": "warning"},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 
 			"date_integer": 20191013,
@@ -231,6 +243,7 @@ func (suite *DowntimesTestSuite) SetupTest() {
 				{"hostname": "host-C", "service": "service-C", "start_time": "2019-10-13T20:00:33Z", "end_time": "2019-10-13T22:15:00Z"},
 			},
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -706,7 +719,7 @@ func (suite *DowntimesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -716,7 +729,7 @@ func (suite *DowntimesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -872,8 +885,8 @@ func (suite *DowntimesTestSuite) TestDeleteForbidViewer() {
 // TearDownTest to tear down every test
 func (suite *DowntimesTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteDowntimes(t *testing.T) {

@@ -3,7 +3,6 @@ package status
 import (
 	"encoding/json"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -224,21 +223,9 @@ func createViewByID(resEndpoints []EndpointData, input InputParams, endDate stri
 
 }
 
-func createMessageOUT(message string, code int, format string) ([]byte, error) {
-
-	output := []byte("message placeholder")
-	err := error(nil)
-	docRoot := &messageOUT{}
-
-	docRoot.Message = message
-	docRoot.Code = strconv.Itoa(code)
-	output, err = respond.MarshalContent(docRoot, format, "", " ")
-	return output, err
-}
-
 func createErrorMessage(message string, code int) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &errorMessage{}
 

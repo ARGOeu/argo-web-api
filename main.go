@@ -68,8 +68,7 @@ func main() {
 
 	//TLS support only
 	tlsConfig := &tls.Config{
-		MinVersion:               tls.VersionTLS12,
-		PreferServerCipherSuites: true,
+		MinVersion: tls.VersionTLS12,
 	}
 
 	server := &http.Server{Addr: cfg.Server.Bindip + ":" + strconv.Itoa(cfg.Server.Port), Handler: nil, TLSConfig: tlsConfig}

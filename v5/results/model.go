@@ -174,12 +174,6 @@ type SuperGroup struct {
 	Results []interface{} `json:"results,omitempty"`
 }
 
-type pageRoot struct {
-	Result    []interface{} `json:"results"`
-	PageToken string        `json:"nextPageToken,omitempty"`
-	PageSize  int           `json:"pageSize,omitempty"`
-}
-
 type root struct {
 	Result []interface{} `json:"results"`
 }
