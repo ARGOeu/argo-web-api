@@ -68,7 +68,7 @@ func (suite *consistencyTestSuite) SetupSuite() {
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
-	db = "ARGO_test_topology_test"
+	db = "ARGO_test_consistency_test"
 	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)

@@ -68,7 +68,7 @@ func (suite *consistencyTestSuite) SetupSuite() {
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
-	db = "ARGO_test_topology_test"
+	db = "ARGO_test_health_test"
 	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -76,7 +76,7 @@ func (suite *consistencyTestSuite) SetupSuite() {
 	client := store.GetMongoClient(suite.cfg.MongoDB)
 	suite.cfg.MongoClient = client
 
-	suite.tenantDbConf.Db = "ARGO_consistency_check"
+	suite.tenantDbConf.Db = "ARGO_health_check"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"

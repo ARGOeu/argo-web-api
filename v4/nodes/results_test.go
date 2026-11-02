@@ -53,7 +53,7 @@ func (suite *ResultsTestSuite) SetupSuite() {
 	client := store.GetMongoClient(suite.cfg.MongoDB)
 	suite.cfg.MongoClient = client
 
-	suite.tenantDbConf.Db = "ARGO_test_arV3_tenant"
+	suite.tenantDbConf.Db = "ARGO_test_node_tenant"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
