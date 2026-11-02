@@ -71,7 +71,7 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 	    [mongodb]
 	    host = "127.0.0.1"
 	    port = 27017
-	    db = "AR_test_op_profiles"
+	    db = "AR_test_thresholds_profiles_tenant"
 	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
