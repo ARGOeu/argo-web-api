@@ -1414,7 +1414,7 @@ func ListFlappingServices(r *http.Request, cfg config.Config) (int, http.Header,
 		}
 
 		// sort end results by month bucket ascending
-		query = append(query, bson.M{"$sort": bson.D{{"date", 1}}})
+		query = append(query, bson.M{"$sort": bson.D{{Key: "date", Value: 1}}})
 
 		cursor, err := servicesCollection.Aggregate(context.TODO(), query)
 		if err != nil {

@@ -26,12 +26,12 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutes = []respond.AppRoutes{
-	{"consistency.result", "GET", "/consistency", GetStatus},
-	{"consistency.options", "OPTIONS", "/consistency", Options},
-	{"consistency.ack", "POST", "/consistency/ack", PostAck},
-	{"consistency.ack.options", "OPTIONS", "/consistency/ack", Options},
-	{"consistency.auto-check", "POST", "/consistency/auto-check", PostAutoCheck},
-	{"consistency.auto-check.options", "OPTIONS", "/consistency/auto-check", Options},
+	{Name: "consistency.result", Verb: "GET", Path: "/consistency", SubrouterHandler: GetStatus},
+	{Name: "consistency.options", Verb: "OPTIONS", Path: "/consistency", SubrouterHandler: Options},
+	{Name: "consistency.ack", Verb: "POST", Path: "/consistency/ack", SubrouterHandler: PostAck},
+	{Name: "consistency.ack.options", Verb: "OPTIONS", Path: "/consistency/ack", SubrouterHandler: Options},
+	{Name: "consistency.auto-check", Verb: "POST", Path: "/consistency/auto-check", SubrouterHandler: PostAutoCheck},
+	{Name: "consistency.auto-check.options", Verb: "OPTIONS", Path: "/consistency/auto-check", SubrouterHandler: Options},
 }
 
 // GetStatus gets consistency status

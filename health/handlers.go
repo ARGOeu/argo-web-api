@@ -22,8 +22,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutes = []respond.AppRoutes{
-	{"health", "GET", "/health", GetStatus},
-	{"health", "OPTIONS", "/health", Options},
+	{Name: "health", Verb: "GET", Path: "/health", SubrouterHandler: GetStatus},
+	{Name: "health", Verb: "OPTIONS", Path: "/health", SubrouterHandler: Options},
 }
 
 // GetStatus gets health status
