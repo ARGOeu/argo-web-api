@@ -1,6 +1,6 @@
 module github.com/ARGOeu/argo-web-api
 
-go 1.25.0
+go 1.27.0
 
 require (
 	github.com/ARGOeu/go-lru-cache v0.0.0-20200804134151-fedc0174b921
@@ -23,9 +23,9 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.53.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/text v0.39.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
