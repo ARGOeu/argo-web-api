@@ -2,9 +2,22 @@
 
 All notable changes in argo-web-api project are documented here
 
+## [v1.14.5] - (2026-11-03)
+
+### Changed:
+
+- ARGO-5996 update to golang 1.27 ([#799](https://github.com/ARGOeu/argo-web-api/pull/799))
+
+### Fixed:
+
+- ARGO-6001 code quality fixes and cleanup: error checks, simplificatio… ([#798](https://github.com/ARGOeu/argo-web-api/pull/798))
+- ARGO-6000 add missing keyed fields in struct literals for better code… ([#797](https://github.com/ARGOeu/argo-web-api/pull/797))
+- ARGO-5999 testing: fix parallel test db name collisions ([#796](https://github.com/ARGOeu/argo-web-api/pull/796))
+- ARGO-5990 Fix: resolve endpoint and group topology dates independentl… ([#792](https://github.com/ARGOeu/argo-web-api/pull/792))
+
 ## [v1.14.4] - (2026-10-21)
 
-### Added
+### Added:
 
 - ARGO-5411 Migrate to mongo driver v2([#784](https://github.com/ARGOeu/argo-web-api/pull/784))
 - ARGO-5932 Add latest metric data call without specifing group type ([#772](https://github.com/ARGOeu/argo-web-api/pull/772))
@@ -23,7 +36,7 @@ All notable changes in argo-web-api project are documented here
 - ARGO-5519 Support eosc-service-catalog connector in feeds topology ([#704](https://github.com/ARGOeu/argo-web-api/pull/704))
 - ARGO-5490 Add support for connector component to issue credentials ([#692](https://github.com/ARGOeu/argo-web-api/pull/692))
 
-### Changed
+### Changed:
 
 - ARGO-5563 Make local dummy datasets more consistent between scores an… ([#719](https://github.com/ARGOeu/argo-web-api/pull/719))
 - ARGO-5702 Unset node report when a tenant is unset from node ([#731](https://github.com/ARGOeu/argo-web-api/pull/731))
