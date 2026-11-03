@@ -211,9 +211,10 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &resTagsEndpoint)
+	if err = cursor.All(context.TODO(), &resTagsEndpoint); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	expDate = store.GetCloseDate(colGroup, dt)
 
@@ -229,8 +230,10 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resTagsGroup)
+	if err = cursor.All(context.TODO(), &resTagsGroup); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// sort unique tag values in each tag occurence
 	for _, tg := range resTagsEndpoint {
@@ -356,9 +359,9 @@ func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateI
 		return subResults, expDate, err
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err = cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, expDate, err
+	}
 
 	return subResults, expDate, err
 }
@@ -366,7 +369,7 @@ func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateI
 func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -531,7 +534,7 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -649,7 +652,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 
 func handleWildcard(item string) (string, bool) {
 	if strings.Contains(item, "*") {
-		return "^" + strings.Replace(item, "*", ".*", -1) + "$", true
+		return "^" + strings.ReplaceAll(item, "*", ".*") + "$", true
 	}
 	return item, false
 }
@@ -1125,7 +1128,8 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			groupTags = groupTags + getReportTagsArray(tag)
 
 		}
-		if tag.Context == "argo.group.filter.tags" {
+		switch tag.Context {
+		case "argo.group.filter.tags":
 			// check if it has special context refering to group filtering based on tags
 			// then construct / update group tag string
 
@@ -1136,18 +1140,19 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			}
 			groupTags = groupTags + tag.Name + ":" + tag.Value
 
-		} else if tag.Context == "argo.group.filter.fields" {
+		case "argo.group.filter.fields":
 			// check if it has special context refering to group filtering based on basic fields
 			// then based on tag name update corresponding field filter
 
-			if tag.Name == "group" {
+			switch tag.Name {
+			case "group":
 				fGroup.Group = append(fGroup.Group, tag.Value)
-			} else if tag.Name == "type" {
+			case "type":
 				fGroup.GroupType = append(fGroup.GroupType, tag.Value)
-			} else if tag.Name == "subgroup" {
+			case "subgroup":
 				fGroup.Subgroup = append(fGroup.Subgroup, tag.Value)
 			}
-		} else if tag.Context == "argo.endpoint.filter.tags.array" {
+		case "argo.endpoint.filter.tags.array":
 			// check if it has special context refering to endpoint filtering based on tags
 			// then construct / update endpoint tag string
 
@@ -1157,7 +1162,7 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 				endpointFirst = false
 			}
 			endpointTags = endpointTags + getReportTagsArray(tag)
-		} else if tag.Context == "argo.endpoint.filter.tags" {
+		case "argo.endpoint.filter.tags":
 			// check if it has special context refering to endpoint filtering based on tags
 			// then construct / update endpoint tag string
 
@@ -1167,17 +1172,18 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 				endpointFirst = false
 			}
 			endpointTags = endpointTags + tag.Name + ":" + tag.Value
-		} else if tag.Context == "argo.endpoint.filter.fields" {
+		case "argo.endpoint.filter.fields":
 			// check if it has special context refering to endpoint filtering based on basic fields
 			// then based on tag name update corresponding field filter
 
-			if tag.Name == "group" {
+			switch tag.Name {
+			case "group":
 				fEndpoint.Group = append(fEndpoint.Group, tag.Value)
-			} else if tag.Name == "type" {
+			case "type":
 				fEndpoint.GroupType = append(fEndpoint.GroupType, tag.Value)
-			} else if tag.Name == "service" {
+			case "service":
 				fEndpoint.Service = append(fEndpoint.Service, tag.Value)
-			} else if tag.Name == "hostname" {
+			case "hostname":
 				fEndpoint.Hostname = append(fEndpoint.Hostname, tag.Value)
 			}
 		}
@@ -1326,7 +1332,6 @@ func getGroupEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, 
 	if err != nil {
 		return subResults, endpointDate, err
 	}
-	defer cursor.Close(context.TODO())
 
 	if err := cursor.All(context.TODO(), &subResults); err != nil {
 		return subResults, endpointDate, err
@@ -1386,7 +1391,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	fGroup := fltrGroup{}
+	var fGroup fltrGroup
 	fGroup, _ = getReportFilters(report)
 
 	if groupType != "" && (len(fGroup.GroupType) == 0) {
@@ -1441,7 +1446,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -1652,9 +1657,9 @@ func getServiceTypeResults(client *mongo.Client, dbConfig config.MongoConfig, da
 		return subResults, err
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, err
+	}
 
 	return subResults, err
 }
@@ -1680,9 +1685,9 @@ func getComboDBConfigs(client *mongo.Client, comboTenantCfg config.MongoConfig, 
 			return result
 		}
 
-		defer cursor.Close(context.TODO())
-
-		cursor.All(context.TODO(), &tenantResults)
+		if err := cursor.All(context.TODO(), &tenantResults); err != nil {
+			return result
+		}
 
 		for _, item := range tenantResults {
 
@@ -1849,9 +1854,9 @@ func getGroupResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt 
 		return subResults, expDate, nil
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, expDate, err
+	}
 
 	return subResults, expDate, err
 }

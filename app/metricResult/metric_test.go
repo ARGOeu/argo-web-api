@@ -96,12 +96,13 @@ func (suite *metricResultTestSuite) SetupTest() {
 
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T"}
-	coreCol.InsertOne(context.TODO(), seedAuth)
+	_, err := coreCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 
 	// seed a tenant to use
 
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "EGI",
@@ -125,13 +126,14 @@ func (suite *metricResultTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metricResult.get",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -145,7 +147,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":         "nagios3.hellasgrid.gr",
 		"date_integer":           20150501,
 		"timestamp":              "2015-05-01T00:00:00Z",
@@ -163,7 +165,8 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"threshold_rule_applied": "latency=15s;20:30;30:40",
 		"original_status":        "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T01:00:00Z",
@@ -178,7 +181,8 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T05:00:00Z",
@@ -193,8 +197,8 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20200501,
 		"timestamp":          "2020-05-01T05:00:00Z",
@@ -209,8 +213,8 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20200501,
 		"timestamp":          "2020-05-01T05:00:00Z",
@@ -225,6 +229,7 @@ func (suite *metricResultTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -675,8 +680,8 @@ func (suite *metricResultTestSuite) TestOptionsMetricResult() {
 // Mainly it's purpose is to drop the testdb
 func (suite *metricResultTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("ARGO_test_metric_result").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("ARGO_test_metric_result_egi").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("ARGO_test_metric_result").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("ARGO_test_metric_result_egi").Drop(context.TODO()))
 
 }
 

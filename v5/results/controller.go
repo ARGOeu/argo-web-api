@@ -88,15 +88,16 @@ func GetGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 	var query []bson.M
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyGroup(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomGroup(filter)
@@ -110,8 +111,10 @@ func GetGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -207,15 +210,16 @@ func GetSupergroups(r *http.Request, cfg config.Config) (int, http.Header, []byt
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 	var query []bson.M
 	// Select the granularity of the search daily/monthly
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailySuperGroup(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlySuperGroup(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomSuperGroup(filter)
@@ -228,8 +232,10 @@ func GetSupergroups(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -328,17 +334,18 @@ func GetEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
 	var query []bson.M
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyEndpoint(filter)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomEndpoint(filter)
@@ -352,8 +359,10 @@ func GetEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -448,15 +457,16 @@ func GetServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []by
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
 	var query []bson.M
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyServiceFlavor(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyServiceFlavor(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomServiceFlavor(filter)
@@ -470,8 +480,10 @@ func GetServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound

@@ -184,11 +184,11 @@ func (suite *ReportTestSuite) SetupTest() {
 	authCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 	// Add authentication token to mongo testdb
 	seedAuth := bson.M{"api_key": "S3CR3T", "name": "defult_admin", "email": "admin@example.foo"}
-	authCol.InsertOne(context.TODO(), seedAuth)
-
+	_, err := authCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -224,48 +224,56 @@ func (suite *ReportTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "VIEWERKEY"},
 		}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.list",
 			"roles":    []string{"admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.get",
 			"roles":    []string{"admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.create",
 			"roles":    []string{"admin", "editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.set_node_report",
 			"roles":    []string{"admin", "editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.set_public",
 			"roles":    []string{"admin", "editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.set_private",
 			"roles":    []string{"admin", "editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.delete",
 			"roles":    []string{"admin", "editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "reports.update",
 			"roles":    []string{"admin", "editor"},
 		})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -280,7 +288,7 @@ func (suite *ReportTestSuite) SetupTest() {
 
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("metric_profiles")
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "profile1",
@@ -304,7 +312,8 @@ func (suite *ReportTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name": "ch.cern.SAM.ROC",
@@ -330,9 +339,9 @@ func (suite *ReportTestSuite) SetupTest() {
 				},
 			},
 		})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("aggregation_profiles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50bq",
 			"name":              "profile3",
@@ -370,7 +379,8 @@ func (suite *ReportTestSuite) SetupTest() {
 						},
 					}},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":              "cloud",
@@ -408,9 +418,9 @@ func (suite *ReportTestSuite) SetupTest() {
 						},
 					}},
 			}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("operations_profiles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":               "6ac7d684-1f8e-4a02-a502-720e8f11e523",
 			"name":             "profile2",
@@ -457,7 +467,7 @@ func (suite *ReportTestSuite) SetupTest() {
 							"x": "B",
 						}}},
 			}})
-
+	suite.Require().NoError(err)
 	// Seed database with weights
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection("weights")
 	indexModel := mongo.IndexModel{
@@ -468,9 +478,10 @@ func (suite *ReportTestSuite) SetupTest() {
 		Options: options.Index().SetUnique(false),
 	}
 
-	c.Indexes().CreateOne(context.TODO(), indexModel)
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e533",
 			"name":         "Critical",
@@ -485,10 +496,10 @@ func (suite *ReportTestSuite) SetupTest() {
 				{"name": "SITE-D", "value": 2},
 			},
 		})
-
+	suite.Require().NoError(err)
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(t1conf.Db).Collection(reportsColl)
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -526,8 +537,8 @@ func (suite *ReportTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494360",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -565,6 +576,7 @@ func (suite *ReportTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 }
 
 func (suite *ReportTestSuite) TestCreateReportWrongProfileType() {
@@ -809,7 +821,7 @@ func (suite *ReportTestSuite) TestCreateReport() {
 	// Create a string literal of the expected xml Response
 
 	responseMessage := respond.ResponseMessage{}
-	json.Unmarshal([]byte(output), &responseMessage)
+	suite.Require().NoError(json.Unmarshal([]byte(output), &responseMessage))
 	newUUID := responseMessage.Data.(map[string]interface{})["id"].(string)
 	// Prepare the request object using report name as urlvar in url path
 	request, _ = http.NewRequest("GET", "/api/v2/reports/"+newUUID, strings.NewReader(""))
@@ -2546,7 +2558,7 @@ func (suite *ReportTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -2556,7 +2568,7 @@ func (suite *ReportTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -2564,8 +2576,8 @@ func (suite *ReportTestSuite) TearDownTest() {
 // TearDownSuite is executed after all tests have finished
 func (suite *ReportTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

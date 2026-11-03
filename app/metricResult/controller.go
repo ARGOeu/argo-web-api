@@ -79,8 +79,10 @@ func GetMultipleMetricResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createMultipleMetricResultsView(results, contentType)
 
@@ -144,14 +146,11 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		Service:      urlValues.Get("service"),
 	}
 
-
 	results := []metricResultOutput{}
 
 	metricCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("status_metrics")
 
-
 	cursor, err := metricCol.Find(context.TODO(), prepQuery(input, reportID))
-
 
 	if err != nil {
 
@@ -159,8 +158,10 @@ func GetMetricResult(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -239,15 +240,12 @@ func prepMultipleQuery(input metricResultQuery, filter string) []bson.M {
 	// convert to lower case for agility in checks
 	filter = strings.ToUpper(filter)
 
-	if filter == "NON-OK" {
+	switch filter {
+	case "NON-OK":
 
 		matchQuery["status"] = bson.M{"$ne": "OK"}
 
-	} else if filter == "CRITICAL" ||
-		filter == "WARNING" ||
-		filter == "OK" ||
-		filter == "MISSING" ||
-		filter == "UNKNOWN" {
+	case "CRITICAL", "WARNING", "OK", "MISSING", "UNKNOWN":
 
 		matchQuery["status"] = filter
 

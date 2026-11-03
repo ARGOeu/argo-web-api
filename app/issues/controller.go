@@ -87,8 +87,10 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createEndpointListView(results, "Success", 200)
 
@@ -145,8 +147,10 @@ func ListGroupMetricIssues(r *http.Request, cfg config.Config) (int, http.Header
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createGroupMetricsView(results, "Success", 200)
 

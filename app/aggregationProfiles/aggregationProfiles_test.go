@@ -99,39 +99,44 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
 
 	//seed roles
 	// Seed database with metric profiles
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "aggregationProfiles.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "aggregationProfiles.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "aggregationProfiles.create",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "aggregationProfiles.delete",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "aggregationProfiles.update",
 			"roles":    []string{"editor"},
 		})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -167,7 +172,8 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -206,6 +212,7 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 	// Seed database with metric profiles
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("aggregation_profiles")
 
@@ -217,8 +224,10 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 		Options: options.Index().SetUnique(false),
 	}
 
-	c.Indexes().CreateOne(context.TODO(), indexModel)
-	c.InsertOne(context.TODO(),
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer":      20191004,
@@ -258,7 +267,8 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 						},
 					}},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer":      20191104,
@@ -298,7 +308,8 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 						},
 					}},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"date_integer":      20190404,
@@ -338,7 +349,8 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 						},
 					}},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":                "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"date_integer":      20190504,
@@ -379,9 +391,10 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 					}},
 			}})
 
+	suite.Require().NoError(err)
 	// Seed database with metric profiles
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":   "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name": "ch.cern.SAM.ROC_CRITICAL",
@@ -405,6 +418,7 @@ func (suite *AggregationProfilesTestSuite) SetupTest() {
 				},
 			},
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -573,7 +587,7 @@ func (suite *AggregationProfilesTestSuite) TestBadDate() {
 func (suite *AggregationProfilesTestSuite) TestListEmpty() {
 
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("aggregation_profiles")
-	c.Drop(context.TODO())
+	suite.Require().NoError(c.Drop(context.TODO()))
 
 	request, _ := http.NewRequest("GET", "/api/v2/aggregation_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -1731,7 +1745,7 @@ func (suite *AggregationProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -1741,7 +1755,7 @@ func (suite *AggregationProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -1749,8 +1763,8 @@ func (suite *AggregationProfilesTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *AggregationProfilesTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteAggregationProfiles(t *testing.T) {

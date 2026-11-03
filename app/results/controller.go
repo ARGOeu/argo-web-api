@@ -144,16 +144,17 @@ func FlatListEndpointResults(r *http.Request, cfg config.Config) (int, http.Head
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
 	custom := false
 	var query []bson.M
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = FlatDailyEndpoint(filter, limit, skip)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = FlatMonthlyEndpoint(filter, limit, skip)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = FlatCustomEndpoint(filter, limit, skip)
@@ -167,8 +168,10 @@ func FlatListEndpointResults(r *http.Request, cfg config.Config) (int, http.Head
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -275,17 +278,18 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 	custom := false
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_ar")
 	var query []bson.M
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyEndpoint(filter)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomEndpoint(filter)
@@ -299,8 +303,10 @@ func ListEndpointResults(r *http.Request, cfg config.Config) (int, http.Header, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -402,15 +408,16 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
 	var query []bson.M
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyServiceFlavor(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyServiceFlavor(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomServiceFlavor(filter)
@@ -424,8 +431,10 @@ func ListServiceFlavorResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -524,15 +533,16 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 	var query []bson.M
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpointGroup(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyEndpointGroup(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomEndpointGroup(filter)
@@ -546,8 +556,10 @@ func ListEndpointGroupResults(r *http.Request, cfg config.Config) (int, http.Hea
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound
@@ -634,15 +646,16 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 	var query []bson.M
 	// Select the granularity of the search daily/monthly
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailySuperGroup(filter)
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlySuperGroup(filter)
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomSuperGroup(filter)
@@ -655,8 +668,10 @@ func ListSuperGroupResults(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(results) == 0 {
 		code = http.StatusNotFound

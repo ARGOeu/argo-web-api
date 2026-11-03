@@ -73,11 +73,7 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 	vars := mux.Vars(r)
 
 	view := urlValues.Get("view")
-	details := false
-
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	skip := 0
 	tkStr := urlValues.Get("nextPageToken")
@@ -143,9 +139,10 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
-
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
 	//if no status results yet show previous days results
@@ -158,8 +155,10 @@ func FlatListMetricTimelines(r *http.Request, cfg config.Config) (int, http.Head
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	output, err = createFlatView(results, input, limit, skip, details) //Render the results into JSON/XML format

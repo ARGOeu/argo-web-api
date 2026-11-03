@@ -20,14 +20,11 @@ import (
 
 type CapAvailabilityTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -70,9 +67,9 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
+
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEA-id",
 			"info": bson.M{"name": "NODEA"},
 			"db_conf": []bson.M{
@@ -102,7 +99,8 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEB-id",
 			"info": bson.M{"name": "NODEB"},
 			"db_conf": []bson.M{
@@ -134,50 +132,57 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.summary.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.summary",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.availability.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.availability",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.uptime.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.nodes.uptime",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(nodeReportColName)
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"_id":       "node-report",
 		"report_id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 	})
+	suite.Require().NoError(err)
 
 	// Seed tenant database with data
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -196,7 +201,8 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -215,7 +221,8 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -234,7 +241,8 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -253,12 +261,13 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 				},
 			},
 		})
+	suite.Require().NoError(err)
 
 	// Seed endpoint data
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_ar")
 
 	// Insert seed data
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -279,7 +288,8 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 			},
 			"info": bson.M{"ID": "special-queue"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -300,10 +310,11 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 			},
 			"info": bson.M{"ID": "special-queue"},
 		})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -330,6 +341,7 @@ func (suite *CapAvailabilityTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 }
 
@@ -720,7 +732,7 @@ func (suite *CapAvailabilityTestSuite) TestAvailabilityOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -739,7 +751,7 @@ func (suite *CapAvailabilityTestSuite) TestAvailabilityItemOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -942,7 +954,7 @@ func (suite *CapAvailabilityTestSuite) TestUptimeOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -961,7 +973,7 @@ func (suite *CapAvailabilityTestSuite) TestUptimeItemOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -980,7 +992,7 @@ func (suite *CapAvailabilityTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -990,7 +1002,7 @@ func (suite *CapAvailabilityTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -998,8 +1010,8 @@ func (suite *CapAvailabilityTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *CapAvailabilityTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 // CapTestSuiteAR is responsible for calling the tests

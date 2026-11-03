@@ -51,10 +51,7 @@ type AppRoutes struct {
 	SubrouterHandler func(r *http.Request, cfg config.Config) (int, http.Header, []byte, error)
 }
 
-type list []interface{}
-
 const zuluForm = "2006-01-02T15:04:05Z"
-const ymdForm = "20060102"
 
 // ErrEnum used as type for enumerations of errors
 type ErrEnum int
@@ -147,7 +144,6 @@ func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.C
 		contentType = "application/json"
 		output, _ = MarshalContent(msg, contentType, "", " ")
 	case ErrValidQuery:
-		msg = BadRequestSimple
 		code = http.StatusBadRequest
 		contentType = r.Header.Get("Accept")
 		output = CreateFailureResponseMessage("Bad Request", strconv.Itoa(code), errs).MarshalTo(contentType)
@@ -178,7 +174,7 @@ func Error(w http.ResponseWriter, r *http.Request, errType ErrEnum, cfg config.C
 	}
 
 	w.WriteHeader(code)
-	w.Write(output)
+	_, _ = w.Write(output)
 }
 
 // Respond will be called to answer to http requests to the PI
@@ -217,7 +213,7 @@ func (confhandler *ConfHandler) Respond(fn func(r *http.Request, cfg config.Conf
 		}
 
 		w.WriteHeader(code)
-		w.Write(output)
+		_, _ = w.Write(output)
 	})
 
 }
@@ -244,7 +240,7 @@ func ParseAcceptHeader(r *http.Request) (string, error) {
 		return "application/json", nil
 	}
 
-	return defaultContentType, errors.New("Not Acceptable ContentType")
+	return defaultContentType, errors.New("not acceptable content type")
 
 }
 
@@ -262,20 +258,13 @@ func MarshalContent(doc interface{}, contentType string, prefix string, indent s
 	return output, err
 }
 
-func (confhandler *ConfHandler) walker(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-	// route.Handler(route.GetHandler())
-	return nil
-}
-
 // ResetCache resets the cache if it is set
 func ResetCache(w http.ResponseWriter, r *http.Request, cfg config.Config) []byte {
-	answer := ""
-	if cfg.Server.Cache == true {
+	if cfg.Server.Cache {
 		caches.ResetCache()
-		answer = "Cache Emptied"
+		return []byte("Cache Emptied")
 	}
-	answer = "No Caching is active"
-	return []byte(answer)
+	return []byte("No Caching is active")
 }
 
 // SelfReference struct for self referencing resource after they are created

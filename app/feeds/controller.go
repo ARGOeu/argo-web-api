@@ -24,7 +24,7 @@ const tenantsColName = "tenants"
 // Update request handler creates a new feed topo resource
 func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -73,8 +73,10 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &tInfo)
+	if err = cursor.All(context.TODO(), &tInfo); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	tenantIDs := Data{}
 
@@ -117,7 +119,7 @@ func UpdateData(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 // Update request handler creates a new feed topo resource
 func UpdateTopo(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -169,7 +171,7 @@ func UpdateTopo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 // UpdateWeights request handler creates a new weights feed resource
 func UpdateWeights(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -276,9 +278,10 @@ func ListData(r *http.Request, cfg config.Config) (int, http.Header, []byte, err
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-
-		cursor.All(context.TODO(), &tInfo)
+		if err = cursor.All(context.TODO(), &tInfo); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 		// check if incoming tenant IDs were found
 		for _, ID := range result.Tenants {

@@ -21,14 +21,11 @@ import (
 
 type ResultsTestSuite struct {
 	suite.Suite
-	cfg             config.Config
-	router          *mux.Router
-	confHandler     respond.ConfHandler
-	tenantDbConf    config.MongoConfig
-	tenantpassword  string
-	tenantusername  string
-	tenantstorename string
-	clientkey       string
+	cfg          config.Config
+	router       *mux.Router
+	confHandler  respond.ConfHandler
+	tenantDbConf config.MongoConfig
+	clientkey    string
 }
 
 // Setup the Test Environment
@@ -71,9 +68,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEA-id",
 			"info": bson.M{"name": "NODEA"},
 			"db_conf": []bson.M{
@@ -103,7 +99,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEB-id",
 			"info": bson.M{"name": "NODEB"},
 			"db_conf": []bson.M{
@@ -135,30 +132,34 @@ func (suite *ResultsTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.results.groups.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "v4.results.groups",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(nodeReportColName)
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"_id":       "node-report",
 		"report_id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 	})
+	suite.Require().NoError(err)
 
 	// Seed tenant database with data
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_group_ar")
 
 	// Insert seed data
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -177,7 +178,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -196,7 +198,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -215,7 +218,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 				},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -234,12 +238,13 @@ func (suite *ResultsTestSuite) SetupTest() {
 				},
 			},
 		})
+	suite.Require().NoError(err)
 
 	// add latest
 	today := time.Now().UTC()
 	for d := 0; d < 20; d++ {
 		past := today.AddDate(0, 0, -d)
-		c.InsertOne(context.TODO(),
+		_, err = c.InsertOne(context.TODO(),
 			bson.M{
 				"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 				"date":         dateInt(past),
@@ -258,7 +263,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 					},
 				},
 			})
-		c.InsertOne(context.TODO(),
+		suite.Require().NoError(err)
+		_, err = c.InsertOne(context.TODO(),
 			bson.M{
 				"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 				"date":         dateInt(past),
@@ -277,13 +283,14 @@ func (suite *ResultsTestSuite) SetupTest() {
 					},
 				},
 			})
+		suite.Require().NoError(err)
 	}
 
 	// Seed endpoint data
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("endpoint_ar")
 
 	// Insert seed data
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150622,
@@ -304,7 +311,8 @@ func (suite *ResultsTestSuite) SetupTest() {
 			},
 			"info": bson.M{"ID": "special-queue"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"report":       "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 			"date":         20150623,
@@ -325,10 +333,11 @@ func (suite *ResultsTestSuite) SetupTest() {
 			},
 			"info": bson.M{"ID": "special-queue"},
 		})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -355,6 +364,7 @@ func (suite *ResultsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 }
 
@@ -734,7 +744,7 @@ func (suite *ResultsTestSuite) TestGroupsResultsOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -753,7 +763,7 @@ func (suite *ResultsTestSuite) TestGroupsResultsItemOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -772,7 +782,7 @@ func (suite *ResultsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -782,7 +792,7 @@ func (suite *ResultsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -790,8 +800,8 @@ func (suite *ResultsTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *ResultsTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests

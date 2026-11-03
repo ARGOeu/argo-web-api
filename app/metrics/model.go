@@ -2,7 +2,7 @@ package metrics
 
 import "encoding/xml"
 
-//Metric holds basic information about a metric profile and it's tags
+// Metric holds basic information about a metric profile and it's tags
 type Metric struct {
 	Name string   `bson:"name" json:"name"`
 	Tags []string `bson:"tags" json:"tags"`

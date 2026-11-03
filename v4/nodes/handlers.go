@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // GetMetrics lists availability, reliability, uptime for a specific group
@@ -100,12 +102,13 @@ func GetMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
@@ -120,8 +123,10 @@ func GetMetrics(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createMetricsView(resultsGroups)
 
@@ -221,12 +226,13 @@ func GetSummary(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
@@ -241,8 +247,10 @@ func GetSummary(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createSummaryView(resultsGroups)
 
@@ -343,12 +351,13 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
@@ -363,8 +372,10 @@ func GetAvailability(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createAvailabilityView(resultsGroups)
 
@@ -463,12 +474,13 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
@@ -483,8 +495,10 @@ func GetUptime(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createUptimeView(resultsGroups)
 
@@ -531,12 +545,18 @@ func GetGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []by
 		err = rCol.FindOne(context.TODO(), bson.M{"$or": bson.A{bson.M{"id": reportItem}, bson.M{"info.name": reportItem}}}).Decode(&report)
 
 		if err != nil {
-			code = http.StatusNotFound
-			message := "The report: " + reportItem + " does not exist"
-			output, err := createErrorMessage(message, code, contentType)
-			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
-			return code, h, output, err
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				code = http.StatusNotFound
+				message := "The report: " + reportItem + " does not exist"
+				output, err := createErrorMessage(message, code, contentType)
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			} else {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
 		}
+
 	} else {
 		count, err := rCol.CountDocuments(context.TODO(), bson.M{})
 		if err != nil {
@@ -561,6 +581,19 @@ func GetGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []by
 			return code, h, output, err
 		}
 		err = rCol.FindOne(context.TODO(), bson.M{}).Decode(&report)
+
+		if err != nil {
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				code = http.StatusNotFound
+				message := "No reports found"
+				output, err := createErrorMessage(message, code, contentType)
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			} else {
+				code = http.StatusInternalServerError
+				return code, h, output, err
+			}
+		}
 	}
 
 	input :=
@@ -616,12 +649,13 @@ func GetGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []by
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
@@ -636,8 +670,10 @@ func GetGroupResults(r *http.Request, cfg config.Config) (int, http.Header, []by
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createSummaryView(resultsGroups)
 
@@ -675,10 +711,7 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 	// This is going to be used to determine a detailed/latest view of the results
 	view := urlValues.Get("view")
 	history := urlValues.Get("history")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	var parsedStart, parsedEnd int
 
@@ -767,6 +800,20 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 			return code, h, output, err
 		}
 		err = rCol.FindOne(context.TODO(), bson.M{}).Decode(&report)
+		if err != nil {
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				code = http.StatusNotFound
+				message := "No reports found"
+				output, err := createErrorMessage(message, code, contentType)
+				h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+				return code, h, output, err
+			}
+			code = http.StatusInternalServerError
+			message := "Could not access reports"
+			output, err := createErrorMessage(message, code, contentType)
+			h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+			return code, h, output, err
+		}
 	}
 
 	input.groupType = report.Topology.Group.Group.Type
@@ -780,8 +827,10 @@ func GetGroupStatus(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &groupResults)
+	if err = cursor.All(context.TODO(), &groupResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusView(groupResults, input, endDate, details, history == "") //Render the results into JSON
 
@@ -813,10 +862,7 @@ func GetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 	// This is going to be used to determine a detailed/latest view of the results
 	view := urlValues.Get("view")
 	history := urlValues.Get("history")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	var parsedStart, parsedEnd int
 
@@ -904,8 +950,10 @@ func GetStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &groupResults)
+	if err = cursor.All(context.TODO(), &groupResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createStatusView(groupResults, input, endDate, details, history == "") //Render the results into JSON
 

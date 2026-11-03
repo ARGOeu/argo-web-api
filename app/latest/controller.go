@@ -67,10 +67,7 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 	dateStr := urlValues.Get("date")
 	filter := urlValues.Get("filter")
 
-	strict := false
-	if urlValues.Get("strict") == "true" {
-		strict = true
-	}
+	strict := urlValues.Get("strict") == "true"
 
 	lim, err := strconv.Atoi(limit)
 	if err != nil {
@@ -113,8 +110,10 @@ func ListLatestResults(r *http.Request, cfg config.Config) (int, http.Header, []
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultItems)
+	if err = cursor.All(context.TODO(), &resultItems); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	result.MetricData = resultItems
 
@@ -151,15 +150,12 @@ func prepQuery(dateStr string, report string, group string, filter string, stric
 		query["endpoint_group"] = group
 	}
 
-	if filter == "NON-OK" {
+	switch filter {
+	case "NON-OK":
 
 		query["status"] = bson.M{"$ne": "OK"}
 
-	} else if filter == "CRITICAL" ||
-		filter == "WARNING" ||
-		filter == "OK" ||
-		filter == "MISSING" ||
-		filter == "UNKNOWN" {
+	case "CRITICAL", "WARNING", "OK", "MISSING", "UNKNOWN":
 
 		query["status"] = filter
 

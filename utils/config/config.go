@@ -117,7 +117,7 @@ func LoadConfiguration() Config {
 	var env = os.Getenv("EGI_AR_REST_API_ENV")
 	switch env {
 	default:
-		os.Setenv("EGI_AR_REST_API_ENV", "development")
+		_ = os.Setenv("EGI_AR_REST_API_ENV", "development")
 	case "test":
 	case "production":
 	}

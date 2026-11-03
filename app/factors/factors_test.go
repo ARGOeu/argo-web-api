@@ -108,20 +108,24 @@ func (suite *FactorsTestSuite) SetupTest() {
 	seedAuth := bson.M{"name": "TEST",
 		"db_conf": []bson.M{{"server": "127.0.0.1", "port": 27017, "database": "AR_test"}},
 		"users":   []bson.M{{"name": "Jack Doe", "email": "jack.doe@example.com", "api_key": "secret", "roles": []string{"viewer"}}}}
-	c.InsertOne(context.TODO(), seedAuth)
+	_, err := c.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 
 	// Add a few factors in collection
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("weights")
-	c.InsertOne(context.TODO(), bson.M{"hepspec": 14595, "name": "CIEMAT-LCG2"})
-	c.InsertOne(context.TODO(), bson.M{"hepspec": 1019, "name": "CFP-IST"})
-	c.InsertOne(context.TODO(), bson.M{"hepspec": 5406, "name": "CETA-GRID"})
-
+	_, err = c.InsertOne(context.TODO(), bson.M{"hepspec": 14595, "name": "CIEMAT-LCG2"})
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{"hepspec": 1019, "name": "CFP-IST"})
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{"hepspec": 5406, "name": "CETA-GRID"})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "factors.list",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -236,7 +240,7 @@ func (suite *FactorsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -246,7 +250,7 @@ func (suite *FactorsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -254,8 +258,8 @@ func (suite *FactorsTestSuite) TearDownTest() {
 // TearDownSuite do things after suite ends
 func (suite *FactorsTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteFactors(t *testing.T) {

@@ -106,19 +106,8 @@ type Exclude struct {
 	Group   string   `xml:"name,attr" json:"name"`
 }
 
-type root struct {
-	XMLName xml.Name    `xml:"root" json:"-"`
-	Result  interface{} `json:"root"`
-}
-
 type Message struct {
 	XMLName xml.Name `xml:"root" json:"-"`
 	Message string   `json:"message" xml:"message"`
 	Status  string   `json:"status" xml:"status"`
-}
-
-// errorMessage struct to hold the json/xml error response
-type errorMessage struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Message string   `xml:"message" json:"message"`
 }

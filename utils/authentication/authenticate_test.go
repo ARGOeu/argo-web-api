@@ -86,9 +86,8 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 
 	suite.cfg.MongoClient = client
 	// Seed database with tenants
-	//TODO: move tests to
 	c := client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"name": "Westeros",
 			"db_conf": []bson.M{
 				{
@@ -114,7 +113,8 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 					"api_key": "sansa <3",
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"name": "EGI",
 			"db_conf": []bson.M{
 				{
@@ -143,21 +143,24 @@ func (suite *AuthenticationProfileTestSuite) SetupTest() {
 					"api_key": "itsamysterytoyou",
 				},
 			}})
+	suite.Require().NoError(err)
 	c = client.Database(suite.cfg.MongoDB.Db).Collection("authentication")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name":    "Igano Kabamaru",
 			"email":   "igano@kabamaru.io",
 			"api_key": "makaronada",
 		},
 	)
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name":    "Optimus Prime",
 			"email":   "prime@autobots.com",
 			"api_key": "megatron_sucks",
 		},
 	)
+	suite.Require().NoError(err)
 }
 
 // TestAdminAuthentication performs unit tests against the AuthenticateAdmin function
@@ -193,10 +196,12 @@ func (suite *AuthenticationProfileTestSuite) TestTenantAuthentication() {
 func (suite *AuthenticationProfileTestSuite) TearDownTest() {
 
 	client := store.GetMongoClient(suite.cfg.MongoDB)
-	defer client.Disconnect(context.TODO())
+	defer func() {
+		suite.NoError(client.Disconnect(context.TODO()))
+	}()
 
-	client.Database(suite.tenantdb).Drop(context.TODO())
-	client.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
+	suite.Require().NoError(client.Database(suite.tenantdb).Drop(context.TODO()))
+	suite.Require().NoError(client.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
 
 }
 

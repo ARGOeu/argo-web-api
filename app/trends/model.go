@@ -22,12 +22,7 @@
 
 package trends
 
-import "encoding/xml"
-
-const zuluForm = "2006-01-02T15:04:05Z"
-const ymdForm = "2006-01-02"
-
-//StatusMonthMetricData holds monthly status trends information about metrics
+// StatusMonthMetricData holds monthly status trends information about metrics
 type StatusMonthMetricData struct {
 	Date   string             `bson:"date" json:"date"`
 	Status string             `bson:"status" json:"status"`
@@ -35,60 +30,60 @@ type StatusMonthMetricData struct {
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
-//StatusMonthEndpointData holds monthly status trends information about endpoints
+// StatusMonthEndpointData holds monthly status trends information about endpoints
 type StatusMonthEndpointData struct {
 	Date   string               `bson:"date" json:"date"`
 	Status string               `bson:"status" json:"status"`
 	Top    []StatusEndpointData `bson:"top" json:"top"`
 }
 
-//StatusMonthServiceData holds monthly status trends information about services
+// StatusMonthServiceData holds monthly status trends information about services
 type StatusMonthServiceData struct {
 	Date   string              `bson:"date" json:"date"`
 	Status string              `bson:"status" json:"status"`
 	Top    []StatusServiceData `bson:"top" json:"top"`
 }
 
-//StatusMonthEgroupData holds monthly status trends information about endpoint groups
+// StatusMonthEgroupData holds monthly status trends information about endpoint groups
 type StatusMonthEgroupData struct {
 	Date   string             `bson:"date" json:"date"`
 	Status string             `bson:"status" json:"status"`
 	Top    []StatusEgroupData `bson:"top" json:"top"`
 }
 
-//StatusGroupMetricData holds grouped monthly status trends information about metrics
+// StatusGroupMetricData holds grouped monthly status trends information about metrics
 type StatusGroupMetricData struct {
 	Status string             `bson:"status" json:"status"`
 	Tag    string             `bson:"tag" json:"tag,omitempty"`
 	Top    []StatusMetricData `bson:"top" json:"top"`
 }
 
-//StatusGroupEndpointData holds grouped monthly status trends information about endpoints
+// StatusGroupEndpointData holds grouped monthly status trends information about endpoints
 type StatusGroupEndpointData struct {
 	Status string               `bson:"status" json:"status"`
 	Top    []StatusEndpointData `bson:"top" json:"top"`
 }
 
-//StatusGroupEgroupData holds grouped monthly status trends information about endpoint groups
+// StatusGroupEgroupData holds grouped monthly status trends information about endpoint groups
 type StatusGroupEgroupData struct {
 	Status string             `bson:"status" json:"status"`
 	Top    []StatusEgroupData `bson:"top" json:"top"`
 }
 
-//StatusGroupServiceData holds grouped monthly status trends information about services
+// StatusGroupServiceData holds grouped monthly status trends information about services
 type StatusGroupServiceData struct {
 	Status string              `bson:"status" json:"status"`
 	Top    []StatusServiceData `bson:"top" json:"top"`
 }
 
-//MonthMetricData holds monthly information about flapping metric trends
+// MonthMetricData holds monthly information about flapping metric trends
 type MonthMetricData struct {
 	Date string       `bson:"date" json:"date"`
 	Tag  string       `bson:"tag" json:"tag,omitempty"`
 	Top  []MetricData `bson:"top" json:"top"`
 }
 
-//TagMetricData holds information about flapping metric trends by Tag
+// TagMetricData holds information about flapping metric trends by Tag
 type TagMetricData struct {
 	Tag string       `bson:"tag" json:"tag,omitempty"`
 	Top []MetricData `bson:"top" json:"top"`
@@ -174,11 +169,4 @@ type ServiceData struct {
 type EndpointGroupData struct {
 	EndpointGroup string `bson:"group" json:"endpoint_group"`
 	Flapping      int    `bson:"flipflop" json:"flapping"`
-}
-
-// Message struct to hold the json/xml response
-type messageOUT struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Message string   `xml:"message" json:"message"`
-	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
 }
