@@ -1,7 +1,7 @@
 pipeline {
     agent { 
         docker { 
-            image 'argo.registry:5000/rocky9-go1.25-mongo7:latest' 
+            image 'argo.registry:5000/rocky9-go1.27-mongo7:latest' 
             args '-u jenkins:jenkins'
         }
     }
