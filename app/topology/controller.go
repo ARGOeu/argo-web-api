@@ -41,9 +41,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // datastore collection name that contains aggregations profile records
@@ -103,7 +102,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 	serviceCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("service_ar")
 	eGroupCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection("endpoint_group_ar")
 
-	distinctServices, err := serviceCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
+	var distinctServices []interface{}
+	err = serviceCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt}).Decode(&distinctServices)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -115,7 +115,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	distinctEgroup, err := eGroupCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt})
+	var distinctEgroup []interface{}
+	err = eGroupCol.Distinct(context.TODO(), "name", bson.M{"report": reportID, "date": dt}).Decode(&distinctEgroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -127,7 +128,8 @@ func ListTopoStats(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		return code, h, output, err
 	}
 
-	distinctGroup, err := eGroupCol.Distinct(context.TODO(), "supergroup", bson.M{"report": reportID, "date": dt})
+	var distinctGroup []interface{}
+	err = eGroupCol.Distinct(context.TODO(), "supergroup", bson.M{"report": reportID, "date": dt}).Decode(&distinctGroup)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
@@ -209,9 +211,10 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &resTagsEndpoint)
+	if err = cursor.All(context.TODO(), &resTagsEndpoint); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	expDate = store.GetCloseDate(colGroup, dt)
 
@@ -227,8 +230,10 @@ func ListTopoTags(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resTagsGroup)
+	if err = cursor.All(context.TODO(), &resTagsGroup); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// sort unique tag values in each tag occurence
 	for _, tg := range resTagsEndpoint {
@@ -354,9 +359,9 @@ func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateI
 		return subResults, expDate, err
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err = cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, expDate, err
+	}
 
 	return subResults, expDate, err
 }
@@ -364,7 +369,7 @@ func getEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateI
 func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -429,7 +434,7 @@ func CreateEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := endpointCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}
@@ -529,7 +534,7 @@ func DeleteEndpoints(r *http.Request, cfg config.Config) (int, http.Header, []by
 func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -593,7 +598,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := groupCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}
@@ -647,7 +652,7 @@ func CreateGroups(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 
 func handleWildcard(item string) (string, bool) {
 	if strings.Contains(item, "*") {
-		return "^" + strings.Replace(item, "*", ".*", -1) + "$", true
+		return "^" + strings.ReplaceAll(item, "*", ".*") + "$", true
 	}
 	return item, false
 }
@@ -687,7 +692,7 @@ func appendTags(query bson.M, tags string) bson.M {
 				}
 			}
 			tagRegStr = tagRegStr + ")$"
-			query["tags."+tag] = primitive.Regex{Pattern: tagRegStr}
+			query["tags."+tag] = bson.Regex{Pattern: tagRegStr}
 
 		} else {
 
@@ -696,9 +701,9 @@ func appendTags(query bson.M, tags string) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["tags."+tag] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["tags."+tag] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["tags."+tag] = primitive.Regex{Pattern: value}
+					query["tags."+tag] = bson.Regex{Pattern: value}
 				}
 
 			} else {
@@ -743,7 +748,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = primitive.Regex{Pattern: groupRegStr}
+			query["group"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -751,9 +756,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["group"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["group"] = primitive.Regex{Pattern: value}
+					query["group"] = bson.Regex{Pattern: value}
 				}
 
 			} else {
@@ -782,7 +787,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = primitive.Regex{Pattern: groupRegStr}
+			query["type"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -790,9 +795,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["type"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["type"] = primitive.Regex{Pattern: value}
+					query["type"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -819,7 +824,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["service"] = primitive.Regex{Pattern: groupRegStr}
+			query["service"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -827,9 +832,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["service"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["service"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["service"] = primitive.Regex{Pattern: value}
+					query["service"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -856,7 +861,7 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["hostname"] = primitive.Regex{Pattern: groupRegStr}
+			query["hostname"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -864,9 +869,9 @@ func prepEndpointQuery(date int, filter fltrEndpoint) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["hostname"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["hostname"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["hostname"] = primitive.Regex{Pattern: value}
+					query["hostname"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -903,13 +908,13 @@ func prepTagAggr(date int) []bson.M {
 
 }
 
-func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
+func prepGroupEndpointAggr(groupDate int, endpointDate int, fgroup fltrGroup, fendpoint fltrEndpoint) []bson.M {
 
 	// prepare match query for applying filtering on the groups based on report
-	groupMatch := prepGroupQuery(date, fgroup)
+	groupMatch := prepGroupQuery(groupDate, fgroup)
 
 	// prepare match query for applying further filtering on already filtered by groups endpoints based on report
-	endpointMatch := prepEndpointQuery(date, fendpoint)
+	endpointMatch := prepEndpointQuery(endpointDate, fendpoint)
 
 	// Endpoints must be filtered based on the filtered groups they belong to. So we begin an aggregation firstly
 	// by filtering groups and then trying to find using lookup which endpoints belong to those filtered groups.
@@ -925,19 +930,15 @@ func prepGroupEndpointAggr(date int, fgroup fltrGroup, fendpoint fltrEndpoint) [
 		{"$match": groupMatch},
 		{"$lookup": bson.M{"from": endpointColName,
 			"let": bson.M{
-				"group_date":     "$date_integer",
 				"group_subgroup": "$subgroup",
 			},
 			"pipeline": []bson.M{
 				{"$match": bson.M{
+					"date_integer": endpointDate,
 					"$expr": bson.M{
-						"$and": []bson.M{
-							{"$eq": []string{"$$group_subgroup", "$group"}},
-							{"$eq": []string{"$$group_date", "$date_integer"}},
-						},
+						"$eq": []string{"$$group_subgroup", "$group"},
 					},
-				},
-				},
+				}},
 			},
 			"as": "endp"}},
 		{"$unwind": "$endp"},
@@ -967,7 +968,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["group"] = primitive.Regex{Pattern: groupRegStr}
+			query["group"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -975,9 +976,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["group"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["group"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["group"] = primitive.Regex{Pattern: value}
+					query["group"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1004,7 +1005,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["type"] = primitive.Regex{Pattern: groupRegStr}
+			query["type"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -1012,9 +1013,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["type"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["type"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["type"] = primitive.Regex{Pattern: value}
+					query["type"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1041,7 +1042,7 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 				}
 			}
 			groupRegStr = groupRegStr + ")$"
-			query["subgroup"] = primitive.Regex{Pattern: groupRegStr}
+			query["subgroup"] = bson.Regex{Pattern: groupRegStr}
 		} else {
 
 			// check if value has exclude prefix and trim it
@@ -1049,9 +1050,9 @@ func prepGroupQuery(date int, filter fltrGroup) bson.M {
 
 			if value, reg := handleWildcard(trimValue); reg {
 				if exclude {
-					query["subgroup"] = bson.M{"$not": primitive.Regex{Pattern: value}}
+					query["subgroup"] = bson.M{"$not": bson.Regex{Pattern: value}}
 				} else {
-					query["subgroup"] = primitive.Regex{Pattern: value}
+					query["subgroup"] = bson.Regex{Pattern: value}
 				}
 			} else {
 				if exclude {
@@ -1127,7 +1128,8 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			groupTags = groupTags + getReportTagsArray(tag)
 
 		}
-		if tag.Context == "argo.group.filter.tags" {
+		switch tag.Context {
+		case "argo.group.filter.tags":
 			// check if it has special context refering to group filtering based on tags
 			// then construct / update group tag string
 
@@ -1138,18 +1140,19 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 			}
 			groupTags = groupTags + tag.Name + ":" + tag.Value
 
-		} else if tag.Context == "argo.group.filter.fields" {
+		case "argo.group.filter.fields":
 			// check if it has special context refering to group filtering based on basic fields
 			// then based on tag name update corresponding field filter
 
-			if tag.Name == "group" {
+			switch tag.Name {
+			case "group":
 				fGroup.Group = append(fGroup.Group, tag.Value)
-			} else if tag.Name == "type" {
+			case "type":
 				fGroup.GroupType = append(fGroup.GroupType, tag.Value)
-			} else if tag.Name == "subgroup" {
+			case "subgroup":
 				fGroup.Subgroup = append(fGroup.Subgroup, tag.Value)
 			}
-		} else if tag.Context == "argo.endpoint.filter.tags.array" {
+		case "argo.endpoint.filter.tags.array":
 			// check if it has special context refering to endpoint filtering based on tags
 			// then construct / update endpoint tag string
 
@@ -1159,7 +1162,7 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 				endpointFirst = false
 			}
 			endpointTags = endpointTags + getReportTagsArray(tag)
-		} else if tag.Context == "argo.endpoint.filter.tags" {
+		case "argo.endpoint.filter.tags":
 			// check if it has special context refering to endpoint filtering based on tags
 			// then construct / update endpoint tag string
 
@@ -1169,17 +1172,18 @@ func getReportFilters(r reports.MongoInterface) (fltrGroup, fltrEndpoint) {
 				endpointFirst = false
 			}
 			endpointTags = endpointTags + tag.Name + ":" + tag.Value
-		} else if tag.Context == "argo.endpoint.filter.fields" {
+		case "argo.endpoint.filter.fields":
 			// check if it has special context refering to endpoint filtering based on basic fields
 			// then based on tag name update corresponding field filter
 
-			if tag.Name == "group" {
+			switch tag.Name {
+			case "group":
 				fEndpoint.Group = append(fEndpoint.Group, tag.Value)
-			} else if tag.Name == "type" {
+			case "type":
 				fEndpoint.GroupType = append(fEndpoint.GroupType, tag.Value)
-			} else if tag.Name == "service" {
+			case "service":
 				fEndpoint.Service = append(fEndpoint.Service, tag.Value)
-			} else if tag.Name == "hostname" {
+			case "hostname":
 				fEndpoint.Hostname = append(fEndpoint.Hostname, tag.Value)
 			}
 		}
@@ -1306,25 +1310,34 @@ func ListEndpointsByReport(r *http.Request, cfg config.Config) (int, http.Header
 func getGroupEndpointResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt int, filterG fltrGroup, filterE fltrEndpoint) ([]Endpoint, int, error) {
 	subResults := []Endpoint{}
 
-	colGroup := client.Database(dbConfig.Db).Collection(groupColName)
-	expDate := store.GetCloseDate(colGroup, dateInt)
-	if expDate < 0 {
-		return subResults, expDate, nil
+	db := client.Database(dbConfig.Db)
+	colGroup := db.Collection(groupColName)
+	colEndpoint := db.Collection(endpointColName)
+
+	// endpoints: closest snapshot to the requested date
+	endpointDate := store.GetCloseDate(colEndpoint, dateInt)
+	if endpointDate < 0 {
+		return subResults, endpointDate, nil
 	}
 
-	query := prepGroupEndpointAggr(expDate, filterG, filterE)
+	// groups: closest snapshot to the endpoint snapshot date
+	groupDate := store.GetCloseDate(colGroup, endpointDate)
+	if groupDate < 0 {
+		return subResults, groupDate, nil
+	}
+
+	query := prepGroupEndpointAggr(groupDate, endpointDate, filterG, filterE)
 
 	cursor, err := colGroup.Aggregate(context.TODO(), query)
-
 	if err != nil {
-		return subResults, expDate, err
+		return subResults, endpointDate, err
 	}
 
-	defer cursor.Close(context.TODO())
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, endpointDate, err
+	}
 
-	cursor.All(context.TODO(), &subResults)
-
-	return subResults, expDate, err
+	return subResults, endpointDate, nil
 }
 
 // ListGroupsByReport lists group topology by report
@@ -1378,7 +1391,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	fGroup := fltrGroup{}
+	var fGroup fltrGroup
 	fGroup, _ = getReportFilters(report)
 
 	if groupType != "" && (len(fGroup.GroupType) == 0) {
@@ -1433,7 +1446,7 @@ func ListGroupsByReport(r *http.Request, cfg config.Config) (int, http.Header, [
 func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -1498,7 +1511,7 @@ func CreateServiceTypes(r *http.Request, cfg config.Config) (int, http.Header, [
 			}
 			defer session.EndSession(context.TODO())
 
-			_, err = session.WithTransaction(context.TODO(), func(ctx mongo.SessionContext) (interface{}, error) {
+			_, err = session.WithTransaction(context.TODO(), func(ctx context.Context) (interface{}, error) {
 				if _, err := serviceTypeCol.DeleteMany(ctx, bson.M{"date_integer": dt}); err != nil {
 					return nil, err
 				}
@@ -1644,9 +1657,9 @@ func getServiceTypeResults(client *mongo.Client, dbConfig config.MongoConfig, da
 		return subResults, err
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, err
+	}
 
 	return subResults, err
 }
@@ -1672,9 +1685,9 @@ func getComboDBConfigs(client *mongo.Client, comboTenantCfg config.MongoConfig, 
 			return result
 		}
 
-		defer cursor.Close(context.TODO())
-
-		cursor.All(context.TODO(), &tenantResults)
+		if err := cursor.All(context.TODO(), &tenantResults); err != nil {
+			return result
+		}
 
 		for _, item := range tenantResults {
 
@@ -1841,9 +1854,9 @@ func getGroupResults(client *mongo.Client, dbConfig config.MongoConfig, dateInt 
 		return subResults, expDate, nil
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &subResults)
+	if err := cursor.All(context.TODO(), &subResults); err != nil {
+		return subResults, expDate, err
+	}
 
 	return subResults, expDate, err
 }

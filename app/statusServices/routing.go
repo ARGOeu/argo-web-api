@@ -30,7 +30,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/app/reports"
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -53,7 +53,7 @@ var appRoutesV2 = []respond.AppRoutes{
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	err := error(nil)
 	charset := "utf-8"

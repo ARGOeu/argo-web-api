@@ -143,15 +143,3 @@ func createFlatView(results []DataOutput, input InputParams, endDate string, lim
 	return output, err
 
 }
-
-func createMessageOUT(message string, code int, format string) ([]byte, error) {
-
-	var output []byte
-	err := error(nil)
-	docRoot := &messageOUT{}
-
-	docRoot.Message = message
-	docRoot.Code = strconv.Itoa(code)
-	output, err = respond.MarshalContent(docRoot, format, "", " ")
-	return output, err
-}

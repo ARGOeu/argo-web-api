@@ -34,16 +34,7 @@ import (
 	"runtime/pprof"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"github.com/ARGOeu/go-lru-cache"
 )
-
-var httpcache *cache.LRUCache
-
-type mystring string
-
-func (s mystring) Size() int {
-	return len(s)
-}
 
 // Load the configurations that we have set through flags and through the configuration file
 var cfg = config.LoadConfiguration()
@@ -57,9 +48,6 @@ func init() {
 		}
 	}()
 
-	//Initialize the cache
-	httpcache = cache.NewLRUCache(uint64(cfg.Server.Lrucache))
-
 	//Set GOMAXPROCS
 	runtime.GOMAXPROCS(cfg.Server.Maxprocs)
 
@@ -69,7 +57,9 @@ func init() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.StartCPUProfile(f)
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal(err)
+		}
 		defer pprof.StopCPUProfile()
 	}
 

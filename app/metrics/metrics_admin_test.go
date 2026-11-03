@@ -14,7 +14,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -79,14 +79,18 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	seedResAdminUI := bson.M{"api_key": "ADM1NU1", "super_admin_ui": true}
-	authCol.InsertOne(context.TODO(), seedSuperAdmin)
-	authCol.InsertOne(context.TODO(), seedAuth)
-	authCol.InsertOne(context.TODO(), seedResAuth)
-	authCol.InsertOne(context.TODO(), seedResAdminUI)
+	_, err := authCol.InsertOne(context.TODO(), seedSuperAdmin)
+	suite.Require().NoError(err)
+	_, err = authCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
+	_, err = authCol.InsertOne(context.TODO(), seedResAuth)
+	suite.Require().NoError(err)
+	_, err = authCol.InsertOne(context.TODO(), seedResAdminUI)
+	suite.Require().NoError(err)
 
 	// Seed database with tenants
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "TENANT_A",
@@ -120,7 +124,8 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "TENANT_B",
@@ -157,39 +162,40 @@ func (suite *MetricsAdminTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics_admin.get",
 			"roles":    []string{"super_admin"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics_admin.update",
 			"roles":    []string{"super_admin"},
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with metrics
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("monitoring_metrics")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_1",
 			"tags": []string{"network", "internal"},
 		})
-
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_2",
 			"tags": []string{"disk", "agent"},
 		})
-
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_3",
 			"tags": []string{"aai"},
 		})
-
+	suite.Require().NoError(err)
 }
 
 func (suite *MetricsAdminTestSuite) TestAdminUpdateMetricData() {
@@ -281,15 +287,15 @@ func (suite *MetricsAdminTestSuite) TestAdminListMetrics() {
 // TearDownTest to tear down every test
 func (suite *MetricsAdminTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
-// TearDownTest to tear down every test
+// TearDownSuite to tear down
 func (suite *MetricsAdminTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteMetricsAdmin(t *testing.T) {

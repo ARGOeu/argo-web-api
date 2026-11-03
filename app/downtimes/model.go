@@ -1,13 +1,13 @@
 package downtimes
 
-//Downtimes holds a list of downtimes for endpoints for a specific day
+// Downtimes holds a list of downtimes for endpoints for a specific day
 type Downtimes struct {
 	DateInt   int        `bson:"date_integer" json:"-"`
 	Date      string     `bson:"date" json:"date"`
 	Endpoints []Downtime `bson:"endpoints" json:"endpoints"`
 }
 
-//Downtime holds downtime information for a specific host
+// Downtime holds downtime information for a specific host
 type Downtime struct {
 	HostName       string `bson:"hostname" json:"hostname"`
 	Service        string `bson:"service" json:"service"`

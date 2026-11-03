@@ -45,6 +45,8 @@ var appRoutesV2 = []respond.AppRoutes{
 	{Name: "reports.create", Verb: "POST", Path: "/reports", SubrouterHandler: Create},
 	{Name: "reports.update", Verb: "PUT", Path: "/reports/{id}", SubrouterHandler: Update},
 	{Name: "reports.delete", Verb: "DELETE", Path: "/reports/{id}", SubrouterHandler: Delete},
+	{Name: "reports.set_public", Verb: "POST", Path: "/reports/{id}/set-public", SubrouterHandler: SetPublic},
+	{Name: "reports.set_private", Verb: "POST", Path: "/reports/{id}/set-private", SubrouterHandler: SetPrivate},
 	{Name: "reports.set_node_report", Verb: "POST", Path: "/reports/{id}/set-node-report", SubrouterHandler: SetNodeReport},
 	{Name: "reports.options", Verb: "OPTIONS", Path: "/reports", SubrouterHandler: Options},
 	{Name: "reports.options", Verb: "OPTIONS", Path: "/reports/{id}", SubrouterHandler: Options},

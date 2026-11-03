@@ -34,7 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // ListStatus lists group and endpoint status timelines
@@ -62,9 +62,10 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 	view := urlValues.Get("view")
 	latest := false
 	details := false
-	if view == "details" {
+	switch view {
+	case "details":
 		details = true
-	} else if view == "latest" {
+	case "latest":
 		latest = true
 	}
 
@@ -153,8 +154,10 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &groupResults)
+	if err = cursor.All(context.TODO(), &groupResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	//if no status results yet show previous days results
 	if len(groupResults) == 0 {
@@ -166,8 +169,10 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &groupResults)
+		if err = cursor.All(context.TODO(), &groupResults); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEndpointColName)
@@ -179,8 +184,10 @@ func ListStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &endpointResults)
+	if err = cursor.All(context.TODO(), &endpointResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 	output, err = createCombinedView(groupResults, endpointResults, input, endDate, details, latest) //Render the results into JSON
 
 	return code, h, output, err
@@ -212,15 +219,13 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 
 	// This is going to be used to determine a detailed/latest view of the results
 	view := urlValues.Get("view")
-	latest := false
-	if urlStartTime == "" && urlEndTime == "" {
-		latest = true
-	}
+	latest := urlStartTime == "" && urlEndTime == ""
 	details := false
-	if view == "details" {
+	switch view {
+	case "details":
 		details = true
 		latest = false
-	} else if view == "latest" {
+	case "latest":
 		latest = true
 	}
 
@@ -307,8 +312,10 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &groupResults)
+	if err = cursor.All(context.TODO(), &groupResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	//if no status results yet show previous days results
 	if len(groupResults) == 0 {
@@ -320,8 +327,10 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &groupResults)
+		if err = cursor.All(context.TODO(), &groupResults); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	endpointCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(statusEndpointColName)
@@ -333,8 +342,10 @@ func ListStatusByID(r *http.Request, cfg config.Config) (int, http.Header, []byt
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &endpointResults)
+	if err = cursor.All(context.TODO(), &endpointResults); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	if len(endpointResults) == 0 {
 		code = http.StatusNotFound

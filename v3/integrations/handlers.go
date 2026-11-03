@@ -12,8 +12,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 var ROLE_DICT = map[string]string{
@@ -22,12 +22,12 @@ var ROLE_DICT = map[string]string{
 	"probe":       "component_poem",
 	"poem-admin":  "component_poem",
 	"poem-viewer": "component_poem",
-	"connector":  "component_poem",
+	"connector":   "component_poem",
 }
 
 func ComponentRefreshKey(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

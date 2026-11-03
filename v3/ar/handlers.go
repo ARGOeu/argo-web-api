@@ -33,8 +33,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // ListGroupAR lists supergroup and group availabilities according to the http request
@@ -104,19 +103,20 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 	// Prepare the supergroup results
 	// Select the granularity of the search daily/monthly
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(groupColName)
-	var query []primitive.M
+	var query []bson.M
 	custom := false
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailySuperGroup(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlySuperGroup(filter)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomSuperGroup(filter)
@@ -130,22 +130,25 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsSuperGroups)
+	if err = cursor.All(context.TODO(), &resultsSuperGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyGroup(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyGroup(filter)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomGroup(filter)
@@ -159,8 +162,10 @@ func ListGroupAR(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &resultsGroups)
+	if err = cursor.All(context.TODO(), &resultsGroups); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createResultView(resultsSuperGroups, resultsGroups, report, custom)
 
@@ -243,19 +248,20 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 	// Prepare the group results
 	// Select the granularity of the search daily/monthly
 	arCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(endpointColName)
-	var query []primitive.M
+	var query []bson.M
 	custom := false
-	if input.Granularity == "daily" {
+	switch input.Granularity {
+	case "daily":
 		customForm[0] = "20060102"
 		customForm[1] = "2006-01-02"
 		query = DailyEndpoint(filter)
 
-	} else if input.Granularity == "monthly" {
+	case "monthly":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = MonthlyEndpoint(filter)
 
-	} else if input.Granularity == "custom" {
+	case "custom":
 		customForm[0] = "200601"
 		customForm[1] = "2006-01"
 		query = CustomEndpoint(filter)
@@ -269,8 +275,10 @@ func ListEndpointARByID(r *http.Request, cfg config.Config) (int, http.Header, [
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// if number of returned results is 0 respond with not found
 	if len(results) == 0 {

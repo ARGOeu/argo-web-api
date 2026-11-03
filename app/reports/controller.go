@@ -29,6 +29,7 @@ package reports
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -40,9 +41,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var reportsColl = "reports"
@@ -191,12 +192,26 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
 	err = nrCol.FindOne(context.TODO(), query).Decode(&nodeReport)
 
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
 	if urlValues.Get("name") != "" {
 		query["info.name"] = urlValues["name"]
 	}
 
 	if urlValues.Has("node") {
 		query["id"] = nodeReport.Report_id
+	}
+
+	if urlValues.Has("public") {
+		query["public"] = true
+
+	}
+
+	if urlValues.Has("private") {
+		query["public"] = bson.M{"$exists": false}
 	}
 
 	// Create structure for storing query results
@@ -211,8 +226,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	for indx := range results {
 		if nodeReport.Report_id == results[indx].ID {
@@ -244,7 +261,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -266,6 +283,11 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 
 	nrCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(nodeReportColl)
 	err = nrCol.FindOne(context.TODO(), bson.M{}).Decode(&nodeReport)
+
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	// Create structure for storing query results
 	result := MongoInterface{}
@@ -322,7 +344,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -456,11 +478,114 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 }
 
+// SetPublic function is used to set a specific report as public
+func SetPublic(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	var code int
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	//Extracting report id from url
+	id := mux.Vars(r)["id"]
+
+	// before updating, check if the report exists and the name is unique
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+
+	filter := bson.M{"id": id}
+	update := bson.M{"$set": bson.M{"public": true}}
+
+	updateChange, err := rCol.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Report is set as public", "200", contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
+// SetPrivate function is used to set a specific report as private
+func SetPrivate(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
+
+	//STANDARD DECLARATIONS START
+	var code int
+	h := http.Header{}
+	output := []byte("")
+	err := error(nil)
+	charset := "utf-8"
+	//STANDARD DECLARATIONS END
+
+	// Set Content-Type response Header value
+	contentType := r.Header.Get("Accept")
+	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	// Grab Tenant DB configuration from context
+	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
+
+	//Extracting report id from url
+	id := mux.Vars(r)["id"]
+
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(reportsColl)
+
+	filter := bson.M{"id": id}
+	update := bson.M{"$unset": bson.M{"public": ""}}
+
+	updateChange, err := rCol.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
+		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
+		code = 404
+		return code, h, output, err
+	}
+	//Render the response into XML
+	output, err = respond.CreateResponseMessage("Report is set as private", "200", contentType)
+
+	if err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
+
+	code = http.StatusOK
+	return code, h, output, err
+
+}
+
 // SetNodeReport function is used to set a specific report as node report
 func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -498,7 +623,7 @@ func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte
 
 	filter := bson.M{"_id": nodeReportId}
 	update := bson.M{"$set": NodeReport{Report_id: id}}
-	opts := options.Update().SetUpsert(true)
+	opts := options.UpdateOne().SetUpsert(true)
 
 	updateChange, err := nrCol.UpdateOne(context.TODO(), filter, update, opts)
 
@@ -506,8 +631,6 @@ func SetNodeReport(r *http.Request, cfg config.Config) (int, http.Header, []byte
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-
-	fmt.Printf("%+v \n", updateChange)
 
 	if updateChange.MatchedCount == 0 && updateChange.UpsertedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
@@ -532,7 +655,7 @@ func Delete(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 
 	//STANDARD DECLARATIONS START
 
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

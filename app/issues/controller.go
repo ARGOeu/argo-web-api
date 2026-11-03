@@ -34,7 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // FlatListEndpointTimelines returns a list of metric timelines
@@ -87,8 +87,10 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createEndpointListView(results, "Success", 200)
 
@@ -145,8 +147,10 @@ func ListGroupMetricIssues(r *http.Request, cfg config.Config) (int, http.Header
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createGroupMetricsView(results, "Success", 200)
 

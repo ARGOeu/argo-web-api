@@ -70,12 +70,6 @@ type statusOUT struct {
 	AffectedByThresholdRule bool   `json:"affected_by_threshold_rule,omitempty"`
 }
 
-// Message struct to hold the json response
-type messageOUT struct {
-	Message string `json:"message"`
-	Code    string `json:"code,omitempty"`
-}
-
 // EndpointData struct holds the queried data from datastore
 type EndpointData struct {
 	Report           string            `bson:"report"`

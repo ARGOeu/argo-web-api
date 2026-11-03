@@ -46,7 +46,7 @@ func createLatestView(results MetricList, msg string, code int) ([]byte, error) 
 
 func createMessageOUT(message string, code int, format string) ([]byte, error) {
 
-	output := []byte("message placeholder")
+	var output []byte
 	err := error(nil)
 	docRoot := &messageOUT{}
 

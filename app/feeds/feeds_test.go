@@ -14,7 +14,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -75,7 +75,7 @@ func (suite *FeedsTestSuite) SetupTest() {
 
 	// Seed database with tenants
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "TENANT_A",
@@ -109,7 +109,8 @@ func (suite *FeedsTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "TENANT_B",
@@ -146,42 +147,48 @@ func (suite *FeedsTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.topo.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.topo.update",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.weights.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.weights.update",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.data.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "feeds.data.update",
 			"roles":    []string{"editor"},
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with topology feeds
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_topology")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"type":          "gocdb",
 			"feed_url":      "https://somewhere.foo.bar/topology/feed",
@@ -189,23 +196,24 @@ func (suite *FeedsTestSuite) SetupTest() {
 			"fetch_type":    []string{"item1", "item2"},
 			"uid_endpoints": "endpointA",
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with weights feeds
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_weights")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"type":        "vapor",
 			"feed_url":    "https://somewhere.foo.bar/weight/feed",
 			"weight_type": "hepspec2006 cpu",
 			"group_type":  "SITES",
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with weights feeds
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("feeds_data")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"tenants": []string{"6ac7d684-1f8e-4a02-a502-720e8f11e50c", "6ac7d684-1f8e-4a02-a502-720e8f11e50d"},
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -440,6 +448,49 @@ func (suite *FeedsTestSuite) TestUpdateFeedTopo() {
 
 }
 
+func (suite *FeedsTestSuite) TestUpdateFeedTopo2() {
+
+	jsonInput := `
+  {
+   "type": "eosc-service-catalog",
+   "feed_service_groups": "https://somewhere2.foo.bar/service_groups",
+   "feed_service_endpoints": "https://somewhere2.foo.bar/service_endpoints",
+   "feed_service_endpoints_extensions": "https://somewhere2.foo.bar/service_endpoints_extensions"
+  }
+`
+
+	jsonOutput := `{
+ "status": {
+  "message": "Feeds resource succesfully updated",
+  "code": "200"
+ },
+ "data": [
+  {
+   "type": "eosc-service-catalog",
+   "feed_service_groups": "https://somewhere2.foo.bar/service_groups",
+   "feed_service_endpoints": "https://somewhere2.foo.bar/service_endpoints",
+   "feed_service_endpoints_extensions": "https://somewhere2.foo.bar/service_endpoints_extensions"
+  }
+ ]
+}`
+
+	request, _ := http.NewRequest("PUT", "/api/v2/feeds/topology", strings.NewReader(jsonInput))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, code, "Internal Server Error")
+	// Compare the expected and actual json response
+	suite.Equal(jsonOutput, output, "Response body mismatch")
+
+}
+
 func (suite *FeedsTestSuite) TestListTopo() {
 
 	request, _ := http.NewRequest("GET", "/api/v2/feeds/topology", strings.NewReader(""))
@@ -487,7 +538,7 @@ func (suite *FeedsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -497,15 +548,15 @@ func (suite *FeedsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 }
 
 // TearDownSuite do things after suite ends
 func (suite *FeedsTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteFeeds(t *testing.T) {

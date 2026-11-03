@@ -30,7 +30,7 @@ import (
 	"flag"
 	"os"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -117,7 +117,7 @@ func LoadConfiguration() Config {
 	var env = os.Getenv("EGI_AR_REST_API_ENV")
 	switch env {
 	default:
-		os.Setenv("EGI_AR_REST_API_ENV", "development")
+		_ = os.Setenv("EGI_AR_REST_API_ENV", "development")
 	case "test":
 	case "production":
 	}

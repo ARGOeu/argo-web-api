@@ -36,7 +36,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -68,7 +68,7 @@ func (suite *consistencyTestSuite) SetupSuite() {
 	[mongodb]
 	host = "127.0.0.1"
 	port = 27017
-	db = "ARGO_test_topology_test"
+	db = "ARGO_test_health_test"
 	`
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -76,7 +76,7 @@ func (suite *consistencyTestSuite) SetupSuite() {
 	client := store.GetMongoClient(suite.cfg.MongoDB)
 	suite.cfg.MongoClient = client
 
-	suite.tenantDbConf.Db = "ARGO_consistency_check"
+	suite.tenantDbConf.Db = "ARGO_health_check"
 	suite.tenantDbConf.Password = "h4shp4ss"
 	suite.tenantDbConf.Username = "dbuser"
 	suite.tenantDbConf.Store = "ar"
@@ -98,9 +98,8 @@ func (suite *consistencyTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"name": "TestTenant",
 			"db_conf": []bson.M{
 
@@ -131,20 +130,23 @@ func (suite *consistencyTestSuite) SetupTest() {
 					"roles":   []string{"consistency-ack"},
 				},
 			}})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "health",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("consistency")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"_id":                  conID,
 			"auto_check_status":    "OK",
 			"auto_check_timestamp": "2025-07-01T00:00:00Z",
 			"auto_check_message":   "No flapping items",
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -175,10 +177,10 @@ func (suite *consistencyTestSuite) TestCheckConsistency() {
 // TearDownTest to tear down every test
 func (suite *consistencyTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenant1db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenant2db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenant1db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenant2db).Drop(context.TODO()))
 
 }
 

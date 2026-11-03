@@ -9,8 +9,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/respond"
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 const conColName = "consistency"
@@ -22,8 +22,8 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 }
 
 var appRoutes = []respond.AppRoutes{
-	{"health", "GET", "/health", GetStatus},
-	{"health", "OPTIONS", "/health", Options},
+	{Name: "health", Verb: "GET", Path: "/health", SubrouterHandler: GetStatus},
+	{Name: "health", Verb: "OPTIONS", Path: "/health", SubrouterHandler: Options},
 }
 
 // GetStatus gets health status

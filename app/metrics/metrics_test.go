@@ -15,9 +15,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -82,13 +82,15 @@ func (suite *MetricsTestSuite) SetupTest() {
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	seedResAuth := bson.M{"api_key": "R3STRICT3D", "restricted": true}
 	seedResAdminUI := bson.M{"api_key": "ADM1NU1", "super_admin_ui": true}
-	authCol.InsertOne(context.TODO(), seedAuth)
-	authCol.InsertOne(context.TODO(), seedResAuth)
-	authCol.InsertOne(context.TODO(), seedResAdminUI)
-
+	_, err := authCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
+	_, err = authCol.InsertOne(context.TODO(), seedResAuth)
+	suite.Require().NoError(err)
+	_, err = authCol.InsertOne(context.TODO(), seedResAdminUI)
+	suite.Require().NoError(err)
 	// Seed database with tenants
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "TENANT_A",
@@ -123,7 +125,8 @@ func (suite *MetricsTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "TENANT_B",
@@ -160,42 +163,44 @@ func (suite *MetricsTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics.get",
 			"roles":    []string{"admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "metrics_report.get",
 			"roles":    []string{"admin", "editor", "viewer"},
 		})
-
+	suite.Require().NoError(err)
 	// Seed database with metrics
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("monitoring_metrics")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_1",
 			"tags": []string{"network", "internal"},
 		})
-
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_2",
 			"tags": []string{"disk", "agent"},
 		})
-
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"name": "test_metric_3",
 			"tags": []string{"aai"},
 		})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a49436",
 		"info": bson.M{
 			"name":        "Critical",
@@ -223,7 +228,7 @@ func (suite *MetricsTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("metric_profiles")
 
 	indexModel := mongo.IndexModel{
@@ -233,8 +238,9 @@ func (suite *MetricsTestSuite) SetupTest() {
 		},
 		Options: options.Index().SetUnique(false), // Set this according to your requirements
 	}
-	c.Indexes().CreateOne(context.TODO(), indexModel)
-	c.InsertOne(context.TODO(),
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "ch.cern.SAM.ROC_CRITICAL",
@@ -261,7 +267,7 @@ func (suite *MetricsTestSuite) SetupTest() {
 				},
 			},
 		})
-
+	suite.Require().NoError(err)
 }
 
 func (suite *MetricsTestSuite) TestListMetrics() {
@@ -354,14 +360,14 @@ func (suite *MetricsTestSuite) TestListMetricsByReport() {
 // TearDownTest to tear down every test
 func (suite *MetricsTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 // TearDownTest to tear down every test
 func (suite *MetricsTestSuite) TearDownSuite() {
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 
 }
 

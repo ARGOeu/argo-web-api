@@ -50,6 +50,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 		// check if has x-tenant-id header
 		adminTenantId := r.Header.Get("x-tenant-id")
 		if isNodeRoute(routeName) {
+
 			vars := mux.Vars(r)
 			nodeName := vars["node_name"]
 			isAdmin := authentication.AuthenticateAdmin(r.Header, cfg)
@@ -64,6 +65,7 @@ func WrapAuthenticate(hfn http.Handler, cfg config.Config, routeName string) htt
 				}
 			}
 			tenantConf, name, tErr := authentication.AuthenticateNode(r.Header, cfg, nodeName, isAdmin)
+
 			if tErr != nil {
 				Error(w, r, ErrAuthen, cfg, errs)
 				return
@@ -221,20 +223,15 @@ func WrapValidate(hfn http.Handler, cfg config.Config, routeName string) http.Ha
 				Error(w, r, ErrValidHead, cfg, errs)
 				return
 			}
-			if strings.Contains(resource, "status") {
-				errs = ValidateStatusParams(queries)
-				if len(errs) > 0 {
-					Error(w, r, ErrValidQuery, cfg, errs)
-					return
-				}
-			}
-			if strings.Contains(resource, "results") {
-				errs = ValidateResultsParams(queries)
-				if len(errs) > 0 {
-					Error(w, r, ErrValidQuery, cfg, errs)
-					return
-				}
-			}
+			// TODO this can be clean up later and used here - for the time being is not needed and we keep it commented out as reference
+			// if !strings.Contains(resource, "v5") && strings.Contains(resource, "status") {
+			// 	errs = ValidateStatusParams(queries)
+			// 	if len(errs) > 0 {
+			// 		Error(w, r, ErrValidQuery, cfg, errs)
+			// 		return
+			// 	}
+			// }
+
 			if strings.Contains(resource, "metricResult") {
 				errs = ValidateMetricParams(queries)
 				if len(errs) > 0 {

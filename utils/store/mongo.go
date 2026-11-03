@@ -7,22 +7,23 @@ import (
 	"time"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // OpenSession to mongodb
 func GetMongoClient(mongoCfg config.MongoConfig) *mongo.Client {
 	conURL := "mongodb://" + mongoCfg.Host + ":" + strconv.Itoa(mongoCfg.Port)
 	clientOptions := options.Client().ApplyURI(conURL)
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//ping the database
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -36,8 +37,12 @@ type DatedItem struct {
 
 func GetCloseDate(c *mongo.Collection, dt int) int {
 	dateQuery := bson.M{"date_integer": bson.M{"$lte": dt}}
+	opts := options.FindOne().
+		SetSort(bson.D{{Key: "date_integer", Value: -1}}).
+		SetProjection(bson.M{"date_integer": 1})
+
 	result := DatedItem{}
-	err := c.FindOne(context.TODO(), dateQuery).Decode(&result)
+	err := c.FindOne(context.TODO(), dateQuery, opts).Decode(&result)
 	if err != nil {
 		return -1
 	}

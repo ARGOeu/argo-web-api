@@ -40,9 +40,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func isAdminRestricted(roles []string) bool {
@@ -154,7 +154,7 @@ func removeNonUIUsers(results []Tenant) []Tenant {
 func Create(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -255,15 +255,22 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	// bson.M{} query param == match everything
 
 	if isAdminUI(roles) {
-		cursor, _ := tenantCol.Find(context.TODO(), bson.M{"users.roles": "admin_ui"}, options.Find().SetSort(bson.M{"name": 1}))
-		defer cursor.Close(context.TODO())
+		cursor, err := tenantCol.Find(context.TODO(), bson.M{"users.roles": "admin_ui"}, options.Find().SetSort(bson.M{"name": 1}))
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
+
 		if err = cursor.All(context.TODO(), &results); err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
 		}
 	} else {
-		cursor, _ := tenantCol.Find(context.TODO(), bson.M{}, options.Find().SetSort(bson.M{"name": 1}))
-		defer cursor.Close(context.TODO())
+		cursor, err := tenantCol.Find(context.TODO(), bson.M{}, options.Find().SetSort(bson.M{"name": 1}))
+		if err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 		if err = cursor.All(context.TODO(), &results); err != nil {
 			code = http.StatusInternalServerError
 			return code, h, output, err
@@ -474,7 +481,7 @@ func ListOne(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 func UpdateReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -531,7 +538,7 @@ func UpdateReady(r *http.Request, cfg config.Config) (int, http.Header, []byte, 
 func UpdateStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -593,7 +600,7 @@ func UpdateStatus(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -721,7 +728,7 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 func UpdateInfo(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -833,7 +840,7 @@ func UpdateInfo(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 func NodeSet(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -913,7 +920,7 @@ func NodeSet(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -977,6 +984,10 @@ func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 		code = http.StatusNotFound
 		return code, h, output, err
 	}
+	// unset the node report in the tenant's designated database
+	tDB := result.DbConf[0].Database
+	nodeReport_col := cfg.MongoClient.Database(tDB).Collection("node_report")
+	err = nodeReport_col.Drop(context.TODO())
 
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -994,7 +1005,7 @@ func NodeUnset(r *http.Request, cfg config.Config) (int, http.Header, []byte, er
 func UpdateDbConf(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -1107,7 +1118,7 @@ func UpdateDbConf(r *http.Request, cfg config.Config) (int, http.Header, []byte,
 func UpdateTopology(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	var output []byte
 	err := error(nil)
@@ -1347,7 +1358,9 @@ func ValidateTenantUsers(tenant Tenant, tenantCol *mongo.Collection) (string, in
 			return err.Error(), http.StatusInternalServerError
 		}
 
-		cursor.All(context.TODO(), &results)
+		if err := cursor.All(context.TODO(), &results); err != nil {
+			return err.Error(), http.StatusInternalServerError
+		}
 
 		if len(results) > 0 {
 			errMsg = fmt.Sprintf("More than one users found using the key: %v", tUser.APIkey)
@@ -1384,7 +1397,7 @@ func genToken() string {
 func CreateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -1482,7 +1495,7 @@ func CreateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 func UpdateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -1599,7 +1612,7 @@ func UpdateUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, e
 func DeleteUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
@@ -1806,7 +1819,7 @@ func GetUser(r *http.Request, cfg config.Config) (int, http.Header, []byte, erro
 func RefreshToken(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)

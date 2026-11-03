@@ -76,10 +76,3 @@ type statusOUT struct {
 	Value                   string   `xml:"value,attr" json:"value"`
 	AffectedByThresholdRule bool     `xml:"-" json:"affected_by_threshold_rule,omitempty"`
 }
-
-// Message struct to hold the json/xml response
-type messageOUT struct {
-	XMLName xml.Name `xml:"root" json:"-"`
-	Message string   `xml:"message" json:"message"`
-	Code    string   `xml:"code,omitempty" json:"code,omitempty"`
-}

@@ -1,21 +1,30 @@
+const now = new Date();
+
+// Build YYYYMMDD as an integer from UTC date parts
+const yyyy = now.getUTCFullYear();
+const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+const dd = String(now.getUTCDate()).padStart(2, '0');
+const dateInteger = parseInt(`${yyyy}${mm}${dd}`, 10);
+
+
 db = db.getSiblingDB('argo_core');
 
 db.authentication.insertMany([
-{
+  {
     name: 'test_admin',
     email: 'test_admin@example.foo',
     api_key: 'WEB_API_ACCESS_TOKEN'
-},
-{
+  },
+  {
     name: 'super_admin',
     email: 'super_admin@example.foo',
     api_key: 'super_admin_key'
-},
+  },
 ]);
 
 
 db.tenants.insertMany([
-    {
+  {
     id: '42c1152d-e23c-4a19-b51a-b27f1eb7f37f',
     info: {
       name: 'TENANT-TEST',
@@ -33,45 +42,45 @@ db.tenants.insertMany([
       "database": "argo_TENANT-TEST",
       "username": "admin",
       "password": ""
-    }]      
+    }]
     ,
     topology: { type: '', feed: '' },
     users: [
       {
-          "id": "763723d1-b758-4073-abcf-c60211413b28",
-          "name": "admin_testtenant",
-          "email": "argo-dev@example.foo",
-          "api_key": "admin_testtenant_key",
-          "roles": [
-              "admin"
-          ]
+        "id": "763723d1-b758-4073-abcf-c60211413b28",
+        "name": "admin_testtenant",
+        "email": "argo-dev@example.foo",
+        "api_key": "admin_testtenant_key",
+        "roles": [
+          "admin"
+        ]
       },
       {
-          "id": "f65bf4c5-436f-45dd-8959-92a9bce777b0",
-          "name": "admin2_testtenant",
-          "email": "argo-dev@example.foo",
-          "api_key": "admin2_testtenant_key",
-          "roles": [
-              "admin"
-          ]
+        "id": "f65bf4c5-436f-45dd-8959-92a9bce777b0",
+        "name": "admin2_testtenant",
+        "email": "argo-dev@example.foo",
+        "api_key": "admin2_testtenant_key",
+        "roles": [
+          "admin"
+        ]
       },
       {
-          "id": "aaf55727-e1e3-4112-a73c-7dcf27438fcf",
-          "name": "editor_testtenant",
-          "email": "argo-dev@example.foo",
-          "api_key": "editor_testtenant_key",
-          "roles": [
-              "editor"
-          ]
+        "id": "aaf55727-e1e3-4112-a73c-7dcf27438fcf",
+        "name": "editor_testtenant",
+        "email": "argo-dev@example.foo",
+        "api_key": "editor_testtenant_key",
+        "roles": [
+          "editor"
+        ]
       },
       {
-          "id": "22cbd08e-727b-46f8-95d8-a510a626ce2b",
-          "name": "admin_viewer_EOSCBEYOND",
-          "email": "argo-dev@example.foo",
-          "api_key": "viewer_testtenant_key",
-          "roles": [
-              "viewer"
-          ]
+        "id": "22cbd08e-727b-46f8-95d8-a510a626ce2b",
+        "name": "admin_viewer_EOSCBEYOND",
+        "email": "argo-dev@example.foo",
+        "api_key": "viewer_testtenant_key",
+        "roles": [
+          "viewer"
+        ]
       },
     ]
   },
@@ -93,179 +102,187 @@ db.tenants.insertMany([
       "database": "argo_TENANTB",
       "username": "admin",
       "password": ""
-    }]      
+    }]
     ,
     topology: { type: '', feed: '' },
     users: [
       {
-          "id": "175bd877-abe3-4e11-bb96-dc4b297ef4d9",
-          "name": "admin_tenantb",
-          "email": "argo-dev@example.foo",
-          "api_key": "admin_tenantb_key",
-          "roles": [
-              "admin"
-          ]
+        "id": "175bd877-abe3-4e11-bb96-dc4b297ef4d9",
+        "name": "admin_tenantb",
+        "email": "argo-dev@example.foo",
+        "api_key": "admin_tenantb_key",
+        "roles": [
+          "admin"
+        ]
       },
       {
-          "id": "9c2a98b7-c695-495d-b625-1210d584f49f",
-          "name": "admin2_tenantb",
-          "email": "argo-dev@example.foo",
-          "api_key": "admin2_tenantb_key",
-          "roles": [
-              "admin"
-          ]
+        "id": "9c2a98b7-c695-495d-b625-1210d584f49f",
+        "name": "admin2_tenantb",
+        "email": "argo-dev@example.foo",
+        "api_key": "admin2_tenantb_key",
+        "roles": [
+          "admin"
+        ]
       },
       {
-          "id": "2d67f58b-11b1-4ef3-8cd8-5c12f6f6ef2c",
-          "name": "editor_tenantb",
-          "email": "argo-dev@example.foo",
-          "api_key": "editor_tenantb_key",
-          "roles": [
-              "editor"
-          ]
+        "id": "2d67f58b-11b1-4ef3-8cd8-5c12f6f6ef2c",
+        "name": "editor_tenantb",
+        "email": "argo-dev@example.foo",
+        "api_key": "editor_tenantb_key",
+        "roles": [
+          "editor"
+        ]
       },
       {
-          "id": "1d8e2a23-a7f4-478a-9b31-3ca69840ec36",
-          "name": "admin_viewer_EOSCBEYOND",
-          "email": "argo-dev@example.foo",
-          "api_key": "viewer_tenantb_key",
-          "roles": [
-              "viewer"
-          ]
+        "id": "1d8e2a23-a7f4-478a-9b31-3ca69840ec36",
+        "name": "admin_viewer_EOSCBEYOND",
+        "email": "argo-dev@example.foo",
+        "api_key": "viewer_tenantb_key",
+        "roles": [
+          "viewer"
+        ]
       },
     ]
   }
-])
+]);
 
 
 db.roles.insertMany([
   {
     resource: 'reports.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'reports.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'reports.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'reports.set_node_report',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
+  },
+  {
+    resource: 'reports.set_public',
+    roles: ['admin', 'editor']
+  },
+  {
+    resource: 'reports.set_private',
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metric_profiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'metric_profiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metric_profiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'metric_profiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'reports.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'metric_profiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operations_profiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operations_profiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'reports.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operations_profiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operations_profiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'aggregation_profiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'aggregation_profiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'aggregation_profiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'operations_profiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'aggregation_profiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'aggregation_profiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'results.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'status.get',
-    roles: [ 'admin', 'editor', 'viewer', 'status_viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'status_viewer', 'admin_ui']
   },
   {
     resource: 'results.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'status.list',
-    roles: [ 'admin', 'editor', 'viewer', 'status_viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'status_viewer', 'admin_ui']
   },
   {
     resource: 'factors.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'tenants.get',
-    roles: [ 'super_admin', 'super_admin_ui' ]
+    roles: ['super_admin', 'super_admin_ui']
   },
   {
     resource: 'tenants.node_set',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.node_unset',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.create',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.update',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.delete',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.list',
@@ -278,411 +295,419 @@ db.roles.insertMany([
   },
   {
     resource: 'metric_result.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'recomputations.get',
-    roles: [ 'admin', 'editor', 'admin_ui', 'viewer' ]
+    roles: ['admin', 'editor', 'admin_ui', 'viewer']
   },
   {
     resource: 'recomputations.list',
-    roles: [ 'admin', 'editor', 'admin_ui', 'viewer' ]
+    roles: ['admin', 'editor', 'admin_ui', 'viewer']
   },
   {
     resource: 'recomputations.submit',
-    roles: [ 'admin', 'editor', 'admin_ui' ]
+    roles: ['admin', 'editor', 'admin_ui']
   },
   {
     resource: 'aggregationProfiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'aggregationProfiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'aggregationProfiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'aggregationProfiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operationsProfiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'operationsProfiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
-    {
+  {
     resource: 'operationsProfiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metricResult.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'operationsProfiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'operationsProfiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metricProfiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metricProfiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metricProfiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metricProfiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'aggregationProfiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'metricProfiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'thresholdsProfiles.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'thresholdsProfiles.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'thresholdsProfiles.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'thresholdsProfiles.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'thresholdsProfiles.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'tenants.get_status',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'latest.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
+  },
+  {
+    resource: 'latest.get.groups',
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
+  },
+  {
+    resource: 'latest.get.group',
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'recomputations.update',
-    roles: [ 'admin', 'editor', 'admin_ui' ]
+    roles: ['admin', 'editor', 'admin_ui']
   },
   {
     resource: 'recomputations.changeStatus',
-    roles: [ 'admin', 'editor', 'admin_ui' ]
+    roles: ['admin', 'editor', 'admin_ui']
   },
-    {
+  {
     resource: 'recomputations.delete',
-    roles: [ 'admin', 'editor', 'admin_ui' ]
+    roles: ['admin', 'editor', 'admin_ui']
   },
   {
     resource: 'recomputations.resetStatus',
-    roles: [ 'admin', 'editor', 'admin_ui' ]
+    roles: ['admin', 'editor', 'admin_ui']
   },
   {
     resource: 'tenants.update_status',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'weights.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'weights.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui', 'admin_ui']
   },
   {
     resource: 'weights.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'weights.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'downtimes.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui', 'admin_ui']
   },
   {
     resource: 'downtimes.get',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'weights.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'downtimes.create',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'downtimes.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'downtimes.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'downtimes.options',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_endpoints.list',
-    roles: [ 'admin', 'editor', 'admin_ui', 'viewer' ]
+    roles: ['admin', 'editor', 'admin_ui', 'viewer']
   },
   {
     resource: 'weights.options',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_endpoints.insert',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'topology_endpoints.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'topology_groups.insert',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'topology_groups.list',
-    roles: [ 'admin', 'editor', 'admin_ui', 'viewer' ]
+    roles: ['admin', 'editor', 'admin_ui', 'viewer']
   },
-    {
+  {
     resource: 'topology_stats.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_groups.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'topology_groups_report.list',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'topology_groups_endpoint.list',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'topology_endpoints_report.list',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'feeds.topo.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'feeds.topo.get',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'tenants.create_user',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.list_users',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.user_refresh_token',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.get_user',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'list_endpoints',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'tenants.update_user',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'feeds.weights.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'tenants.delete_user',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'issues.list_endpoints',
-    roles: [ 'admin', 'editor', 'admin_ui', 'viewer' ]
+    roles: ['admin', 'editor', 'admin_ui', 'viewer']
   },
   {
     resource: 'feeds.weights.get',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'trends.flapping_endpoints',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'trends.flapping_services',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'trends.flapping_endpoint_groups',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
-    {
+  {
     resource: 'trends.flapping_metrics',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'trends.status_services',
-    roles: [ 'admin', 'editor', 'viewer', 'admin-ui', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin-ui', 'admin_ui']
   },
   {
     resource: 'trends.status_endpoints',
-    roles: [ 'admin', 'editor', 'viewer', 'admin-ui', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin-ui', 'admin_ui']
   },
   {
     resource: 'trends.status_endpoint_groups',
-    roles: [ 'admin', 'editor', 'viewer', 'admin-ui', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin-ui', 'admin_ui']
   },
   {
     resource: 'feeds.data.get',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'feeds.data.update',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'metrics_admin.get',
-    roles: [ 'super_admin', 'metrics_admin', 'super_admin_ui' ]
+    roles: ['super_admin', 'metrics_admin', 'super_admin_ui']
   },
   {
     resource: 'metrics.get',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'metrics_admin.update',
-    roles: [ 'super_admin', 'metrics_admin', 'super_admin_ui' ]
+    roles: ['super_admin', 'metrics_admin', 'super_admin_ui']
   },
   {
     resource: 'metrics_report.get',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'trends.flapping_metrics_tags',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'trends.status_metrics_tags',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'v3.ar.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_service_types.insert',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'trends.status_metrics',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_service_types.delete',
-    roles: [ 'admin', 'editor' ]
+    roles: ['admin', 'editor']
   },
   {
     resource: 'v3.status.list',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'topology_tags.list',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'v3.status.list-by-id',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'v3.ar.list-by-id',
-    roles: [ 'admin', 'editor', 'viewer', 'admin-ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin-ui']
   },
   {
     resource: 'topology_service_types.list',
-    roles: [ 'admin', 'editor', 'viewer' ]
+    roles: ['admin', 'editor', 'viewer']
   },
   {
     resource: 'issues.list_group_metrics',
-    roles: [ 'admin', 'editor', 'viewer', 'admin_ui' ]
+    roles: ['admin', 'editor', 'viewer', 'admin_ui']
   },
   {
     resource: 'health',
-    roles: [ 'viewer', 'editor' ]
+    roles: ['viewer', 'editor']
   },
   {
     resource: 'consistency.result',
-    roles: [ 'consistency-viewer' ]
+    roles: ['consistency-viewer']
   },
   {
     resource: 'consistency.auto-check',
-    roles: [ 'consistency-check' ]
+    roles: ['consistency-check']
   },
   {
     resource: 'consistency.ack',
-    roles: [ 'consistency-ack' ]
+    roles: ['consistency-ack']
   },
   {
     resource: 'tenants.update_info',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.update_db_conf',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.update_topology',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'v3.components.access_refresh',
-    roles: [ 'component_engine', 'component_monbox', 'component_poem' ]
+    roles: ['component_engine', 'component_monbox', 'component_poem']
   },
   {
     resource: 'tenants.update_ready',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.get_ready',
-    roles: [ 'super_admin' ]
+    roles: ['super_admin']
   },
   {
     resource: 'tenants.update_node',
@@ -693,1395 +718,5153 @@ db.roles.insertMany([
     roles: ['super_admin', 'admin', 'editor']
   },
   {
-    resource: 'v4.nodes.availability',
+    resource: 'v4.nodes.monitoring.metrics',
     roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
   },
   {
-    resource: 'v4.nodes.reliability',
+    resource: 'v4.nodes.monitoring.metrics.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.summary',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.summary.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.availability',
+    roles: ['super_admin', 'admin', 'editor', 'viewer']
+  },
+  {
+    resource: 'v4.nodes.availability.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.uptime',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.uptime.item',
     roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
   },
   {
     resource: 'v4.nodes.status',
     roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.nodes.status.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.results.groups',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.results.groups.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.status.groups',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+  },
+  {
+    resource: 'v4.status.groups.item',
+    roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
   }
-])
+]);
 
 db = db.getSiblingDB('argo_TENANT-TEST');
 
-db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
-db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 });
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
 
 db.topology_service_types.insertMany(
-[
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "webportal",
-    "title": "Web Portal",
-    "description": "Generic service representing a web portal",
-    "tags": [
-      "topology",
-      "web",
-      "http"
-    ]
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "api",
-    "title": "Rest API",
-    "description": "Generic service representing a web api",
-    "tags": [
-      "topology",
-      "rest",
-      "http",
-      "api"
-    ]
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "iam",
-    "title": "Identity Management",
-    "description": "Generic service representing identity management",
-    "tags": [
-      "topology",
-      "iam",
-      "oidc"
-    ]
-  }
-]  
-)
-
-db.topology_endpoints.insertMany(
   [
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "ESHOP",
-    "type": "SERVICEGROUPS",
-    "service": "webportal",
-    "hostname": "eshop.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "ESHOP",
-    "type": "SERVICEGROUPS",
-    "service": "webportal",
-    "hostname": "eshop2.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "ESHOP",
-    "type": "SERVICEGROUPS",
-    "service": "api",
-    "hostname": "api-eshop.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "HELPDESK",
-    "type": "SERVICEGROUPS",
-    "service": "webportal",
-    "hostname": "kb.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "HELPDESK",
-    "type": "SERVICEGROUPS",
-    "service": "webportal",
-    "hostname": "help.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "HELPDESK",
-    "type": "SERVICEGROUPS",
-    "service": "api",
-    "hostname": "api-eshop.tenant-test.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  }
-]
-)
-
-db.topology_groups.insertMany(
-  [
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "PROJECTA",
-    "type": "PROJECT",
-    "subgroup": "ESHOP",
-    "notifications": {
-      "contacts": [
-        "eshop-admin@example.foo"
-      ]
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "PROJECTA",
-    "type": "PROJECT",
-    "subgroup": "HELPDESK",
-    "notifications": {
-      "contacts": [
-        "helpdesk-admin@example.foo"
-      ]
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANT-TEST"
-    }
-  }
-]
-)
-
-db.operations_profiles.insertMany([
-{
-  "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
-  "date_integer": 20150101,
-  "date": "2015-01-01",
-  "name": "default_ops",
-  "available_states": [
-    "OK",
-    "WARNING",
-    "UNKNOWN",
-    "MISSING",
-    "CRITICAL",
-    "DOWNTIME"
-  ],
-  "defaults": {
-    "down": "DOWNTIME",
-    "missing": "MISSING",
-    "unknown": "UNKNOWN"
-  },
-  "operations": [
     {
-      "name": "AND",
-      "truth_table": [
-        {
-          "a": "OK",
-          "b": "OK",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "OK",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "OK",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "OK",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "OK",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "WARNING",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "WARNING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "WARNING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "WARNING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "MISSING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "MISSING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "MISSING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "DOWNTIME",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "DOWNTIME",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        }
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "webportal",
+      "title": "Web Portal",
+      "description": "Generic service representing a web portal",
+      "tags": [
+        "topology",
+        "web",
+        "http"
       ]
     },
     {
-      "name": "OR",
-      "truth_table": [
-        {
-          "a": "OK",
-          "b": "OK",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "WARNING",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "UNKNOWN",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "MISSING",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "CRITICAL",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "DOWNTIME",
-          "x": "OK"
-        },
-        {
-          "a": "WARNING",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "UNKNOWN",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "MISSING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "CRITICAL",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "DOWNTIME",
-          "x": "WARNING"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "MISSING",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "DOWNTIME",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "MISSING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "MISSING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "MISSING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "DOWNTIME",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "DOWNTIME",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        }
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "api",
+      "title": "Rest API",
+      "description": "Generic service representing a web api",
+      "tags": [
+        "topology",
+        "rest",
+        "http",
+        "api"
+      ]
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "iam",
+      "title": "Identity Management",
+      "description": "Generic service representing identity management",
+      "tags": [
+        "topology",
+        "iam",
+        "oidc"
       ]
     }
   ]
-}
-])
+);
 
-db.metric_profiles.insertMany(
+db.topology_endpoints.insertMany(
   [
-  {
-    "id": "bb3cf905-e270-4a05-b053-4234d73b97ba",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "MON_ALL",
-    "description": "all checks",
-    "services": [
-      {
-        "service": "webportal",
-        "metrics": [
-          "http_check",
-          "cert_check"
-        ]
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "ESHOP",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "eshop.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
       },
-      {
-        "service": "api",
-        "metrics": [
-          "http_check",
-          "cert_check",
-          "api_check",
-          "auth_check",
-          "option_check"
-        ]
-      },
-      {
-        "service": "aai",
-        "metrics": [
-          "http_check",
-          "cert_check",
-          "redirect_check",
-          "login_check"
-        ]
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
       }
-    ]
-  },
-  {
-    "id": "5e8712f7-1b38-4f27-8ca4-d0c697760bf3",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "MON_HTTP",
-    "description": "just the http checks",
-    "services": [
-      {
-        "service": "webportal",
-        "metrics": [
-          "http_check",
-          "cert_check"
-        ]
-      },
-      {
-        "service": "api",
-        "metrics": [
-          "http_check",
-          "cert_check"
-        ]
-      },
-      {
-        "service": "aai",
-        "metrics": [
-          "http_check",
-          "cert_check"
-        ]
-      }
-    ]
-  }
-]
-)
-
-db.aggregation_profiles.insertMany(
-[
-  {
-    "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "AGGR_HA",
-    "namespace": "tenant",
-    "endpoint_group": "SERVICEGROUPS",
-    "metric_operation": "AND",
-    "profile_operation": "AND",
-    "metric_profile": {
-      "name": "MON_ALL",
-      "id": "bb3cf905-e270-4a05-b053-4234d73b97ba"
     },
-    "groups": [
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "ESHOP",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "eshop2.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "ESHOP",
+      "type": "SERVICEGROUPS",
+      "service": "api",
+      "hostname": "api-eshop.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "HELPDESK",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "kb.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "HELPDESK",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "help.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "HELPDESK",
+      "type": "SERVICEGROUPS",
+      "service": "api",
+      "hostname": "api-eshop.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "WIKI",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "wiki.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "GLOBAL-PORTAL",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "global.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "LOCAL-PORTAL",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "local.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "ARCHIVE",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "archive.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+     {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "FORUM",
+      "type": "SERVICEGROUPS",
+      "service": "webportal",
+      "hostname": "forum.tenant-test.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    }
+  ]
+);
+
+db.topology_groups.insertMany(
+  [
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "ESHOP",
+      "notifications": {
+        "contacts": [
+          "eshop-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "HELPDESK",
+      "notifications": {
+        "contacts": [
+          "helpdesk-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "WIKI",
+      "notifications": {
+        "contacts": [
+          "wiki-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "FORUM",
+      "notifications": {
+        "contacts": [
+          "forum-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "LOCAL-PORTAL",
+      "notifications": {
+        "contacts": [
+          "local-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "GLOBAL-PORTAL",
+      "notifications": {
+        "contacts": [
+          "global-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "PROJECTA",
+      "type": "PROJECT",
+      "subgroup": "ARCHIVE",
+      "notifications": {
+        "contacts": [
+          "archive-admin@example.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANT-TEST"
+      }, 
+    }
+  ]
+);
+
+db.operations_profiles.insertMany([
+  {
+    "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
+    "date_integer": 20150101,
+    "date": "2015-01-01",
+    "name": "default_ops",
+    "available_states": [
+      "OK",
+      "WARNING",
+      "UNKNOWN",
+      "MISSING",
+      "CRITICAL",
+      "DOWNTIME"
+    ],
+    "defaults": {
+      "down": "DOWNTIME",
+      "missing": "MISSING",
+      "unknown": "UNKNOWN"
+    },
+    "operations": [
       {
-        "name": "eshop",
-        "operation": "AND",
-        "services": [
+        "name": "AND",
+        "truth_table": [
           {
-            "name": "webportal",
-            "operation": "OR"
+            "a": "OK",
+            "b": "OK",
+            "x": "OK"
           },
           {
-            "name": "api",
-            "operation": "OR"
+            "a": "OK",
+            "b": "WARNING",
+            "x": "WARNING"
           },
           {
-            "name": "iam",
-            "operation": "OR"
+            "a": "OK",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "OK",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "OK",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "OK",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "WARNING",
+            "b": "WARNING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "WARNING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "WARNING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "WARNING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "MISSING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "MISSING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "MISSING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "DOWNTIME",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "DOWNTIME",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          }
+        ]
+      },
+      {
+        "name": "OR",
+        "truth_table": [
+          {
+            "a": "OK",
+            "b": "OK",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "WARNING",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "UNKNOWN",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "MISSING",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "CRITICAL",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "DOWNTIME",
+            "x": "OK"
+          },
+          {
+            "a": "WARNING",
+            "b": "WARNING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "UNKNOWN",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "MISSING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "CRITICAL",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "DOWNTIME",
+            "x": "WARNING"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "MISSING",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "DOWNTIME",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "MISSING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "MISSING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "MISSING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "DOWNTIME",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "DOWNTIME",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
           }
         ]
       }
     ]
   }
-]
-)
+]);
+
+db.metric_profiles.insertMany(
+  [
+    {
+      "id": "bb3cf905-e270-4a05-b053-4234d73b97ba",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "MON_ALL",
+      "description": "all checks",
+      "services": [
+        {
+          "service": "webportal",
+          "metrics": [
+            "http_check",
+            "cert_check"
+          ]
+        },
+        {
+          "service": "api",
+          "metrics": [
+            "http_check",
+            "cert_check",
+            "api_check",
+            "auth_check",
+            "option_check"
+          ]
+        },
+        {
+          "service": "aai",
+          "metrics": [
+            "http_check",
+            "cert_check",
+            "redirect_check",
+            "login_check"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5e8712f7-1b38-4f27-8ca4-d0c697760bf3",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "MON_HTTP",
+      "description": "just the http checks",
+      "services": [
+        {
+          "service": "webportal",
+          "metrics": [
+            "http_check",
+            "cert_check"
+          ]
+        },
+        {
+          "service": "api",
+          "metrics": [
+            "http_check",
+            "cert_check"
+          ]
+        },
+        {
+          "service": "aai",
+          "metrics": [
+            "http_check",
+            "cert_check"
+          ]
+        }
+      ]
+    }
+  ]
+);
+
+db.aggregation_profiles.insertMany(
+  [
+    {
+      "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "AGGR_HA",
+      "namespace": "tenant",
+      "endpoint_group": "SERVICEGROUPS",
+      "metric_operation": "AND",
+      "profile_operation": "AND",
+      "metric_profile": {
+        "name": "MON_ALL",
+        "id": "bb3cf905-e270-4a05-b053-4234d73b97ba"
+      },
+      "groups": [
+        {
+          "name": "eshop",
+          "operation": "AND",
+          "services": [
+            {
+              "name": "webportal",
+              "operation": "OR"
+            },
+            {
+              "name": "api",
+              "operation": "OR"
+            },
+            {
+              "name": "iam",
+              "operation": "OR"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+);
 
 db.reports.insertMany(
   [
-  {
-    "id": "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
-    "tenant": "",
-    "disabled": false,
-    "info": {
-      "name": "CORE",
-      "description": "Core A/R report",
-      "created": "2015-01-01 12:53:27",
-      "updated": "2015-01-01 17:56:33"
-    },
-    "computations": {
-      "ar": true,
-      "status": true,
-      "trends": [
-        "flapping",
-        "status",
-        "tags"
-      ]
-    },
-    "thresholds": {
-      "availability": 80,
-      "reliability": 90,
-      "uptime": 0.800000011920929,
-      "unknown": 0.10000000149011612,
-      "downtime": 0.10000000149011612
-    },
-    "topology_schema": {
-      "group": {
-        "type": "PROJECT",
+    {
+      "id": "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      "tenant": "",
+      "disabled": false,
+      "public": true,
+      "info": {
+        "name": "CORE",
+        "description": "Core A/R report",
+        "created": "2015-01-01 12:53:27",
+        "updated": "2015-01-01 17:56:33"
+      },
+      "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+          "flapping",
+          "status",
+          "tags"
+        ]
+      },
+      "thresholds": {
+        "availability": 80,
+        "reliability": 90,
+        "uptime": 0.800000011920929,
+        "unknown": 0.10000000149011612,
+        "downtime": 0.10000000149011612
+      },
+      "topology_schema": {
         "group": {
-          "type": "SERVICEGROUPS"
+          "type": "PROJECT",
+          "group": {
+            "type": "SERVICEGROUPS"
+          }
         }
-      }
-    },
-    "profiles": [
-      {
-        "id": "bb3cf905-e270-4a05-b053-4234d73b97ba",
-        "name": "MON_ALL",
-        "type": "metric"
       },
-      {
-        "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
-        "name": "AGGR_HA",
-        "type": "aggregation"
+      "profiles": [
+        {
+          "id": "bb3cf905-e270-4a05-b053-4234d73b97ba",
+          "name": "MON_ALL",
+          "type": "metric"
+        },
+        {
+          "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
+          "name": "AGGR_HA",
+          "type": "aggregation"
+        },
+        {
+          "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
+          "name": "default_ops",
+          "type": "operations"
+        }
+      ],
+      "filter_tags": [],
+      "node_report": true
+    },
+    {
+      "id": "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      "tenant": "",
+      "disabled": false,
+      "info": {
+        "name": "BASIC",
+        "description": "Just Http Checks report",
+        "created": "2015-01-01 12:53:27",
+        "updated": "2015-01-01 17:56:33"
       },
-      {
-        "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
-        "name": "default_ops",
-        "type": "operations"
-      }
-    ],
-    "filter_tags": [],
-    "node_report": true
-  },
-  {
-    "id": "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
-    "tenant": "",
-    "disabled": false,
-    "info": {
-      "name": "Just-Http",
-      "description": "Just Http Checks report",
-      "created": "2015-01-01 12:53:27",
-      "updated": "2015-01-01 17:56:33"
-    },
-    "computations": {
-      "ar": true,
-      "status": true,
-      "trends": [
-        "flapping",
-        "status",
-        "tags"
-      ]
-    },
-    "thresholds": {
-      "availability": 80,
-      "reliability": 90,
-      "uptime": 0.800000011920929,
-      "unknown": 0.10000000149011612,
-      "downtime": 0.10000000149011612
-    },
-    "topology_schema": {
-      "group": {
-        "type": "PROJECT",
+      "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+          "flapping",
+          "status",
+          "tags"
+        ]
+      },
+      "thresholds": {
+        "availability": 80,
+        "reliability": 90,
+        "uptime": 0.800000011920929,
+        "unknown": 0.10000000149011612,
+        "downtime": 0.10000000149011612
+      },
+      "topology_schema": {
         "group": {
-          "type": "SERVICEGROUPS"
+          "type": "PROJECT",
+          "group": {
+            "type": "SERVICEGROUPS"
+          }
         }
-      }
+      },
+      "profiles": [
+        {
+          "id": "5e8712f7-1b38-4f27-8ca4-d0c697760bf3",
+          "name": "MON_HTTP",
+          "type": "metric"
+        },
+        {
+          "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
+          "name": "AGGR_HA",
+          "type": "aggregation"
+        },
+        {
+          "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
+          "name": "default_ops",
+          "type": "operations"
+        }
+      ],
+      "filter_tags": [
+        {
+          "name": "monitored",
+          "value": "1",
+          "context": "argo.group.filter.tags"
+        }
+      ],
+      "node_report": true
+    }
+  ]
+);
+
+
+db.status_endpoint_groups.insertMany(
+  [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
     },
-    "profiles": [
-      {
-        "id": "5e8712f7-1b38-4f27-8ca4-d0c697760bf3",
-        "name": "MON_HTTP",
-        "type": "metric"
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    }
+  ]
+);
+
+db.status_services.insertMany(
+  [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    }
+  ]
+);
+
+
+
+db.status_endpoints.insertMany(
+  [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
       },
-      {
-        "id": "b01238e6-597a-4491-b5ec-b30164cbd9a1",
-        "name": "AGGR_HA",
-        "type": "aggregation"
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
       },
-      {
-        "id": "d168c01b-6ddc-4dd6-bc76-6caad1a326ee",
-        "name": "default_ops",
-        "type": "operations"
-      }
-    ],
-    "filter_tags": [
-      {
-        "name": "monitored",
-        "value": "1",
-        "context": "argo.group.filter.tags"
-      }
-    ],
-    "node_report": true
-  }
-]
-)
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    }
+  ]
+);
+
+
+db.status_metrics.insertMany(
+  [
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      status: "WARNING",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "cf010255-cda3-49d8-92d1-926c2c6cf9eb",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      status: "UNKNOWN",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ESHOP",
+      service: "webportal",
+      host: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb521',
+       URL: 'https://eshop.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "HELPDESK",
+      service: "webportal",
+      host: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb522',
+       URL: 'https://helpdesk.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "WIKI",
+      service: "webportal",
+      host: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb523',
+       URL: 'https://wiki.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "FORUM",
+      service: "webportal",
+      host: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'e17eb908-15be-403c-86ec-2fdb8bcfb524',
+       URL: 'https://forum.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "GLOBAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'gportal.example.foo_service-2fdb8bcfb525',
+      info: {
+       ID: 'service-2fdb8bcfb525',
+       URL: 'https://gportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "LOCAL-PORTAL",
+      service: "webportal",
+      metric: 'generic.http.connect',
+      message: "metric log",
+      host: 'lportal.example.foo_service-4xdb8b6',
+      info: {
+       ID: 'service-4xdb8b6',
+       URL: 'https://lportal.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "ARCHIVE",
+      service: "webportal",
+      host: 'archive.example.foo_service-6wzv3n7',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'service-6wzv3n7',
+       URL: 'https://archive.example.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    }
+  ]
+);
+
+
+const baseRecords = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'ESHOP',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'HELPDESK',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'WIKI',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'FORUM',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'GLOBAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+       availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'LOCAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      name: 'ARCHIVE',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'ESHOP',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'HELPDESK',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'WIKI',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'FORUM',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'GLOBAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      name: 'LOCAL-PORTAL',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'ARCHIVE',
+      supergroup: 'PROJECTA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+const base_endpoints = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ESHOP',
+      service: 'webportal',
+      name: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'HELPDESK',
+      service: 'webportal',
+      name: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'WIKI',
+      service: 'webportal',
+      name: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'FORUM',
+      service: 'webportal',
+      name: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'GLOBAL-PORTAL',
+      service: 'webportal',
+      name: 'gportal.example.foo_service-2fdb8bcfb525',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'LOCAL-PORTAL',
+      service: 'webportal',
+      name: 'lportal.example.foo_service-4xdb8b6',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ARCHIVE',
+      service: 'webportal',
+      name: 'archive.example.foo_service-6wzv3n7',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ESHOP',
+      service: 'webportal',
+      name: 'eshop.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb521',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'HELPDESK',
+      service: 'webportal',
+      name: 'helpdesk.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb522',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'WIKI',
+      service: 'webportal',
+      name: 'wiki.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb523',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'FORUM',
+      service: 'webportal',
+      name: 'forum.example.foo_e17eb908-15be-403c-86ec-2fdb8bcfb524',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'GLOBAL-PORTAL',
+      service: 'webportal',
+      name: 'gportal.example.foo_service-2fdb8bcfb525',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      supergroup: 'LOCAL-PORTAL',
+      service: 'webportal',
+      name: 'lportal.example.foo_service-4xdb8b6',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ARCHIVE',
+      service: 'webportal',
+      name: 'archive.example.foo_service-6wzv3n7',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+
+const base_services = [
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ESHOP',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'HELPDESK',
+      name: 'webportal',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'WIKI',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'FORUM',
+      name: 'webportal',
+      availability: 25,
+      reliability: 25,
+      up: 0.25,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'GLOBAL-PORTAL',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'LOCAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'cf010255-cda3-49d8-92d1-926c2c6cf9eb',
+      supergroup: 'ARCHIVE',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ESHOP',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'HELPDESK',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'WIKI',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'FORUM',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'GLOBAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e', 
+      supergroup: 'LOCAL-PORTAL',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'ARCHIVE',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services.map(r => ({ ...r, date: putDate }));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+
+
 
 
 db = db.getSiblingDB('argo_TENANTB');
 
-db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 })
-db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 })
-db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
-db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 })
+db.topology_endpoints.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_groups.ensureIndex({ "date_integer": -1, "id": 1 });
+db.topology_service_types.ensureIndex({ "date_integer": -1, "id": 1 });
+db.metric_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.operations_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
+db.aggregation_profiles.ensureIndex({ "date_integer": -1, "id": 1 });
 
 
 db.topology_service_types.insertMany(
-[
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "compute",
-    "title": "Cloud Compute",
-    "description": "Generic service representing cloud compute",
-    "tags": [
-      "topology",
-      "web",
-      "http"
-    ]
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "storage",
-    "title": "Cloud Storage",
-    "description": "Generic service representing a cloud storage",
-    "tags": [
-      "topology",
-      "rest",
-      "http",
-      "api"
-    ]
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "iam",
-    "title": "Identity Management",
-    "description": "Generic service representing identity management",
-    "tags": [
-      "topology",
-      "iam",
-      "oidc"
-    ]
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "messaging",
-    "title": "Cloud Messaging",
-    "description": "Generic service representing cloud messaging",
-    "tags": [
-      "topology",
-      "iam",
-      "oidc"
-    ]
-  }
-]  
-)
-
-db.topology_endpoints.insertMany(
   [
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-A",
-    "type": "SERVICEGROUPS",
-    "service": "compute",
-    "hostname": "compute1.cloud-a.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-A",
-    "type": "SERVICEGROUPS",
-    "service": "compute",
-    "hostname": "compute2.cloud-a.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-A",
-    "type": "SERVICEGROUPS",
-    "service": "storage",
-    "hostname": "storage.cloud-a.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-A",
-    "type": "SERVICEGROUPS",
-    "service": "iam",
-    "hostname": "iam.cloud-a.foo",
-    "notifications": {
-      "contacts": [
-        "iam-ops@cloud-a.foo"
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB",
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-B",
-    "type": "SERVICEGROUPS",
-    "service": "storage",
-    "hostname": "storage.cloud-b.foo",
-    "notifications": {
-      "contacts": [
-        "storage-ops@cloud-b.foo"
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB",
-      "cloud": "B"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUD-B",
-    "type": "SERVICEGROUPS",
-    "service": "iam",
-    "hostname": "iam@cloud-b.foo",
-    "notifications": {
-      "contacts": [
-        ""
-      ],
-      "enabled": true
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB",
-      "cloud": "B"
-    }
-  }
-]
-)
-
-db.topology_groups.insertMany(
-  [
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUDINFRA",
-    "type": "PROJECT",
-    "subgroup": "CLOUD-A",
-    "notifications": {
-      "contacts": [
-        "cloud-a@cloudinfra.foo"
-      ]
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB"
-    }
-  },
-  {
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "group": "CLOUDINFRA",
-    "type": "PROJECT",
-    "subgroup": "CLOUD-B",
-    "notifications": {
-      "contacts": [
-        "cloud-b@cloudinfra.foo"
-      ]
-    },
-    "tags": {
-      "monitored": "1",
-      "scope": "TENANTB"
-    }
-  },
-]
-)
-
-db.operations_profiles.insertMany([
-{
-  "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
-  "date_integer": 20150101,
-  "date": "2015-01-01",
-  "name": "default_ops",
-  "available_states": [
-    "OK",
-    "WARNING",
-    "UNKNOWN",
-    "MISSING",
-    "CRITICAL",
-    "DOWNTIME"
-  ],
-  "defaults": {
-    "down": "DOWNTIME",
-    "missing": "MISSING",
-    "unknown": "UNKNOWN"
-  },
-  "operations": [
     {
-      "name": "AND",
-      "truth_table": [
-        {
-          "a": "OK",
-          "b": "OK",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "OK",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "OK",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "OK",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "OK",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "WARNING",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "WARNING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "WARNING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "WARNING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "MISSING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "MISSING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "MISSING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "DOWNTIME",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "DOWNTIME",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        }
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "compute",
+      "title": "Cloud Compute",
+      "description": "Generic service representing cloud compute",
+      "tags": [
+        "topology",
+        "web",
+        "http"
       ]
     },
     {
-      "name": "OR",
-      "truth_table": [
-        {
-          "a": "OK",
-          "b": "OK",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "WARNING",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "UNKNOWN",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "MISSING",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "CRITICAL",
-          "x": "OK"
-        },
-        {
-          "a": "OK",
-          "b": "DOWNTIME",
-          "x": "OK"
-        },
-        {
-          "a": "WARNING",
-          "b": "WARNING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "UNKNOWN",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "MISSING",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "CRITICAL",
-          "x": "WARNING"
-        },
-        {
-          "a": "WARNING",
-          "b": "DOWNTIME",
-          "x": "WARNING"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "UNKNOWN",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "MISSING",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "UNKNOWN",
-          "b": "DOWNTIME",
-          "x": "UNKNOWN"
-        },
-        {
-          "a": "MISSING",
-          "b": "MISSING",
-          "x": "MISSING"
-        },
-        {
-          "a": "MISSING",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "MISSING",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "CRITICAL",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "CRITICAL",
-          "b": "DOWNTIME",
-          "x": "CRITICAL"
-        },
-        {
-          "a": "DOWNTIME",
-          "b": "DOWNTIME",
-          "x": "DOWNTIME"
-        }
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "storage",
+      "title": "Cloud Storage",
+      "description": "Generic service representing a cloud storage",
+      "tags": [
+        "topology",
+        "rest",
+        "http",
+        "api"
+      ]
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "iam",
+      "title": "Identity Management",
+      "description": "Generic service representing identity management",
+      "tags": [
+        "topology",
+        "iam",
+        "oidc"
+      ]
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "messaging",
+      "title": "Cloud Messaging",
+      "description": "Generic service representing cloud messaging",
+      "tags": [
+        "topology",
+        "iam",
+        "oidc"
       ]
     }
   ]
-}
-])
+);
 
-db.metric_profiles.insertMany(
+db.topology_endpoints.insertMany(
   [
-  {
-    "id": "90191168-7690-4967-8769-11ccddb51b1e",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "MON_CLOUD",
-    "description": "cloud checks",
-    "services": [
-      {
-        "service": "compute",
-        "metrics": [
-          "create_vm_check",
-          "resize_vm_check"
-        ]
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute1.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
       },
-      {
-        "service": "storage",
-        "metrics": [
-          "list_files_check",
-          "upload_file_check",
-          "remove_file_check",
-          "rename_file_check",
-        ]
-      },
-      {
-        "service": "aai",
-        "metrics": [
-          "http_check",
-          "cert_check",
-          "redirect_check",
-          "login_check"
-        ]
-      },
-       {
-        "service": "messaging",
-        "metrics": [
-          "publish_check",
-          "consume_check",
-          "empty_queue_check",
-          "create_topic_check",
-          "delete_topic_check"
-        ]
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
       }
-    ]
-  },
-  {
-    "id": "ce137987-ad50-49a9-8a37-77f4cde64b90",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "MON_CLOUD_LIGHT",
-    "description": "just basic checks",
-     "services": [
-      {
-        "service": "compute",
-        "metrics": [
-          "create_vm_check",
-        ]
-      },
-      {
-        "service": "storage",
-        "metrics": [
-          "list_files_check",
-        ]
-      },
-      {
-        "service": "aai",
-        "metrics": [
-          "http_check",
-          "cert_check",
-        ]
-      },
-        {
-        "service": "messaging",
-        "metrics": [
-          "publish_check",
-          "consume_check",
-        ]
-      }
-    ]
-  }
-]
-)
-
-db.aggregation_profiles.insertMany(
-[
-  {
-    "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
-    "date": "2015-01-01",
-    "date_integer": 20150101,
-    "name": "AGGR_HA",
-    "namespace": "tenant",
-    "endpoint_group": "SERVICEGROUPS",
-    "metric_operation": "AND",
-    "profile_operation": "AND",
-    "metric_profile": {
-      "name": "MON_CLOUD",
-      "id": "90191168-7690-4967-8769-11ccddb51b1e"
     },
-    "groups": [
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute2.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          "iam-ops@cloud-a.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          "storage-ops@cloud-b.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-C",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-c.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "C"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-D",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-d.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "D"
+      }
+    },
+     {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUD-E",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-e.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "E"
+      }
+    }
+  ]
+);
+
+db.topology_endpoints.insertMany(
+  [
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute1.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute154.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "compute",
+      "hostname": "compute2.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          "iam-ops@cloud-a.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-A",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam345.cloud-a.foo",
+      "notifications": {
+        "contacts": [
+          "iam-ops@cloud-a.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "storage",
+      "hostname": "storage.cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          "storage-ops@cloud-b.foo"
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-B",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-b.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "B"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-C",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-c.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "C"
+      }
+    },
+    {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-D",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-d.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "D"
+      }
+    },
+     {
+      "date": "2015-02-01",
+      "date_integer": 20150201,
+      "group": "CLOUD-E",
+      "type": "SERVICEGROUPS",
+      "service": "iam",
+      "hostname": "iam@cloud-e.foo",
+      "notifications": {
+        "contacts": [
+          ""
+        ],
+        "enabled": true
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB",
+        "cloud": "E"
+      }
+    }
+  ]
+);
+
+
+db.topology_groups.insertMany(
+  [
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUDINFRA",
+      "type": "PROJECT",
+      "subgroup": "CLOUD-A",
+      "notifications": {
+        "contacts": [
+          "cloud-a@cloudinfra.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUDINFRA",
+      "type": "PROJECT",
+      "subgroup": "CLOUD-B",
+      "notifications": {
+        "contacts": [
+          "cloud-b@cloudinfra.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUDINFRA",
+      "type": "PROJECT",
+      "subgroup": "CLOUD-C",
+      "notifications": {
+        "contacts": [
+          "cloud-c@cloudinfra.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUDINFRA",
+      "type": "PROJECT",
+      "subgroup": "CLOUD-D",
+      "notifications": {
+        "contacts": [
+          "cloud-d@cloudinfra.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+    {
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "group": "CLOUDINFRA",
+      "type": "PROJECT",
+      "subgroup": "CLOUD-E",
+      "notifications": {
+        "contacts": [
+          "cloud-e@cloudinfra.foo"
+        ]
+      },
+      "tags": {
+        "monitored": "1",
+        "scope": "TENANTB"
+      }
+    },
+  ]
+);
+
+db.operations_profiles.insertMany([
+  {
+    "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
+    "date_integer": 20150101,
+    "date": "2015-01-01",
+    "name": "default_ops",
+    "available_states": [
+      "OK",
+      "WARNING",
+      "UNKNOWN",
+      "MISSING",
+      "CRITICAL",
+      "DOWNTIME"
+    ],
+    "defaults": {
+      "down": "DOWNTIME",
+      "missing": "MISSING",
+      "unknown": "UNKNOWN"
+    },
+    "operations": [
       {
-        "name": "cloud",
-        "operation": "AND",
-        "services": [
+        "name": "AND",
+        "truth_table": [
           {
-            "name": "compute",
-            "operation": "OR"
+            "a": "OK",
+            "b": "OK",
+            "x": "OK"
           },
           {
-            "name": "storage",
-            "operation": "OR"
+            "a": "OK",
+            "b": "WARNING",
+            "x": "WARNING"
           },
           {
-            "name": "iam",
-            "operation": "OR"
+            "a": "OK",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
           },
-           {
-            "name": "messaging",
-            "operation": "OR"
+          {
+            "a": "OK",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "OK",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "OK",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "WARNING",
+            "b": "WARNING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "WARNING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "WARNING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "WARNING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "MISSING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "MISSING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "MISSING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "DOWNTIME",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "DOWNTIME",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          }
+        ]
+      },
+      {
+        "name": "OR",
+        "truth_table": [
+          {
+            "a": "OK",
+            "b": "OK",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "WARNING",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "UNKNOWN",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "MISSING",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "CRITICAL",
+            "x": "OK"
+          },
+          {
+            "a": "OK",
+            "b": "DOWNTIME",
+            "x": "OK"
+          },
+          {
+            "a": "WARNING",
+            "b": "WARNING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "UNKNOWN",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "MISSING",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "CRITICAL",
+            "x": "WARNING"
+          },
+          {
+            "a": "WARNING",
+            "b": "DOWNTIME",
+            "x": "WARNING"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "UNKNOWN",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "MISSING",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "UNKNOWN",
+            "b": "DOWNTIME",
+            "x": "UNKNOWN"
+          },
+          {
+            "a": "MISSING",
+            "b": "MISSING",
+            "x": "MISSING"
+          },
+          {
+            "a": "MISSING",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "MISSING",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "CRITICAL",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "CRITICAL",
+            "b": "DOWNTIME",
+            "x": "CRITICAL"
+          },
+          {
+            "a": "DOWNTIME",
+            "b": "DOWNTIME",
+            "x": "DOWNTIME"
           }
         ]
       }
     ]
   }
-]
-)
+]);
+
+db.metric_profiles.insertMany(
+  [
+    {
+      "id": "90191168-7690-4967-8769-11ccddb51b1e",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "MON_CLOUD",
+      "description": "cloud checks",
+      "services": [
+        {
+          "service": "compute",
+          "metrics": [
+            "create_vm_check",
+            "resize_vm_check"
+          ]
+        },
+        {
+          "service": "storage",
+          "metrics": [
+            "list_files_check",
+            "upload_file_check",
+            "remove_file_check",
+            "rename_file_check",
+          ]
+        },
+        {
+          "service": "aai",
+          "metrics": [
+            "http_check",
+            "cert_check",
+            "redirect_check",
+            "login_check"
+          ]
+        },
+        {
+          "service": "messaging",
+          "metrics": [
+            "publish_check",
+            "consume_check",
+            "empty_queue_check",
+            "create_topic_check",
+            "delete_topic_check"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ce137987-ad50-49a9-8a37-77f4cde64b90",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "MON_CLOUD_LIGHT",
+      "description": "just basic checks",
+      "services": [
+        {
+          "service": "compute",
+          "metrics": [
+            "create_vm_check",
+          ]
+        },
+        {
+          "service": "storage",
+          "metrics": [
+            "list_files_check",
+          ]
+        },
+        {
+          "service": "aai",
+          "metrics": [
+            "http_check",
+            "cert_check",
+          ]
+        },
+        {
+          "service": "messaging",
+          "metrics": [
+            "publish_check",
+            "consume_check",
+          ]
+        }
+      ]
+    }
+  ]
+);
+
+db.aggregation_profiles.insertMany(
+  [
+    {
+      "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
+      "date": "2015-01-01",
+      "date_integer": 20150101,
+      "name": "AGGR_HA",
+      "namespace": "tenant",
+      "endpoint_group": "SERVICEGROUPS",
+      "metric_operation": "AND",
+      "profile_operation": "AND",
+      "metric_profile": {
+        "name": "MON_CLOUD",
+        "id": "90191168-7690-4967-8769-11ccddb51b1e"
+      },
+      "groups": [
+        {
+          "name": "cloud",
+          "operation": "AND",
+          "services": [
+            {
+              "name": "compute",
+              "operation": "OR"
+            },
+            {
+              "name": "storage",
+              "operation": "OR"
+            },
+            {
+              "name": "iam",
+              "operation": "OR"
+            },
+            {
+              "name": "messaging",
+              "operation": "OR"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+);
 
 db.reports.insertMany(
   [
-  {
-    "id": "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
-    "tenant": "",
-    "disabled": false,
-    "info": {
-      "name": "CORE",
-      "description": "Core A/R report",
-      "created": "2015-01-01 12:53:27",
-      "updated": "2015-01-01 17:56:33"
-    },
-    "computations": {
-      "ar": true,
-      "status": true,
-      "trends": [
-        "flapping",
-        "status",
-        "tags"
-      ]
-    },
-    "thresholds": {
-      "availability": 80,
-      "reliability": 90,
-      "uptime": 0.800000011920929,
-      "unknown": 0.10000000149011612,
-      "downtime": 0.10000000149011612
-    },
-    "topology_schema": {
-      "group": {
-        "type": "PROJECT",
+    {
+      "id": "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      "tenant": "",
+      "disabled": false,
+      "public": true,
+      "info": {
+        "name": "CORE",
+        "description": "Core A/R report",
+        "created": "2015-01-01 12:53:27",
+        "updated": "2015-01-01 17:56:33"
+      },
+      "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+          "flapping",
+          "status",
+          "tags"
+        ]
+      },
+      "thresholds": {
+        "availability": 80,
+        "reliability": 90,
+        "uptime": 0.800000011920929,
+        "unknown": 0.10000000149011612,
+        "downtime": 0.10000000149011612
+      },
+      "topology_schema": {
         "group": {
-          "type": "SERVICEGROUPS"
+          "type": "PROJECT",
+          "group": {
+            "type": "SERVICEGROUPS"
+          }
         }
-      }
-    },
-    "profiles": [
-      {
-        "id": "90191168-7690-4967-8769-11ccddb51b1e",
-        "name": "MON_CLOUD",
-        "type": "metric"
       },
-      {
-        "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
-        "name": "AGGR_HA",
-        "type": "aggregation"
+      "profiles": [
+        {
+          "id": "90191168-7690-4967-8769-11ccddb51b1e",
+          "name": "MON_CLOUD",
+          "type": "metric"
+        },
+        {
+          "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
+          "name": "AGGR_HA",
+          "type": "aggregation"
+        },
+        {
+          "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
+          "name": "default_ops",
+          "type": "operations"
+        }
+      ],
+      "filter_tags": [],
+      "node_report": true
+    },
+    {
+      "id": "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      "tenant": "",
+      "disabled": false,
+      "public":true,
+      "info": {
+        "name": "CLOUD-AB",
+        "description": "Report only for cloud-a and cloud-b",
+        "created": "2015-01-01 12:53:27",
+        "updated": "2015-01-01 17:56:33"
       },
-      {
-        "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
-        "name": "default_ops",
-        "type": "operations"
-      }
-    ],
-    "filter_tags": [],
-    "node_report": true
-  },
-  {
-    "id": "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
-    "tenant": "",
-    "disabled": false,
-    "info": {
-      "name": "CLOUD-B",
-      "description": "Report only for cloud b",
-      "created": "2015-01-01 12:53:27",
-      "updated": "2015-01-01 17:56:33"
-    },
-    "computations": {
-      "ar": true,
-      "status": true,
-      "trends": [
-        "flapping",
-        "status",
-        "tags"
-      ]
-    },
-    "thresholds": {
-      "availability": 80,
-      "reliability": 90,
-      "uptime": 0.800000011920929,
-      "unknown": 0.10000000149011612,
-      "downtime": 0.10000000149011612
-    },
-    "topology_schema": {
-      "group": {
-        "type": "PROJECT",
+      "computations": {
+        "ar": true,
+        "status": true,
+        "trends": [
+          "flapping",
+          "status",
+          "tags"
+        ]
+      },
+      "thresholds": {
+        "availability": 80,
+        "reliability": 90,
+        "uptime": 0.800000011920929,
+        "unknown": 0.10000000149011612,
+        "downtime": 0.10000000149011612
+      },
+      "topology_schema": {
         "group": {
-          "type": "SERVICEGROUPS"
+          "type": "PROJECT",
+          "group": {
+            "type": "SERVICEGROUPS"
+          }
         }
-      }
-    },
-    "profiles": [
-      {
-        "id": "90191168-7690-4967-8769-11ccddb51b1e",
-        "name": "MON_CLOUD",
-        "type": "metric"
       },
-      {
-        "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
-        "name": "AGGR_HA",
-        "type": "aggregation"
-      },
-      {
-        "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
-        "name": "default_ops",
-        "type": "operations"
-      }
-    ],
-    "filter_tags": [
-      {
+      "profiles": [
+        {
+          "id": "90191168-7690-4967-8769-11ccddb51b1e",
+          "name": "MON_CLOUD",
+          "type": "metric"
+        },
+        {
+          "id": "e7ef618d-b2e3-454b-85f2-1dd0a2849ae2",
+          "name": "AGGR_HA",
+          "type": "aggregation"
+        },
+        {
+          "id": "b131b9ac-07ef-442b-a20a-e18faf534f26",
+          "name": "default_ops",
+          "type": "operations"
+        }
+      ],
+      "filter_tags": [
+        {
           "name": "subgroup",
           "value": "CLOUD-B",
           "context": "argo.group.filter.fields"
+        },
+      ],
+      "node_report": true
+    }
+  ]
+);
+
+
+const baseRecords2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      name: 'CLOUD-A',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-B',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-C',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-D',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      name: 'CLOUD-E',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'CLOUD-A',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      name: 'CLOUD-B',
+      supergroup: 'CLOUDINFRA',
+      weight: 0,
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords2.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = baseRecords2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_group_ar.insertMany(docs);
+
+};
+
+const base_endpoints_2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      supergroup: 'CLOUD-A',
+      service: 'webportal',
+      name: 'host1.cloud-a.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+       service: 'webportal',
+      name: 'host1.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host2.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-C',
+      service: 'webportal',
+      name: 'host1.cloud-c.foo',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-D',
+      service: 'webportal',
+      name: 'host1.cloud-d.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-E',
+      service: 'webportal',
+      name: 'host1.cloud-e.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-A',
+      service: 'webportal',
+      name: 'host1.cloud-a.foo',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host1.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      service: 'webportal',
+      name: 'host2.cloud-b.foo',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints_2.map(r => ({ ...r, date: putDate }));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_endpoints_2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.endpoint_ar.insertMany(docs);
+
+};
+
+
+
+
+const base_services_2 = [
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      supergroup: 'CLOUD-A',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-B',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-C',
+      name: 'webportal',
+      availability: 30,
+      reliability: 30,
+      up: 0.3,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-D',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
+      supergroup: 'CLOUD-E',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-A',
+      name: 'webportal',
+      availability: 98,
+      reliability: 98,
+      up: 0.98,
+      unknown: 0,
+      down: 0
+    },
+    {
+      report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
+      supergroup: 'CLOUD-B',
+      name: 'webportal',
+      availability: 100,
+      reliability: 100,
+      up: 1,
+      unknown: 0,
+      down: 0
+    }
+];
+
+
+for (let i = 0; i < 7; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services_2.map(r => ({ ...r, date: putDate }));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+// add also some random a/r metrics 
+console.log("add extra data");
+for (let i = 7; i < 57; i++) {
+  const day = new Date(now);
+  day.setUTCDate(now.getUTCDate() - i);   
+  const putDate = day.getUTCFullYear() * 10000
+                + (day.getUTCMonth() + 1) * 100
+                + day.getUTCDate();
+
+  const docs = base_services_2.map(r => ({ ...r, date: putDate, availability: Math.floor(Math.random() * (100 - 80 + 1)) + 80 , reliability: Math.floor(Math.random() * (100 - 80 + 1)) + 80}));
+
+  db.service_ar.insertMany(docs);
+
+};
+
+db.status_endpoint_groups.insertMany(
+  [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+  ]
+);
+
+
+
+
+db.status_services.insertMany(
+  [
+     {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+  ]
+);
+
+
+
+db.status_endpoints.insertMany(
+  [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
       },
-    ],
-    "node_report": true
-  }
-]
-)
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z', 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      has_threshold_rule: false
+    },
+  ]
+);
+
+
+
+db.status_metrics.insertMany(
+  [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      summary: "check",
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:00:00Z',
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:03:00Z',
+      date_integer: dateInteger,
+      time_integer: 300,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:09:00Z',
+      date_integer: dateInteger,
+      time_integer: 900,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:10:00Z',
+      date_integer: dateInteger,
+      time_integer: 1000,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:13:00Z',
+      date_integer: dateInteger,
+      time_integer: 1300,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:15:00Z',
+      date_integer: dateInteger,
+      time_integer: 1500,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "HTTP Connect OK - Content Received",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:16:00Z',
+      date_integer: dateInteger,
+      time_integer: 1500,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      summary: 'HTTP OK',
+      message: "HTTP Connect OK - Content Received - Content: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur pretium mi, auctor pellentesque ipsum fringilla vel. Nulla egestas a eros a ullamcorper. Curabitur tempor vel tortor quis venenatis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce imperdiet odio mauris, non egestas elit finibus a. Aliquam erat volutpat. Fusce sodales diam sit amet urna ornare ullamcorper ac vitae turpis. Morbi viverra porta purus, ut convallis est volutpat nec. Pellentesque posuere risus in ante commodo, sit amet gravida erat tempor.\nSed quis purus mattis, eleifend diam a, vulputate leo. Maecenas venenatis ac augue et mattis. Aenean mi augue, eleifend sit amet vulputate vel, vulputate id mi. Nunc scelerisque sed sapien ac varius. Aliquam iaculis urna vitae purus facilisis mollis. Sed ut metus urna. Morbi vel interdum lacus. Sed vulputate facilisis urna, nec semper est dapibus ac. Donec porta finibus mattis. Nulla dignissim ante id dui viverra, lacinia egestas purus egestas. Etiam volutpat pharetra metus eu mollis. Integer tempor sollicitudin rutrum. Aliquam erat volutpat.\nVestibulum quis dolor ex. Cras non velit ut tortor tristique dapibus pellentesque sit amet eros. Proin ultricies tortor sem, egestas posuere libero dictum sit amet. Phasellus congue purus et libero congue consequat. Pellentesque sed nunc viverra, mattis massa eget, venenatis risus. Donec viverra ante ante, ut pulvinar quam sollicitudin non. Curabitur pharetra laoreet porta. Quisque maximus, dolor eget bibendum cursus, tellus tortor lobortis velit, vitae maximus libero nisi ut velit. Morbi et enim tincidunt, congue urna sit amet, consectetur enim.\nQuisque dictum consequat tellus vel vestibulum. Aliquam elementum malesuada mi vel molestie. Vivamus pretium mi sit amet ligula condimentum, quis bibendum erat facilisis. Duis vitae libero justo. Cras luctus efficitur lacinia. Aliquam fermentum tincidunt turpis, ut hendrerit massa iaculis non. Ut arcu nisl, congue sed lorem quis, posuere pretium felis. Nullam eu orci at lacus aliquam aliquet. Nam sollicitudin mi sed ipsum viverra, eu pellentesque tortor ullamcorper. Integer sit amet purus ipsum. Nulla bibendum vulputate justo, sit amet porttitor urna consequat eu.",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:19:00Z',
+      date_integer: dateInteger,
+      time_integer: 1900,
+      has_threshold_rule: false
+    },
+     {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      summary: 'HTTP OK',
+      message: "HTTP Connect OK - Content Received - Content: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur pretium mi, auctor pellentesque ipsum fringilla vel. Nulla egestas a eros a ullamcorper. Curabitur tempor vel tortor quis venenatis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce imperdiet odio mauris, non egestas elit finibus a. Aliquam erat volutpat. Fusce sodales diam sit amet urna ornare ullamcorper ac vitae turpis. Morbi viverra porta purus, ut convallis est volutpat nec. Pellentesque posuere risus in ante commodo, sit amet gravida erat tempor.\nSed quis purus mattis, eleifend diam a, vulputate leo. Maecenas venenatis ac augue et mattis. Aenean mi augue, eleifend sit amet vulputate vel, vulputate id mi. Nunc scelerisque sed sapien ac varius. Aliquam iaculis urna vitae purus facilisis mollis. Sed ut metus urna. Morbi vel interdum lacus. Sed vulputate facilisis urna, nec semper est dapibus ac. Donec porta finibus mattis. Nulla dignissim ante id dui viverra, lacinia egestas purus egestas. Etiam volutpat pharetra metus eu mollis. Integer tempor sollicitudin rutrum. Aliquam erat volutpat.\nVestibulum quis dolor ex. Cras non velit ut tortor tristique dapibus pellentesque sit amet eros. Proin ultricies tortor sem, egestas posuere libero dictum sit amet. Phasellus congue purus et libero congue consequat. Pellentesque sed nunc viverra, mattis massa eget, venenatis risus. Donec viverra ante ante, ut pulvinar quam sollicitudin non. Curabitur pharetra laoreet porta. Quisque maximus, dolor eget bibendum cursus, tellus tortor lobortis velit, vitae maximus libero nisi ut velit. Morbi et enim tincidunt, congue urna sit amet, consectetur enim.\nQuisque dictum consequat tellus vel vestibulum. Aliquam elementum malesuada mi vel molestie. Vivamus pretium mi sit amet ligula condimentum, quis bibendum erat facilisis. Duis vitae libero justo. Cras luctus efficitur lacinia. Aliquam fermentum tincidunt turpis, ut hendrerit massa iaculis non. Ut arcu nisl, congue sed lorem quis, posuere pretium felis. Nullam eu orci at lacus aliquam aliquet. Nam sollicitudin mi sed ipsum viverra, eu pellentesque tortor ullamcorper. Integer sit amet purus ipsum. Nulla bibendum vulputate justo, sit amet porttitor urna consequat eu.",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().slice(0, 10) + 'T00:20:00Z',
+      date_integer: dateInteger,
+      time_integer: 2000,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-C",
+      service: "webportal",
+      host: 'host1.cloudc.foo_ID3',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID3',
+       URL: 'https://host1.cloudc.foo'
+      },
+      status: "CRITICAL",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-D",
+      service: "webportal",
+      host: 'host1.cloudd.foo_ID4',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID4',
+       URL: 'https://host1.cloudd.foo'
+      },
+      status: "MISSING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-E",
+      service: "webportal",
+      host: 'host1.cloude.foo_ID5',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID5',
+       URL: 'https://host1.cloude.foo'
+      },
+      status: "UNKNOWN",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-A",
+      service: "webportal",
+      host: 'host1.clouda.foo_ID1',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID1',
+       URL: 'https://host1.clouda.foo'
+      },
+      status: "WARNING",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+    {
+      report: "c7a6b0d4-4885-46da-9dd1-1f91d0e9142e",
+      endpoint_group: "CLOUD-B",
+      service: "webportal",
+      host: 'host1.cloudb.foo_ID2',
+      metric: 'generic.http.connect',
+      message: "metric log",
+      info: {
+       ID: 'ID2',
+       URL: 'https://host1.cloudb.foo'
+      },
+      status: "OK",
+      timestamp: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), 
+      date_integer: dateInteger,
+      time_integer: 0,
+      has_threshold_rule: false
+    },
+  ]
+);

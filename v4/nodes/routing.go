@@ -13,9 +13,75 @@ func HandleSubrouter(s *mux.Router, confhandler *respond.ConfHandler) {
 
 var arRoutes = []respond.AppRoutes{
 	{
+		Name:             "v4.results.groups.item",
+		Verb:             "GET",
+		Path:             "/results/groups/{item}",
+		SubrouterHandler: GetGroupResults,
+	},
+	{
+		Name:             "v4.results.groups",
+		Verb:             "GET",
+		Path:             "/results/groups",
+		SubrouterHandler: GetGroupResults,
+	},
+	{
+		Name:             "v4.results.groups.options",
+		Verb:             "OPTIONS",
+		Path:             "/results/groups",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.results.groups.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/results/groups/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.status.groups.item",
+		Verb:             "GET",
+		Path:             "/status/groups/{item}",
+		SubrouterHandler: GetGroupStatus,
+	},
+	{
+		Name:             "v4.status.groups",
+		Verb:             "GET",
+		Path:             "/status/groups",
+		SubrouterHandler: GetGroupStatus,
+	},
+	{
+		Name:             "v4.status.groups.options",
+		Verb:             "OPTIONS",
+		Path:             "/status/groups",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.status.groups.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/status/groups/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.summary.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/summary/{item}",
+		SubrouterHandler: GetSummary,
+	},
+	{
+		Name:             "v4.nodes.summary",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/summary",
+		SubrouterHandler: GetSummary,
+	},
+	{
 		Name:             "v4.nodes.availability",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/availability",
+		SubrouterHandler: GetAvailability,
+	},
+	{
+		Name:             "v4.nodes.availability.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/availability/{item}",
 		SubrouterHandler: GetAvailability,
 	},
 	{
@@ -25,15 +91,51 @@ var arRoutes = []respond.AppRoutes{
 		SubrouterHandler: GetUptime,
 	},
 	{
+		Name:             "v4.nodes.uptime.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
+		SubrouterHandler: GetUptime,
+	},
+	{
 		Name:             "v4.nodes.status",
 		Verb:             "GET",
 		Path:             "/nodes/{node_name}/capabilities/status",
 		SubrouterHandler: GetStatus,
 	},
 	{
+		Name:             "v4.nodes.monitoring.metrics",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics",
+		SubrouterHandler: GetMetrics,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics/{item}",
+		SubrouterHandler: GetMetrics,
+	},
+	{
+		Name:             "v4.nodes.status.item",
+		Verb:             "GET",
+		Path:             "/nodes/{node_name}/capabilities/status/{item}",
+		SubrouterHandler: GetStatus,
+	},
+	{
 		Name:             "v4.nodes.status.options",
 		Verb:             "OPTIONS",
 		Path:             "/nodes/{node_name}/capabilities/status",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.status.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/status/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.availability.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/availability/{item}",
 		SubrouterHandler: Options,
 	},
 	{
@@ -46,6 +148,24 @@ var arRoutes = []respond.AppRoutes{
 		Name:             "v4.nodes.uptime.options",
 		Verb:             "OPTIONS",
 		Path:             "/nodes/{node_name}/capabilities/uptime",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.uptime.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/uptime/{item}",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics",
+		SubrouterHandler: Options,
+	},
+	{
+		Name:             "v4.nodes.monitoring.metrics.item.options",
+		Verb:             "OPTIONS",
+		Path:             "/nodes/{node_name}/capabilities/monitoring/metrics_item",
 		SubrouterHandler: Options,
 	},
 }

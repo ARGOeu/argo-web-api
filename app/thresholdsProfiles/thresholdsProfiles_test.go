@@ -36,9 +36,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -71,7 +71,7 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 	    [mongodb]
 	    host = "127.0.0.1"
 	    port = 27017
-	    db = "AR_test_op_profiles"
+	    db = "AR_test_thresholds_profiles_tenant"
 	    `
 
 	_ = gcfg.ReadStringInto(&suite.cfg, testConfig)
@@ -99,9 +99,9 @@ func (suite *ThresholdsProfilesTestSuite) SetupSuite() {
 func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 
 	// Seed database with tenants
-	//TODO: move tests to
+
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -135,7 +135,8 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -172,33 +173,39 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.create",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.delete",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "thresholdsProfiles.update",
 			"roles":    []string{"editor"},
 		})
+	suite.Require().NoError(err)
 
 	// Seed database with thresholds profiles
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
@@ -211,8 +218,10 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 		Options: options.Index().SetUnique(false),
 	}
 
-	c.Indexes().CreateOne(context.TODO(), indexModel)
-	c.InsertOne(context.TODO(),
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20190105,
@@ -224,8 +233,9 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"thresholds": "entries=1;3;2:0;10",
 			}},
 		})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
@@ -237,8 +247,9 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"thresholds": "freshnesss=1s;10;9:;0;25 entries=1;3;2:0;10",
 			}},
 		})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d222-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
@@ -250,8 +261,9 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10",
 			}},
 		})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d555-1f8e-4a02-a502-720e8f11e50b",
 			"date_integer": 20191004,
@@ -263,6 +275,7 @@ func (suite *ThresholdsProfilesTestSuite) SetupTest() {
 				"thresholds": "freshness=1s;10;9:;0;25 entries=1;3;2:0;10",
 			}},
 		})
+	suite.Require().NoError(err)
 }
 
 func (suite *ThresholdsProfilesTestSuite) TestBadDate() {
@@ -591,8 +604,8 @@ func (suite *ThresholdsProfilesTestSuite) TestCreate() {
 	// Retrieve id from database
 	var result ThresholdsProfile
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
-	c.FindOne(context.TODO(), bson.M{"name": "thr04"}).Decode(&result)
-
+	err := c.FindOne(context.TODO(), bson.M{"name": "thr04"}).Decode(&result)
+	suite.Require().NoError(err)
 	id := result.ID
 
 	// Apply id to output template and check
@@ -878,7 +891,7 @@ func (suite *ThresholdsProfilesTestSuite) TestDelete() {
 func (suite *ThresholdsProfilesTestSuite) TestListEmpty() {
 
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("thresholds_profiles")
-	c.Drop(context.TODO())
+	suite.Require().NoError(c.Drop(context.TODO()))
 
 	request, _ := http.NewRequest("GET", "/api/v2/thresholds_profiles", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
@@ -1139,7 +1152,7 @@ func (suite *ThresholdsProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -1149,7 +1162,7 @@ func (suite *ThresholdsProfilesTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -1157,8 +1170,8 @@ func (suite *ThresholdsProfilesTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *ThresholdsProfilesTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestSuiteThresholdsProfiles(t *testing.T) {

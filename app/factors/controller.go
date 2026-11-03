@@ -36,8 +36,8 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 
 	gcontext "github.com/gorilla/context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // List returns a list of factors (weights) per endpoint group (i.e. site)
@@ -49,7 +49,7 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 	h := http.Header{}
 	output := []byte("")
 	err := error(nil)
-	contentType := "text/xml"
+	var contentType string
 	charset := "utf-8"
 
 	//STANDARD DECLARATIONS END
@@ -73,9 +73,10 @@ func List(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) 
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	output, err = createView(results, contentType)
 

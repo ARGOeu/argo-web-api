@@ -38,7 +38,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -88,11 +88,12 @@ func (suite *LatestTestSuite) SetupTest() {
 	seedAuth := bson.M{"api_key": "S3CR3T"}
 	coreCol := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("authentication")
 
-	coreCol.InsertOne(context.TODO(), seedAuth)
+	_, err := coreCol.InsertOne(context.TODO(), seedAuth)
+	suite.Require().NoError(err)
 
 	// seed a tenant to use
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 		"info": bson.M{
 			"name":    "GUARDIANS",
@@ -116,8 +117,8 @@ func (suite *LatestTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY1"},
 		}})
-
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 		"info": bson.M{
 			"name":    "AVENGERS",
@@ -141,17 +142,32 @@ func (suite *LatestTestSuite) SetupTest() {
 				"roles":   []string{"viewer"},
 				"api_key": "KEY2"},
 		}})
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "latest.get",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "latest.get.groups",
+			"roles":    []string{"editor", "viewer"},
+		})
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
+		bson.M{
+			"resource": "latest.get.group",
+			"roles":    []string{"editor", "viewer"},
+		})
+	suite.Require().NoError(err)
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
 	request, _ := http.NewRequest("GET", "", strings.NewReader(""))
@@ -164,7 +180,7 @@ func (suite *LatestTestSuite) SetupTest() {
 
 	// Now seed the report DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -202,10 +218,10 @@ func (suite *LatestTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
-
+	suite.Require().NoError(err)
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf1.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -221,7 +237,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -237,7 +254,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is CRITICAL",
 		"message":            "Cream job submission test failed",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.hellasgrid.gr",
 		"date_integer":       20150501,
@@ -253,7 +271,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "Cream status is ok",
 		"message":            "Cream job submission test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -269,7 +288,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -285,6 +305,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
+	suite.Require().NoError(err)
 
 	// get dbconfiguration based on the tenant
 	// Prepare the request object
@@ -298,7 +319,7 @@ func (suite *LatestTestSuite) SetupTest() {
 
 	// Now seed the reports DEFINITIONS
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("reports")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"info": bson.M{
 			"name":        "Report_B",
@@ -336,10 +357,11 @@ func (suite *LatestTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	// seed the status detailed metric data
 	c = suite.cfg.MongoClient.Database(tenantDbConf2.Db).Collection("status_metrics")
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -355,7 +377,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -371,7 +394,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is CRITICAL",
 		"message":            "someService data upload test failed",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -387,7 +411,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -403,7 +428,8 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494365",
 		"monitoring_box":     "nagios3.tenant2.eu",
 		"date_integer":       20150501,
@@ -419,6 +445,7 @@ func (suite *LatestTestSuite) SetupTest() {
 		"summary":            "someService status is ok",
 		"message":            "someService data upload test return value of ok",
 	})
+	suite.Require().NoError(err)
 
 }
 
@@ -959,14 +986,551 @@ func (suite *LatestTestSuite) TestListLatest() {
 
 }
 
+func (suite *LatestTestSuite) TestListLatestNoGroupType() {
+
+	respJSON1 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T01:00:00Z",
+    "status": "CRITICAL",
+    "summary": "Cream status is CRITICAL",
+    "message": "Cream job submission test failed"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T00:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+	respJSON2 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "WARNING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "MISSING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "CRITICAL",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T01:00:00Z",
+    "status": "UNKNOWN",
+    "summary": "someService status is CRITICAL",
+    "message": "someService data upload test failed"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T00:00:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON3 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "WARNING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON4 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "WARNING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "MISSING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "CRITICAL",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T01:00:00Z",
+    "status": "UNKNOWN",
+    "summary": "someService status is CRITICAL",
+    "message": "someService data upload test failed"
+   }
+  ]
+ }
+}`
+
+	respJSON5 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "CRITICAL",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON6 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T00:00:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON7 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON8 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService-A",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T23:20:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON9 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService-A",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T23:20:00Z",
+    "status": "OK",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   },
+   {
+    "endpoint_group": "HG-03-AUTH",
+    "service": "CREAM-CE",
+    "endpoint": "cream01.afroditi.gr",
+    "metric": "emi.cream.CREAMCE-JobSubmit",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "OK",
+    "summary": "Cream status is ok",
+    "message": "Cream job submission test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respJSON10 := `{
+ "status": {
+  "message": "application/json",
+  "code": "200"
+ },
+ "data": {
+  "metric_data": [
+   {
+    "endpoint_group": "EL-01-AUTH",
+    "service": "someService",
+    "endpoint": "someservice.example.gr",
+    "metric": "someService-FileTransfer",
+    "timestamp": "2015-05-01T05:00:00Z",
+    "status": "WARNING",
+    "summary": "someService status is ok",
+    "message": "someService data upload test return value of ok"
+   }
+  ]
+ }
+}`
+
+	respUnauthorized := `{
+ "status": {
+  "message": "Unauthorized",
+  "code": "401",
+  "details": "You need to provide a correct authentication token using the header 'x-api-key'"
+ }
+}`
+
+	fullurl1 := "/api/v2/latest/Report_A/groups/HG-03-AUTH" +
+		"?date=2015-05-01T00:00:00Z&strict=false"
+
+	fullurl2 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&strict=false"
+
+	fullurl3 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&limit=1&strict=false"
+
+	fullurl4 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&filter=non-ok"
+
+	fullurl5 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&filter=critical"
+
+	fullurl6 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&filter=ok"
+
+	fullurl7 := "/api/v2/latest/Report_A/groups/HG-03-AUTH" +
+		"?date=2015-05-01T00:00:00Z&strict=true"
+
+	fullurl8 := "/api/v2/latest/Report_A/groups" +
+		"?date=2015-05-01T00:00:00Z&strict=true"
+
+	fullurl9 := "/api/v2/latest/Report_A/groups" +
+		"?date=2015-05-01T00:00:00Z&strict=true&limit=2"
+
+	fullurl10 := "/api/v2/latest/Report_B/groups/EL-01-AUTH" +
+		"?date=2015-05-01T00:00:00Z&filter=non-ok&strict=true"
+
+	// 1. EGI JSON REQUEST
+	// init the response placeholder
+	response := httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ := http.NewRequest("GET", fullurl1, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON1, response.Body.String(), "Response body mismatch")
+
+	// 2. EUDAT JSON REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON2, response.Body.String(), "Response body mismatch")
+
+	// 3. EUDAT limit = 1
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl3, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON3, response.Body.String(), "Response body mismatch")
+
+	// 4. EUDAT non-ok
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl4, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON4, response.Body.String(), "Response body mismatch")
+
+	// 5. EUDAT non-ok
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl5, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON5, response.Body.String(), "Response body mismatch")
+
+	// 6. EUDAT non-ok
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl6, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON6, response.Body.String(), "Response body mismatch")
+
+	// 6b. WRONG KEY REQUEST
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl2, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEYISWRONG")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(401, response.Code, "Response code mismatch")
+	// Compare the expected and actual xml response
+	suite.Equal(respUnauthorized, response.Body.String(), "Response body mismatch")
+
+	// 7. EGI JSON REQUEST - strict mode
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl7, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON7, response.Body.String(), "Response body mismatch")
+
+	// 8. EGI JSON REQUEST - strict mode - all sites
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl8, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON8, response.Body.String(), "Response body mismatch")
+
+	// 9. EGI JSON REQUEST - strict mode - all sites but with limit (strict honors limits)
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl9, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY1")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON9, response.Body.String(), "Response body mismatch")
+
+	// 10. EGI JSON REQUEST - strict mode - honor non-ok values only
+	// init the response placeholder
+	response = httptest.NewRecorder()
+	// Prepare the request object for second tenant
+	request, _ = http.NewRequest("GET", fullurl10, strings.NewReader(""))
+	// add json accept header
+	request.Header.Set("Accept", "application/json")
+	// add the authentication token which is seeded in testdb
+	request.Header.Set("x-api-key", "KEY2")
+	// Serve the http request
+	suite.router.ServeHTTP(response, request)
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Internal Server Error")
+	// Compare the expected and actual xml response
+	suite.Equal(respJSON10, response.Body.String(), "Response body mismatch")
+
+}
+
 // This function is actually called in the end of all tests
 // and clears the test environment.
 // Mainly it's purpose is to drop the testdb
 func (suite *LatestTestSuite) TearDownTest() {
 
-	suite.cfg.MongoClient.Database("argotest_metrics").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_metrics_tenant2").Drop(context.TODO())
-	suite.cfg.MongoClient.Database("argotest_metrics_egi").Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics_tenant2").Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database("argotest_metrics_egi").Drop(context.TODO()))
 }
 
 // This is the first function called when go test is issued

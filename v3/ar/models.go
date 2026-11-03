@@ -103,7 +103,7 @@ type EndpointInterface struct {
 	Info         map[string]string `bson:"info"`
 }
 
-//Availability struct for formating json
+// Availability struct for formating json
 type Availability struct {
 	Date         string `json:"date,omitempty"`
 	Availability string `json:"availability"`

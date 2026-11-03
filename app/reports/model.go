@@ -34,8 +34,8 @@ import (
 
 	"github.com/ARGOeu/argo-web-api/respond"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // MongoInterface is used as an interface to Marshal and Unmarshal from different formats
@@ -50,7 +50,8 @@ type MongoInterface struct {
 	Topology     Topology      `bson:"topology_schema" json:"topology_schema" xml:"topology_schema"`
 	Profiles     []Profile     `bson:"profiles" json:"profiles" xml:"profiles"`
 	Tags         []Tag         `bson:"filter_tags" json:"filter_tags" xml:"filter_tags"`
-	NodeReport   bool          `bson:"node_report" json:"node_report,omitempty"`
+	NodeReport   bool          `bson:"node_report,omitempty" json:"node_report,omitempty"`
+	Public       bool          `bson:"public,omitempty" json:"public,omitempty"`
 }
 
 // Info contains info about a report and is used inside the main MongoInterface struct

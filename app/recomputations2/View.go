@@ -27,8 +27,9 @@ import (
 	"encoding/xml"
 	"net/http"
 
-	"github.com/ARGOeu/argo-web-api/respond"
 	"strconv"
+
+	"github.com/ARGOeu/argo-web-api/respond"
 )
 
 func createListView(results interface{}, format string) ([]byte, error) {
@@ -81,12 +82,5 @@ func createMsgView(msg string, code int) ([]byte, error) {
 	}
 
 	output, err := json.MarshalIndent(docRoot, "", " ")
-	return output, err
-}
-
-func messageXML(answer string) ([]byte, error) {
-	docRoot := &Message{}
-	docRoot.Message = answer
-	output, err := xml.MarshalIndent(docRoot, " ", "  ")
 	return output, err
 }

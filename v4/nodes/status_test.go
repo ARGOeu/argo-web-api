@@ -36,7 +36,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -90,9 +90,8 @@ func (suite *StatusTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEA-id",
 			"info": bson.M{"name": "NODEA"},
 			"db_conf": []bson.M{
@@ -122,7 +121,8 @@ func (suite *StatusTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "NODEB-id",
 			"info": bson.M{"name": "NODEB"},
 			"db_conf": []bson.M{
@@ -154,27 +154,26 @@ func (suite *StatusTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.nodes.availability",
+			"resource": "v4.status.groups",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
-			"resource": "v4.nodes.uptime",
+			"resource": "v4.status.groups.item",
 			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
-		bson.M{
-			"resource": "v4.nodes.status",
-			"roles":    []string{"super_admin", "admin", "editor", "viewer"},
-		})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("reports")
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"info": bson.M{
 			"name":        "Report_A",
@@ -201,51 +200,58 @@ func (suite *StatusTestSuite) SetupTest() {
 				"name":  "name2",
 				"value": "value2"},
 		}})
+	suite.Require().NoError(err)
 
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(nodeReportColName)
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"_id":       "node-report",
 		"report_id": "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 	})
+	suite.Require().NoError(err)
 	// Seed tenant database with data
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection(statusGroupColName)
 
-	c.InsertOne(context.TODO(), bson.M{
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T01:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "CRITICAL",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T05:00:00Z",
 		"endpoint_group": "SITEA",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T00:00:00Z",
 		"endpoint_group": "SITEB",
 		"status":         "OK",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":         "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":   20150501,
 		"timestamp":      "2015-05-01T03:00:00Z",
 		"endpoint_group": "SITEB",
 		"status":         "WARNING",
 	})
-	c.InsertOne(context.TODO(), bson.M{
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(), bson.M{
 		"report":             "eba61a9e-22e9-4521-9e47-ecaa4a494364",
 		"date_integer":       20150501,
 		"timestamp":          "2015-05-01T17:53:00Z",
@@ -253,13 +259,14 @@ func (suite *StatusTestSuite) SetupTest() {
 		"status":             "CRITICAL",
 		"has_threshold_rule": true,
 	})
+	suite.Require().NoError(err)
 
 }
 
-// TestListStatus test the status results
-func (suite *StatusTestSuite) TestListStatus() {
+// TestListGroupStatus test the status results
+func (suite *StatusTestSuite) TestListGroupStatus() {
 
-	request, _ := http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
+	request, _ := http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -319,7 +326,46 @@ func (suite *StatusTestSuite) TestListStatus() {
 	// Compare the expected and actual json response
 	suite.Equal(expResponse, response.Body.String(), "Response body mismatch")
 
-	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/status/groups/SITEB?start_time=2015-05-01T00:00:00Z&end_time=2015-05-01T23:59:00Z", strings.NewReader(""))
+	request.Header.Set("x-api-key", suite.clientkey)
+	request.Header.Set("Accept", "application/json")
+
+	response = httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	expItemResp := `{
+ "data": [
+  {
+   "name": "SITEB",
+   "results": [
+    {
+     "timestamp": "2015-05-01T00:00:00Z",
+     "value": "OK"
+    },
+    {
+     "timestamp": "2015-05-01T03:00:00Z",
+     "value": "WARNING"
+    },
+    {
+     "timestamp": "2015-05-01T17:53:00Z",
+     "value": "CRITICAL"
+    },
+    {
+     "timestamp": "2015-05-01T23:59:59Z",
+     "value": "CRITICAL"
+    }
+   ]
+  }
+ ]
+}`
+
+	// Check that we must have a 200 ok code
+	suite.Equal(200, response.Code, "Incorrect HTTP response code")
+	// Compare the expected and actual json response
+	suite.Equal(expItemResp, response.Body.String(), "Response body mismatch")
+
+	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", "AWRONGKEY")
 	request.Header.Set("Accept", "application/json")
 
@@ -341,7 +387,7 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(unauthorizedresponse, response.Body.String(), "Response body mismatch")
 
 	// Case of bad start_time input
-	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20AT12:00:00Z&end_time=2015-06-23T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -368,7 +414,7 @@ func (suite *StatusTestSuite) TestListStatus() {
 	suite.Equal(badRequestResponse, response.Body.String(), "Response body mismatch")
 
 	// Case of bad end_time input
-	request, _ = http.NewRequest("GET", "/api/v4/nodes/NODEB/capabilities/status?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
+	request, _ = http.NewRequest("GET", "/api/v4/status/groups?start_time=2015-06-20T12:00:00Z&end_time=2015-06T23:00:00Z", strings.NewReader(""))
 	request.Header.Set("x-api-key", suite.clientkey)
 	request.Header.Set("Accept", "application/json")
 
@@ -399,7 +445,7 @@ func (suite *StatusTestSuite) TestListStatus() {
 // TestOptions tests responses in case the OPTIONS http verb is used
 func (suite *StatusTestSuite) TestOptions() {
 
-	request, _ := http.NewRequest("OPTIONS", "/api/v4/nodes/NODEB/capabilities/status", strings.NewReader(""))
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/status/groups", strings.NewReader(""))
 
 	response := httptest.NewRecorder()
 
@@ -407,7 +453,26 @@ func (suite *StatusTestSuite) TestOptions() {
 
 	code := response.Code
 	output := response.Body.String()
-	headers := response.HeaderMap
+	headers := response.Result().Header
+
+	suite.Equal(200, code, "Error in response code")
+	suite.Equal("", output, "Expected empty response body")
+	suite.Equal("GET, OPTIONS", headers.Get("Allow"), "Error in Allow header response (supported resource verbs of resource)")
+	suite.Equal("text/plain; charset=utf-8", headers.Get("Content-Type"), "Error in Content-Type header response")
+
+}
+
+func (suite *StatusTestSuite) TestItemOptions() {
+
+	request, _ := http.NewRequest("OPTIONS", "/api/v4/status/groups/ST01", strings.NewReader(""))
+
+	response := httptest.NewRecorder()
+
+	suite.router.ServeHTTP(response, request)
+
+	code := response.Code
+	output := response.Body.String()
+	headers := response.Result().Header
 
 	suite.Equal(200, code, "Error in response code")
 	suite.Equal("", output, "Expected empty response body")
@@ -426,7 +491,7 @@ func (suite *StatusTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -436,7 +501,7 @@ func (suite *StatusTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -444,8 +509,8 @@ func (suite *StatusTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *StatusTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 // TestEndpointGroupsTestSuite is responsible for calling the tests

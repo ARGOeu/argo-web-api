@@ -38,9 +38,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -106,9 +106,9 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 	log.SetOutput(io.Discard)
 
 	// Seed database with tenants
-	//TODO: move tests to
+
 	c := suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -142,7 +142,8 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -180,46 +181,53 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
-
+	suite.Require().NoError(err)
 	c = suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.submit",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.delete",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.update",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.changeStatus",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "recomputations.resetStatus",
 			"roles":    []string{"editor", "viewer"},
 		})
+	suite.Require().NoError(err)
 	// Seed database with recomputations
 	c = suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("recomputations")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			RequesterName:  "John Snow",
@@ -234,7 +242,8 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			History:        []HistoryItem{{Status: "pending", Timestamp: "2015-04-01T14:58:40Z"}},
 		},
 	)
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e50a",
 			RequesterName:  "Arya Stark",
@@ -250,8 +259,8 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 				{Status: "running", Timestamp: "2015-02-01T16:58:40Z"}},
 		},
 	)
-
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		MongoInterface{
 			ID:             "6ac7d684-1f8e-4a02-a502-720e8f11e777",
 			RequesterName:  "John Doe",
@@ -266,7 +275,7 @@ func (suite *RecomputationsProfileTestSuite) SetupTest() {
 			ExcludeMetrics: []ExcludedMetric{{Metric: "check-1"}, {Hostname: "host1.example.com", Metric: "check-2"}, {Group: "Affected-Site", Metric: "check-3"}},
 			History:        []HistoryItem{{Status: "pending", Timestamp: "2015-02-01T14:58:40Z"}},
 		})
-
+	suite.Require().NoError(err)
 }
 
 func (suite *RecomputationsProfileTestSuite) TestListOneRecomputations() {
@@ -719,8 +728,9 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputations() {
 	if err != nil {
 		panic(err)
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		suite.Require().NoError(err)
+	}
 
 	suite.Equal(len(results), 4)
 	suite.Equal("2015-01-10T12:00:00Z", results[3].StartTime)
@@ -809,8 +819,9 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomΑppliedStatuses() {
 	if err != nil {
 		panic(err)
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		suite.Require().NoError(err)
+	}
 
 	suite.Equal(len(results), 4)
 	suite.Equal("2022-01-12T00:00:00Z", results[3].StartTime)
@@ -888,8 +899,9 @@ func (suite *RecomputationsProfileTestSuite) TestSubmitRecomputation2() {
 	if err != nil {
 		panic(err)
 	}
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		suite.Require().NoError(err)
+	}
 
 	suite.Equal(len(results), 4)
 	suite.Equal("2021-05-06T00:00:00Z", results[3].ExcludeMonSource[0].StartTime)
@@ -1160,7 +1172,7 @@ func (suite *RecomputationsProfileTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -1170,7 +1182,7 @@ func (suite *RecomputationsProfileTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -1364,8 +1376,8 @@ func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputationBadJSON() {
 // TearDownTest to tear down every test
 func (suite *RecomputationsProfileTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 }
 
 func TestRecompuptationsTestSuite(t *testing.T) {

@@ -32,7 +32,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/config"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // HandleSubrouter contains the different paths to follow during subrouting
@@ -52,7 +52,7 @@ var appRoutesV2 = []respond.AppRoutes{
 func routeCheckGroup(r *http.Request, cfg config.Config) (int, http.Header, []byte, error) {
 
 	//STANDARD DECLARATIONS START
-	code := http.StatusOK
+	var code int
 	h := http.Header{}
 	err := error(nil)
 	charset := "utf-8"

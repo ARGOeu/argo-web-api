@@ -34,7 +34,7 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	gcontext "github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // parseZuluDate is used to parse a zulu formatted date to integer
@@ -112,10 +112,7 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -140,8 +137,10 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -155,8 +154,10 @@ func FlatListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.He
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 	}
 
 	output, err = createView(results, input, urlValues.Get("end_time"), details) //Render the results into JSON/XML format
@@ -201,10 +202,7 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 
 	// This is going to be used to determine a detailed view or not of the results
 	view := urlValues.Get("view")
-	details := false
-	if view == "details" {
-		details = true
-	}
+	details := view == "details"
 
 	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
@@ -229,8 +227,10 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 		return code, h, output, err
 	}
 
-	defer cursor.Close(context.TODO())
-	cursor.All(context.TODO(), &results)
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		code = http.StatusInternalServerError
+		return code, h, output, err
+	}
 
 	parsedPrev, _ := getPrevDay(urlValues.Get("start_time"))
 
@@ -244,8 +244,10 @@ func ListEndpointTimelines(r *http.Request, cfg config.Config) (int, http.Header
 			return code, h, output, err
 		}
 
-		defer cursor.Close(context.TODO())
-		cursor.All(context.TODO(), &results)
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			code = http.StatusInternalServerError
+			return code, h, output, err
+		}
 
 	}
 

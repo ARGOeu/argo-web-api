@@ -53,8 +53,15 @@ import (
 	"github.com/ARGOeu/argo-web-api/v3/integrations"
 	"github.com/ARGOeu/argo-web-api/v3/status"
 	"github.com/ARGOeu/argo-web-api/v4/nodes"
+	resultsV5 "github.com/ARGOeu/argo-web-api/v5/results"
+	statusV5 "github.com/ARGOeu/argo-web-api/v5/status"
 	"github.com/ARGOeu/argo-web-api/version"
 )
+
+var routesV5 = []RouteV5{
+	{"resultsV5", "/results", resultsV5.HandleSubrouter},
+	{"statusV5", "/status", statusV5.HandleSubrouter},
+}
 
 // Here we declare the v4 routes
 var routesV4 = []RouteV4{

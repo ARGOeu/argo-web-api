@@ -33,8 +33,8 @@ import (
 	"net/http"
 
 	"github.com/ARGOeu/argo-web-api/utils/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Auth struct {
@@ -213,7 +213,6 @@ func AuthenticateNode(h http.Header, cfg config.Config, nodeName string, isAdmin
 	var result DbInfoUsers
 
 	err := tenantsCol.FindOne(context.TODO(), query, options.FindOne().SetProjection(projection)).Decode(&result)
-
 	if err == nil {
 
 		mongoConf := config.MongoConfig{}

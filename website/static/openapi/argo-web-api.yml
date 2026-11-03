@@ -1514,6 +1514,16 @@ paths:
         description: show only active default node report
         schema:
           type: string
+      - name: public
+        in: query
+        description: show only public reports
+        schema:
+          type: string
+      - name: private
+        in: query
+        description: show only private reports
+        schema:
+          type: string
       responses:
         "200":
           description: A list of all available Reports
@@ -1629,6 +1639,108 @@ paths:
               example:
                 status:
                   message: "Report was set as the default node report"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: report
+  /v2/reports/{REPORT_ID}/set-public:
+    post:
+      tags:
+      - Reports
+      summary: Set a report as public
+      description: Set an existing report as public
+      operationId: report.SetPublic
+      parameters:
+      - name: REPORT_ID
+        in: path
+        description: id of the report
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Report is set as public
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Report is set as public"
+                  code: "200"
+        "401":
+          description: Unauthorized user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+      x-codegen-request-body-name: report
+  /v2/reports/{REPORT_ID}/set-private:
+    post:
+      tags:
+      - Reports
+      summary: Set a report as private
+      description: Set an existing report as private
+      operationId: report.SetPrivate
+      parameters:
+      - name: REPORT_ID
+        in: path
+        description: id of the report
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      responses:
+        "200":
+          description: Report is set as private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                status:
+                  message: "Report is set as private"
                   code: "200"
         "401":
           description: Unauthorized user
@@ -4382,7 +4494,7 @@ paths:
       description: This request lists the latest metric data available for a specific
         endpoint group and supports filtering by status value. If user uses filter=non-ok
         will get all non ok statuses
-      operationId: statusLatestListGroup
+      operationId: statusLatestListGroupsNoType
       parameters:
       - name: x-api-key
         in: header
@@ -4405,6 +4517,198 @@ paths:
         schema:
           type: string
           default: EndpointGroup
+      - name: lgroup_name
+        in: path
+        description: endpoint group names of the probes
+        required: true
+        schema:
+          type: string
+          default: Group_A
+      - name: date
+        in: query
+        description: target day to get latest metric data
+        schema:
+          type: string
+          default: todays_date_zulu_format
+      - name: filter
+        in: query
+        description: 'filter by statuses: ok, non-ok, critical, warning, ok, unknown,
+          missing, all'
+        schema:
+          type: string
+          default: all
+      - name: limit
+        in: query
+        description: limit latest results by number
+        schema:
+          type: string
+          default: "500"
+      - name: strict
+        in: query
+        description: the servce will return only the latest entry grouped by endpoint_group/host/service/metric
+        schema:
+          type: string
+          default: "false"
+      responses:
+        "200":
+          description: Successful retrieval of latest metric data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricDataList'
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /latest/{report_name}/groups:
+    get:
+      tags:
+      - Latest
+      summary: List latest metric data for available in a specific report
+      description: This request lists the latest metric data  and supports filtering
+        by status value. If user uses filter=non-ok will get all non ok statuses
+      operationId: statusLatestListGroup
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report_name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: CRITICAL
+      - name: date
+        in: query
+        description: target day to get latest metric data
+        schema:
+          type: string
+          default: todays_date_zulu_format
+      - name: filter
+        in: query
+        description: 'filter by statuses: ok, non-ok, critical, warning, ok, unknown,
+          missing, all'
+        schema:
+          type: string
+          default: all
+      - name: limit
+        in: query
+        description: limit latest results by number
+        schema:
+          type: string
+          default: "500"
+      - name: strict
+        in: query
+        description: the servce will return only the latest entry grouped by endpoint_group/host/service/metric
+        schema:
+          type: string
+          default: "false"
+      responses:
+        "200":
+          description: Successful retrieval of latest metric data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricDataList'
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /v2/latest/{report_name}/groups/{lgroup_name}:
+    get:
+      tags:
+      - Latest
+      summary: List latest metric data for a target endpoint group and filter by status
+      description: This request lists the latest metric data available for a specific
+        endpoint group and supports filtering by status value. If user uses filter=non-ok
+        will get all non ok statuses
+      operationId: statusLatestListGroupNoType
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report_name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: CRITICAL
       - name: lgroup_name
         in: path
         description: endpoint group names of the probes
@@ -10739,6 +11043,1079 @@ paths:
               schema:
                 type: string
 
+  
+
+  /v4/results/groups:
+    get:
+      tags:
+      - Group Results (v4)
+      summary: List service summary of availability and uptime scores for groups
+      description: this method retrieves the latest daily availability and uptime scores for groups
+      operationId: group.results
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: the name of the report to be used for providing the results
+        required: false
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/results/groups/{group_name}:
+    get:
+      tags:
+      - Group Results (v4)
+      summary: List summary of availability and uptime scores for a specific group
+      description: this method retrieves retrieves the latest daily availability and uptime scores for a specific group
+      operationId: group.results.item
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: the name of the report to be used for providing the results
+        required: false
+        schema:
+          type: string
+      - name: group_name
+        in: path
+        description: name of the group
+        required: true
+        schema:
+          type: string
+      - name: period
+        in: query
+        description: A period expressed in days like 7d or in weeks like 4w or in months like 24m
+        required: false
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /v4/status/groups:
+    get:
+      tags:
+      - Group Status (v4)
+      summary: List service status for a specific group
+      description: this method retrieves retrieves the latest status of a specific group
+      operationId: group.status
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: name of the report used
+        required: true
+        schema:
+          type: string
+      - name: period
+        in: query
+        description: A period expressed in days like 7d or in weeks like 4w or in months like 24m
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/status/groups/{group_name}:
+    get:
+      tags:
+      - Group Status (v4)
+      summary: List service status for a specific group
+      description: this method retrieves the latest status of a specific group
+      operationId: group.status.item
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report
+        in: query
+        description: name of the report used for status results
+        required: true
+        schema:
+          type: string
+      - name: group_name
+        in: path
+        description: name of the specific group
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node-name}/capabilities/monitoring/metrics:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service metrics such as availability, reliability etc.
+      description: List service metrics such as availability, reliability etc.
+      operationId: nodeMetrics
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node-name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: start-date
+        in: query
+        description: start date of query in YYYY-MM-DD
+        schema:
+          type: string
+          default: 2006-01-01
+      - name: end-date
+        in: query
+        description: end date of query in YYYY-MM-DD
+        schema:
+          type: string
+          default: 2006-01-03
+      - name: granularity
+        in: query
+        description: specify daily or monthly granularity
+        schema:
+          type: string
+          default: daily
+      responses:
+        "200":
+          description: Successful retrieval of metric results for all nodes services
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: number
+                                example: 100
+                              reliability:
+                                type: number
+                                example: 100
+                              uptime:
+                                type: number
+                                example: 1
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node-name}/capabilities/monitoring/metrics/{service-name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service metrics such as availability, reliability etc.
+      description: List service metrics such as availability, reliability etc.
+      operationId: nodeMetrics.item
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node-name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service-name
+        in: path
+        description: name of the service
+        required: true
+        schema:
+          type: string
+      - name: start-date
+        in: query
+        description: start date of query in YYYY-MM-DD
+        schema:
+          type: string
+          default: 2006-01-01
+      - name: end-date
+        in: query
+        description: end date of query in YYYY-MM-DD
+        schema:
+          type: string
+          default: 2006-01-03
+      - name: granularity
+        in: query
+        description: specify daily or monthly granularity
+        schema:
+          type: string
+          default: daily
+      responses:
+        "200":
+          description: Successful retrieval of metric results for specific service
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: number
+                                example: 100
+                              reliability:
+                                type: number
+                                example: 100
+                              uptime:
+                                type: number
+                                example: 1
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v4/nodes/{node_name}/capabilities/summary/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List summary of availability and uptime scores for a specific node
+      description: this method retrieves retrieves the latest daily availability and uptime scores for a node's specific service
+      operationId: nodeSummary.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/summary:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service summary of availability and uptime scores for a specific node
+      description: this method retrieves the latest daily availability and uptime scores for the node's services
+      operationId: nodeSummary
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability and uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+                              uptime:
+                                type: string
+                                example: "1"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v4/nodes/{node_name}/capabilities/availability/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service availability scores for a specific node
+      description: this method retrieves retrieves the latest daily availability and scores for a node's specific service
+      operationId: nodeAvailability.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              availability:
+                                type: string
+                                example: "100"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
   /v4/nodes/{node_name}/capabilities/availability:
     get:
       tags:
@@ -10855,6 +12232,90 @@ paths:
             application/json:
               schema:
                 type: string
+  /v4/nodes/{node_name}/capabilities/uptime/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service uptime score for a specific node
+      description: this method retrieves retrieves the latest daily uptime scores for a node's specific services
+      operationId: nodeUptime.Service
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: date
+        in: query
+        description: a specific date to retrieve results (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        description: start date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        description: end date of query in YYYY-MM-DD format
+        required: false
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest uptime results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              date:
+                                type: string
+                                format: date
+                                example: "2015-06-22"
+                              uptime:
+                                type: string
+                                example: "1"
 
   /v4/nodes/{node_name}/capabilities/uptime:
     get:
@@ -10933,13 +12394,126 @@ paths:
                                 example: "2015-06-22"
                               uptime:
                                 type: string
-                                example: "100"
+                                example: "1"
+
+
+  /v4/nodes/{node_name}/capabilities/status/{service_name}:
+    get:
+      tags:
+      - Node Capabilities (v4)
+      summary: List service status for a specific node
+      description: this method retrieves retrieves the latest status result for a node's specific service
+      operationId: nodeStatus.Services
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: node_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: service_name
+        in: path
+        description: name of the node
+        required: true
+        schema:
+          type: string
+      - name: start_time
+        in: query
+        description: start date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end_time
+        in: query
+        description: end date of query in zulu format
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      - name: history
+        in: query
+        description: enable or disable history
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successful retrieval of latest status results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        results:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              timestamp:
+                                type: string
+                                format: date
+                                example: "2015-06-22T00:00:00Z"
+                              status:
+                                type: string
+                                example: "CRITICAL"
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
   /v4/nodes/{node_name}/capabilities/status:
     get:
       tags:
       - Node Capabilities (v4)
       summary: List service status for a specific node
-      description: this method retrieves retrieves the latest daily uptime scores for the node's services
+      description: this method retrieves retrieves the latest status results for the node's services
       operationId: nodeStatus
       parameters:
       - name: x-api-key
@@ -11038,7 +12612,3346 @@ paths:
             application/json:
               schema:
                 type: string
-                
+
+
+  /v5/results/{report-name}/supergroups:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for supergroups
+      description: this method retrieves the availability and reliability results for top level supergroups such as projects
+      operationId: v5.get_supergroups
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the probes belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupergroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                      - name: PROJECT-B
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+                      - name: PROJECT-B
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+
+  /v5/results/{report-name}/supergroups/{supergroup-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific supergroup
+      description: this method retrieves the availability and reliability results for a specific top level supergroup
+      operationId: v5.get_supergroup
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: supergroup-name
+        in: path
+        description: name of the specific supergroup to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupergroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10-12'
+                           availability: 100
+                           reliability: 100
+                         - date: '2022-10-13'
+                           availability: 80
+                           reliability: 80
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        results:
+                         - date: '2022-10'
+                           availability: 100
+                           reliability: 100
+                      
+             
+
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+  /v5/results/{report-name}/groups:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for all groups
+      description: this method retrieves the availability and reliability results for all groups.
+      operationId: v5.get_groups
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 90
+                                reliability: 90
+                                unknown: 0
+                                uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+
+  /v5/results/{report-name}/groups/{group-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific group
+      description: this method retrieves the availability and reliability results for a specific group such as a specific SERVICEGROUP.
+      operationId: v5.get_group
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-A
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 80
+                                reliability: 80
+                                unknown: 0
+                                uptime: 0.8
+                                downtime: 0
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-X
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 80
+                                reliability: 80
+                                unknown: 0
+                                uptime: 0.8
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10-12'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                              - date: '2022-10-13'
+                                availability: 90
+                                reliability: 90
+                                unknown: 0
+                                uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-A
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-A
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-X
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 99
+                                reliability: 99
+                                unknown: 0
+                                uptime: 0.99
+                                downtime: 0
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            results:
+                              - date: '2022-10'
+                                availability: 100
+                                reliability: 100
+                                unknown: 0
+                                uptime: 1
+                                downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/results/{report-name}/endpoints:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for all endpoints
+      description: this method retrieves the availability and reliability results for all endpoints.
+      operationId: v5.get_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string                
+
+
+  /v5/results/{report-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific endpoint
+      description: this method retrieves the availability and reliability results for a specific endpoint.
+      operationId: v5.get_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /v5/results/{report-name}/groups/{group-name}/endpoints:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for all endpoints of a specific group.
+      description: this method retrieves the availability and reliability results for all endpoints of a specific group.
+      operationId: v5.get_group_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific endpoint and specific group
+      description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
+      operationId: v5.get_group_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for all endpoints of a specific group and a specific service-type.
+      description: this method retrieves the availability and reliability results for all endpoints of a specific group.
+      operationId: v5.get_group_services_endpoints
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: service type name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                  - name: host2.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific endpoint, group and service-type
+      description: this method retrieves the availability and reliability results for a specific endpoint and specific group.
+      operationId: v5.get_group_service_endpoint
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: name of the specific service-type
+        required: true
+        schema:
+          type: string
+      - name: endpoint-name
+        in: path
+        description: name of the specific endpoint to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10-12'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+                                      - date: '2022-10-13'
+                                        availability: 90
+                                        reliability: 90
+                                        unknown: 0
+                                        uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                endpoints:
+                                  - name: host1.example.foo
+                                    type: endpoint
+                                    results:
+                                      - date: '2022-10'
+                                        availability: 100
+                                        reliability: 100
+                                        unknown: 0
+                                        uptime: 1
+                                        downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/results/{report-name}/groups/{group-name}/service-types:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for all service-types of a specific group
+      description: this method retrieves the availability and reliability results for all service-types of a specific group.
+      operationId: v5.get_group_service_types
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: group name to target
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+
+  /v5/results/{report-name}/groups/{group-name}/service-types/{service-type-name}:
+    get:
+      tags:
+      - v5-results
+      summary: List availability & reliability results for a specific service-type and group
+      description: this method retrieves the availability and reliability results for a specific service type and specific group.
+      operationId: v5.get_group_service_type
+      parameters:
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      - name: report-name
+        in: path
+        description: report the results belong to
+        required: true
+        schema:
+          type: string
+          default: Default
+      - name: group-name
+        in: path
+        description: name of the specific group to target
+        required: true
+        schema:
+          type: string
+      - name: service-type-name
+        in: path
+        description: name of the specific service-type
+        required: true
+        schema:
+          type: string
+      - name: start-time
+        in: query
+        description: start date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-01T00:04:05Z
+      - name: end-time
+        in: query
+        description: end date of query in zulu format
+        required: false
+        schema:
+          type: string
+          default: 2006-01-03T15:04:05Z
+      responses:
+        "200":
+          description: Successful retrieval of latest availability/reliability results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAR'
+              examples:
+                daily a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10-12'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                                  - date: '2022-10-13'
+                                    availability: 90
+                                    reliability: 90
+                                    unknown: 0
+                                    uptime: 0.9
+                monthly a/r results:
+                  value:
+                    results: 
+                      - name: PROJECT-B
+                        type: PROJECT
+                        groups:
+                          - name: SERVICEGROUP-Y
+                            type: SERVICEGROUP
+                            service-types:
+                              - name: webportal
+                                type: service
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+                              - name: api
+                                type: endpoint
+                                results:
+                                  - date: '2022-10'
+                                    availability: 100
+                                    reliability: 100
+                                    unknown: 0
+                                    uptime: 1
+                                    downtime: 0
+        "400":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /v5/status/{report}/groups:
+    get:
+      tags:
+      - v5-status
+      operationId: getGroupStatusAll
+      summary: Status timelines for all groups
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Group status timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, statuses]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        statuses:
+                          type: array
+                          items:
+                            type: object
+                            required: [timestamp, value]
+                            properties:
+                              timestamp:
+                                type: string
+                                description: >
+                                  RFC 3339 UTC timestamp
+                                example: "2026-07-23T09:44:14Z"
+                              value:
+                                type: string
+                                description: Status value
+                                example: WARNING
+
+  /v5/status/{report}/groups/{group-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: getGroupStatus
+      summary: Status timeline for a single group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Group status timeline
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, statuses]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        statuses:
+                          type: array
+                          items:
+                            type: object
+                            required: [timestamp, value]
+                            properties:
+                              timestamp:
+                                type: string
+                                description: >
+                                  RFC 3339 UTC timestamp
+                                example: "2026-07-23T09:44:14Z"
+                              value:
+                                type: string
+                                description: Status value
+                                example: WARNING
+ 
+  /v5/status/{report}/groups/{group_name}/service-types:
+    get:
+      tags:
+      - v5-status
+      operationId: listServiceTypeStatuses
+      summary: Status timelines for the service types in a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group_name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Service type status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, statuses]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              statuses:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [timestamp, value]
+                                  properties:
+                                    timestamp:
+                                      type: string
+                                      description: >
+                                        RFC 3339 UTC auto_check_timestamp
+                                      example: "2026-07-23T09:44:14Z"
+                                    value:
+                                      type: string
+                                      description: Status value
+                                      example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listServiceTypeStatusesSpecific
+      summary: Status timelines for a specific service type in a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Service type status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, statuses]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              statuses:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [timestamp, value]
+                                  properties:
+                                    timestamp:
+                                      type: string
+                                      description: >
+                                        RFC 3339 UTC auto_check_timestamp
+                                      example: "2026-07-23T09:44:14Z"
+                                    value:
+                                      type: string
+                                      description: Status value
+                                      example: WARNING
+ 
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesAll
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesSpecific
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: endpoint-name type name.
+          schema:
+            type: string
+          example: host1.example.foo_id34
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/endpoints:
+    get:
+      tags:
+      - v5-status
+      operationId: listAllEndpointStatusesAllDirect
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listAllEndpointStatusesSpecificDirect
+      summary: Status timelines for the endpoints of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: endpoint-name
+          in: path
+          required: true
+          description: endpoint-name type name.
+          schema:
+            type: string
+          example: host1.example.foo_id34
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+  
+  /v5/status/{report}/groups/{group-name}/endpoints:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesAllDirect
+      summary: Status timelines for the endpoints of a service type
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointStatusesSpecificDirect
+      summary: Status timelines for the endpoints of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: endpoint-name type name.
+          schema:
+            type: string
+          example: host1.example.foo_id34
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Endpoint status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, statuses]
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: Endpoint identifier, typically `<hostname>_<ID>`.
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: Key value pair metadata
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    statuses:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [timestamp, value]
+                                        properties:
+                                          timestamp:
+                                            type: string
+                                            description: >
+                                              RFC 3339 UTC timestamp
+                                            example: "2026-07-23T09:44:14Z"
+                                          value:
+                                            type: string
+                                            description: Status value
+                                            example: WARNING
+ 
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatuses
+      summary: Status timelines for the metrics of a single endpoint
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting pedior (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesSpecific
+      summary: Status timelines for the specific metrics of a single endpoint
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: service-type-name
+          in: path
+          required: true
+          description: Service type name.
+          schema:
+            type: string
+          example: webportal
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: metric-name
+          in: path
+          required: true
+          description: name of the metric
+          schema:
+            type: string
+          example: http.connect
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}/metrics:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesDirect
+      summary: Status timelines for the metrics of a single endpoint of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting pedior (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report}/groups/{group-name}/endpoints/{endpoint-name}/metrics/{metric-name}:
+    get:
+      tags:
+      - v5-status
+      operationId: listEndpointMetricStatusesSpecificDirect
+      summary: Status timelines for the specific metrics of a single endpoint of a group
+      parameters:
+        - name: report
+          in: path
+          required: true
+          description: Report name.
+          schema:
+            type: string
+          example: CORE
+        - name: group-name
+          in: path
+          required: true
+          description: Group name.
+          schema:
+            type: string
+          example: CLOUD-A
+        - name: endpoint-name
+          in: path
+          required: true
+          description: Endpoint identifier, typically `<hostname>_<ID>`.
+          schema:
+            type: string
+          example: host1.clouda.foo_ID1
+        - name: metric-name
+          in: path
+          required: true
+          description: name of the metric
+          schema:
+            type: string
+          example: http.connect
+        - name: start-time
+          in: query
+          required: false
+          description: start of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T00:00:00Z"
+        - name: end-time
+          in: query
+          required: false
+          description: end of the reporting period (UTC, RFC 3339).
+          schema:
+            type: string
+            format: date-time
+          example: "2026-07-23T23:59:59Z"
+      responses:
+        '200':
+          description: Metric status timelines
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [groups]
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, type, service-types]
+                      properties:
+                        name:
+                          type: string
+                          example: CLOUD-A
+                        type:
+                          type: string
+                          example: SERVICEGROUPS
+                        service-types:
+                          type: array
+                          items:
+                            type: object
+                            required: [name, type, endpoints]
+                            properties:
+                              name:
+                                type: string
+                                example: webportal
+                              type:
+                                type: string
+                                example: service
+                              endpoints:
+                                type: array
+                                items:
+                                  type: object
+                                  required: [name, metrics]
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: host1.clouda.foo_ID1
+                                    info:
+                                      type: object
+                                      description: key-value metadata pairs
+                                      additionalProperties:
+                                        type: string
+                                      example:
+                                        ID: ID1
+                                        URL: https://host1.clouda.foo
+                                    metrics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        required: [name, statuses]
+                                        properties:
+                                          name:
+                                            type: string
+                                            example: generic.http.connect
+                                          statuses:
+                                            type: array
+                                            items:
+                                              type: object
+                                              required: [timestamp, value]
+                                              properties:
+                                                timestamp:
+                                                  type: string
+                                                  description: >
+                                                    RFC 3339 UTC timestamp
+                                                  example: "2026-07-23T09:44:14Z"
+                                                value:
+                                                  type: string
+                                                  description: Status value
+                                                  example: WARNING
+
+  /v5/status/{report-name}/groups/{group-name}/service-types/{service-type-name}/endpoints/{endpoint-name}/metrics/{metric-name}/details:
+    get:
+      summary: Get the details of a metric result
+      description: >
+        Returns the details of the metric result such as the check message and summary
+      operationId: getMetricDetails
+      tags:
+      - v5-status
+      parameters:
+        - name: report-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Report-1
+          description: Name of the report.
+        - name: group-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Group-A
+          description: Name of the endpoint group.
+        - name: service-type-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: SERVICE-A
+          description: Name of the service type.
+        - name: endpoint-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: hostname.example.foo
+          description: Name (hostname) of the endpoint.
+        - name: metric-name
+          in: path
+          required: true
+          schema:
+            type: string
+          example: generic.http.check
+          description: Name of the metric.
+      responses:
+        '200':
+          description: Metric details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-03-11T22:23:19Z"
+                  group:
+                    type: string
+                    example: "Group-A"
+                  hostname:
+                    type: string
+                    example: "hostname.example.foo"
+                  service_type:
+                    type: string
+                    example: "service-a"
+                  metric:
+                    type: string
+                    example: "http-connect"
+                  status:
+                    type: string
+                    example: "CRITICAL"
+                  summary:
+                    type: string
+                    example: "Http connect timeout after 10s"
+                  message:
+                    type: string
+                    example: "Http connectivity issue"
+                  info:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    example:
+                      ID: "ID1"
+                      URL: "https://id1.example.foo/ "
+                  actual_data:
+                    type: string
+                required:
+                  - timestamp
+                  - group
+                  - hostname
+                  - service_type
+                  - metric
+                  - status
+              example:
+                timestamp: "2026-03-11T22:23:19Z"
+                group: "Group-A"
+                hostname: "host.example.foo"
+                service_type: "service-a"
+                metric: "http.connect"
+                status: "CRITICAL"
+                summary: >-
+                  Http connect timeout after 10s
+                message: "Http connectivity issue"
+                info:
+                  ID: "ID1"
+                  URL: "https://id.example.foo/ "
+                actual_data: "data1=3;45;0;; data2=33;14;0;;"
+        '404':
+          description: Report, group, service type, endpoint, or metric not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+
 components:
   schemas:
     Endpoint_list:
@@ -11255,6 +16168,140 @@ components:
                       type: number
                     downtime:
                       type: number
+    
+    SupergroupAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    availability: 
+                      type: number
+                    reliability:
+                      type: number
+
+    GroupAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    availability: 
+                      type: number
+                    reliability:
+                      type: number
+                    uptime:
+                      type: number
+                    downtime:
+                      type: number
+                    unknown:
+                      type: number
+    
+    EndpointAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              service-types:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name: 
+                      type: string
+                    type:
+                      type: string
+                    endpoint:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          type: 
+                            type: string
+                          results:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                availability: 
+                                  type: number
+                                reliability:
+                                  type: number
+                                uptime:
+                                  type: number
+                                downtime:
+                                  type: number
+                                unknown:
+                                  type: number
+    ServiceAR:
+      type: object
+      properties:
+        results: 
+          type: array
+          items:
+            type: object
+            properties:
+              name: 
+                type: string
+              type:
+                type: string
+              service-types:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name: 
+                      type: string
+                    type:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          availability: 
+                            type: number
+                          reliability:
+                            type: number
+                          uptime:
+                            type: number
+                          downtime:
+                            type: number
+                          unknown:
+                            type: number
+
+      
     FactorsResponse:
       type: object
       properties:
@@ -12567,6 +17614,8 @@ components:
                 type: string
               context:
                 type: string
+        public:
+          type: boolean
     FeedsData:
       type: object
       properties:
@@ -12576,6 +17625,8 @@ components:
             type: string
     FeedsTopo:
       type: object
+      required:
+        - type
       properties:
         type:
           type: string
@@ -12589,6 +17640,12 @@ components:
             type: string
         uid_endpoints:
           type: string
+        feed_service_groups:
+           type: string
+        feed_service_endpoints:
+           type: string
+        feed_service_endpoints_extensions:
+           type: string
     TopologyResponse:
       type: object
       properties:
@@ -13023,4 +18080,3 @@ components:
       schema:
         type: string
         default: "false"
-

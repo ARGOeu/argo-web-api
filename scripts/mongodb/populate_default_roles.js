@@ -31,6 +31,14 @@ function populate_default_roles() {
             roles: ["admin", "editor", "viewer", "admin_ui"]
         },
         {
+            resource: "latest.get.groups",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
+            resource: "latest.get.group",
+            roles: ["admin", "editor", "viewer", "admin_ui"]
+        },
+        {
             resource: "reports.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]
         },
@@ -42,6 +50,8 @@ function populate_default_roles() {
         { resource: "reports.delete", roles: ["admin", "editor"] },
         { resource: "reports.update", roles: ["admin", "editor"] },
         { resource: "reports.set_node_report", roles: ["admin", "editor"] },
+        { resource: "reports.set_public", roles: ["admin", "editor"] },
+        { resource: "reports.set_private", roles: ["admin", "editor"] },
         {
             resource: "metricProfiles.get",
             roles: ["admin", "editor", "viewer", "admin_ui"]
@@ -349,15 +359,51 @@ function populate_default_roles() {
              roles: ['super_admin', 'admin', 'editor']
         },
         {
+             resource: 'v4.nodes.summary',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.summary.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
              resource: 'v4.nodes.availability',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         },
         {
-             resource: 'v4.nodes.reliability',
+             resource: 'v4.nodes.availability.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.uptime',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.uptime.item',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         },
         {
              resource: 'v4.nodes.status',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.nodes.status.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.results.groups.item',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.results.groups',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.status.groups',
+             roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
+        },
+        {
+             resource: 'v4.status.groups.item',
              roles: [ 'super_admin', 'admin', 'editor', 'viewer' ]
         }
     ]);

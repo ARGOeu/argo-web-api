@@ -14,9 +14,9 @@ import (
 	"github.com/ARGOeu/argo-web-api/utils/store"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -80,7 +80,7 @@ func (suite *WeightsTestSuite) SetupTest() {
 
 	// Seed database with tenants
 	c := client.Database(suite.cfg.MongoDB.Db).Collection("tenants")
-	c.InsertOne(context.TODO(),
+	_, err := c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"info": bson.M{
 				"name":    "GUARDIANS",
@@ -114,7 +114,8 @@ func (suite *WeightsTestSuite) SetupTest() {
 					"roles":   []string{"editor"},
 				},
 			}})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{"id": "6ac7d684-1f8e-4a02-a502-720e8f11e50d",
 			"info": bson.M{
 				"name":    "AVENGERS",
@@ -153,33 +154,39 @@ func (suite *WeightsTestSuite) SetupTest() {
 					"roles":   []string{"viewer"},
 				},
 			}})
+	suite.Require().NoError(err)
 
 	c = client.Database(suite.cfg.MongoDB.Db).Collection("roles")
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.list",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.get",
 			"roles":    []string{"editor", "viewer"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.create",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.delete",
 			"roles":    []string{"editor"},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"resource": "weights.update",
 			"roles":    []string{"editor"},
 		})
+	suite.Require().NoError(err)
 
 	// Seed database with weights
 	c = client.Database(suite.tenantDbConf.Db).Collection("weights")
@@ -190,8 +197,11 @@ func (suite *WeightsTestSuite) SetupTest() {
 		},
 		Options: options.Index().SetUnique(false),
 	}
-	c.Indexes().CreateOne(context.TODO(), indexModel)
-	c.InsertOne(context.TODO(),
+
+	_, err = c.Indexes().CreateOne(context.TODO(), indexModel)
+	suite.Require().NoError(err)
+
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "Critical",
@@ -206,7 +216,8 @@ func (suite *WeightsTestSuite) SetupTest() {
 				{"name": "SITE-D", "value": 2},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50b",
 			"name":         "Critical",
@@ -221,7 +232,8 @@ func (suite *WeightsTestSuite) SetupTest() {
 				{"name": "SITE-D", "value": 7},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -234,7 +246,8 @@ func (suite *WeightsTestSuite) SetupTest() {
 				{"name": "SVGROUP-B", "value": 588},
 			},
 		})
-	c.InsertOne(context.TODO(),
+	suite.Require().NoError(err)
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -247,8 +260,9 @@ func (suite *WeightsTestSuite) SetupTest() {
 				{"name": "SVGROUP-B", "value": 188},
 			},
 		})
+	suite.Require().NoError(err)
 
-	c.InsertOne(context.TODO(),
+	_, err = c.InsertOne(context.TODO(),
 		bson.M{
 			"id":           "6ac7d684-1f8e-4a02-a502-720e8f11e50c",
 			"name":         "NonCritical",
@@ -261,6 +275,7 @@ func (suite *WeightsTestSuite) SetupTest() {
 				{"name": "SVGROUP-B", "value": 888},
 			},
 		})
+	suite.Require().NoError(err)
 
 }
 
@@ -486,7 +501,8 @@ func (suite *WeightsTestSuite) TestCreate() {
 	// Retrieve id from database
 	var result map[string]interface{}
 	c := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Collection("weights")
-	c.FindOne(context.TODO(), bson.M{"name": "weight_set3"}).Decode(&result)
+	err := c.FindOne(context.TODO(), bson.M{"name": "weight_set3"}).Decode(&result)
+	suite.Require().NoError(err)
 	id := result["id"].(string)
 
 	// Apply id to output template and check
@@ -1148,7 +1164,7 @@ func (suite *WeightsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		mainDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(mainDB.Collection(col).Drop(context.TODO()))
 	}
 
 	tenantDB := suite.cfg.MongoClient.Database(suite.tenantDbConf.Db)
@@ -1158,7 +1174,7 @@ func (suite *WeightsTestSuite) TearDownTest() {
 	}
 
 	for _, col := range cols {
-		tenantDB.Collection(col).Drop(context.TODO())
+		suite.Require().NoError(tenantDB.Collection(col).Drop(context.TODO()))
 	}
 
 }
@@ -1166,8 +1182,8 @@ func (suite *WeightsTestSuite) TearDownTest() {
 // TearDownTest to tear down every test
 func (suite *WeightsTestSuite) TearDownSuite() {
 
-	suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO())
-	suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO())
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.cfg.MongoDB.Db).Drop(context.TODO()))
+	suite.Require().NoError(suite.cfg.MongoClient.Database(suite.tenantDbConf.Db).Drop(context.TODO()))
 
 }
 
