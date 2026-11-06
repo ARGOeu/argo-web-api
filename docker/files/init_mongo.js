@@ -4564,7 +4564,7 @@ const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
       name: 'CLOUD-A',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-1',
       weight: 0,
       availability: 100,
       reliability: 100,
@@ -4575,7 +4575,7 @@ const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
       name: 'CLOUD-B',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-1',
       weight: 0,
       availability: 100,
       reliability: 100,
@@ -4586,7 +4586,7 @@ const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
       name: 'CLOUD-C',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-2',
       weight: 0,
       availability: 30,
       reliability: 30,
@@ -4597,7 +4597,7 @@ const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
       name: 'CLOUD-D',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-2',
       weight: 0,
       availability: 100,
       reliability: 100,
@@ -4608,7 +4608,7 @@ const baseRecords2 = [
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
       name: 'CLOUD-E',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-3',
       weight: 0,
       availability: 100,
       reliability: 100,
@@ -4619,7 +4619,7 @@ const baseRecords2 = [
     {
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       name: 'CLOUD-A',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-1',
       weight: 0,
       availability: 98,
       reliability: 98,
@@ -4630,7 +4630,7 @@ const baseRecords2 = [
     {
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
       name: 'CLOUD-B',
-      supergroup: 'CLOUDINFRA',
+      supergroup: 'CLOUDINFRA-1',
       weight: 0,
       availability: 100,
       reliability: 100,
@@ -4905,8 +4905,74 @@ for (let i = 7; i < 57; i++) {
 
 };
 
+const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+const dayBeforeYesterday = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+const daysAgo3 = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+const toInt = (iso) => parseInt(iso.replace(/-/g, ''), 10);
+
+const yesterdayInt = toInt(yesterday);              
+const dayBeforeYesterdayInt = toInt(dayBeforeYesterday);
+const daysAgo3Int = toInt(daysAgo3);                 
+
 db.status_endpoint_groups.insertMany(
   [
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: daysAgo3 + 'T00:00:00Z', 
+      date_integer: daysAgo3Int,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: daysAgo3+ 'T00:00:00Z', 
+      date_integer: daysAgo3Int,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "MISSING",
+      timestamp: dayBeforeYesterday + 'T00:00:00Z', 
+      date_integer: dayBeforeYesterdayInt,
+      has_threshold_rule: false
+    },
+     {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "MISSING",
+      timestamp: dayBeforeYesterday + 'T12:12:00Z', 
+      date_integer: dayBeforeYesterdayInt,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "MISSING",
+      timestamp: dayBeforeYesterday + 'T23:59:00Z', 
+      date_integer: dayBeforeYesterdayInt,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-A",
+      status: "WARNING",
+      timestamp: yesterday + 'T00:00:00Z', 
+      date_integer: yesterdayInt,
+      has_threshold_rule: false
+    },
+    {
+      report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
+      endpoint_group: "CLOUD-B",
+      status: "OK",
+      timestamp: yesterday+ 'T00:00:00Z', 
+      date_integer: yesterdayInt,
+      has_threshold_rule: false
+    },
     {
       report: "16b2b932-1cf6-42dc-8ce2-1e29bc6879b8",
       endpoint_group: "CLOUD-A",
