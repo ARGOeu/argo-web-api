@@ -4671,7 +4671,7 @@ for (let i = 7; i < 57; i++) {
 
 const base_endpoints_2 = [
     {
-      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b',
+      report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
       supergroup: 'CLOUD-A',
       service: 'webportal',
       name: 'host1.cloud-a.foo',
@@ -4679,7 +4679,7 @@ const base_endpoints_2 = [
       reliability: 100,
       up: 1,
       unknown: 0,
-      down: 0
+      down: 0,
     },
     {
       report: '16b2b932-1cf6-42dc-8ce2-1e29bc6879b8',
@@ -4745,7 +4745,10 @@ const base_endpoints_2 = [
       reliability: 98,
       up: 0.98,
       unknown: 0,
-      down: 0
+      down: 0,
+      info: {
+        fname: "Main Portal Website"
+      }
     },
     {
       report: 'c7a6b0d4-4885-46da-9dd1-1f91d0e9142e',
