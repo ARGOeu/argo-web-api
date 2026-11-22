@@ -10227,6 +10227,102 @@ paths:
             application/xml:
               schema:
                 type: string
+    put:
+      tags:
+      - Recomputations
+      summary: Update a specific recomputation
+      description: Update the details of a recomputation with id ID. The request body replaces the editable fields as a whole, so optional elements left out of the body are cleared. The id, status, timestamp, history and applied_status_changes are not affected.
+      parameters:
+      - name: ID
+        in: path
+        description: the recomputation id
+        required: true
+        schema:
+          type: string
+      - name: x-api-key
+        in: header
+        description: the x-api-key
+        required: true
+        schema:
+          type: string
+          default: SecretKey123
+      requestBody:
+        description: Json description of the recomputation to be updated
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/recomputation_request'
+        required: true
+      responses:
+        "200":
+          description: Successful update of recomputation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status'
+        "400":
+          description: Bad request due to malformed JSON in put body, malformed start_time/end_time, or start_time not before end_time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  code:
+                    type: string
+                  details:
+                    type: string
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "406":
+          description: Content Not acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Status_error'
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+      x-codegen-request-body-name: recomputation_request
   /v2/recomputations:
     get:
       tags:

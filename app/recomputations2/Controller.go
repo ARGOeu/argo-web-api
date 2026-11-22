@@ -404,74 +404,67 @@ func Update(r *http.Request, cfg config.Config) (int, http.Header, []byte, error
 	charset := "utf-8"
 	//STANDARD DECLARATIONS END
 
-	// Set Content-Type response Header value
 	contentType := r.Header.Get("Accept")
 	h.Set("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
 
 	vars := mux.Vars(r)
-
-	// Grab Tenant DB configuration from context
 	tenantDbConfig := gcontext.Get(r, "tenant_conf").(config.MongoConfig)
-
-	var recompSubmission IncomingRecomputation
-	// urlValues := r.URL.Query()
 
 	body, err := io.ReadAll(io.LimitReader(r.Body, cfg.Server.ReqSizeLimit))
 	if err != nil {
-		panic(err)
+		code = http.StatusInternalServerError
+		return code, h, output, err
 	}
-
 	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-
-	query := bson.M{"id": vars["ID"]}
-
-	// Retrieve Result from database
-	result := MongoInterface{}
-	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
-	err = rCol.FindOne(context.TODO(), query).Decode(&result)
-
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-			code = 404
-			return code, h, output, err
-		}
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
+	var recompSubmission IncomingRecomputation
 	if err := json.Unmarshal(body, &recompSubmission); err != nil {
 		output, _ = respond.MarshalContent(respond.BadRequestInvalidJSON, contentType, "", " ")
 		code = http.StatusBadRequest
 		return code, h, output, err
 	}
 
-	recomputation := MongoInterface{
-		ID:                   vars["ID"],
-		RequesterName:        recompSubmission.RequesterName,
-		RequesterEmail:       recompSubmission.RequesterEmail,
-		StartTime:            recompSubmission.StartTime,
-		EndTime:              recompSubmission.EndTime,
-		Reason:               recompSubmission.Reason,
-		Report:               recompSubmission.Report,
-		Exclude:              recompSubmission.Exclude,
-		Status:               result.Status,
-		Timestamp:            result.Timestamp,
-		AppliedStatusChanges: result.AppliedStatusChanges,
+	// Basic validation of the time window
+	start, errS := time.Parse("2006-01-02T15:04:05Z", recompSubmission.StartTime)
+	end, errE := time.Parse("2006-01-02T15:04:05Z", recompSubmission.EndTime)
+	if errS != nil || errE != nil || !start.Before(end) {
+		output, _ = respond.MarshalContent(
+			respond.ErrBadRequestDetails("start_time and end_time must be in YYYY-MM-DDTHH:MM:SSZ format and start_time must precede end_time"),
+			contentType, "", " ")
+		code = http.StatusBadRequest
+		return code, h, output, nil
 	}
 
-	replaceResult, err := rCol.ReplaceOne(context.TODO(), query, recomputation)
+	query := bson.M{"id": vars["ID"]}
+
+	// $set only the user-editable fields; id, status, history,
+	// timestamp and applied_status_changes are left untouched
+	update := bson.M{"$set": bson.M{
+		"requester_name":            recompSubmission.RequesterName,
+		"requester_email":           recompSubmission.RequesterEmail,
+		"start_time":                recompSubmission.StartTime,
+		"end_time":                  recompSubmission.EndTime,
+		"reason":                    recompSubmission.Reason,
+		"report":                    recompSubmission.Report,
+		"exclude":                   recompSubmission.Exclude,
+		"exclude_metrics":           recompSubmission.ExcludeMetrics,
+		"exclude_monitoring_source": recompSubmission.ExcludeMonSource,
+	}}
+
+	rCol := cfg.MongoClient.Database(tenantDbConfig.Db).Collection(recomputationsColl)
+	updateResult, err := rCol.UpdateOne(context.TODO(), query, update)
 	if err != nil {
 		code = http.StatusInternalServerError
 		return code, h, output, err
 	}
 
-	if replaceResult.MatchedCount == 0 {
+	if updateResult.MatchedCount == 0 {
 		output, _ = respond.MarshalContent(respond.ErrNotFound, contentType, "", " ")
-		code = 404
-		return code, h, output, err
+		code = http.StatusNotFound
+		return code, h, output, nil
 	}
 
 	output, err = createMsgView("Recomputation updated successfully", 200)

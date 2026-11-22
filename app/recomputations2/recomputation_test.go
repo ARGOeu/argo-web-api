@@ -1310,7 +1310,15 @@ func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputation() {
 
 func (suite *RecomputationsProfileTestSuite) TestUpdateRecomputationNotFound() {
 
-	jsonSubmission := []byte("{}")
+	submission := IncomingRecomputation{
+		StartTime: "2015-01-10T12:00:00Z",
+		EndTime:   "2015-01-30T23:00:00Z",
+		Reason:    "Ups failure",
+		Report:    "EGI_Critical",
+		Exclude:   []string{"SITE5", "SITE8"},
+	}
+
+	jsonSubmission, _ := json.Marshal(submission)
 
 	request, _ := http.NewRequest("PUT", "https://argo-web-api.grnet.gr:443/api/v2/recomputations/unknown_id", bytes.NewBuffer(jsonSubmission))
 	request.Header.Set("x-api-key", suite.clientkey)
