@@ -15,6 +15,7 @@ POST: Create a new recomputation request | This method can be used to insert a n
 DELETE: Delete a specific recomputation  | This method can be used to delete a specific recomputation. | [ Description](#delete-delete-a-specific-recomputation)
 POST: change status  | This method can be used to change status of a specific recomputation. | [ Description](#post-change-status-of-recomputation)
 DELETE: Reset status of recomputation  | This method can be used to reset status of a specific recomputation. | [ Description](#delete-reset-status-of-a-specific-recomputation)
+PUT: Update a specific recomputation     | This method can be used to update the details of an existing recomputation request.    | [ Description](#put-update-a-specific-recomputation)
 
 
 ## [GET]: List Recomputation Requests
@@ -441,4 +442,86 @@ Json Response
 ```
 
 
+## [PUT]: Update a specific recomputation
+This method can be used to update the details of an existing recomputation request. The request body replaces the editable fields of the recomputation as a whole, so any optional element left out of the body (e.g. `exclude`) is cleared from the stored recomputation.
 
+The `id`, `status`, `timestamp` and `history` of the recomputation and its `applied_status_changes` are not affected by this call. To change the status of a recomputation use the [change status](#post-change-status-of-recomputation) method instead.
+
+### Input
+
+```
+PUT /recomputations/{ID}
+```
+
+#### Request headers
+
+```
+x-api-key: shared_key_value
+Accept: application/json
+```
+
+#### Parameters
+
+| Parameter                   | Type     | Description                                                                                                 | Required |
+|----------------------------|----------|-------------------------------------------------------------------------------------------------------------|----------|
+| `start_time`               | `string` | UTC timestamp in W3C format (e.g., `2025-05-07T12:00:00Z`). Must precede `end_time`                          | Yes      |
+| `end_time`                 | `string` | UTC timestamp in W3C format (e.g., `2025-05-09T09:00:00Z`)                                                   | Yes      |
+| `reason`                   | `string` | Explanation of the need for the recomputation                                                               | Yes      |
+| `requester_name`           | `string` | Name of the person submitting the recomputation                                                             | Yes      |
+| `requester_email`          | `string` | Email of the person submitting the recomputation                                                            | Yes      |
+| `report`                   | `string` | Report for which the recomputation is requested                                                             | Yes      |
+| `exclude_monitoring_source` | `array`  | List of monitoring sources to exclude during recomputation, each with `host`, `start_time`, and `end_time` | No       |
+| `exclude`                  | `array`  | List of group names to exclude from recomputation                                                           | No       |
+| `exclude_metrics`          | `array`  | List of specific metrics (optionally scoped by hostname, service or group) to exclude from recomputation    | No       |
+
+#### Example Request Body
+
+```json
+{
+  "requester_name": "John Doe",
+  "requester_email": "johndoe@foo.gr",
+  "reason": "Updated reason: power cuts and network outage",
+  "start_time": "2025-05-07T12:00:00Z",
+  "end_time": "2025-05-09T18:00:00Z",
+  "report": "Report-A",
+
+  "exclude_monitoring_source": [
+    {
+      "host": "monitoring_node01.example.foo",
+      "start_time": "2025-05-07T12:00:00Z",
+      "end_time": "2025-05-07T23:00:00Z"
+    }
+  ],
+
+  "exclude": [
+    "Group-1"
+  ],
+
+  "exclude_metrics": [
+    { "metric": "check-1" },
+    { "metric": "check-2", "hostname": "host1.example.com" }
+  ]
+}
+```
+
+### Response
+`Status 200 OK`
+
+#### Response body
+Json Response
+
+```json
+{
+ "status": {
+  "message": "Recomputation updated successfully",
+  "code": "200"
+ }
+}
+```
+
+### Errors
+
+| Status code       | Description                                                                                                     |
+|-------------------|-----------------------------------------------------------------------------------------------------------------|
+| `400 Bad Request` | The request body is not valid JSON, or `start_time`/`end_time` are malformed or `start_time` is not before `end_time` |
+| `404 Not Found`   | No recomputation exists with the given `ID`                 
